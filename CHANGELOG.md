@@ -7,10 +7,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Fixed
 
-- Fixed build error caused by node-gyp attempting to use Python 2 syntax with Python 3
-- Moved `@screeps/common`, `@screeps/driver`, `@screeps/engine`, and `screeps-server-mockup` packages to `optionalDependencies` to allow installation to succeed even when native modules fail to build
-- Added `.npmrc` to configure build behavior for optional dependencies
-- Mockup tests now gracefully skip when isolated-vm build fails (as documented in tests/mockup/README.md)
+- Fixed pnpm lockfile configuration compatibility issue causing ERR_PNPM_LOCKFILE_CONFIG_MISMATCH during CI runs (run ID: 18699813713)
+- Added regression test for pnpm lockfile compatibility to prevent future lockfile configuration mismatches
 
 ## [0.1.0] - 2024-06-01
 
