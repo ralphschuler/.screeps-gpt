@@ -18,6 +18,7 @@ All notable changes to this project are documented here. This changelog now main
 - Updated documentation to reference npm commands
 - Added .nvmrc file to specify Node.js 16.20.2
 - Updated package.json to remove pnpm references and specify npm in engines
+- **Copilot CI AutoFix workflow now monitors all workflow failures** (except itself) instead of only Quality Gate failures, enabling automated fixes for any CI failure
 
 ### Fixed
 
