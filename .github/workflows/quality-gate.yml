@@ -1,0 +1,50 @@
+name: Quality Gate
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    env:
+      SCREEPS_TEST_REALM: PTR
+      SCREEPS_HOST: ptr.screeps.com
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: bun install
+      - name: Lint
+        run: bun run lint
+      - name: Format (check)
+        run: bun run format:check
+      - name: Unit tests
+        run: bun run test:unit
+      - name: End-to-end tests (PTR)
+        run: bun run test:e2e
+      - name: Regression tests
+        run: bun run test:regression
+      - name: Coverage
+        run: bun run test:coverage
+      - name: Publish evaluation report artifact
+        if: success()
+        run: |
+          bun run analyze:system
+          tar -czf reports.tar.gz reports || echo "no reports directory"
+      - name: Upload report
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: system-evaluation
+          path: reports.tar.gz
