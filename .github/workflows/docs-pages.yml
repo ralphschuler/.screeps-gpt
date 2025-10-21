@@ -37,11 +37,11 @@ jobs:
           echo "PYTHON=/usr/local/python2/bin/python2.7" >> $GITHUB_ENV
           python --version
       - name: Install dependencies (with Python 2)
-        run: pnpm install
+        run: npm install
       - name: Generate documentation site
         run: |
-          pnpm run versions:update
-          pnpm run build:docs-site
+          npm run versions:update
+          npm run build:docs-site
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

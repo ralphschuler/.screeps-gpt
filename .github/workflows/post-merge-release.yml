@@ -27,18 +27,18 @@ jobs:
           echo "PYTHON=/usr/local/python2/bin/python2.7" >> $GITHUB_ENV
           python --version
       - name: Install dependencies (with Python 2)
-        run: pnpm install
+        run: npm install
       - name: Lint with fixes
-        run: pnpm run lint:fix
+        run: npm run lint:fix
       - name: Format with write
-        run: pnpm run format:write
+        run: npm run format:write
       - name: Bump version
         id: bump
         run: |
-          VERSION=$(pnpm run version:bump | tail -n 1)
+          VERSION=$(npm run version:bump | tail -n 1)
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
       - name: Refresh version index
-        run: pnpm run versions:update
+        run: npm run versions:update
       - name: Commit changes
         id: commit
         uses: stefanzweifel/git-auto-commit-action@v5

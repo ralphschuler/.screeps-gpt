@@ -5,10 +5,9 @@
   "license": "MIT",
   "author": "OpenAI Automations",
   "type": "module",
-  "packageManager": "pnpm@7.33.7",
   "engines": {
     "node": "16.x",
-    "pnpm": ">=7.0.0"
+    "npm": ">=8.0.0"
   },
   "scripts": {
     "build": "tsx scripts/build.ts",
@@ -19,7 +18,7 @@
     "format": "prettier .",
     "format:check": "prettier --check .",
     "format:write": "prettier --write .",
-    "test": "pnpm run test:unit",
+    "test": "npm run test:unit",
     "test:actions": "tsx scripts/test-actions.ts",
     "test:unit": "vitest run --dir tests/unit",
     "test:e2e": "vitest run --dir tests/e2e",
