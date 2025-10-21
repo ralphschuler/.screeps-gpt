@@ -282,7 +282,7 @@ async function buildSite(): Promise<void> {
     const parsed = JSON.parse(versionsJson) as unknown;
     versionEntries = parseVersionEntries(parsed);
   } catch (error: unknown) {
-    console.warn("No versions.json found; run `pnpm run versions:update` before building the docs site.");
+    console.warn("No versions.json found; run `npm run versions:update` before building the docs site.");
   }
 
   const versionSections = versionEntries
