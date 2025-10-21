@@ -13,6 +13,8 @@ jobs:
   monitor:
     runs-on: ubuntu-latest
     steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
       - name: Run Copilot stats monitor
         uses: ./.github/actions/copilot-exec
         env:
