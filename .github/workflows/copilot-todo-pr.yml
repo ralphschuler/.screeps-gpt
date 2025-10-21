@@ -23,7 +23,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          prompt-path: .github/copilot/prompts/todo-issue.md
+          prompt-path: .github/copilot/prompts/todo-issue
           output-path: reports/copilot/todo-${{ github.event.issue.number }}.log
           substitutions: |
             {

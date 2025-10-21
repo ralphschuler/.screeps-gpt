@@ -42,13 +42,14 @@ bun install
 - `src/runtime/behavior/` – High-level creep role orchestration and spawn logic.
 - `src/runtime/memory/` – Helpers to keep `Memory` consistent between ticks.
 - `src/runtime/metrics/` – CPU usage and execution accounting.
+- `src/runtime/respawn/` – Automatic detection and handling of respawn scenarios when all spawns are lost.
 - `src/runtime/evaluation/` – Generates health reports and improvement recommendations from runtime and repository signals.
 - `src/shared/` – Shared contracts for metrics, evaluation results, and repository telemetry.
 - `scripts/` – Bun-driven automation (build, deploy, version bump, repository evaluation).
 - `tests/` – Vitest suites split into unit, e2e, and regression directories.
 - `reports/` – Persistent analysis artifacts (e.g., `system-evaluation.json`).
 
-The main loop lives in `src/main.ts` and delegates to a kernel that can be exercised in tests or tooling.
+The main loop lives in `src/main.ts` and delegates to a kernel that can be exercised in tests or tooling. The system automatically detects when all spawns are lost and flags critical respawn conditions in evaluation reports—see [`docs/operations/respawn-handling.md`](docs/operations/respawn-handling.md) for details.
 
 ## Automated Quality & Deployment
 
