@@ -30,31 +30,31 @@ jobs:
           echo "PYTHON=/usr/local/python2/bin/python2.7" >> $GITHUB_ENV
           python --version
       - name: Install dependencies (with Python 2)
-        run: pnpm install
+        run: npm install
       - name: Lint
-        run: pnpm run lint
+        run: npm run lint
       - name: Format (check)
-        run: pnpm run format:check
+        run: npm run format:check
       - name: Validate version index
         run: |
-          pnpm run versions:update
+          npm run versions:update
           if ! git diff --quiet docs/changelog/versions.json docs/changelog/versions.md; then
-            echo "::error::Release index is out of date. Run 'pnpm run versions:update' locally and commit the changes." >&2
+            echo "::error::Release index is out of date. Run 'npm run versions:update' locally and commit the changes." >&2
             git diff -- docs/changelog/versions.json docs/changelog/versions.md
             exit 1
           fi
       - name: Unit tests
-        run: pnpm run test:unit
+        run: npm run test:unit
       - name: End-to-end tests (PTR)
-        run: pnpm run test:e2e
+        run: npm run test:e2e
       - name: Regression tests
-        run: pnpm run test:regression
+        run: npm run test:regression
       - name: Coverage
-        run: pnpm run test:coverage
+        run: npm run test:coverage
       - name: Publish evaluation report artifact
         if: success()
         run: |
-          pnpm run analyze:system
+          npm run analyze:system
           tar -czf reports.tar.gz reports || echo "no reports directory"
       - name: Upload report
         if: success()

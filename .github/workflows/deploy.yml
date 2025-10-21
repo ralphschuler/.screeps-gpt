@@ -25,7 +25,7 @@ jobs:
           echo "PYTHON=/usr/local/python2/bin/python2.7" >> $GITHUB_ENV
           python --version
       - name: Install dependencies (with Python 2)
-        run: pnpm install
+        run: npm install
       - name: Build and deploy
         env:
           SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
@@ -34,4 +34,4 @@ jobs:
           SCREEPS_PROTOCOL: ${{ secrets.SCREEPS_PROTOCOL }}
           SCREEPS_BRANCH: ${{ secrets.SCREEPS_BRANCH }}
           SCREEPS_PATH: ${{ secrets.SCREEPS_PATH }}
-        run: pnpm run deploy
+        run: npm run deploy

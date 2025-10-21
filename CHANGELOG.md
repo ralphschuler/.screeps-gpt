@@ -1,9 +1,17 @@
 # Changelog
 
 All notable changes to this project are documented here. This changelog now maintains the full release history—update the
-`[Unreleased]` section with your changes and run `pnpm run versions:update` to refresh the release index.
+`[Unreleased]` section with your changes and run `npm run versions:update` to refresh the release index.
 
 ## [Unreleased]
+
+### Changed
+
+- Migrated from pnpm to npm as the package manager
+- Updated all workflow files to use npm instead of pnpm
+- Updated documentation to reference npm commands
+- Added .nvmrc file to specify Node.js 16.20.2
+- Updated package.json to remove pnpm references and specify npm in engines
 
 ### Fixed
 

@@ -1,5 +1,5 @@
 name: "Setup Node.js 16"
-description: "Installs Node.js 16 with pnpm package manager (since actions/setup-node no longer supports Node 16)"
+description: "Installs Node.js 16 with npm package manager (since actions/setup-node no longer supports Node 16)"
 author: "ralph@nyphon.de"
 
 outputs:
@@ -110,11 +110,10 @@ runs:
         node --version || (echo "❌ Node.js installation failed" && exit 1)
         npm --version || (echo "❌ npm installation failed" && exit 1)
 
-    # 6️⃣ Install pnpm
-    - name: Install pnpm
+    # 6️⃣ Verify npm is available
+    - name: Verify npm installation
       shell: bash
       run: |
-        echo "📦 Installing pnpm..."
-        npm install -g pnpm@8
-        pnpm --version
-        echo "✅ pnpm installed successfully!"
+        echo "📦 npm is bundled with Node.js 16"
+        npm --version
+        echo "✅ npm is ready!"
