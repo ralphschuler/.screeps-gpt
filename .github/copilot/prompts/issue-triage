@@ -4,14 +4,14 @@ You are assisting the Screeps GPT maintainers by triaging a newly created issue 
 
 Issue metadata:
 
-- **Issue Number:** #{{ISSUE_NUMBER}}
-- **Original Title:** {{ISSUE_TITLE}}
-- **Author:** {{ISSUE_AUTHOR}}
-- **Issue URL:** {{ISSUE_HTML_URL}}
+- **Issue Number:** ${ISSUE_NUMBER}
+- **Original Title:** ${ISSUE_TITLE}
+- **Author:** ${ISSUE_AUTHOR}
+- **Issue URL:** ${ISSUE_HTML_URL}
 - **Original Body:**
 
 ```
-{{ISSUE_BODY}}
+${ISSUE_BODY}
 ```
 
 Follow this process:
@@ -29,7 +29,7 @@ Follow this process:
      - **Proposed Changes:** Specific changes or implementation approach
      - **Acceptance Criteria:** Clear success conditions
      - **Additional Context:** Any relevant technical details, constraints, or references
-4. Update the issue directly using `gh issue edit #{{ISSUE_NUMBER}}` with the reformulated title and body.
+4. Update the issue directly using `gh issue edit ${ISSUE_NUMBER}` with the reformulated title and body.
 5. Apply appropriate labels from the repository set based on the issue content:
    - Area labels: `automation`, `documentation`, `runtime`, `monitoring`
    - Priority labels: `severity/high`, `severity/medium`, `severity/low`

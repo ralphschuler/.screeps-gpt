@@ -27,5 +27,5 @@ jobs:
           ISSUE_AUTHOR: ${{ toJSON(github.event.issue.user.login) }}
         with:
           copilot-token: ${{ secrets.COPILOT_TOKEN }}
-          prompt-path: .github/copilot/prompts/issue-triage.md
+          prompt-path: .github/copilot/prompts/issue-triage
           output-path: reports/copilot/issue-triage-${{ github.event.issue.number }}.log
