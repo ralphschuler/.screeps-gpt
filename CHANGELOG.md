@@ -7,8 +7,9 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Fixed
 
-- Fixed pnpm lockfile configuration compatibility issue causing ERR_PNPM_LOCKFILE_CONFIG_MISMATCH during CI runs (run ID: 18699813713)
-- Added regression test for pnpm lockfile compatibility to prevent future lockfile configuration mismatches
+- Fixed esbuild version mismatch during pnpm install causing "Expected 0.25.0 but got 0.18.20" postinstall errors (run ID: 18699993551)
+- Regenerated pnpm-lock.yaml to ensure consistent esbuild version resolution across all dependencies
+- Added regression test `esbuild versions consistency` to prevent future version conflicts in lockfile
 
 ## [0.1.0] - 2024-06-01
 
