@@ -68,7 +68,7 @@ runs:
         if command -v copilot >/dev/null 2>&1; then
           echo "✅ Copilot CLI cached"
         else
-          npm install -g @github/copilot@1.0.0
+          npm install -g @github/copilot
         fi
         echo "$HOME/.npm/_global/bin" >> "$GITHUB_PATH"
 
