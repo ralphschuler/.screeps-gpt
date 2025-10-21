@@ -1,0 +1,12 @@
+{
+  "event_name": "repository_dispatch",
+  "event_type": "copilot_email_triage",
+  "client_payload": {
+    "email": {
+      "subject": "PTR outage report",
+      "from": "ops@example.com",
+      "to": "automation@example.com",
+      "body": "User reports persistent errors when spawning creeps in shard PTR-A.\nError log excerpts: ERR_NOT_ENOUGH_ENERGY when energy is above 900.\nPlease investigate and provide mitigation steps.\n"
+    }
+  }
+}

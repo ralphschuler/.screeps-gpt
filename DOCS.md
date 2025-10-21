@@ -20,15 +20,18 @@ This document augments the main [README](README.md) with a practical onboarding 
    bun run test:e2e   # executes against the PTR profile
    bun run test:regression
    bun run test:coverage
+   bun run test:actions
    bun run analyze:system
    ```
+
+```
 4. **Build and deploy**
-   - Produce a Screeps bundle with `bun run build`.
-   - Deploy to Screeps PTR with `SCREEPS_HOST=ptr.screeps.com bun run deploy` (requires `SCREEPS_TOKEN`).
+ - Produce a Screeps bundle with `bun run build`.
+ - Deploy to Screeps PTR with `SCREEPS_HOST=ptr.screeps.com bun run deploy` (requires `SCREEPS_TOKEN`).
 5. **Read the automation specs**
-   - Workflow definitions live in [`.github/workflows/`](.github/workflows/) and are summarised in [`docs/automation/overview.md`](docs/automation/overview.md).
-   - Prompts for Copilot-driven automation live in [`.github/copilot/prompts/`](.github/copilot/prompts/).
-   - Operational procedures (PTR monitoring, CI auto-fixes, etc.) live in [`docs/operations/`](docs/operations/).
+ - Workflow definitions live in [`.github/workflows/`](.github/workflows/) and are summarised in [`docs/automation/overview.md`](docs/automation/overview.md).
+ - Prompts for Copilot-driven automation live in [`.github/copilot/prompts/`](.github/copilot/prompts/).
+ - Operational procedures (PTR monitoring, CI auto-fixes, etc.) live in [`docs/operations/`](docs/operations/).
 
 ## Working with GitHub Copilot CLI Automation
 
@@ -44,24 +47,24 @@ Use the following material to deepen your Screeps expertise and tooling knowledg
 
 - Official Screeps Documentation: [Game Guide](https://docs.screeps.com/index.html) · [API Reference](https://docs.screeps.com/api/)
 - Type Definitions & Tooling:
-  - [`@types/screeps`](https://www.npmjs.com/package/@types/screeps)
-  - [`@types/screeps-profiler`](https://www.npmjs.com/package/@types/screeps-profiler)
-  - [`screeps-typescript-starter` guide](https://screepers.gitbook.io/screeps-typescript-starter/)
+- [`@types/screeps`](https://www.npmjs.com/package/@types/screeps)
+- [`@types/screeps-profiler`](https://www.npmjs.com/package/@types/screeps-profiler)
+- [`screeps-typescript-starter` guide](https://screepers.gitbook.io/screeps-typescript-starter/)
 - Build & Deployment Utilities:
-  - [`rollup-plugin-screeps`](https://www.npmjs.com/package/rollup-plugin-screeps)
-  - [`screeps-api`](https://www.npmjs.com/package/screeps-api) (used by our deployment script)
-  - [`screeps-multimeter`](https://www.npmjs.com/package/screeps-multimeter)
+- [`rollup-plugin-screeps`](https://www.npmjs.com/package/rollup-plugin-screeps)
+- [`screeps-api`](https://www.npmjs.com/package/screeps-api) (used by our deployment script)
+- [`screeps-multimeter`](https://www.npmjs.com/package/screeps-multimeter)
 - Runtime Enhancements:
-  - [`screeps-movement`](https://www.npmjs.com/package/screeps-movement)
-  - [`screeps-profiler`](https://www.npmjs.com/package/screeps-profiler)
-  - [`screeps-calculator`](https://www.npmjs.com/package/screeps-calculator)
-  - [`screeps-cartographer`](https://www.npmjs.com/package/screeps-cartographer)
-  - [`screeps-viz`](https://www.npmjs.com/package/screeps-viz)
-  - [`screeps-pathfinding`](https://www.npmjs.com/package/screeps-pathfinding)
-  - [`screeps-lru-cache`](https://www.npmjs.com/package/screeps-lru-cache)
-  - [`screeps-cache`](https://www.npmjs.com/package/screeps-cache)
-  - [`screeps-stats`](https://www.npmjs.com/package/screeps-stats)
-  - [`screeps-spawn`](https://www.npmjs.com/package/screeps-spawn)
+- [`screeps-movement`](https://www.npmjs.com/package/screeps-movement)
+- [`screeps-profiler`](https://www.npmjs.com/package/screeps-profiler)
+- [`screeps-calculator`](https://www.npmjs.com/package/screeps-calculator)
+- [`screeps-cartographer`](https://www.npmjs.com/package/screeps-cartographer)
+- [`screeps-viz`](https://www.npmjs.com/package/screeps-viz)
+- [`screeps-pathfinding`](https://www.npmjs.com/package/screeps-pathfinding)
+- [`screeps-lru-cache`](https://www.npmjs.com/package/screeps-lru-cache)
+- [`screeps-cache`](https://www.npmjs.com/package/screeps-cache)
+- [`screeps-stats`](https://www.npmjs.com/package/screeps-stats)
+- [`screeps-spawn`](https://www.npmjs.com/package/screeps-spawn)
 
 For architectural inspiration and large-scale automation patterns, explore the open-source [Screeps Quorum](https://github.com/ScreepsQuorum/screeps-quorum) project. Many of its patterns (task queues, modular role controllers, etc.) can inform incremental improvements in this repository.
 
@@ -69,7 +72,8 @@ For architectural inspiration and large-scale automation patterns, explore the o
 
 - When you fix a defect or address an operational issue, record the scenario and your findings in `docs/` (usually under `docs/operations/`) before landing the fix.
 - Add a regression test that reproduces the bug *before* applying the fix; reference that test in both the documentation and `CHANGELOG.md`.
-- Clear and rewrite `CHANGELOG.md` for every pull request so it only captures the changes you are introducing.
+- Update the `[Unreleased]` section of `CHANGELOG.md` with every pull request and run `bun run versions:update` to refresh the generated release index under `docs/changelog/`.
+- Regenerate the static documentation site locally with `bun run build:docs-site` when editing docs so you can preview what GitHub Pages will publish.
 
 ## Maintenance Tips
 
@@ -79,3 +83,4 @@ For architectural inspiration and large-scale automation patterns, explore the o
 - When expanding automation prompts, prefer reusing the shared `copilot-exec` action so configuration stays consistent.
 
 Happy coding and may your creeps thrive on the PTR!
+```

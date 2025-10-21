@@ -22,17 +22,22 @@ them before acting.
    bun run test:e2e   # PTR configuration
    bun run test:regression
    bun run test:coverage
+   bun run test:actions
    bun run analyze:system
    ```
+
+```
 4. **Build & deploy**
-   - Bundle with `bun run build`.
-   - Deploy to PTR: `SCREEPS_HOST=ptr.screeps.com bun run deploy` (requires `SCREEPS_TOKEN`).
+ - Bundle with `bun run build`.
+ - Deploy to PTR: `SCREEPS_HOST=ptr.screeps.com bun run deploy` (requires `SCREEPS_TOKEN`).
 
 ## Documentation Rules
 
 - Update the files under `docs/` whenever you change automation, runtime behaviour, or operating procedures.
 - Capture lessons learned from bug fixes or regressions, including links to the relevant tests.
 - Cross-reference new documents from `README.md` or other entry points so the automation agents discover them.
+- Update `CHANGELOG.md` in the `[Unreleased]` section and run `bun run versions:update` so `docs/changelog/versions.*` stays in sync.
+- Preview the GitHub Pages site with `bun run build:docs-site` whenever you adjust documentation or changelog content.
 
 ## Additional Guides
 
@@ -40,5 +45,7 @@ them before acting.
 - [PTR Monitoring Pipeline](operations/stats-monitoring.md)
 - [Copilot Automation Prompts](../.github/copilot/README.md) *(if present)*
 - [Developer Onboarding Resources](../DOCS.md)
+- [Release History](changelog/versions.md)
 
 Contributions should expand these notes rather than duplicating content in ad-hoc Markdown files.
+```

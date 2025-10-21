@@ -31,6 +31,8 @@ jobs:
         run: |
           VERSION=$(bun run version:bump | tail -n 1)
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Refresh version index
+        run: bun run versions:update
       - name: Commit changes
         id: commit
         uses: stefanzweifel/git-auto-commit-action@v5
