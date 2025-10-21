@@ -37,6 +37,7 @@ Finally, print minified JSON so the workflow log records the results:
 ```
 
 Rules:
+
 - Do not wrap the JSON in Markdown fences.
 - Use empty arrays/nulls when appropriate.
 - Keep edits tightly scoped to the failure being remediated.

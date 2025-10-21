@@ -33,8 +33,23 @@ export class SystemEvaluator {
   /**
    * Evaluate a single tick snapshot (and optional repository telemetry) into a report.
    */
-  public evaluate(snapshot: PerformanceSnapshot, repository?: RepositorySignal): SystemReport {
+  public evaluate(snapshot: PerformanceSnapshot, repository?: RepositorySignal, memory?: Memory): SystemReport {
     const findings: EvaluationFinding[] = [];
+
+    // Check for respawn condition first (most critical)
+    if (memory?.respawn?.needsRespawn) {
+      const hasCreeps = snapshot.creepCount > 0;
+      findings.push({
+        severity: "critical",
+        title: "Respawn required - all spawns lost",
+        detail: hasCreeps
+          ? `All spawns have been lost. ${snapshot.creepCount} creeps remaining but cannot spawn reinforcements.`
+          : "All spawns and creeps have been lost. Immediate respawn required to continue play.",
+        recommendation: hasCreeps
+          ? "Trigger respawn process through Screeps API or UI to establish a new base."
+          : "URGENT: Trigger immediate respawn through Screeps API or UI. No active units remain."
+      });
+    }
 
     if (snapshot.cpuUsed > snapshot.cpuLimit * this.options.cpuUsageWarningRatio) {
       findings.push({
@@ -54,7 +69,7 @@ export class SystemEvaluator {
       });
     }
 
-    if (snapshot.creepCount === 0) {
+    if (snapshot.creepCount === 0 && !memory?.respawn?.needsRespawn) {
       findings.push({
         severity: "critical",
         title: "No creeps in play",
@@ -63,7 +78,7 @@ export class SystemEvaluator {
       });
     }
 
-    if (snapshot.execution.spawnedCreeps.length === 0 && snapshot.creepCount < 3) {
+    if (snapshot.execution.spawnedCreeps.length === 0 && snapshot.creepCount < 3 && !memory?.respawn?.needsRespawn) {
       findings.push({
         severity: "warning",
         title: "Low spawn throughput",
@@ -141,7 +156,7 @@ export class SystemEvaluator {
     snapshot: PerformanceSnapshot,
     repository?: RepositorySignal
   ): EvaluationResult {
-    const report = this.evaluate(snapshot, repository);
+    const report = this.evaluate(snapshot, repository, memory);
     return this.persist(memory, report);
   }
 }

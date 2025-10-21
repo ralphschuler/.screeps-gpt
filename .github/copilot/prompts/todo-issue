@@ -37,6 +37,7 @@ When everything is complete, print minified JSON with this structure so the work
 ```
 
 Rules:
+
 - Do not wrap the JSON in Markdown code fences.
 - Leave fields empty or as empty arrays when nothing was necessary.
 - Prefer concise bullet-style summaries inside the pull request body and keep comments professional.

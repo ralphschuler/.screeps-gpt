@@ -3,6 +3,7 @@ import { BehaviorController } from "@runtime/behavior/BehaviorController";
 import { SystemEvaluator } from "@runtime/evaluation/SystemEvaluator";
 import { MemoryManager } from "@runtime/memory/MemoryManager";
 import { PerformanceTracker } from "@runtime/metrics/PerformanceTracker";
+import { RespawnManager } from "@runtime/respawn/RespawnManager";
 import type { GameContext } from "@runtime/types/GameContext";
 
 export interface KernelConfig {
@@ -10,6 +11,7 @@ export interface KernelConfig {
   tracker?: PerformanceTracker;
   behavior?: BehaviorController;
   evaluator?: SystemEvaluator;
+  respawnManager?: RespawnManager;
   repositorySignalProvider?: () => RepositorySignal | undefined;
   logger?: Pick<Console, "log" | "warn">;
 }
@@ -23,6 +25,7 @@ export class Kernel {
   private readonly tracker: PerformanceTracker;
   private readonly behavior: BehaviorController;
   private readonly evaluator: SystemEvaluator;
+  private readonly respawnManager: RespawnManager;
   private readonly repositorySignalProvider?: () => RepositorySignal | undefined;
   private readonly logger: Pick<Console, "log" | "warn">;
 
@@ -32,6 +35,7 @@ export class Kernel {
     this.tracker = config.tracker ?? new PerformanceTracker(this.logger);
     this.behavior = config.behavior ?? new BehaviorController(this.logger);
     this.evaluator = config.evaluator ?? new SystemEvaluator({}, this.logger);
+    this.respawnManager = config.respawnManager ?? new RespawnManager(this.logger);
     this.repositorySignalProvider = config.repositorySignalProvider;
   }
 
@@ -42,6 +46,20 @@ export class Kernel {
     const repository = this.repositorySignalProvider?.();
 
     this.tracker.begin(game);
+
+    // Check for respawn condition before other operations
+    const needsRespawn = this.respawnManager.checkRespawnNeeded(game, memory);
+    if (needsRespawn) {
+      // Still track performance and evaluate even when respawn is needed
+      const snapshot = this.tracker.end(game, {
+        processedCreeps: 0,
+        spawnedCreeps: [],
+        tasksExecuted: {}
+      });
+      this.evaluator.evaluateAndStore(memory, snapshot, repository);
+      return;
+    }
+
     this.memoryManager.pruneMissingCreeps(memory, game.creeps);
     const roleCounts = this.memoryManager.updateRoleBookkeeping(memory, game.creeps);
 
