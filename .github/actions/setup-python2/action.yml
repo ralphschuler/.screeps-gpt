@@ -44,13 +44,16 @@ runs:
       run: |
         set -euo pipefail
         echo "🐍 Installing Python 2.7.18..."
+
         ARCH="$(uname -m)"
         OS="$(uname -s)"
         INSTALL_DIR="/usr/local/python2"
         TMPDIR="$(mktemp -d)"
         PYTHON_VERSION="2.7.18"
 
-        mkdir -p "$INSTALL_DIR"
+        # Pre-create install directory with correct permissions
+        sudo mkdir -p "$INSTALL_DIR"
+        sudo chown -R "$(whoami)" "$INSTALL_DIR"
 
         if [[ "$OS" == "Linux" ]]; then
           echo "🐧 Attempting fast prebuilt installation..."
@@ -68,7 +71,7 @@ runs:
             export PATH="/usr/lib/ccache:$PATH"
             ./configure --prefix="$INSTALL_DIR"
             make -j"$(nproc)" LDFLAGS="-Wl,--strip-all"
-            sudo make altinstall
+            make altinstall
           fi
 
           PYTHON_PATH="$INSTALL_DIR/bin/python2.7"
