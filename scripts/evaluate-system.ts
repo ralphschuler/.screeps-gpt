@@ -29,7 +29,7 @@ async function loadCoverage(): Promise<CoverageSummary | undefined> {
     statements: summary.statements?.pct ?? 0,
     branches: summary.branches?.pct ?? 0,
     functions: summary.functions?.pct ?? 0,
-    lines: summary.lines?.pct ?? 0,
+    lines: summary.lines?.pct ?? 0
   };
 }
 
@@ -46,8 +46,8 @@ function createSnapshot(): PerformanceSnapshot {
     execution: {
       processedCreeps: Number(process.env.EVAL_PROCESSED_CREEPS ?? 4),
       spawnedCreeps: [],
-      tasksExecuted: {},
-    },
+      tasksExecuted: {}
+    }
   };
 }
 
@@ -59,7 +59,7 @@ async function run(): Promise<void> {
     coverage,
     lintErrors: Number(process.env.EVAL_LINT_ERRORS ?? 0) || 0,
     testFailures: Number(process.env.EVAL_TEST_FAILURES ?? 0) || 0,
-    timestamp: new Date().toISOString(),
+    timestamp: new Date().toISOString()
   };
 
   const snapshot = createSnapshot();
@@ -77,7 +77,7 @@ async function run(): Promise<void> {
   }
 }
 
-run().catch((error) => {
+run().catch(error => {
   console.error("System evaluation failed", error);
   process.exitCode = 1;
 });
