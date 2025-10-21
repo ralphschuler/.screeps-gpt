@@ -10,16 +10,16 @@ function createCreep(role: string, room: RoomLike, energy: { free: number; used:
     room,
     store: {
       getFreeCapacity: vi.fn(() => energy.free),
-      getUsedCapacity: vi.fn(() => energy.used),
+      getUsedCapacity: vi.fn(() => energy.used)
     },
     pos: {
-      findClosestByPath: <T>(targets: T[]): T | null => (targets.length > 0 ? targets[0] : null),
+      findClosestByPath: <T>(targets: T[]): T | null => (targets.length > 0 ? targets[0] : null)
     },
     harvest: vi.fn(() => OK),
     transfer: vi.fn(() => OK),
     moveTo: vi.fn(() => OK),
     upgradeController: vi.fn(() => OK),
-    withdraw: vi.fn(() => OK),
+    withdraw: vi.fn(() => OK)
   };
 }
 
@@ -32,7 +32,7 @@ describe(`Kernel (${TEST_REALM})`, () => {
 
     const spawnStore = {
       getFreeCapacity: vi.fn(() => 300),
-      getUsedCapacity: vi.fn(() => 0),
+      getUsedCapacity: vi.fn(() => 0)
     };
 
     const spawn = {
@@ -40,7 +40,7 @@ describe(`Kernel (${TEST_REALM})`, () => {
       spawning: null,
       spawnCreep: vi.fn(() => OK),
       store: spawnStore,
-      room: { controller, find: () => [] } as RoomLike,
+      room: { controller, find: () => [] } as RoomLike
     } as unknown as StructureSpawn;
 
     const room: RoomLike = {
@@ -53,7 +53,7 @@ describe(`Kernel (${TEST_REALM})`, () => {
           return [spawn as unknown as AnyStructure];
         }
         return [];
-      },
+      }
     };
 
     const harvester = createCreep("harvester", room, { free: 50, used: 0 });
@@ -65,11 +65,11 @@ describe(`Kernel (${TEST_REALM})`, () => {
       cpu: {
         getUsed: () => cpuReadings.value,
         limit: 20,
-        bucket: 1000,
+        bucket: 1000
       },
       creeps: { harvester, upgrader },
       spawns: { Spawn1: spawn as unknown as StructureSpawn },
-      rooms: { W1N1: room },
+      rooms: { W1N1: room }
     };
 
     const memory = { creeps: {}, roles: {} } as unknown as Memory;

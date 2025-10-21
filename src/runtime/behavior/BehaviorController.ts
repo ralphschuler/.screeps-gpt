@@ -13,14 +13,14 @@ const ROLE_DEFINITIONS: Record<string, RoleDefinition> = {
     minimum: 2,
     body: [WORK, CARRY, MOVE],
     memory: () => ({ role: "harvester", task: "harvest", version: 1 }),
-    run: (creep: CreepLike) => runHarvester(creep),
+    run: (creep: CreepLike) => runHarvester(creep)
   },
   upgrader: {
     minimum: 1,
     body: [WORK, CARRY, MOVE],
     memory: () => ({ role: "upgrader", task: "upgrade", version: 1 }),
-    run: (creep: CreepLike) => runUpgrader(creep),
-  },
+    run: (creep: CreepLike) => runUpgrader(creep)
+  }
 };
 
 /**
@@ -55,7 +55,7 @@ export class BehaviorController {
     return {
       processedCreeps: Object.keys(game.creeps).length,
       spawnedCreeps: spawned,
-      tasksExecuted,
+      tasksExecuted
     };
   }
 
@@ -84,7 +84,7 @@ export class BehaviorController {
   }
 
   private findAvailableSpawn(spawns: Record<string, SpawnLike>): SpawnLike | null {
-    return Object.values(spawns).find((spawn) => spawn.spawning === null) ?? null;
+    return Object.values(spawns).find(spawn => spawn.spawning === null) ?? null;
   }
 }
 
@@ -104,7 +104,7 @@ function runHarvester(creep: CreepLike): string {
   const targets = creep.room.find(FIND_STRUCTURES, {
     filter: (structure: AnyStructure) =>
       (structure.structureType === STRUCTURE_SPAWN || structure.structureType === STRUCTURE_EXTENSION) &&
-      (structure as AnyStoreStructure).store.getFreeCapacity(RESOURCE_ENERGY) > 0,
+      (structure as AnyStoreStructure).store.getFreeCapacity(RESOURCE_ENERGY) > 0
   }) as AnyStoreStructure[];
 
   const target = targets.length > 0 ? (creep.pos.findClosestByPath(targets) ?? targets[0]) : null;
@@ -132,7 +132,7 @@ function runUpgrader(creep: CreepLike): string {
     const targets = creep.room.find(FIND_STRUCTURES, {
       filter: (structure: AnyStructure) =>
         (structure.structureType === STRUCTURE_SPAWN || structure.structureType === STRUCTURE_EXTENSION) &&
-        (structure as AnyStoreStructure).store.getUsedCapacity(RESOURCE_ENERGY) > 50,
+        (structure as AnyStoreStructure).store.getUsedCapacity(RESOURCE_ENERGY) > 50
     }) as AnyStoreStructure[];
 
     const target = targets.length > 0 ? (creep.pos.findClosestByPath(targets) ?? targets[0]) : null;

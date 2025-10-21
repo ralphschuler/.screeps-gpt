@@ -9,8 +9,8 @@ export default defineConfig({
     alias: {
       "@runtime": resolve(rootDir, "src/runtime"),
       "@shared": resolve(rootDir, "src/shared"),
-      "@ai": resolve(rootDir, "src/ai"),
-    },
+      "@ai": resolve(rootDir, "src/ai")
+    }
   },
   test: {
     globals: true,
@@ -18,7 +18,7 @@ export default defineConfig({
     setupFiles: [resolve(rootDir, "tests/setup.ts")],
     coverage: {
       provider: "v8",
-      reporter: ["text", "json", "lcov"],
-    },
-  },
+      reporter: ["text", "json", "lcov"]
+    }
+  }
 });

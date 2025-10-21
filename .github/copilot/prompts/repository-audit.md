@@ -27,6 +27,7 @@ After processing all findings, print minified JSON with this shape so the workfl
 ```
 
 Rules:
+
 - Do not wrap the JSON in Markdown fences.
 - Leave `created`/`updated` as empty arrays when no changes were required.
 - Keep the summary concise but specific (e.g. mention key subsystems touched).

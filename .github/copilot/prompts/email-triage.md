@@ -33,6 +33,7 @@ Finish by printing minified JSON so the workflow log captures the decision:
 ```
 
 Rules:
+
 - Do not wrap the JSON in Markdown fences.
 - Leave `issues_created` empty when nothing was filed.
 - Keep the summary concise but include any follow-up expectations for the team.

@@ -19,7 +19,7 @@ export async function buildProject(watch: boolean): Promise<void> {
     target: "es2021",
     format: "cjs" as const,
     outfile: outFile,
-    logLevel: "info" as const,
+    logLevel: "info" as const
   };
 
   if (watch) {

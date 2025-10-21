@@ -28,6 +28,7 @@ Finish by printing minified JSON:
 ```
 
 Rules:
+
 - Do not wrap the JSON in Markdown fences.
 - Leave arrays empty when nothing was created.
 - Keep the narrative factual and link to the metrics you observed.
