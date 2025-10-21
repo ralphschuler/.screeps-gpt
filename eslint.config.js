@@ -16,14 +16,14 @@ const typeChecked = tseslint.configs.recommendedTypeChecked.map(config => ({
     parserOptions: {
       ...(config.languageOptions?.parserOptions ?? {}),
       project: path.join(__dirname, "tsconfig.json"),
-      tsconfigRootDir: __dirname,
-    },
-  },
+      tsconfigRootDir: __dirname
+    }
+  }
 }));
 
 export default [
   {
-    ignores: ["dist", "build", "coverage", "node_modules"],
+    ignores: ["dist", "build", "coverage", "node_modules"]
   },
   js.configs.recommended,
   {
@@ -33,9 +33,9 @@ export default [
       globals: {
         console: "readonly",
         fetch: "readonly",
-        process: "readonly",
-      },
-    },
+        process: "readonly"
+      }
+    }
   },
   ...typeChecked,
   {
@@ -46,7 +46,7 @@ export default [
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
       "@typescript-eslint/no-use-before-define": ["error", { functions: false }],
-      "@typescript-eslint/consistent-type-definitions": ["error", "interface"],
-    },
-  },
+      "@typescript-eslint/consistent-type-definitions": ["error", "interface"]
+    }
+  }
 ];

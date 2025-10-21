@@ -4,8 +4,8 @@ Resolve GitHub issue #{{ISSUE_NUMBER}} titled `{{ISSUE_TITLE}}` ({{ISSUE_HTML_UR
 below for reference:
 
 ---
-{{ISSUE_BODY}}
----
+
+## {{ISSUE_BODY}}
 
 The workflow has already provided `GITHUB_TOKEN`/`GH_TOKEN`. Authenticate the GitHub CLI, clone the repository into
 `$GITHUB_WORKSPACE/repo`, and create a working branch named `copilot/todo-{{ISSUE_NUMBER}}`.
@@ -37,6 +37,7 @@ When everything is complete, print minified JSON with this structure so the work
 ```
 
 Rules:
+
 - Do not wrap the JSON in Markdown code fences.
 - Leave fields empty or as empty arrays when nothing was necessary.
 - Prefer concise bullet-style summaries inside the pull request body and keep comments professional.

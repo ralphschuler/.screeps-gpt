@@ -22,6 +22,7 @@ bun install
 | `bun run build`           | Bundle the Screeps AI into `dist/main.js` using esbuild.                        |
 | `bun run test:unit`       | Run unit tests (Vitest).                                                        |
 | `bun run test:e2e`        | Execute end-to-end kernel simulations (configured for the Screeps PTR).         |
+| `bun run test:mockup`     | Run tick-based tests using screeps-server-mockup (skipped if isolated-vm fails to build). |
 | `bun run test:regression` | Check regression scenarios for evaluation logic.                                |
 | `bun run test:coverage`   | Produce coverage reports consumed by the evaluation pipeline.                   |
 | `bun run test:actions`    | Run formatting + lint checks and dry-run critical workflows with the `act` CLI. |
