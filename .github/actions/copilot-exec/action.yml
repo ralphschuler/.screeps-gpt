@@ -1,5 +1,5 @@
 name: copilot-exec
-description: Run GitHub Copilot CLI with a rendered prompt template (simplified env-based)
+description: Run GitHub Copilot CLI with a rendered prompt template (simplified env-based + caching)
 author: "ralph@nyphon.de"
 
 inputs:
@@ -43,11 +43,28 @@ outputs:
 runs:
   using: composite
   steps:
+    # ------------------------------------------------------------
+    # ⚙️ Setup Node.js (LTS for sharp prebuilt binary)
+    # ------------------------------------------------------------
     - name: Setup Node.js for Copilot CLI
       uses: actions/setup-node@v4
       with:
         node-version: "20"
 
+    # ------------------------------------------------------------
+    # 💾 Restore cache for Copilot CLI
+    # ------------------------------------------------------------
+    - name: Restore Copilot CLI cache
+      id: cache-copilot
+      uses: actions/cache@v4
+      with:
+        path: ~/.npm/_global
+        key: copilot-cli-${{ runner.os }}-node20-${{ hashFiles('.github/actions/copilot-exec/action.yml') }}
+
+    # ------------------------------------------------------------
+    # 🧱 Install system dependencies (libvips etc.)
+    # Optional caching is handled by apt’s own layer cache
+    # ------------------------------------------------------------
     - name: Install Copilot dependencies
       shell: bash
       run: |
@@ -58,15 +75,30 @@ runs:
           libvips libvips-dev libc6-dev libpng-dev libjpeg-dev libwebp-dev \
           libtiff-dev libgif-dev libimagequant-dev libffi-dev
 
+    # ------------------------------------------------------------
+    # 📦 Install or reuse Copilot CLI from cache
+    # ------------------------------------------------------------
     - name: Install GitHub Copilot CLI
       shell: bash
       run: |
         set -euo pipefail
-        echo "📦 Installing GitHub Copilot CLI..."
-        npm install -g @github/copilot
-        echo "🔁 Rebuilding sharp to match runner environment..."
-        npm rebuild sharp --prefix="$(npm root -g)/@github/copilot"
+        export NPM_CONFIG_PREFIX="$HOME/.npm/_global"
+        export PATH="$HOME/.npm/_global/bin:$PATH"
 
+        if command -v copilot >/dev/null 2>&1; then
+          echo "✅ Copilot CLI found in cache."
+        else
+          echo "📦 Installing GitHub Copilot CLI..."
+          npm install -g @github/copilot
+          echo "🔁 Rebuilding sharp to match runner environment..."
+          npm rebuild sharp --prefix="$(npm root -g)/@github/copilot"
+        fi
+
+        echo "$HOME/.npm/_global/bin" >> $GITHUB_PATH
+
+    # ------------------------------------------------------------
+    # 🧾 Render prompt template using env vars
+    # ------------------------------------------------------------
     - name: Render prompt template (using env vars)
       id: render
       shell: bash
@@ -88,6 +120,9 @@ runs:
         echo "✅ Rendered prompt:" >&2
         sed 's/^/  /' "$rendered" >&2
 
+    # ------------------------------------------------------------
+    # 🚀 Execute Copilot CLI
+    # ------------------------------------------------------------
     - name: Execute Copilot CLI
       id: copilot
       shell: bash
@@ -106,6 +141,7 @@ runs:
         GITHUB_TOKEN: ${{ inputs.github-token != '' && inputs.github-token || github.token }}
       run: |
         set -euo pipefail
+        export PATH="$HOME/.npm/_global/bin:$PATH"
 
         if [ -z "$PROMPT_FILE" ] || [ ! -f "$PROMPT_FILE" ]; then
           echo "❌ Rendered prompt file missing" >&2
