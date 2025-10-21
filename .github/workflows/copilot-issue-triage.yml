@@ -19,8 +19,6 @@ jobs:
       - name: Run Copilot issue triage
         uses: ./.github/actions/copilot-exec
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_TOKEN: ${{ secrets.COPILOT_TOKEN }}
           REPO_NAME: "${{ github.repository }}"
           ISSUE_NUMBER: "${{ github.event.issue.number }}"
           ISSUE_TITLE: ${{ toJSON(github.event.issue.title) }}
@@ -28,6 +26,6 @@ jobs:
           ISSUE_HTML_URL: ${{ toJSON(github.event.issue.html_url) }}
           ISSUE_AUTHOR: ${{ toJSON(github.event.issue.user.login) }}
         with:
-          github-token: ${{ secrets.COPILOT_TOKEN }}
+          copilot-token: ${{ secrets.COPILOT_TOKEN }}
           prompt-path: .github/copilot/prompts/issue-triage.md
           output-path: reports/copilot/issue-triage-${{ github.event.issue.number }}.log
