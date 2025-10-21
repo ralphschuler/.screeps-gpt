@@ -40,7 +40,7 @@ Finish by printing minified JSON so the workflow log captures the triage:
 
 ```
 {
-  "issue_number": {{ISSUE_NUMBER}},
+  "issue_number": ${ISSUE_NUMBER},
   "original_title": "...",
   "new_title": "...",
   "labels_applied": ["automation", ...],
