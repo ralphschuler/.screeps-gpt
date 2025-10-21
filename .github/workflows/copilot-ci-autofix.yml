@@ -26,17 +26,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.COPILOT_TOKEN }}
+          REPO_NAME: "${{ github.repository }}"
+          WORKFLOW_NAME: ${{ toJSON(github.event.workflow_run.name) }}
+          RUN_ID: "${{ github.event.workflow_run.id }}"
+          RUN_HTML_URL: ${{ toJSON(github.event.workflow_run.html_url || format('https://github.com/{0}/actions/runs/{1}', github.repository, github.event.workflow_run.id)) }}
+          TRIGGER_EVENT: ${{ toJSON(github.event.workflow_run.event) }}
+          EVENT_PATH: "${{ github.event_path }}"
+          WORKSPACE: "${{ github.workspace }}"
         with:
           github-token: ${{ secrets.COPILOT_TOKEN }}
           prompt-path: .github/copilot/prompts/ci-autofix
           output-path: reports/copilot/ci-autofix-${{ github.run_id }}.log
-          substitutions: |
-            {
-              "REPO_NAME": "${{ github.repository }}",
-              "WORKFLOW_NAME": ${{ toJSON(github.event.workflow_run.name) }},
-              "RUN_ID": "${{ github.event.workflow_run.id }}",
-              "RUN_HTML_URL": ${{ toJSON(github.event.workflow_run.html_url || format('https://github.com/{0}/actions/runs/{1}', github.repository, github.event.workflow_run.id)) }},
-              "TRIGGER_EVENT": ${{ toJSON(github.event.workflow_run.event) }},
-              "EVENT_PATH": "${{ github.event_path }}",
-              "WORKSPACE": "${{ github.workspace }}"
-            }
