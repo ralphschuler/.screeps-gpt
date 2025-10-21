@@ -28,9 +28,8 @@ jobs:
       - name: Export Python path for node-gyp
         shell: bash
         run: |
-          PYTHON_PATH="/usr/local/python2/bin/python2.7"
-          echo "🧠 Setting node-gyp Python path to: $PYTHON_PATH"
-          echo "PYTHON=$PYTHON_PATH" >> $GITHUB_ENV
+          echo "GYP_DEFINES=standalone_static_library=0" >> $GITHUB_ENV
+          echo "PYTHON=/usr/local/python2/bin/python2.7" >> $GITHUB_ENV
           python --version
       - name: Install dependencies (with Python 2)
         run: bun install --backend=node-gyp
