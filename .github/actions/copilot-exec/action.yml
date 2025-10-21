@@ -1,15 +1,11 @@
 name: copilot-exec
-description: Run GitHub Copilot CLI with a rendered prompt template
+description: Run GitHub Copilot CLI with a rendered prompt template (simplified env-based)
 author: "ralph@nyphon.de"
 
 inputs:
   prompt-path:
     description: Path to the prompt template file
     required: true
-  substitutions:
-    description: JSON object providing template substitutions (expanded into env vars)
-    required: false
-    default: ""
   working-directory:
     description: Directory to run the Copilot command in
     required: false
@@ -47,17 +43,11 @@ outputs:
 runs:
   using: composite
   steps:
-    # ------------------------------------------------------------
-    # 🧩 Node.js setup (needed for @github/copilot)
-    # ------------------------------------------------------------
     - name: Setup Node.js for Copilot CLI
       uses: actions/setup-node@v4
       with:
         node-version: "22"
 
-    # ------------------------------------------------------------
-    # 🤖 Install Copilot CLI globally
-    # ------------------------------------------------------------
     - name: Install GitHub Copilot CLI
       shell: bash
       run: |
@@ -65,15 +55,11 @@ runs:
         echo "📦 Installing GitHub Copilot CLI..."
         npm install -g @github/copilot
 
-    # ------------------------------------------------------------
-    # 🧾 Render prompt template using envsubst
-    # ------------------------------------------------------------
-    - name: Render prompt template (with envsubst)
+    - name: Render prompt template (using env vars)
       id: render
       shell: bash
       env:
         PROMPT_TEMPLATE: ${{ inputs.prompt-path }}
-        SUBSTITUTIONS_JSON: ${{ inputs.substitutions }}
       run: |
         set -euo pipefail
 
@@ -83,41 +69,13 @@ runs:
         fi
 
         rendered="$(mktemp)"
-        tmp_exports="$(mktemp)"
-
-        # Convert JSON into safe environment exports using jq
-        if [ -n "$SUBSTITUTIONS_JSON" ] && [ "$SUBSTITUTIONS_JSON" != "null" ]; then
-          echo "$SUBSTITUTIONS_JSON" | jq -r '
-            to_entries |
-            .[] |
-            "export " +
-            (
-              (.key
-                | gsub("[^A-Za-z0-9_]"; "_")   # replace invalid chars
-                | sub("^[0-9]"; "_&")          # prefix numeric starts
-              )
-            ) +
-            "=" +
-            @sh (.value | tostring)
-          ' > "$tmp_exports"
-
-          echo "🔧 Processed substitutions:"
-          sed 's/^/  /' "$tmp_exports" >&2
-
-          # shellcheck disable=SC1090
-          source "$tmp_exports"
-        fi
-
+        echo "⚙️ Rendering template with environment variables..." >&2
         envsubst < "$PROMPT_TEMPLATE" > "$rendered"
-        rm -f "$tmp_exports"
 
         echo "prompt-file=$rendered" >> "$GITHUB_OUTPUT"
         echo "✅ Rendered prompt:" >&2
         sed 's/^/  /' "$rendered" >&2
 
-    # ------------------------------------------------------------
-    # 🚀 Execute Copilot CLI with rendered prompt
-    # ------------------------------------------------------------
     - name: Execute Copilot CLI
       id: copilot
       shell: bash
@@ -147,11 +105,7 @@ runs:
 
         output_path="$RAW_OUTPUT_PATH"
         [ -z "$output_path" ] && output_path="copilot-output.txt"
-
-        if [ "${output_path:0:1}" != "/" ]; then
-          output_path="$WORKDIR/$output_path"
-        fi
-
+        [[ "${output_path:0:1}" != "/" ]] && output_path="$WORKDIR/$output_path"
         mkdir -p "$(dirname "$output_path")"
 
         prompt="$(cat "$PROMPT_FILE")"
@@ -187,7 +141,6 @@ runs:
         printf '  %q ' "${cmd[@]}" >&2
         echo >&2
 
-        # Execute and stream to log file
         "${cmd[@]}" | tee "$output_path"
         status=${PIPESTATUS[0]}
 
