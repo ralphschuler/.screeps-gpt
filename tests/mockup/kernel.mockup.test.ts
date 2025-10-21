@@ -12,17 +12,13 @@ import { describe, expect, it, afterEach } from "vitest";
  * due to node-gyp and Python version compatibility issues.
  */
 
-// Check if isolated-vm is available
+// Check if isolated-vm is available by trying to import screeps-server-mockup
 let mockupAvailable = false;
-let createTestServer: (() => Promise<any>) | undefined;
-let createBotModule: ((code: string) => Record<string, string>) | undefined;
-let cleanupServer: ((server: any) => void) | undefined;
+let ScreepsServerClass: any;
 
 try {
-  const setup = await import("./setup");
-  createTestServer = setup.createTestServer;
-  createBotModule = setup.createBotModule;
-  cleanupServer = setup.cleanupServer;
+  const mockup = await import("screeps-server-mockup");
+  ScreepsServerClass = mockup.ScreepsServer;
   mockupAvailable = true;
 } catch {
   console.warn(
@@ -36,14 +32,19 @@ describe.skipIf(!mockupAvailable)("Screeps Server Mockup - Tick-based Testing", 
 
   afterEach(() => {
     if (server) {
-      cleanupServer(server);
+      try {
+        server.stop();
+      } catch {
+        // Ignore cleanup errors
+      }
       server = null;
     }
   });
 
   it("initializes server and runs multiple ticks", async () => {
-    if (!createTestServer || !createBotModule) return;
-    server = await createTestServer();
+    server = new ScreepsServerClass();
+    await server.world.reset();
+    await server.world.stubWorld();
 
     const simpleCode = `
       module.exports.loop = function() {
@@ -52,7 +53,7 @@ describe.skipIf(!mockupAvailable)("Screeps Server Mockup - Tick-based Testing", 
       };
     `;
 
-    const modules = createBotModule(simpleCode);
+    const modules = { main: simpleCode };
     const bot = await server.world.addBot({
       username: "test-bot",
       room: "W0N1",
@@ -78,8 +79,9 @@ describe.skipIf(!mockupAvailable)("Screeps Server Mockup - Tick-based Testing", 
   }, 30000); // 30 second timeout for server operations
 
   it("tracks creep spawning and behavior across ticks", async () => {
-    if (!createTestServer || !createBotModule) return;
-    server = await createTestServer();
+    server = new ScreepsServerClass();
+    await server.world.reset();
+    await server.world.stubWorld();
 
     const testCode = `
       module.exports.loop = function() {
@@ -107,7 +109,7 @@ describe.skipIf(!mockupAvailable)("Screeps Server Mockup - Tick-based Testing", 
       };
     `;
 
-    const modules = createBotModule(testCode);
+    const modules = { main: testCode };
     const bot = await server.world.addBot({
       username: "test-bot",
       room: "W0N1",
@@ -132,8 +134,7 @@ describe.skipIf(!mockupAvailable)("Screeps Server Mockup - Tick-based Testing", 
   }, 30000);
 
   it("can create custom room with terrain and objects", async () => {
-    if (!createTestServer || !createBotModule) return;
-    server = await createTestServer();
+    server = new ScreepsServerClass();
 
     // Reset and manually set up a room
     await server.world.reset();
@@ -161,7 +162,7 @@ describe.skipIf(!mockupAvailable)("Screeps Server Mockup - Tick-based Testing", 
       };
     `;
 
-    const modules = createBotModule(testCode);
+    const modules = { main: testCode };
     const bot = await server.world.addBot({
       username: "test-bot",
       room: "W1N1",
