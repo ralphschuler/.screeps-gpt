@@ -18,10 +18,8 @@ jobs:
           fetch-depth: 0
       - name: Setup Python 2
         uses: ./.github/actions/setup-python2
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
+      - name: Setup Node.js 16
+        uses: ./.github/actions/setup-node16
       - name: Export Python path for node-gyp
         shell: bash
         run: |
@@ -29,18 +27,18 @@ jobs:
           echo "PYTHON=/usr/local/python2/bin/python2.7" >> $GITHUB_ENV
           python --version
       - name: Install dependencies (with Python 2)
-        run: bun install --backend=node-gyp
+        run: pnpm install
       - name: Lint with fixes
-        run: bun run lint:fix
+        run: pnpm run lint:fix
       - name: Format with write
-        run: bun run format:write
+        run: pnpm run format:write
       - name: Bump version
         id: bump
         run: |
-          VERSION=$(bun run version:bump | tail -n 1)
+          VERSION=$(pnpm run version:bump | tail -n 1)
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
       - name: Refresh version index
-        run: bun run versions:update
+        run: pnpm run versions:update
       - name: Commit changes
         id: commit
         uses: stefanzweifel/git-auto-commit-action@v5

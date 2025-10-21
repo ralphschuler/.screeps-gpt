@@ -7,37 +7,36 @@ them before acting.
 ## Quick Start
 
 1. **Install prerequisites**
-   - [Bun](https://bun.sh) 1.0 or newer.
-   - Node.js 18+ (Node 22 is used in CI to install the Copilot CLI).
+   - [Node.js](https://nodejs.org) 16.x with Python 2 for native dependencies.
+   - [pnpm](https://pnpm.io) 8.0 or newer.
+   - Node.js 22 is used in CI to install the Copilot CLI.
    - Screeps account with Public Test Realm (PTR) access for end-to-end trials.
 2. **Install dependencies**
    ```bash
-   bun install
+   pnpm install
    ```
 3. **Local quality gates**
    ```bash
-   bun run lint
-   bun run format:check
-   bun run test:unit
-   bun run test:e2e   # PTR configuration
-   bun run test:regression
-   bun run test:coverage
-   bun run test:actions
-   bun run analyze:system
+   pnpm run lint
+   pnpm run format:check
+   pnpm run test:unit
+   pnpm run test:e2e   # PTR configuration
+   pnpm run test:regression
+   pnpm run test:coverage
+   pnpm run test:actions
+   pnpm run analyze:system
    ```
-
-```
 4. **Build & deploy**
- - Bundle with `bun run build`.
- - Deploy to PTR: `SCREEPS_HOST=ptr.screeps.com bun run deploy` (requires `SCREEPS_TOKEN`).
+   - Bundle with `pnpm run build`.
+   - Deploy to PTR: `SCREEPS_HOST=ptr.screeps.com pnpm run deploy` (requires `SCREEPS_TOKEN`).
 
 ## Documentation Rules
 
 - Update the files under `docs/` whenever you change automation, runtime behaviour, or operating procedures.
 - Capture lessons learned from bug fixes or regressions, including links to the relevant tests.
 - Cross-reference new documents from `README.md` or other entry points so the automation agents discover them.
-- Update `CHANGELOG.md` in the `[Unreleased]` section and run `bun run versions:update` so `docs/changelog/versions.*` stays in sync.
-- Preview the GitHub Pages site with `bun run build:docs-site` whenever you adjust documentation or changelog content.
+- Update `CHANGELOG.md` in the `[Unreleased]` section and run `pnpm run versions:update` so `docs/changelog/versions.*` stays in sync.
+- Preview the GitHub Pages site with `pnpm run build:docs-site` whenever you adjust documentation or changelog content.
 
 ## Additional Guides
 

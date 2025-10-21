@@ -1,7 +1,7 @@
 # Changelog
 
 All notable changes to this project are documented here. This changelog now maintains the full release history—update the
-`[Unreleased]` section with your changes and run `bun run versions:update` to refresh the release index.
+`[Unreleased]` section with your changes and run `pnpm run versions:update` to refresh the release index.
 
 ## [Unreleased]
 
