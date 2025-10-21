@@ -42,9 +42,12 @@ them before acting.
 
 - [Automation Overview](automation/overview.md)
 - [PTR Monitoring Pipeline](operations/stats-monitoring.md)
-- [Copilot Automation Prompts](../.github/copilot/README.md) *(if present)*
+- [Copilot Automation Prompts](../.github/copilot/README.md) _(if present)_
 - [Developer Onboarding Resources](../DOCS.md)
 - [Release History](changelog/versions.md)
 
 Contributions should expand these notes rather than duplicating content in ad-hoc Markdown files.
+
+```
+
 ```

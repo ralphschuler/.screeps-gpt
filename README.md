@@ -18,19 +18,19 @@ pnpm install
 
 ## Day-to-day Development
 
-| Command                   | Purpose                                                                                   |
-| ------------------------- | ----------------------------------------------------------------------------------------- |
-| `pnpm run build`          | Bundle the Screeps AI into `dist/main.js` using esbuild.                                  |
-| `pnpm run test:unit`      | Run unit tests (Vitest).                                                                  |
-| `pnpm run test:e2e`       | Execute end-to-end kernel simulations (configured for the Screeps PTR).                   |
-| `pnpm run test:mockup`    | Run tick-based tests using screeps-server-mockup (skipped if isolated-vm fails to build). |
-| `pnpm run test:regression`| Check regression scenarios for evaluation logic.                                          |
-| `pnpm run test:coverage`  | Produce coverage reports consumed by the evaluation pipeline.                             |
-| `pnpm run test:actions`   | Run formatting + lint checks and dry-run critical workflows with the `act` CLI.           |
-| `pnpm run lint`           | Run ESLint with the strict TypeScript profile.                                            |
-| `pnpm run format:write`   | Format the repository with Prettier.                                                      |
-| `pnpm run analyze:system` | Evaluate the current build quality and emit `reports/system-evaluation.json`.             |
-| `pnpm run deploy`         | Build and upload the AI to the Screeps API (requires deployment secrets).                 |
+| Command                    | Purpose                                                                                   |
+| -------------------------- | ----------------------------------------------------------------------------------------- |
+| `pnpm run build`           | Bundle the Screeps AI into `dist/main.js` using esbuild.                                  |
+| `pnpm run test:unit`       | Run unit tests (Vitest).                                                                  |
+| `pnpm run test:e2e`        | Execute end-to-end kernel simulations (configured for the Screeps PTR).                   |
+| `pnpm run test:mockup`     | Run tick-based tests using screeps-server-mockup (skipped if isolated-vm fails to build). |
+| `pnpm run test:regression` | Check regression scenarios for evaluation logic.                                          |
+| `pnpm run test:coverage`   | Produce coverage reports consumed by the evaluation pipeline.                             |
+| `pnpm run test:actions`    | Run formatting + lint checks and dry-run critical workflows with the `act` CLI.           |
+| `pnpm run lint`            | Run ESLint with the strict TypeScript profile.                                            |
+| `pnpm run format:write`    | Format the repository with Prettier.                                                      |
+| `pnpm run analyze:system`  | Evaluate the current build quality and emit `reports/system-evaluation.json`.             |
+| `pnpm run deploy`          | Build and upload the AI to the Screeps API (requires deployment secrets).                 |
 
 ### Bug Fix Protocol
 
