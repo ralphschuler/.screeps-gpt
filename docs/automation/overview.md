@@ -69,7 +69,7 @@ This document expands on the workflows under `.github/workflows/` and how they c
 
 ## Copilot CI AutoFix (`copilot-ci-autofix.yml`)
 
-- Trigger: Failed runs of `quality-gate`.
+- Trigger: Failed runs of any workflow except `Copilot CI AutoFix` itself (to prevent infinite loops).
 - Behaviour: Copilot downloads the failing logs, clones the affected branch, applies the fix with changelog/docs/tests updates, and pushes the result (updating the PR or opening a dedicated automation PR).
 
 Keep this file accurate—workflows load these expectations via the Copilot CLI when planning fixes.

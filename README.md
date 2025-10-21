@@ -68,7 +68,7 @@ The repository defines the following GitHub workflows under `.github/workflows/`
 9. **`dependabot-automerge.yml`** – Enables automatic merging of Dependabot updates (excluding semver-major bumps) once required checks pass.
 10. **`screeps-stats-monitor.yml`** – Runs every 30 minutes; Copilot fetches PTR telemetry using Screeps credentials, analyses the snapshot, and files/updates monitoring issues directly through the GitHub CLI.
 11. **`label-sync.yml`** – Keeps the repository labels aligned with `.github/labels.yml`.
-12. **`copilot-ci-autofix.yml`** – Watches `quality-gate` failures, lets Copilot download the logs, clone the affected branch, apply the fix with updated docs/tests/changelog, and push the result (either updating the PR or opening a fresh automation PR).
+12. **`copilot-ci-autofix.yml`** – Watches for failures in any workflow (except itself to prevent infinite loops), lets Copilot download the logs, clone the affected branch, apply the fix with updated docs/tests/changelog, and push the result (either updating the PR or opening a fresh automation PR).
 
 ### Required Secrets
 
