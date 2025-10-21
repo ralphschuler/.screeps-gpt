@@ -5,6 +5,12 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Added
+
+- Created `.github/copilot-instructions.md` with repository-specific guidelines for GitHub Copilot coding agent
+- Includes coding standards, development workflow, testing expectations, and documentation requirements
+- References comprehensive documentation in AGENTS.md, README.md, and docs/ for detailed guidance
+
 ### Changed
 
 - Migrated from pnpm to npm as the package manager

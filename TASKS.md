@@ -10,6 +10,7 @@
 ## In Progress
 
 - [ ] Measure Copilot-driven change quality and feed outcomes into system evaluation reports.
+- [ ] Set up Copilot instructions for the repository.
 
 ## Recently Completed
 
