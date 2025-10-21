@@ -20,7 +20,7 @@ runs:
       uses: actions/cache@v4
       with:
         path: /usr/local/python2
-        key: python2-${{ steps.env.outputs.os }}-${{ steps.env.outputs.arch }}-${{ steps.env.outputs.python-version }}
+        key: python2-${{ steps.env.outputs.os }}-${{ steps.env.outputs.arch }}-${{ steps.env.outputs.python-version }}-${{ hashFiles('.github/actions/setup-python2/action.yml') }}
 
     # 3️⃣ Install or build Python 2 only if cache not hit
     - name: Install or build Python 2.7.18
