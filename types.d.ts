@@ -7,6 +7,11 @@ declare global {
       report: SystemReport;
     };
     roles?: Record<string, number>;
+    respawn?: {
+      needsRespawn: boolean;
+      lastSpawnLostTick?: number;
+      respawnRequested: boolean;
+    };
   }
 
   interface CreepMemory {

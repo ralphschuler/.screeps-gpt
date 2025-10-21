@@ -62,7 +62,7 @@ export class PerformanceTracker {
       roomCount: Object.keys(game.rooms).length,
       spawnOrders: execution.spawnedCreeps.length,
       warnings,
-      execution,
+      execution
     };
 
     this.context = null;
