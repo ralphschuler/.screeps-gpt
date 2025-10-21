@@ -32,18 +32,13 @@ jobs:
         uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
-      - name: Prepare node-gyp environment
+      - name: Export Python path for node-gyp
         shell: bash
         run: |
-          echo "🧠 Configuring node-gyp to use Python 2"
-          export PYTHON=/usr/local/python2/bin/python2.7
-          export GYP_DEFINES="standalone_static_library=0"
-          npm config set python "$PYTHON"
-          echo "Python version: $(python --version 2>&1)"
-          echo "npm node-gyp Python: $(npm config get python)"
-          echo "GYP_DEFINES: $GYP_DEFINES"
-          echo "PYTHON=$PYTHON" >> $GITHUB_ENV
-          echo "GYP_DEFINES=$GYP_DEFINES" >> $GITHUB_ENV
+          PYTHON_PATH="/usr/local/python2/bin/python2.7"
+          echo "🧠 Setting node-gyp Python path to: $PYTHON_PATH"
+          echo "PYTHON=$PYTHON_PATH" >> $GITHUB_ENV
+          python --version
       - name: Install dependencies (with Python 2)
         run: bun install --backend=node-gyp
       - name: Generate documentation site
