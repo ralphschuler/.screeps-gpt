@@ -17,18 +17,19 @@ bun install
 
 ## Day-to-day Development
 
-| Command                   | Purpose                                                                         |
-| ------------------------- | ------------------------------------------------------------------------------- |
-| `bun run build`           | Bundle the Screeps AI into `dist/main.js` using esbuild.                        |
-| `bun run test:unit`       | Run unit tests (Vitest).                                                        |
-| `bun run test:e2e`        | Execute end-to-end kernel simulations (configured for the Screeps PTR).         |
-| `bun run test:regression` | Check regression scenarios for evaluation logic.                                |
-| `bun run test:coverage`   | Produce coverage reports consumed by the evaluation pipeline.                   |
-| `bun run test:actions`    | Run formatting + lint checks and dry-run critical workflows with the `act` CLI. |
-| `bun run lint`            | Run ESLint with the strict TypeScript profile.                                  |
-| `bun run format:write`    | Format the repository with Prettier.                                            |
-| `bun run analyze:system`  | Evaluate the current build quality and emit `reports/system-evaluation.json`.   |
-| `bun run deploy`          | Build and upload the AI to the Screeps API (requires deployment secrets).       |
+| Command                   | Purpose                                                                                   |
+| ------------------------- | ----------------------------------------------------------------------------------------- |
+| `bun run build`           | Bundle the Screeps AI into `dist/main.js` using esbuild.                                  |
+| `bun run test:unit`       | Run unit tests (Vitest).                                                                  |
+| `bun run test:e2e`        | Execute end-to-end kernel simulations (configured for the Screeps PTR).                   |
+| `bun run test:mockup`     | Run tick-based tests using screeps-server-mockup (skipped if isolated-vm fails to build). |
+| `bun run test:regression` | Check regression scenarios for evaluation logic.                                          |
+| `bun run test:coverage`   | Produce coverage reports consumed by the evaluation pipeline.                             |
+| `bun run test:actions`    | Run formatting + lint checks and dry-run critical workflows with the `act` CLI.           |
+| `bun run lint`            | Run ESLint with the strict TypeScript profile.                                            |
+| `bun run format:write`    | Format the repository with Prettier.                                                      |
+| `bun run analyze:system`  | Evaluate the current build quality and emit `reports/system-evaluation.json`.             |
+| `bun run deploy`          | Build and upload the AI to the Screeps API (requires deployment secrets).                 |
 
 ### Bug Fix Protocol
 
