@@ -13,6 +13,7 @@ runs:
         echo "os=$(uname -s)" >> $GITHUB_OUTPUT
         echo "arch=$(uname -m)" >> $GITHUB_OUTPUT
         echo "python-version=2.7.18" >> $GITHUB_OUTPUT
+        echo "install-dir=${RUNNER_TOOL_CACHE:-$HOME/.cache/tools}/python2/2.7.18" >> $GITHUB_OUTPUT
 
     # 2️⃣ Restore cached Python installation and ccache
     - name: Restore Python 2 + ccache
@@ -20,7 +21,7 @@ runs:
       uses: actions/cache@v4
       with:
         path: |
-          /usr/local/python2
+          ${{ steps.env.outputs.install-dir }}
           ~/.ccache
         key: python2-${{ steps.env.outputs.os }}-${{ steps.env.outputs.arch }}-${{ steps.env.outputs.python-version }}-${{ hashFiles('.github/actions/setup-python2/action.yml') }}
 
@@ -34,7 +35,7 @@ runs:
           build-essential zlib1g-dev libssl-dev libbz2-dev \
           libreadline-dev libsqlite3-dev wget curl llvm \
           libncurses5-dev libncursesw5-dev xz-utils tk-dev \
-          libffi-dev liblzma-dev ccache
+          libffi-dev liblzma-dev ccache rsync
 
     # 4️⃣ Install or build Python 2 only if cache not hit
     - name: Install or build Python 2.7.18
@@ -45,21 +46,27 @@ runs:
         set -euo pipefail
         echo "🐍 Installing Python 2.7.18..."
 
-        ARCH="$(uname -m)"
         OS="$(uname -s)"
-        INSTALL_DIR="/usr/local/python2"
+        INSTALL_DIR="${{ steps.env.outputs.install-dir }}"
         TMPDIR="$(mktemp -d)"
         PYTHON_VERSION="2.7.18"
 
-        # Pre-create install directory with correct permissions
-        sudo mkdir -p "$INSTALL_DIR"
-        sudo chown -R "$(whoami)" "$INSTALL_DIR"
+        mkdir -p "$INSTALL_DIR"
 
         if [[ "$OS" == "Linux" ]]; then
           echo "🐧 Attempting fast prebuilt installation..."
           PREBUILT_URL="https://github.com/indygreg/python-build-standalone/releases/download/20200827/cpython-2.7.18-x86_64-unknown-linux-gnu-pgo-20200827T2030.tar.gz"
           if curl -fsSL "$PREBUILT_URL" -o "$TMPDIR/python.tar.gz"; then
-            tar -xzf "$TMPDIR/python.tar.gz" -C "$INSTALL_DIR" --strip-components=1
+            mkdir -p "$TMPDIR/extract"
+            tar --no-same-owner -xzf "$TMPDIR/python.tar.gz" -C "$TMPDIR/extract"
+            topdir="$(find "$TMPDIR/extract" -mindepth 1 -maxdepth 1 -type d | head -n1 || true)"
+            if [[ -n "${topdir:-}" && -d "$topdir/python" ]]; then
+              rsync -a "$topdir/python/" "$INSTALL_DIR/"
+            elif [[ -n "${topdir:-}" ]]; then
+              rsync -a "$topdir/" "$INSTALL_DIR/"
+            else
+              rsync -a "$TMPDIR/extract/" "$INSTALL_DIR/"
+            fi
             echo "✅ Installed prebuilt Python 2.7.18"
           else
             echo "⚙️ Prebuilt download failed, building from source..."
@@ -71,46 +78,56 @@ runs:
             export PATH="/usr/lib/ccache:$PATH"
             ./configure --prefix="$INSTALL_DIR"
             make -j"$(nproc)" LDFLAGS="-Wl,--strip-all"
-            make altinstall
+            make install
           fi
 
           PYTHON_PATH="$INSTALL_DIR/bin/python2.7"
-          sudo ln -sf "$PYTHON_PATH" /usr/local/bin/python
 
         elif [[ "$OS" == "Darwin" ]]; then
           echo "🍏 Installing prebuilt Python $PYTHON_VERSION for macOS..."
           cd "$TMPDIR"
           curl -fsSL "https://www.python.org/ftp/python/$PYTHON_VERSION/python-$PYTHON_VERSION-macosx10.9.pkg" -o python.pkg
           sudo installer -pkg python.pkg -target /
-
           PYTHON_PATH="$(command -v python2 || true)"
           [[ -z "$PYTHON_PATH" ]] && PYTHON_PATH="/usr/local/bin/python2"
-          sudo ln -sf "$PYTHON_PATH" /usr/local/bin/python
-
         else
           echo "❌ Unsupported OS: $OS"
           exit 1
         fi
 
-        echo "✅ Verifying installation..."
-        python --version || (echo "⚠️ Python not found in PATH" && exit 1)
-
-        echo "python-path=$PYTHON_PATH" >> $GITHUB_OUTPUT
+        echo "$PYTHON_PATH" > "$INSTALL_DIR/.python-path"
+        echo "python-path=$PYTHON_PATH" >> "$GITHUB_OUTPUT"
         echo "🎉 Installed Python 2.7.18 successfully!"
 
-    # 5️⃣ Verify even when cache was used
-    - name: Verify Python installation
+    # 5️⃣ Add to PATH and verify (works both cached and fresh)
+    - name: Add Python 2 to PATH
       shell: bash
       run: |
-        echo "✅ Verifying cached/built Python installation..."
-        sudo ln -sf /usr/local/python2/bin/python2.7 /usr/local/bin/python || true
-        python --version || (echo "❌ Python installation failed" && exit 1)
+        set -euo pipefail
+        INSTALL_DIR="${{ steps.env.outputs.install-dir }}"
+        if [[ -f "$INSTALL_DIR/.python-path" ]]; then
+          PYTHON_PATH="$(cat "$INSTALL_DIR/.python-path")"
+        elif [[ -x "$INSTALL_DIR/bin/python2.7" ]]; then
+          PYTHON_PATH="$INSTALL_DIR/bin/python2.7"
+        else
+          PYTHON_PATH="$(command -v python2 || true)"
+        fi
 
+        if [[ -n "$PYTHON_PATH" ]]; then
+          echo "$(dirname "$PYTHON_PATH")" >> "$GITHUB_PATH"
+        else
+          echo "⚠️ Could not determine python2 path" >&2
+        fi
+
+        echo "✅ Verifying Python..."
+        (python2 -V || python -V)
+
+    # 6️⃣ Save cache if we built or unpacked
     - name: Save Python 2 cache
       if: steps.cache.outputs.cache-hit != 'true'
       uses: actions/cache/save@v4
       with:
         path: |
-          /usr/local/python2
+          ${{ steps.env.outputs.install-dir }}
           ~/.ccache
         key: python2-${{ steps.env.outputs.os }}-${{ steps.env.outputs.arch }}-${{ steps.env.outputs.python-version }}-${{ hashFiles('.github/actions/setup-python2/action.yml') }}
