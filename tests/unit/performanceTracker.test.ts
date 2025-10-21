@@ -5,7 +5,7 @@ import type { BehaviorSummary } from "@shared/contracts";
 const behavior: BehaviorSummary = {
   processedCreeps: 1,
   spawnedCreeps: [],
-  tasksExecuted: {},
+  tasksExecuted: {}
 };
 
 describe("PerformanceTracker", () => {
@@ -17,10 +17,10 @@ describe("PerformanceTracker", () => {
       cpu: {
         getUsed: () => cpu,
         limit: 10,
-        bucket: 1000,
+        bucket: 1000
       },
       creeps: { alpha: { memory: { role: "harvester" } } },
-      rooms: {},
+      rooms: {}
     };
 
     tracker.begin(game);
@@ -39,10 +39,10 @@ describe("PerformanceTracker", () => {
       cpu: {
         getUsed: () => cpu,
         limit: 10,
-        bucket: 300,
+        bucket: 300
       },
       creeps: {},
-      rooms: {},
+      rooms: {}
     };
 
     tracker.begin(game);
@@ -58,7 +58,7 @@ describe("PerformanceTracker", () => {
       time: 1,
       cpu: { getUsed: () => 0, limit: 10, bucket: 1000 },
       creeps: {},
-      rooms: {},
+      rooms: {}
     };
 
     expect(() => tracker.end(game, behavior)).toThrow(/begin/);

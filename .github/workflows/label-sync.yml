@@ -1,9 +1,8 @@
 name: Sync Labels
 
 on:
-  push:
-    branches:
-      - main
+  schedule:
+    - cron: "0 0 */7 * *" # Run every 7 days at midnight UTC
   workflow_dispatch:
 
 permissions:

@@ -1,4 +1,4 @@
-You are GitHub Copilot CLI operating in the repository `{{REPO_NAME}}`. This workflow provided Screeps API credentials via
+You are GitHub Copilot CLI operating in the repository `${REPO_NAME}`. This workflow provided Screeps API credentials via
 environment variables (`SCREEPS_TOKEN`, `SCREEPS_STATS_TOKEN`, `SCREEPS_STATS_HOST`, `SCREEPS_STATS_API`).
 
 Playbook:
@@ -19,8 +19,8 @@ Finish by printing minified JSON:
 
 ```
 {
-  "run_id": "{{RUN_ID}}",
-  "run_url": "{{RUN_URL}}",
+  "run_id": "${RUN_ID}",
+  "run_url": "${RUN_URL}",
   "snapshot_path": "reports/copilot/ptr-stats.json",
   "issues_created": ["#123", ...],
   "notes": "concise health summary"

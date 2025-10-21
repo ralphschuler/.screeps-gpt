@@ -4,13 +4,13 @@ You are assisting the Screeps GPT maintainers by reading an incoming email and t
 
 Structured email metadata:
 
-- **Subject:** {{EMAIL_SUBJECT}}
-- **From:** {{EMAIL_FROM}}
-- **To:** {{EMAIL_TO}}
+- **Subject:** ${EMAIL_SUBJECT}
+- **From:** ${EMAIL_FROM}
+- **To:** ${EMAIL_TO}
 - **Body:**
 
 ```
-{{EMAIL_BODY}}
+${EMAIL_BODY}
 ```
 
 Follow this process:
@@ -26,7 +26,7 @@ Finish by printing minified JSON so the workflow log captures the decision:
 
 ```
 {
-  "run_url": "{{EVENT_URL}}",
+  "run_url": "${EVENT_URL}",
   "issues_created": ["#123", ...],
   "notes": "short triage summary"
 }

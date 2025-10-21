@@ -25,7 +25,7 @@ jobs:
           SCREEPS_STATS_HOST: ${{ secrets.SCREEPS_STATS_HOST }}
           SCREEPS_STATS_API: ${{ secrets.SCREEPS_STATS_API }}
         with:
-          prompt-path: .github/copilot/prompts/stats-analysis.md
+          prompt-path: .github/copilot/prompts/stats-analysis
           output-path: reports/copilot/stats-analysis-${{ github.run_id }}.log
           substitutions: |
             {
