@@ -1,0 +1,44 @@
+name: "Setup Python 2"
+description: "Installs a portable Python 2.7.18 runtime without using any package manager"
+author: "ralph@nyphon.de"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install portable Python 2.7.18
+      id: install
+      shell: bash
+      run: |
+        set -euo pipefail
+        echo "🐍 Installing portable Python 2.7.18..."
+
+        ARCH="$(uname -m)"
+        OS="$(uname -s)"
+        INSTALL_DIR="/usr/local/python2"
+        TMPFILE="$(mktemp)"
+
+        if [[ "$OS" == "Linux" ]]; then
+          URL="https://github.com/sashs/py2bin/releases/download/2.7.18/python2.7.18-linux-x86_64.tar.gz"
+        elif [[ "$OS" == "Darwin" ]]; then
+          URL="https://github.com/sashs/py2bin/releases/download/2.7.18/python2.7.18-macos-x86_64.tar.gz"
+        else
+          echo "❌ Unsupported OS: $OS"
+          exit 1
+        fi
+
+        echo "⬇️  Downloading Python 2 from $URL..."
+        curl -fsSL "$URL" -o "$TMPFILE"
+
+        echo "📦 Extracting to $INSTALL_DIR..."
+        sudo mkdir -p "$INSTALL_DIR"
+        sudo tar -xzf "$TMPFILE" -C "$INSTALL_DIR" --strip-components=1
+
+        echo "🔗 Linking /usr/local/bin/python → python2"
+        sudo ln -sf "$INSTALL_DIR/bin/python2" /usr/local/bin/python
+
+        echo "✅ Verifying installation:"
+        python --version || (echo "⚠️ Python not found in PATH" && exit 1)
+
+        echo "🎉 Python 2.7.18 successfully installed at $INSTALL_DIR/bin/python2"
+
+        echo "python-path=$INSTALL_DIR/bin/python2" >> $GITHUB_OUTPUT

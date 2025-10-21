@@ -14,21 +14,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install Python 2 (via deadsnakes)
-        run: |
-          sudo add-apt-repository ppa:deadsnakes/ppa -y
-          sudo apt-get update
-          sudo apt-get install -y python2
-          sudo ln -sf /usr/bin/python2 /usr/bin/python
-          npm config set python /usr/bin/python2
-          echo "✅ Installed $(python --version)"
+      - name: Setup Python 2
+        uses: ./.github/actions/setup-python2
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
       - name: Install dependencies (with Python 2)
-        env:
-          PYTHON: /usr/bin/python2
         run: bun install
       - name: Build and deploy
         env:
