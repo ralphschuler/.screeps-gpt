@@ -2,6 +2,8 @@
 
 This document augments the main [README](README.md) with a practical onboarding walkthrough and curated learning resources for contributors who want to extend the autonomous Screeps AI. Detailed runbooks and workflow notes now live under [`docs/`](docs/); update both this guide and the knowledge base when behaviour changes so Copilot has the latest context.
 
+For GitHub Copilot and automation agents, comprehensive operational guidelines are maintained in [`AGENTS.md`](AGENTS.md).
+
 ## Quick Start
 
 1. **Install prerequisites**

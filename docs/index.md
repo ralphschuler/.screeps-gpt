@@ -40,9 +40,10 @@ them before acting.
 
 ## Additional Guides
 
+- [Agent Guidelines](../AGENTS.md) - Comprehensive rules and knowledge base for GitHub Copilot and automation agents
 - [Automation Overview](automation/overview.md)
 - [PTR Monitoring Pipeline](operations/stats-monitoring.md)
-- [Copilot Automation Prompts](../.github/copilot/README.md) _(if present)_
+- [Respawn Handling](operations/respawn-handling.md)
 - [Developer Onboarding Resources](../DOCS.md)
 - [Release History](changelog/versions.md)
 
