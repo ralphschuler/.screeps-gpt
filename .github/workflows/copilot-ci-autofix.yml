@@ -1,0 +1,188 @@
+name: Copilot CI AutoFix
+
+on:
+  workflow_run:
+    workflows:
+      - Quality Gate
+    types:
+      - completed
+
+permissions:
+  actions: read
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  autofix:
+    if: >-
+      ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Capture workflow context
+        id: context
+        run: |
+          node <<'NODE' "$GITHUB_OUTPUT"
+          const fs = require('fs');
+          const event = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
+          const run = event.workflow_run;
+          const result = {
+            isPr: false,
+            runId: String(run.id),
+            workflowName: run.name || 'Quality Gate',
+            headRepo: run.head_repository && run.head_repository.full_name ? run.head_repository.full_name : process.env.GITHUB_REPOSITORY,
+            headRef: run.head_branch || 'main',
+            baseRef: run.head_branch || 'main',
+          };
+          if (run.event === 'pull_request' && Array.isArray(run.pull_requests) && run.pull_requests.length > 0) {
+            const pr = run.pull_requests[0];
+            result.isPr = true;
+            result.prNumber = String(pr.number);
+            if (pr.head && pr.head.repo && pr.head.repo.full_name) {
+              result.headRepo = pr.head.repo.full_name;
+            }
+            if (pr.head && pr.head.ref) {
+              result.headRef = pr.head.ref;
+            }
+            if (pr.base && pr.base.ref) {
+              result.baseRef = pr.base.ref;
+            }
+          }
+          for (const [key, value] of Object.entries(result)) {
+            fs.appendFileSync(process.argv[2], `${key}=${value}\n`);
+          }
+          NODE
+      - name: Evaluate eligibility
+        id: gate
+        run: |
+          if [ "${{ steps.context.outputs.isPr }}" = "true" ] && [ "${{ steps.context.outputs.headRepo }}" != "${{ github.repository }}" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Skipping Copilot auto-fix for forked pull request from ${{ steps.context.outputs.headRepo }}"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Download failing logs
+        id: logs
+        if: ${{ steps.gate.outputs.skip != 'true' }}
+        env:
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          REPOSITORY: ${{ github.repository }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p logs
+          curl -sSL -H "Authorization: Bearer $TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${REPOSITORY}/actions/runs/${RUN_ID}/logs" \
+            -o logs.zip
+          unzip -q logs.zip -d logs
+          rm logs.zip
+          echo "dir=$PWD/logs" >> "$GITHUB_OUTPUT"
+      - name: Checkout code
+        uses: actions/checkout@v4
+        if: ${{ steps.gate.outputs.skip != 'true' }}
+        with:
+          repository: ${{ steps.context.outputs.headRepo }}
+          ref: ${{ steps.context.outputs.headRef }}
+          fetch-depth: 0
+      - name: Configure git
+        if: ${{ steps.gate.outputs.skip != 'true' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - name: Prepare branch
+        if: ${{ steps.gate.outputs.skip != 'true' && steps.context.outputs.isPr != 'true' }}
+        run: |
+          git checkout -b copilot/autofix-${{ steps.context.outputs.runId }}
+      - name: Run Copilot auto-fix
+        id: copilot
+        if: ${{ steps.gate.outputs.skip != 'true' }}
+        uses: ./.github/actions/copilot-exec
+        with:
+          prompt-path: .github/copilot/prompts/ci-autofix.md
+          substitutions: ${{ toJSON({
+            "WORKFLOW_NAME": steps.context.outputs.workflowName,
+            "RUN_ID": steps.context.outputs.runId,
+            "LOG_DIRECTORY": steps.logs.outputs.dir
+          }) }}
+          output-path: reports/copilot/ci-autofix.json
+      - name: Show Copilot output
+        if: ${{ always() && steps.gate.outputs.skip != 'true' }}
+        run: |
+          cat "${{ steps.copilot.outputs.output-path }}" || true
+      - name: Summarise Copilot response
+        id: summary
+        if: ${{ always() && steps.gate.outputs.skip != 'true' }}
+        run: |
+          node <<'NODE' "$GITHUB_OUTPUT" "${{ steps.copilot.outputs.output-path }}"
+          const fs = require('fs');
+          const [outputFile, copilotPath] = process.argv.slice(2);
+          let summary = '';
+          let tests = [];
+          let follow = '';
+          try {
+            if (fs.existsSync(copilotPath)) {
+              const parsed = JSON.parse(fs.readFileSync(copilotPath, 'utf8'));
+              summary = parsed.summary || '';
+              tests = Array.isArray(parsed.tests) ? parsed.tests : [];
+              follow = parsed.follow_up || '';
+            }
+          } catch (error) {
+            console.error('Failed to parse Copilot output', error);
+          }
+          fs.appendFileSync(outputFile, `summary<<EOF_SUMMARY\n${summary}\nEOF_SUMMARY\n`);
+          fs.appendFileSync(outputFile, `follow<<EOF_FOLLOW\n${follow}\nEOF_FOLLOW\n`);
+          fs.appendFileSync(outputFile, `tests<<EOF_TESTS\n${tests.join('\n')}\nEOF_TESTS\n`);
+          NODE
+      - name: Detect repository changes
+        id: changes
+        if: ${{ steps.gate.outputs.skip != 'true' }}
+        run: |
+          if git diff --quiet --stat; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git status
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Commit changes
+        if: ${{ steps.gate.outputs.skip != 'true' && steps.changes.outputs.changed == 'true' }}
+        run: |
+          git add -A
+          git commit -m "chore: copilot ci autofix (run ${{ steps.context.outputs.runId }})"
+      - name: Push updates to PR branch
+        if: ${{ steps.gate.outputs.skip != 'true' && steps.context.outputs.isPr == 'true' && steps.changes.outputs.changed == 'true' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git push origin HEAD:${{ steps.context.outputs.headRef }}
+      - name: Push updates to new branch
+        if: ${{ steps.gate.outputs.skip != 'true' && steps.context.outputs.isPr != 'true' && steps.changes.outputs.changed == 'true' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git push origin HEAD
+      - name: Open pull request
+        if: ${{ steps.gate.outputs.skip != 'true' && steps.context.outputs.isPr != 'true' && steps.changes.outputs.changed == 'true' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          body_file=$(mktemp)
+          {
+            echo "${{ steps.summary.outputs.summary || 'Automated Copilot fix for failing quality gate.' }}"
+            echo
+            echo "## Follow-up"
+            echo "${{ steps.summary.outputs.follow || 'None' }}"
+          } > "$body_file"
+          gh pr create \
+            --title "Copilot CI autofix for run #${{ steps.context.outputs.runId }}" \
+            --body-file "$body_file" \
+            --head "$(git rev-parse --abbrev-ref HEAD)" \
+            --base "${{ steps.context.outputs.baseRef }}"
+      - name: Upload auto-fix artifacts
+        if: ${{ always() && steps.gate.outputs.skip != 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: copilot-ci-autofix-${{ github.run_id }}
+          path: |
+            logs
+            ${{ steps.copilot.outputs.output-path }}

@@ -1,0 +1,118 @@
+name: Copilot Todo Automation
+
+on:
+  issues:
+    types:
+      - labeled
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  act-on-todo:
+    if: github.event.label.name == 'Todo'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Create working branch
+        run: git checkout -b copilot/todo-${{ github.event.issue.number }}
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: bun install
+      - name: Run Copilot task
+        id: copilot
+        uses: ./.github/actions/copilot-exec
+        with:
+          prompt-path: .github/copilot/prompts/todo-issue.md
+          substitutions: ${{ toJSON({
+            "REPO_NAME": github.repository,
+            "ISSUE_NUMBER": github.event.issue.number,
+            "ISSUE_TITLE": github.event.issue.title,
+            "ISSUE_BODY": github.event.issue.body || ''
+          }) }}
+          output-path: reports/copilot/todo-${{ github.event.issue.number }}.json
+      - name: Show Copilot summary
+        if: always()
+        run: |
+          cat "${{ steps.copilot.outputs.output-path }}" || true
+      - name: Parse Copilot output
+        id: summary
+        run: |
+          node <<'NODE' "$GITHUB_OUTPUT" "${{ steps.copilot.outputs.output-path }}"
+          const fs = require('fs');
+          const [outputFile, copilotPath] = process.argv.slice(2);
+          let data = { summary: '', changes: [], tests: [] };
+          try {
+            if (fs.existsSync(copilotPath)) {
+              const parsed = JSON.parse(fs.readFileSync(copilotPath, 'utf8'));
+              data = Object.assign(data, parsed || {});
+            }
+          } catch (error) {
+            console.error('Failed to parse Copilot summary', error);
+          }
+          const changeList = Array.isArray(data.changes) ? data.changes.join('\n') : '';
+          const tests = Array.isArray(data.tests)
+            ? data.tests.map((t) => {
+                if (!t) return '';
+                const command = t.command ? `**${t.command}**` : 'command';
+                const status = t.status || 'pending';
+                const notes = t.notes ? ` - ${t.notes}` : '';
+                return `- ${command}: ${status}${notes}`;
+              }).filter(Boolean).join('\n')
+            : '';
+          const writeMultiline = (key, value) => {
+            const marker = `EOF_${key.toUpperCase()}`;
+            fs.appendFileSync(outputFile, `${key}<<${marker}\n${value || ''}\n${marker}\n`);
+          };
+          writeMultiline('summary', data.summary || '');
+          writeMultiline('changes', changeList);
+          writeMultiline('tests', tests);
+          NODE
+      - name: Format
+        run: bun run format:write
+      - name: Lint
+        run: bun run lint
+      - name: Tests
+        run: |
+          bun run test:unit
+          bun run test:e2e
+          bun run test:regression
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: copilot/todo-${{ github.event.issue.number }}
+          delete-branch: true
+          title: "Copilot: resolve #${{ github.event.issue.number }}"
+          body: |
+            Automated Copilot patch for #${{ github.event.issue.number }}.
+
+            ## Summary
+            ${{ steps.summary.outputs.summary || 'See commits for details.' }}
+
+            ## Changes
+            ${{ steps.summary.outputs.changes || 'Pending review.' }}
+
+            ## Tests
+            ${{ steps.summary.outputs.tests || '- Tests pending in follow-up workflow.' }}
+
+          labels: automation,copilot
+      - name: Comment on issue
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: 'Copilot automation proposed a fix in a pull request.'
+            });
