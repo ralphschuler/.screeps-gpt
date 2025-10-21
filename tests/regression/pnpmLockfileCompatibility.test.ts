@@ -49,9 +49,7 @@ describe("pnpm lockfile compatibility", () => {
     const lockfileContent = readFileSync(lockfilePath, "utf8");
 
     // Extract all esbuild version references from the lockfile
-    const esbuildVersions = [
-      ...lockfileContent.matchAll(/esbuild@([\d.]+)/g),
-    ].map((match) => match[1]);
+    const esbuildVersions = [...lockfileContent.matchAll(/esbuild@([\d.]+)/g)].map(match => match[1]);
 
     const packageJsonPath = join(process.cwd(), "package.json");
     const packageJsonContent = readFileSync(packageJsonPath, "utf8");
@@ -65,9 +63,9 @@ describe("pnpm lockfile compatibility", () => {
     if (expectedVersion && esbuildVersions.length > 0) {
       // All esbuild versions in lockfile should match the expected major version
       // This prevents "Expected X.X.X but got Y.Y.Y" postinstall errors
-      const expectedMajor = expectedVersion.split('.')[0];
-      esbuildVersions.forEach((version) => {
-        const actualMajor = version.split('.')[0];
+      const expectedMajor = expectedVersion.split(".")[0];
+      esbuildVersions.forEach(version => {
+        const actualMajor = version.split(".")[0];
         expect(actualMajor).toBe(expectedMajor);
       });
     }
