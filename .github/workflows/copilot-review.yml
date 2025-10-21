@@ -19,8 +19,9 @@ jobs:
         uses: ./.github/actions/copilot-exec
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.COPILOT_TOKEN }}
         with:
+          github-token: ${{ secrets.COPILOT_TOKEN }}
           prompt-path: .github/copilot/prompts/repository-audit
           output-path: reports/copilot/repository-audit-${{ github.run_id }}.log
           substitutions: |

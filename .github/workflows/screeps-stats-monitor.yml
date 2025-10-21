@@ -19,12 +19,13 @@ jobs:
         uses: ./.github/actions/copilot-exec
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.COPILOT_TOKEN }}
           SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
           SCREEPS_STATS_TOKEN: ${{ secrets.SCREEPS_STATS_TOKEN }}
           SCREEPS_STATS_HOST: ${{ secrets.SCREEPS_STATS_HOST }}
           SCREEPS_STATS_API: ${{ secrets.SCREEPS_STATS_API }}
         with:
+          github-token: ${{ secrets.COPILOT_TOKEN }}
           prompt-path: .github/copilot/prompts/stats-analysis
           output-path: reports/copilot/stats-analysis-${{ github.run_id }}.log
           substitutions: |
