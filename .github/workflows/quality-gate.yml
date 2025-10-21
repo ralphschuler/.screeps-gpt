@@ -29,6 +29,14 @@ jobs:
         run: bun run lint
       - name: Format (check)
         run: bun run format:check
+      - name: Validate version index
+        run: |
+          bun run versions:update
+          if ! git diff --quiet docs/changelog/versions.json docs/changelog/versions.md; then
+            echo "::error::Release index is out of date. Run 'bun run versions:update' locally and commit the changes." >&2
+            git diff -- docs/changelog/versions.json docs/changelog/versions.md
+            exit 1
+          fi
       - name: Unit tests
         run: bun run test:unit
       - name: End-to-end tests (PTR)

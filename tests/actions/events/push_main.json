@@ -1,0 +1,15 @@
+{
+  "event_name": "push",
+  "ref": "refs/heads/main",
+  "before": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "after": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "repository": {
+    "name": "screeps-gpt",
+    "full_name": "openai/screeps-gpt",
+    "default_branch": "main"
+  },
+  "head_commit": {
+    "id": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "message": "Synthetic push for act dry run"
+  }
+}

@@ -13,67 +13,17 @@ jobs:
   audit:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Setup Bun (context dependencies)
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-      - name: Install dependencies
-        run: bun install
-      - name: Run Copilot audit
-        id: copilot
+      - name: Run Copilot repository audit
         uses: ./.github/actions/copilot-exec
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           prompt-path: .github/copilot/prompts/repository-audit.md
-          substitutions: ${{ toJSON({ "REPO_NAME": github.repository }) }}
-          output-path: reports/copilot/repository-audit.json
-      - name: Show audit output
-        if: always()
-        run: |
-          cat "${{ steps.copilot.outputs.output-path }}" || true
-      - name: Create issues for findings
-        if: always()
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs');
-            const outputPath = '${{ steps.copilot.outputs.output-path }}';
-            if (!fs.existsSync(outputPath)) {
-              core.info(`Copilot output missing at ${outputPath}`);
-              return;
+          output-path: reports/copilot/repository-audit-${{ github.run_id }}.log
+          substitutions: |
+            {
+              "REPO_NAME": "${{ github.repository }}",
+              "RUN_ID": "${{ github.run_id }}",
+              "RUN_URL": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
-            let report;
-            try {
-              report = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
-            } catch (error) {
-              core.warning(`Failed to parse Copilot report: ${error}`);
-              return;
-            }
-            if (!Array.isArray(report.issues) || report.issues.length === 0) {
-              core.info('Copilot did not report actionable issues.');
-              return;
-            }
-            for (const finding of report.issues) {
-              if (!finding || !finding.title || !finding.body) continue;
-              const labels = ['copilot'];
-              if (finding.severity) {
-                labels.push(`severity/${String(finding.severity).toLowerCase()}`);
-              }
-              await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: `[Copilot] ${finding.title}`,
-                body: finding.body,
-                labels,
-              });
-            }
-      - name: Upload audit artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: copilot-audit
-          path: ${{ steps.copilot.outputs.output-path }}

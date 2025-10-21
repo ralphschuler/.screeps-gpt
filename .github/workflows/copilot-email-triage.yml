@@ -1,0 +1,33 @@
+name: Copilot Email Triage
+
+on:
+  repository_dispatch:
+    types:
+      - copilot_email_triage
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Copilot email triage
+        uses: ./.github/actions/copilot-exec
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          prompt-path: .github/copilot/prompts/email-triage.md
+          output-path: reports/copilot/email-triage-${{ github.run_id }}.log
+          substitutions: |
+            {
+              "REPO_NAME": "${{ github.repository }}",
+              "EVENT_URL": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+              "EMAIL_SUBJECT": ${{ toJSON(github.event.client_payload.email.subject || '') }},
+              "EMAIL_FROM": ${{ toJSON(github.event.client_payload.email.from || '') }},
+              "EMAIL_TO": ${{ toJSON(github.event.client_payload.email.to || '') }},
+              "EMAIL_BODY": ${{ toJSON(github.event.client_payload.email.body || '') }}
+            }
+          model: gpt-4o-mini
