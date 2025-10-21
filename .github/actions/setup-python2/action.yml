@@ -1,11 +1,30 @@
 name: "Setup Python 2"
-description: "Installs Python 2.7.18 from official sources (builds on Linux, prebuilt on macOS)"
+description: "Installs Python 2.7.18 from official sources (builds on Linux, prebuilt on macOS, with caching)"
 author: "ralph@nyphon.de"
 
 runs:
   using: "composite"
   steps:
-    - name: Install Python 2.7.18
+    # 1️⃣ Define environment and cache key
+    - name: Define environment
+      id: env
+      shell: bash
+      run: |
+        echo "os=$(uname -s)" >> $GITHUB_OUTPUT
+        echo "arch=$(uname -m)" >> $GITHUB_OUTPUT
+        echo "python-version=2.7.18" >> $GITHUB_OUTPUT
+
+    # 2️⃣ Restore cached Python installation if available
+    - name: Restore Python 2 cache
+      id: cache
+      uses: actions/cache@v4
+      with:
+        path: /usr/local/python2
+        key: python2-${{ steps.env.outputs.os }}-${{ steps.env.outputs.arch }}-${{ steps.env.outputs.python-version }}
+
+    # 3️⃣ Install or build Python 2 only if cache not hit
+    - name: Install or build Python 2.7.18
+      if: steps.cache.outputs.cache-hit != 'true'
       id: install
       shell: bash
       run: |
@@ -25,15 +44,13 @@ runs:
           tar -xzf python.tgz
           cd "Python-$PYTHON_VERSION"
 
-          # Configure and compile
           sudo mkdir -p "$INSTALL_DIR"
           ./configure --prefix="$INSTALL_DIR" --enable-optimizations
           make -j"$(nproc)"
           sudo make altinstall
 
-          # Symlink for global use
-          sudo ln -sf "$INSTALL_DIR/bin/python2.7" /usr/local/bin/python
           PYTHON_PATH="$INSTALL_DIR/bin/python2.7"
+          sudo ln -sf "$PYTHON_PATH" /usr/local/bin/python
 
         elif [[ "$OS" == "Darwin" ]]; then
           echo "🍏 Installing prebuilt Python $PYTHON_VERSION for macOS..."
@@ -53,5 +70,13 @@ runs:
         echo "✅ Verifying installation..."
         python --version || (echo "⚠️ Python not found in PATH" && exit 1)
 
-        echo "🎉 Installed Python 2.7.18 successfully!"
         echo "python-path=$PYTHON_PATH" >> $GITHUB_OUTPUT
+        echo "🎉 Installed Python 2.7.18 successfully!"
+
+    # 4️⃣ Verify even when cache was used
+    - name: Verify Python installation
+      shell: bash
+      run: |
+        echo "✅ Verifying cached/built Python installation..."
+        sudo ln -sf /usr/local/python2/bin/python2.7 /usr/local/bin/python || true
+        python --version || (echo "❌ Python installation failed" && exit 1)
