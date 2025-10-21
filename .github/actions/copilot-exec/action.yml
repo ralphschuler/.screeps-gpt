@@ -43,87 +43,72 @@ outputs:
 runs:
   using: composite
   steps:
-    # ------------------------------------------------------------
-    # ⚙️ Setup Node.js (LTS for sharp prebuilt binary)
-    # ------------------------------------------------------------
-    - name: Setup Node.js for Copilot CLI
+    - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: "20"
+        node-version: "20" # stick to prebuilt sharp targets
 
-    # ------------------------------------------------------------
-    # 💾 Restore cache for Copilot CLI
-    # ------------------------------------------------------------
-    - name: Restore Copilot CLI cache
-      id: cache-copilot
+    - name: Cache npm global + npm cache
       uses: actions/cache@v4
       with:
-        path: ~/.npm/_global
-        key: copilot-cli-${{ runner.os }}-node20-${{ hashFiles('.github/actions/copilot-exec/action.yml') }}
+        path: |
+          ~/.npm/_global
+          ~/.npm/_cacache
+        key: copilot-cli-${{ runner.os }}-node20-v1-@github/copilot@1.0.0-${{ hashFiles('.github/actions/copilot-exec/action.yml') }}
 
-    # ------------------------------------------------------------
-    # 🧱 Install system dependencies (libvips etc.)
-    # Optional caching is handled by apt’s own layer cache
-    # ------------------------------------------------------------
-    - name: Install Copilot dependencies
-      shell: bash
-      run: |
-        set -euo pipefail
-        echo "🔧 Installing system libraries required by sharp..."
-        sudo apt-get update -qq
-        sudo apt-get install -y --no-install-recommends \
-          libvips libvips-dev libc6-dev libpng-dev libjpeg-dev libwebp-dev \
-          libtiff-dev libgif-dev libimagequant-dev libffi-dev
+    # 🚫 Remove apt-get entirely unless you *know* you need it
+    # sharp will fetch its own prebuilt libvips bundle.
 
-    # ------------------------------------------------------------
-    # 📦 Install or reuse Copilot CLI from cache
-    # ------------------------------------------------------------
-    - name: Install GitHub Copilot CLI
+    - name: Install Copilot CLI (npm global)
       shell: bash
       run: |
         set -euo pipefail
         export NPM_CONFIG_PREFIX="$HOME/.npm/_global"
         export PATH="$HOME/.npm/_global/bin:$PATH"
-
         if command -v copilot >/dev/null 2>&1; then
-          echo "✅ Copilot CLI found in cache."
+          echo "✅ Copilot CLI cached"
         else
-          echo "📦 Installing GitHub Copilot CLI..."
-          npm install -g @github/copilot
-          echo "🔁 Rebuilding sharp to match runner environment..."
-          npm rebuild sharp --prefix="$(npm root -g)/@github/copilot"
+          npm install -g @github/copilot@1.0.0
         fi
+        echo "$HOME/.npm/_global/bin" >> "$GITHUB_PATH"
 
-        echo "$HOME/.npm/_global/bin" >> $GITHUB_PATH
-
-    # ------------------------------------------------------------
-    # 🧾 Render prompt template using env vars
-    # ------------------------------------------------------------
-    - name: Render prompt template (using env vars)
+    - name: Render prompt
       id: render
       shell: bash
       env:
         PROMPT_TEMPLATE: ${{ inputs.prompt-path }}
       run: |
         set -euo pipefail
-
-        if [ ! -f "$PROMPT_TEMPLATE" ]; then
-          echo "❌ Prompt template not found: $PROMPT_TEMPLATE" >&2
-          exit 1
-        fi
-
         rendered="$(mktemp)"
-        echo "⚙️ Rendering template with environment variables..." >&2
         envsubst < "$PROMPT_TEMPLATE" > "$rendered"
-
         echo "prompt-file=$rendered" >> "$GITHUB_OUTPUT"
-        echo "✅ Rendered prompt:" >&2
-        sed 's/^/  /' "$rendered" >&2
+        echo "prompt-sha=$(sha256sum "$rendered" | awk '{print $1}')" >> "$GITHUB_OUTPUT"
 
-    # ------------------------------------------------------------
-    # 🚀 Execute Copilot CLI
-    # ------------------------------------------------------------
+    - name: Restore result cache
+      id: cache-result
+      uses: actions/cache@v4
+      with:
+        path: .copilot-cache/output.txt
+        key: copilot-result-${{ steps.render.outputs.prompt-sha }}-${{ inputs.model }}-${{ runner.os }}
+
+    - name: Short-circuit if cached
+      if: steps.cache-result.outputs.cache-hit == 'true'
+      id: cached
+      shell: bash
+      env:
+        WORKDIR: ${{ inputs.working-directory != '' && inputs.working-directory || github.workspace }}
+        RAW_OUTPUT_PATH: ${{ inputs.output-path }}
+      run: |
+        set -euo pipefail
+        out="${RAW_OUTPUT_PATH:-copilot-output.txt}"
+        [[ "${out:0:1}" != "/" ]] && out="$WORKDIR/$out"
+        mkdir -p "$(dirname "$out")"
+        cp .copilot-cache/output.txt "$out"
+        echo "output-path=$out" >> "$GITHUB_OUTPUT"
+        echo "✅ Reused cached Copilot output"
+
     - name: Execute Copilot CLI
+      if: steps.cache-result.outputs.cache-hit != 'true'
       id: copilot
       shell: bash
       env:
@@ -131,71 +116,29 @@ runs:
         PROMPT_FILE: ${{ steps.render.outputs.prompt-file }}
         RAW_OUTPUT_PATH: ${{ inputs.output-path }}
         EXTRA_ARGS: ${{ inputs.extra-args }}
-        ADDITIONAL_MCP_CONFIG: ${{ inputs.additional-mcp-config }}
-        ALLOW_ALL_PATHS: ${{ inputs.allow-all-paths }}
         REQUESTED_MODEL: ${{ inputs.model }}
+        GH_TOKEN: ${{ inputs.github-token != '' && inputs.github-token || github.token }}
+        GITHUB_TOKEN: ${{ inputs.github-token != '' && inputs.github-token || github.token }}
         COPILOT_ALLOW_ALL: "1"
         COPILOT_TELEMETRY_OPTOUT: "1"
         COPILOT_MCP_SERVER: github
-        GH_TOKEN: ${{ inputs.github-token != '' && inputs.github-token || github.token }}
-        GITHUB_TOKEN: ${{ inputs.github-token != '' && inputs.github-token || github.token }}
       run: |
         set -euo pipefail
         export PATH="$HOME/.npm/_global/bin:$PATH"
-
-        if [ -z "$PROMPT_FILE" ] || [ ! -f "$PROMPT_FILE" ]; then
-          echo "❌ Rendered prompt file missing" >&2
-          exit 1
-        fi
-
-        mkdir -p "$WORKDIR"
-        cd "$WORKDIR"
-
-        output_path="$RAW_OUTPUT_PATH"
-        [ -z "$output_path" ] && output_path="copilot-output.txt"
-        [[ "${output_path:0:1}" != "/" ]] && output_path="$WORKDIR/$output_path"
-        mkdir -p "$(dirname "$output_path")"
-
+        out="${RAW_OUTPUT_PATH:-copilot-output.txt}"
+        [[ "${out:0:1}" != "/" ]] && out="$WORKDIR/$out"
+        mkdir -p "$WORKDIR" "$(dirname "$out")"
         prompt="$(cat "$PROMPT_FILE")"
 
         cmd=(copilot -p "$prompt" --allow-all-tools --no-color --add-dir "$WORKDIR")
+        [ -n "$REQUESTED_MODEL" ] && cmd+=(--model "$REQUESTED_MODEL")
+        if [ -n "$EXTRA_ARGS" ]; then read -r -a extra <<< "$EXTRA_ARGS"; cmd+=("${extra[@]}"); fi
 
-        if [ "${ALLOW_ALL_PATHS,,}" = "true" ]; then
-          cmd+=(--allow-all-paths)
-        fi
-
-        if [ -n "$REQUESTED_MODEL" ]; then
-          cmd+=(--model "$REQUESTED_MODEL")
-        fi
-
-        if [ -n "$EXTRA_ARGS" ]; then
-          # shellcheck disable=SC2206
-          extra_parts=($EXTRA_ARGS)
-          cmd+=("${extra_parts[@]}")
-        fi
-
-        if [ -n "$ADDITIONAL_MCP_CONFIG" ]; then
-          config_arg="$ADDITIONAL_MCP_CONFIG"
-          if [[ "$config_arg" == @* ]]; then
-            cmd+=(--additional-mcp-config "$config_arg")
-          else
-            tmp_config="$(mktemp)"
-            printf '%s' "$config_arg" > "$tmp_config"
-            cmd+=(--additional-mcp-config "@$tmp_config")
-          fi
-        fi
-
-        echo "🚀 Running Copilot CLI:"
-        printf '  %q ' "${cmd[@]}" >&2
-        echo >&2
-
-        "${cmd[@]}" | tee "$output_path"
+        echo "🚀 ${cmd[*]}" >&2
+        mkdir -p .copilot-cache
+        "${cmd[@]}" | tee .copilot-cache/output.txt > "$out"
         status=${PIPESTATUS[0]}
+        [ "$status" -eq 0 ] || { echo "❌ status $status" >&2; exit "$status"; }
 
-        if [ "$status" -ne 0 ]; then
-          echo "❌ Copilot CLI exited with status $status" >&2
-          exit "$status"
-        fi
-
-        echo "✅ Copilot CLI finished successfully"
-        echo "output-path=$output_path" >> "$GITHUB_OUTPUT"
+        echo "output-path=$out" >> "$GITHUB_OUTPUT"
+        echo "✅ Copilot CLI finished"

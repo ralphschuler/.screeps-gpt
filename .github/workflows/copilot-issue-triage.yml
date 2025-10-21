@@ -30,4 +30,3 @@ jobs:
           github-token: ${{ secrets.COPILOT_TOKEN }}
           prompt-path: .github/copilot/prompts/issue-triage.md
           output-path: reports/copilot/issue-triage-${{ github.event.issue.number }}.log
-          model: gpt-4o-mini
