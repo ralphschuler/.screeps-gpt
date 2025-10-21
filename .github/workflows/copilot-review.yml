@@ -21,7 +21,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          prompt-path: .github/copilot/prompts/repository-audit.md
+          prompt-path: .github/copilot/prompts/repository-audit
           output-path: reports/copilot/repository-audit-${{ github.run_id }}.log
           substitutions: |
             {

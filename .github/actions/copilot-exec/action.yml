@@ -64,26 +64,17 @@ runs:
           exit 1
         fi
         rendered="$(mktemp)"
-        node <<'NODE' "$PROMPT_TEMPLATE" "$rendered"
-        const fs = require('fs');
-        const [templatePath, outputPath] = process.argv.slice(2);
-        const template = fs.readFileSync(templatePath, 'utf8');
-        let vars = {};
-        try {
-          vars = JSON.parse(process.env.PROMPT_VARS || '{}');
-        } catch (error) {
-          console.error('Failed to parse PROMPT_VARS JSON');
-          console.error(error);
-          process.exit(1);
+        # Parse JSON substitutions and export as environment variables for envsubst
+        node <<'NODE'
+        const vars = JSON.parse(process.env.PROMPT_VARS || '{}');
+        for (const [key, value] of Object.entries(vars)) {
+          console.log(`export ${key}=${JSON.stringify(String(value))}`);
         }
-        const rendered = template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
-          if (Object.prototype.hasOwnProperty.call(vars, key)) {
-            return String(vars[key]);
-          }
-          return match;
-        });
-        fs.writeFileSync(outputPath, rendered, 'utf8');
-        NODE
+        NODE > /tmp/exports.sh
+        source /tmp/exports.sh
+        # Use envsubst to substitute environment variables
+        envsubst < "$PROMPT_TEMPLATE" > "$rendered"
+        rm /tmp/exports.sh
         echo "prompt-file=$rendered" >> "$GITHUB_OUTPUT"
         echo "Rendered prompt:" >&2
         sed 's/^/  /' "$rendered" >&2
