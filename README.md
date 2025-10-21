@@ -61,12 +61,13 @@ The repository defines the following GitHub workflows under `.github/workflows/`
 3. **`deploy.yml`** – Listens for tags that match `v*`. It builds the bundle and executes `bun run deploy` to push the code to Screeps using API credentials stored in repository secrets (supports `SCREEPS_DEPLOY_DRY_RUN` for local workflow tests).
 4. **`docs-pages.yml`** – Builds the static documentation site from `README.md`, `docs/`, and `CHANGELOG.md`, then publishes it to GitHub Pages.
 5. **`copilot-review.yml`** – Scheduled and manually invokable Copilot CLI audit of the entire repository. Copilot now authenticates with `gh`, clones the repo, files any required issues directly, and prints a JSON recap to the logs.
-6. **`copilot-todo-pr.yml`** – Issues labelled `Todo` trigger Copilot to clone the repo, implement the fix, run the Bun checks, push a branch, open a pull request with automation labels, and comment back on the source issue.
-7. **`copilot-email-triage.yml`** – Triggered by `repository_dispatch` webhooks that contain email content; Copilot reviews the message and files any resulting GitHub issues itself, then records the triage summary in the workflow logs.
-8. **`dependabot-automerge.yml`** – Enables automatic merging of Dependabot updates (excluding semver-major bumps) once required checks pass.
-9. **`screeps-stats-monitor.yml`** – Runs every 30 minutes; Copilot fetches PTR telemetry using Screeps credentials, analyses the snapshot, and files/updates monitoring issues directly through the GitHub CLI.
-10. **`label-sync.yml`** – Keeps the repository labels aligned with `.github/labels.yml`.
-11. **`copilot-ci-autofix.yml`** – Watches `quality-gate` failures, lets Copilot download the logs, clone the affected branch, apply the fix with updated docs/tests/changelog, and push the result (either updating the PR or opening a fresh automation PR).
+6. **`copilot-issue-triage.yml`** – Triggered when an issue is opened; Copilot reads the issue, reformulates its title and description to outline required changes clearly, applies appropriate labels, and adds a triage comment with recommendations.
+7. **`copilot-todo-pr.yml`** – Issues labelled `Todo` trigger Copilot to clone the repo, implement the fix, run the Bun checks, push a branch, open a pull request with automation labels, and comment back on the source issue.
+8. **`copilot-email-triage.yml`** – Triggered by `repository_dispatch` webhooks that contain email content; Copilot reviews the message and files any resulting GitHub issues itself, then records the triage summary in the workflow logs.
+9. **`dependabot-automerge.yml`** – Enables automatic merging of Dependabot updates (excluding semver-major bumps) once required checks pass.
+10. **`screeps-stats-monitor.yml`** – Runs every 30 minutes; Copilot fetches PTR telemetry using Screeps credentials, analyses the snapshot, and files/updates monitoring issues directly through the GitHub CLI.
+11. **`label-sync.yml`** – Keeps the repository labels aligned with `.github/labels.yml`.
+12. **`copilot-ci-autofix.yml`** – Watches `quality-gate` failures, lets Copilot download the logs, clone the affected branch, apply the fix with updated docs/tests/changelog, and push the result (either updating the PR or opening a fresh automation PR).
 
 ### Required Secrets
 
