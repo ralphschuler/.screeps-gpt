@@ -33,6 +33,12 @@ This document expands on the workflows under `.github/workflows/` and how they c
 - Behaviour: Executes `bun run versions:update` and `bun run build:docs-site`, then publishes `build/docs-site` to GitHub Pages.
 - Permissions: Requires `pages: write` and `id-token: write`.
 
+## Copilot Issue Triage (`copilot-issue-triage.yml`)
+
+- Trigger: Issues opened.
+- Behaviour: Copilot reads the newly created issue, reformulates its title and description to clearly outline required changes and expectations, applies appropriate labels based on content, and adds a triage comment with recommendations.
+- Permissions: Uses the default `GITHUB_TOKEN` with `issues: write` to edit issue metadata and add comments.
+
 ## Copilot Todo Automation (`copilot-todo-pr.yml`)
 
 - Trigger: Issues labelled `Todo`.

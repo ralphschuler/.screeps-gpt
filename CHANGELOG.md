@@ -5,8 +5,7 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
-- Fixed YAML syntax issues by collapsing Copilot-driven workflows down to a single `copilot-exec` step authenticated with the GitHub CLI.
-- Rewrote Copilot prompts so the automation now clones the repo, files issues, and opens pull requests directly, updating the README and automation overview to reflect the new behaviour.
+- Added `copilot-issue-triage.yml` workflow that triggers on issue creation to automatically reformulate issue titles and descriptions, apply appropriate labels, and add triage comments with recommendations.
 
 ## [0.1.0] - 2024-06-01
 
