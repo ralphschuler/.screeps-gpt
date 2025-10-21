@@ -109,12 +109,26 @@ Repository labels are synchronised via [`label-sync.yml`](.github/workflows/labe
 
 `TASKS.md` tracks active and recently completed work. Keep it up to date when addressing issues or adding new objectives. Completed tasks should be annotated with a completion note before eventual removal to preserve context.
 
+## Agent Guidelines
+
+For GitHub Copilot and automation agents operating in this repository, comprehensive guidelines are maintained in [`AGENTS.md`](AGENTS.md). This document covers:
+
+- Agent roles, scope, and operational boundaries
+- Complete knowledge base references (documentation, workflows, runtime architecture)
+- Operational rules (tooling, coding standards, documentation discipline)
+- Guardrails and best practices (security, quality gates, labels)
+- Required secrets and workflow configuration
+- Agent onboarding checklist
+
+Contributors and agents should review `AGENTS.md` before making changes to ensure alignment with repository conventions and automation expectations.
+
 ## Contributing
 
 1. Install dependencies with `npm install`.
-2. Make changes, updating documentation and tasks along the way.
-3. Run `npm run format:write`, `npm run lint`, and the relevant test suites.
-4. Regenerate the system evaluation report if behaviour or test coverage changes.
-5. Submit a pull request and allow the automation to verify your changes.
+2. Read [`AGENTS.md`](AGENTS.md) to understand repository conventions and agent guidelines.
+3. Make changes, updating documentation and tasks along the way.
+4. Run `npm run format:write`, `npm run lint`, and the relevant test suites.
+5. Regenerate the system evaluation report if behaviour or test coverage changes.
+6. Submit a pull request and allow the automation to verify your changes.
 
 The automation stack is designed to improve iteratively; feel free to enhance the behaviours, evaluation heuristics, or workflows, but keep the guarantees above intact.
