@@ -105,3 +105,12 @@ runs:
         echo "✅ Verifying cached/built Python installation..."
         sudo ln -sf /usr/local/python2/bin/python2.7 /usr/local/bin/python || true
         python --version || (echo "❌ Python installation failed" && exit 1)
+
+    - name: Save Python 2 cache
+      if: steps.cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          /usr/local/python2
+          ~/.ccache
+        key: python2-${{ steps.env.outputs.os }}-${{ steps.env.outputs.arch }}-${{ steps.env.outputs.python-version }}-${{ hashFiles('.github/actions/setup-python2/action.yml') }}
