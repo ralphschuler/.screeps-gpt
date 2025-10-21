@@ -1,5 +1,5 @@
 name: "Setup Python 2"
-description: "Installs Python 2.7.18 from official sources (builds on Linux, prebuilt on macOS, with caching)"
+description: "Installs Python 2.7.18 from official sources (builds on Linux, prebuilt on macOS, with caching and acceleration)"
 author: "ralph@nyphon.de"
 
 runs:
@@ -14,15 +14,29 @@ runs:
         echo "arch=$(uname -m)" >> $GITHUB_OUTPUT
         echo "python-version=2.7.18" >> $GITHUB_OUTPUT
 
-    # 2️⃣ Restore cached Python installation if available
-    - name: Restore Python 2 cache
+    # 2️⃣ Restore cached Python installation and ccache
+    - name: Restore Python 2 + ccache
       id: cache
       uses: actions/cache@v4
       with:
-        path: /usr/local/python2
+        path: |
+          /usr/local/python2
+          ~/.ccache
         key: python2-${{ steps.env.outputs.os }}-${{ steps.env.outputs.arch }}-${{ steps.env.outputs.python-version }}-${{ hashFiles('.github/actions/setup-python2/action.yml') }}
 
-    # 3️⃣ Install or build Python 2 only if cache not hit
+    # 3️⃣ Install build dependencies (Linux)
+    - name: Install build dependencies
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        sudo apt-get update -y
+        sudo apt-get install -y \
+          build-essential zlib1g-dev libssl-dev libbz2-dev \
+          libreadline-dev libsqlite3-dev wget curl llvm \
+          libncurses5-dev libncursesw5-dev xz-utils tk-dev \
+          libffi-dev liblzma-dev ccache
+
+    # 4️⃣ Install or build Python 2 only if cache not hit
     - name: Install or build Python 2.7.18
       if: steps.cache.outputs.cache-hit != 'true'
       id: install
@@ -30,24 +44,32 @@ runs:
       run: |
         set -euo pipefail
         echo "🐍 Installing Python 2.7.18..."
-
         ARCH="$(uname -m)"
         OS="$(uname -s)"
         INSTALL_DIR="/usr/local/python2"
         TMPDIR="$(mktemp -d)"
         PYTHON_VERSION="2.7.18"
 
-        if [[ "$OS" == "Linux" ]]; then
-          echo "🐧 Building Python $PYTHON_VERSION from source..."
-          cd "$TMPDIR"
-          curl -fsSL "https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tgz" -o python.tgz
-          tar -xzf python.tgz
-          cd "Python-$PYTHON_VERSION"
+        mkdir -p "$INSTALL_DIR"
 
-          sudo mkdir -p "$INSTALL_DIR"
-          ./configure --prefix="$INSTALL_DIR" --enable-optimizations
-          make -j"$(nproc)"
-          sudo make altinstall
+        if [[ "$OS" == "Linux" ]]; then
+          echo "🐧 Attempting fast prebuilt installation..."
+          PREBUILT_URL="https://github.com/indygreg/python-build-standalone/releases/download/20200827/cpython-2.7.18-x86_64-unknown-linux-gnu-pgo-20200827T2030.tar.gz"
+          if curl -fsSL "$PREBUILT_URL" -o "$TMPDIR/python.tar.gz"; then
+            tar -xzf "$TMPDIR/python.tar.gz" -C "$INSTALL_DIR" --strip-components=1
+            echo "✅ Installed prebuilt Python 2.7.18"
+          else
+            echo "⚙️ Prebuilt download failed, building from source..."
+            cd "$TMPDIR"
+            curl -fsSL "https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tgz" -o python.tgz
+            tar -xzf python.tgz
+            cd "Python-$PYTHON_VERSION"
+
+            export PATH="/usr/lib/ccache:$PATH"
+            ./configure --prefix="$INSTALL_DIR"
+            make -j"$(nproc)" LDFLAGS="-Wl,--strip-all"
+            sudo make altinstall
+          fi
 
           PYTHON_PATH="$INSTALL_DIR/bin/python2.7"
           sudo ln -sf "$PYTHON_PATH" /usr/local/bin/python
@@ -73,7 +95,7 @@ runs:
         echo "python-path=$PYTHON_PATH" >> $GITHUB_OUTPUT
         echo "🎉 Installed Python 2.7.18 successfully!"
 
-    # 4️⃣ Verify even when cache was used
+    # 5️⃣ Verify even when cache was used
     - name: Verify Python installation
       shell: bash
       run: |
