@@ -67,32 +67,48 @@ jobs:
           commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
           push_options: --force-with-lease
 
-      # Tag the release at the release branch commit (optional; consider moving to post-merge)
+      # Create tag pointing at the release branch commit (idempotent)
       - name: Create tag
-        if: steps.bump.outputs.version != ''
+        if: steps.bump.outputs.version != '' && steps.commit.outputs.commit_hash != ''
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const version = '${{ steps.bump.outputs.version }}';
             const sha = '${{ steps.commit.outputs.commit_hash || github.sha }}';
-            const ref = `refs/tags/v${version}`;
+
+            const getRefPath = `tags/v${version}`;         // correct for getRef
+            const createRefPath = `refs/tags/v${version}`;  // correct for createRef
+
             try {
-              await github.rest.git.getRef({ owner: context.repo.owner, repo: context.repo.repo, ref });
-              core.info(`Tag ${ref} already exists`);
-            } catch (error) {
-              if (error.status !== 404) throw error;
-              await github.rest.git.createRef({
+              await github.rest.git.getRef({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                ref,
-                sha,
+                ref: getRefPath,
               });
-              core.info(`Created tag ${ref} at ${sha}`);
+              core.info(`Tag ${createRefPath} already exists`);
+            } catch (error) {
+              if (error.status !== 404) throw error;
+              try {
+                await github.rest.git.createRef({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: createRefPath,
+                  sha,
+                });
+                core.info(`Created tag ${createRefPath} at ${sha}`);
+              } catch (e) {
+                if (e.status === 422 && /Reference already exists/i.test(e.message)) {
+                  core.info(`Tag ${createRefPath} already exists (race condition)`);
+                } else {
+                  throw e;
+                }
+              }
             }
 
+      # Open or reuse PR from release/vX.Y.Z (aka release/v${version}) into main
       - name: Create release branch and PR for tag
-        if: steps.bump.outputs.version != ''
+        if: steps.bump.outputs.version != '' && steps.commit.outputs.commit_hash != ''
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -102,12 +118,9 @@ jobs:
             const version = '${{ steps.bump.outputs.version }}';
             const tag = `v${version}`;
             const branch = `release/${tag}`;
-
-            // Use the same commit we just pushed on the release branch
             const sha = '${{ steps.commit.outputs.commit_hash || github.sha }}';
 
-            // 1) Ensure the branch exists at the tag's commit (git-auto-commit already created it,
-            //    but this is idempotent)
+            // 1) Ensure the branch exists at the tag's commit (idempotent)
             async function ensureBranch() {
               try {
                 await github.rest.git.getRef({ owner, repo, ref: `heads/${branch}` });
@@ -123,7 +136,7 @@ jobs:
               }
             }
 
-            // 2) Generate release notes for the tag to use as PR body (best-effort)
+            // 2) Generate release notes (best-effort)
             async function generateNotes() {
               try {
                 const { data } = await github.rest.repos.generateReleaseNotes({
@@ -133,23 +146,26 @@ jobs:
                 });
                 return data.body || `Release ${tag}`;
               } catch (e) {
-                core.warning(`Could not generate release notes: ${e.message}`);
+                core.warning(`Could not generate notes: ${e.message}`);
                 return `Release ${tag}`;
               }
             }
 
-            // 3) Create (or reuse) the PR release/<tag> -> main
+            // 3) Create (or reuse) PR release/<tag> -> main
             async function ensurePullRequest(body) {
               const baseBranch = 'main';
               const headBranch = branch;
+
               const { data: prs } = await github.rest.pulls.list({
                 owner, repo, state: 'open', head: `${owner}:${headBranch}`, base: baseBranch
               });
+
               if (prs.length > 0) {
                 core.info(`PR already exists: #${prs[0].number}`);
                 core.setOutput('pr_number', prs[0].number);
                 return;
               }
+
               const { data: pr } = await github.rest.pulls.create({
                 owner, repo,
                 title: `Release ${tag}`,
@@ -163,4 +179,4 @@ jobs:
 
             await ensureBranch();
             const body = await generateNotes();
-            await ensurePullRequest(body);
+            await ensurePullRequest(body)
