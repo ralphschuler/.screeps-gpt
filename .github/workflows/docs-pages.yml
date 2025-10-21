@@ -26,6 +26,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Setup Python 2 for node-gyp
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python2
+          ln -sf /usr/bin/python2 /usr/bin/python
+          echo "Python version: $(python --version)"
+        shell: bash
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         with:
