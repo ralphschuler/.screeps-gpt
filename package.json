@@ -36,9 +36,6 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@screeps/common": "^2.15.5",
-    "@screeps/driver": "^5.2.5",
-    "@screeps/engine": "^4.2.22",
     "@types/node": "^24.9.1",
     "@types/screeps": "^3.3.8",
     "@types/semver": "^7.5.8",
@@ -51,9 +48,14 @@
     "eslint-plugin-import": "^2.29.1",
     "marked": "^12.0.2",
     "prettier": "^3.2.5",
-    "screeps-server-mockup": "^1.5.1",
     "typescript": "^5.4.3",
     "typescript-eslint": "^8.46.2",
     "vitest": "^3.2.4"
+  },
+  "optionalDependencies": {
+    "@screeps/common": "^2.15.5",
+    "@screeps/driver": "^5.2.5",
+    "@screeps/engine": "^4.2.22",
+    "screeps-server-mockup": "^1.5.1"
   }
 }

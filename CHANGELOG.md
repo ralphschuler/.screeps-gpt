@@ -5,22 +5,12 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
-### Added
+### Fixed
 
-- Implemented automatic respawn detection when all spawns are lost
-- Added `RespawnManager` class to monitor and track respawn conditions
-- Extended Memory interface with `respawn` state tracking
-- Integrated respawn checks into the kernel's main loop
-- Updated `SystemEvaluator` to flag respawn conditions as critical findings
-- Added comprehensive unit tests for `RespawnManager` (7 test cases)
-- Added end-to-end tests for respawn scenarios (3 test cases)
-- Created documentation for respawn handling in `docs/operations/respawn-handling.md`
-
-### Changed
-
-- Kernel now checks for respawn condition before processing normal behavior
-- SystemEvaluator now receives Memory context to evaluate respawn state
-- System evaluation includes respawn status in critical findings
+- Fixed build error caused by node-gyp attempting to use Python 2 syntax with Python 3
+- Moved `@screeps/common`, `@screeps/driver`, `@screeps/engine`, and `screeps-server-mockup` packages to `optionalDependencies` to allow installation to succeed even when native modules fail to build
+- Added `.npmrc` to configure build behavior for optional dependencies
+- Mockup tests now gracefully skip when isolated-vm build fails (as documented in tests/mockup/README.md)
 
 ## [0.1.0] - 2024-06-01
 
