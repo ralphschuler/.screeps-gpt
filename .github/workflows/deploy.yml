@@ -1,0 +1,31 @@
+name: Deploy Screeps AI
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: bun install
+      - name: Build and deploy
+        env:
+          SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
+          SCREEPS_HOST: ${{ secrets.SCREEPS_HOST }}
+          SCREEPS_PORT: ${{ secrets.SCREEPS_PORT }}
+          SCREEPS_PROTOCOL: ${{ secrets.SCREEPS_PROTOCOL }}
+          SCREEPS_BRANCH: ${{ secrets.SCREEPS_BRANCH }}
+          SCREEPS_PATH: ${{ secrets.SCREEPS_PATH }}
+        run: bun run deploy

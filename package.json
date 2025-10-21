@@ -1,70 +1,50 @@
 {
-  "name": "screeps-typescript-starter",
-  "version": "3.0.0",
-  "description": "",
-  "main": "index.js",
-  "//": "If you add or change the names of destinations in screeps.json, make sure you update these scripts to reflect the changes",
-  "scripts": {
-    "lint": "eslint \"src/**/*.ts\"",
-    "build": "rollup -c",
-    "push-main": "rollup -c --environment DEST:main",
-    "push-pserver": "rollup -c --environment DEST:pserver",
-    "push-season": "rollup -c --environment DEST:season",
-    "push-sim": "rollup -c --environment DEST:sim",
-    "test": "npm run test-unit",
-    "test-unit": "mocha test/unit/**/*.ts",
-    "test-integration": "echo 'See docs/in-depth/testing.md for instructions on enabling integration tests'",
-    "watch-main": "rollup -cw --environment DEST:main",
-    "watch-pserver": "rollup -cw --environment DEST:pserver",
-    "watch-season": "rollup -cw --environment DEST:season",
-    "watch-sim": "rollup -cw --environment DEST:sim"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/screepers/screeps-typescript-starter.git"
-  },
-  "author": "",
-  "license": "Unlicense",
-  "bugs": {
-    "url": "https://github.com/screepers/screeps-typescript-starter/issues"
-  },
-  "homepage": "https://github.com/screepers/screeps-typescript-starter#readme",
+  "name": "screeps-gpt",
+  "version": "0.1.0",
+  "description": "Autonomously evolving Screeps AI with automated development and deployment workflows.",
+  "license": "MIT",
+  "author": "OpenAI Automations",
+  "type": "module",
+  "packageManager": "bun@1.1.30",
   "engines": {
-    "node": "10.x || 12.x"
+    "bun": ">=1.0.0"
   },
-  "devDependencies": {
-    "@rollup/plugin-commonjs": "^20.0.0",
-    "@rollup/plugin-node-resolve": "^13.0.4",
-    "@types/chai": "^4.1.6",
-    "@types/lodash": "3.10.2",
-    "@types/mocha": "^5.2.5",
-    "@types/node": "^13.13.1",
-    "@types/screeps": "^3.2.3",
-    "@types/sinon": "^5.0.5",
-    "@types/sinon-chai": "^3.2.0",
-    "@typescript-eslint/eslint-plugin": "^4.29.1",
-    "@typescript-eslint/parser": "^4.29.1",
-    "@typescript-eslint/typescript-estree": "^4.29.1",
-    "chai": "^4.2.0",
-    "eslint": "^7.32.0",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-import-resolver-typescript": "^2.4.0",
-    "eslint-plugin-import": "^2.24.0",
-    "eslint-plugin-prettier": "^3.4.0",
-    "lodash": "^3.10.1",
-    "mocha": "^5.2.0",
-    "prettier": "^2.3.2",
-    "rollup": "^2.56.2",
-    "rollup-plugin-clear": "^2.0.7",
-    "rollup-plugin-screeps": "^1.0.1",
-    "rollup-plugin-typescript2": "^0.31.0",
-    "sinon": "^6.3.5",
-    "sinon-chai": "^3.2.0",
-    "ts-node": "^10.2.0",
-    "tsconfig-paths": "^3.10.1",
-    "typescript": "^4.3.5"
+  "scripts": {
+    "build": "bun run scripts/build.ts",
+    "build:watch": "bun run scripts/build.ts --watch",
+    "lint": "bunx eslint . --ext .ts",
+    "lint:fix": "bunx eslint . --ext .ts --fix",
+    "format": "bunx prettier .",
+    "format:check": "bunx prettier --check .",
+    "format:write": "bunx prettier --write .",
+    "test": "bun run test:unit",
+    "test:unit": "bunx vitest run --dir tests/unit",
+    "test:e2e": "bunx vitest run --dir tests/e2e",
+    "test:regression": "bunx vitest run --dir tests/regression",
+    "test:coverage": "bunx vitest run --coverage",
+    "deploy": "bun run scripts/deploy.ts",
+    "version:bump": "bun run scripts/bump-version.ts",
+    "analyze:system": "bun run scripts/evaluate-system.ts"
   },
   "dependencies": {
-    "source-map": "~0.6.1"
+    "screeps-api": "^1.16.1",
+    "semver": "^7.6.2",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "@types/screeps": "^3.3.8",
+    "@typescript-eslint/eslint-plugin": "^7.6.0",
+    "@typescript-eslint/parser": "^7.6.0",
+    "@vitest/coverage-v8": "^1.6.0",
+    "esbuild": "^0.20.2",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.3",
+    "vitest": "^1.6.0",
+    "typescript-eslint": "^7.18.0",
+    "@types/semver": "^7.5.8"
   }
 }

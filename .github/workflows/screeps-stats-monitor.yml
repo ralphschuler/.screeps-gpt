@@ -1,0 +1,110 @@
+name: Screeps Stats Monitor
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Collect Screeps stats
+        id: stats
+        env:
+          SCREEPS_STATS_TOKEN: ${{ secrets.SCREEPS_STATS_TOKEN }}
+          SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
+          SCREEPS_STATS_HOST: ${{ secrets.SCREEPS_STATS_HOST }}
+          SCREEPS_STATS_API: ${{ secrets.SCREEPS_STATS_API }}
+        run: |
+          set -euo pipefail
+          file=$(node scripts/fetch-screeps-stats.mjs)
+          echo "file=$file" >> "$GITHUB_OUTPUT"
+          node <<'NODE' "$GITHUB_OUTPUT" "$file"
+          const fs = require('fs');
+          const [outputPath, statsFile] = process.argv.slice(2);
+          let fetched = new Date().toISOString();
+          try {
+            const snapshot = JSON.parse(fs.readFileSync(statsFile, 'utf8'));
+            if (snapshot && snapshot.fetchedAt) {
+              fetched = snapshot.fetchedAt;
+            }
+          } catch (error) {
+            console.warn('Unable to parse fetchedAt from stats snapshot', error);
+          }
+          fs.appendFileSync(outputPath, `fetched=${fetched}\n`);
+          NODE
+      - name: Run Copilot analysis
+        id: copilot
+        uses: ./.github/actions/copilot-exec
+        with:
+          prompt-path: .github/copilot/prompts/stats-analysis.md
+          substitutions: ${{ toJSON({
+            "REPO_NAME": github.repository,
+            "STATS_PATH": steps.stats.outputs.file,
+            "FETCHED_AT": steps.stats.outputs.fetched
+          }) }}
+          output-path: reports/copilot/stats-analysis.json
+      - name: Show Copilot output
+        if: always()
+        run: |
+          cat "${{ steps.copilot.outputs.output-path }}" || true
+      - name: Create monitoring issues
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = '${{ steps.copilot.outputs.output-path }}';
+            if (!path || !fs.existsSync(path)) {
+              core.info('No Copilot output found.');
+              return;
+            }
+            let report;
+            try {
+              report = JSON.parse(fs.readFileSync(path, 'utf8'));
+            } catch (error) {
+              core.warning(`Unable to parse Copilot stats analysis: ${error}`);
+              return;
+            }
+            if (report.summary) {
+              core.notice(report.summary);
+            }
+            if (!Array.isArray(report.issues) || report.issues.length === 0) {
+              core.info('No actionable monitoring issues detected.');
+              return;
+            }
+            for (const issue of report.issues) {
+              if (!issue || !issue.title || !issue.body) continue;
+              const labels = Array.isArray(issue.labels) && issue.labels.length > 0
+                ? issue.labels
+                : ['monitoring', 'copilot'];
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: issue.title,
+                body: issue.body,
+                labels,
+              });
+            }
+      - name: Upload stats artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screeps-stats-${{ github.run_id }}
+          path: |
+            ${{ steps.stats.outputs.file }}
+            ${{ steps.copilot.outputs.output-path }}
