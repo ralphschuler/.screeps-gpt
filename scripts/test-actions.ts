@@ -38,8 +38,8 @@ async function ensureActBinary(binary: string): Promise<void> {
 }
 
 async function testWorkflows(): Promise<void> {
-  await runCommand("bun", ["run", "format:check"]);
-  await runCommand("bun", ["run", "lint"]);
+  await runCommand("pnpm", ["run", "format:check"]);
+  await runCommand("pnpm", ["run", "lint"]);
 
   if ((process.env.ACT_SKIP ?? "").toLowerCase() === "true") {
     console.warn("ACT_SKIP is set; skipping act workflow checks.");

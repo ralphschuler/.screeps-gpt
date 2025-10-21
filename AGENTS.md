@@ -3,9 +3,9 @@
 This repository manages an autonomous Screeps AI and the automation surrounding it. When modifying files inside this repository, follow these rules:
 
 1. **Tooling**
-   - Use Bun for running scripts (`bun run <script>`). Package scripts are defined in `package.json`.
-   - Format code with `bun run format:write` and verify with `bun run format:check`.
-   - Lint TypeScript code with `bun run lint` (use `lint:fix` for automatic fixes).
+   - Use pnpm for running scripts (`pnpm run <script>`). Package scripts are defined in `package.json`.
+   - Format code with `pnpm run format:write` and verify with `pnpm run format:check`.
+   - Lint TypeScript code with `pnpm run lint` (use `lint:fix` for automatic fixes).
    - All tests are managed by Vitest. Run the relevant suites (`test:unit`, `test:e2e`, `test:regression`, `test:coverage`) before publishing changes.
 
 2. **Coding Standards**

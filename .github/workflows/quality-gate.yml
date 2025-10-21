@@ -21,10 +21,8 @@ jobs:
           fetch-depth: 0
       - name: Setup Python 2
         uses: ./.github/actions/setup-python2
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
+      - name: Setup Node.js 16
+        uses: ./.github/actions/setup-node16
       - name: Export Python path for node-gyp
         shell: bash
         run: |
@@ -32,31 +30,31 @@ jobs:
           echo "PYTHON=/usr/local/python2/bin/python2.7" >> $GITHUB_ENV
           python --version
       - name: Install dependencies (with Python 2)
-        run: bun install --backend=node-gyp
+        run: pnpm install
       - name: Lint
-        run: bun run lint
+        run: pnpm run lint
       - name: Format (check)
-        run: bun run format:check
+        run: pnpm run format:check
       - name: Validate version index
         run: |
-          bun run versions:update
+          pnpm run versions:update
           if ! git diff --quiet docs/changelog/versions.json docs/changelog/versions.md; then
-            echo "::error::Release index is out of date. Run 'bun run versions:update' locally and commit the changes." >&2
+            echo "::error::Release index is out of date. Run 'pnpm run versions:update' locally and commit the changes." >&2
             git diff -- docs/changelog/versions.json docs/changelog/versions.md
             exit 1
           fi
       - name: Unit tests
-        run: bun run test:unit
+        run: pnpm run test:unit
       - name: End-to-end tests (PTR)
-        run: bun run test:e2e
+        run: pnpm run test:e2e
       - name: Regression tests
-        run: bun run test:regression
+        run: pnpm run test:regression
       - name: Coverage
-        run: bun run test:coverage
+        run: pnpm run test:coverage
       - name: Publish evaluation report artifact
         if: success()
         run: |
-          bun run analyze:system
+          pnpm run analyze:system
           tar -czf reports.tar.gz reports || echo "no reports directory"
       - name: Upload report
         if: success()

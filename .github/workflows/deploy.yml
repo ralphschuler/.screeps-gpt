@@ -16,10 +16,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Python 2
         uses: ./.github/actions/setup-python2
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
+      - name: Setup Node.js 16
+        uses: ./.github/actions/setup-node16
       - name: Export Python path for node-gyp
         shell: bash
         run: |
@@ -27,7 +25,7 @@ jobs:
           echo "PYTHON=/usr/local/python2/bin/python2.7" >> $GITHUB_ENV
           python --version
       - name: Install dependencies (with Python 2)
-        run: bun install --backend=node-gyp
+        run: pnpm install
       - name: Build and deploy
         env:
           SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
@@ -36,4 +34,4 @@ jobs:
           SCREEPS_PROTOCOL: ${{ secrets.SCREEPS_PROTOCOL }}
           SCREEPS_BRANCH: ${{ secrets.SCREEPS_BRANCH }}
           SCREEPS_PATH: ${{ secrets.SCREEPS_PATH }}
-        run: bun run deploy
+        run: pnpm run deploy

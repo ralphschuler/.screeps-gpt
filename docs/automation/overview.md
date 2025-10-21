@@ -6,7 +6,7 @@ This document expands on the workflows under `.github/workflows/` and how they c
 
 - Trigger: Pull requests targeting `main`.
 - Permissions: `contents: read` only.
-- Jobs: Lint, formatting checks, unit tests, PTR e2e tests, regression tests, coverage + evaluation artifact upload, plus verification that `docs/changelog/versions.*` matches `bun run versions:update`.
+- Jobs: Lint, formatting checks, unit tests, PTR e2e tests, regression tests, coverage + evaluation artifact upload, plus verification that `docs/changelog/versions.*` matches `pnpm run versions:update`.
 - Notes: Configure PTR secrets locally before running the e2e suite. Failures here must be reproduced with a regression test before applying fixes (see repository rules in [README](../../README.md)).
 
 ## Post Merge Release (`post-merge-release.yml`)
@@ -30,7 +30,7 @@ This document expands on the workflows under `.github/workflows/` and how they c
 ## Documentation Pages (`docs-pages.yml`)
 
 - Trigger: Pushes to `main`, published releases, and manual dispatches.
-- Behaviour: Executes `bun run versions:update` and `bun run build:docs-site`, then publishes `build/docs-site` to GitHub Pages.
+- Behaviour: Executes `pnpm run versions:update` and `pnpm run build:docs-site`, then publishes `build/docs-site` to GitHub Pages.
 - Permissions: Requires `pages: write` and `id-token: write`.
 
 ## Copilot Issue Triage (`copilot-issue-triage.yml`)
@@ -42,7 +42,7 @@ This document expands on the workflows under `.github/workflows/` and how they c
 ## Copilot Todo Automation (`copilot-todo-pr.yml`)
 
 - Trigger: Issues labelled `Todo`.
-- Behaviour: Copilot clones the repository, implements the fix while running Bun checks, pushes a `copilot/todo-*` branch, opens a PR with automation labels, and comments back on the triggering issue.
+- Behaviour: Copilot clones the repository, implements the fix while running pnpm checks, pushes a `copilot/todo-*` branch, opens a PR with automation labels, and comments back on the triggering issue.
 - Permissions: Uses the default `GITHUB_TOKEN` for `gh` pushes, PR creation, and issue comments.
 
 ## Copilot Email Triage (`copilot-email-triage.yml`)
@@ -78,4 +78,4 @@ Keep this file accurate—workflows load these expectations via the Copilot CLI 
 
 ### Local workflow validation
 
-Run `bun run test:actions` to execute linting, formatting checks, and dry-run the key workflows (`quality-gate`, `post-merge-release`, `deploy`, `docs-pages`, `copilot-email-triage`) using the `act` CLI. Populate placeholder secrets in `tests/actions/secrets.env` before invoking the command.
+Run `pnpm run test:actions` to execute linting, formatting checks, and dry-run the key workflows (`quality-gate`, `post-merge-release`, `deploy`, `docs-pages`, `copilot-email-triage`) using the `act` CLI. Populate placeholder secrets in `tests/actions/secrets.env` before invoking the command.

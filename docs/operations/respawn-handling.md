@@ -84,7 +84,7 @@ await api.auth(email, password);
 // Trigger respawn in a specific room
 await api.respawn({
   room: "W1N1", // Target room name
-  branch: "main", // Code branch to deploy
+  branch: "main" // Code branch to deploy
 });
 ```
 

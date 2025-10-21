@@ -28,10 +28,8 @@ jobs:
           fetch-depth: 0
       - name: Setup Python 2
         uses: ./.github/actions/setup-python2
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
+      - name: Setup Node.js 16
+        uses: ./.github/actions/setup-node16
       - name: Export Python path for node-gyp
         shell: bash
         run: |
@@ -39,11 +37,11 @@ jobs:
           echo "PYTHON=/usr/local/python2/bin/python2.7" >> $GITHUB_ENV
           python --version
       - name: Install dependencies (with Python 2)
-        run: bun install --backend=node-gyp
+        run: pnpm install
       - name: Generate documentation site
         run: |
-          bun run versions:update
-          bun run build:docs-site
+          pnpm run versions:update
+          pnpm run build:docs-site
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
