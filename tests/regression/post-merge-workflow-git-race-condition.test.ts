@@ -1,81 +1,91 @@
 /**
- * @fileoverview Regression test for post-merge release workflow git race condition
+ * @fileoverview Regression test for post-merge release workflow - Modernized CI/CD
  *
- * This test ensures that the post-merge release workflow handles concurrent
- * git operations properly to avoid "stale info" errors when using --force-with-lease.
+ * This test ensures that the post-merge release workflow uses modern GitHub DevOps practices:
+ * - Direct commits to main (no release PRs)
+ * - Semantic versioning based on conventional commits
+ * - GitHub Release creation using native API
+ * - Concurrency control to prevent race conditions
  *
- * Related to: https://github.com/ralphschuler/.screeps-gpt/actions/runs/18703919715
+ * Updated for: https://github.com/ralphschuler/.screeps-gpt/issues/122
+ * Previous behavior (release PRs): https://github.com/ralphschuler/.screeps-gpt/actions/runs/18703919715
  */
 
 import { describe, test, expect } from "vitest";
 import * as fs from "fs";
 import * as path from "path";
 
-describe("Post Merge Release Workflow Git Race Condition Prevention", () => {
+describe("Post Merge Release Workflow - Modernized CI/CD", () => {
   const workflowPath = path.join(process.cwd(), ".github/workflows/post-merge-release.yml");
 
   test("workflow file should exist", () => {
     expect(fs.existsSync(workflowPath)).toBe(true);
   });
 
-  test("workflow should have git ref refresh step before commit", () => {
+  test("workflow should use semantic versioning", () => {
     const workflowContent = fs.readFileSync(workflowPath, "utf8");
 
-    // Check for the presence of the git refresh step
-    expect(workflowContent).toContain("name: Update remote refs");
-    expect(workflowContent).toContain("git fetch origin --prune");
-    expect(workflowContent).toContain("git remote prune origin");
-
-    // Verify it comes before the commit step
-    const refreshStepIndex = workflowContent.indexOf("name: Update remote refs");
-    const commitStepIndex = workflowContent.indexOf("name: Commit changes to release branch");
-
-    expect(refreshStepIndex).toBeGreaterThan(-1);
-    expect(commitStepIndex).toBeGreaterThan(-1);
-    expect(refreshStepIndex).toBeLessThan(commitStepIndex);
+    // Check for semantic version bump step
+    expect(workflowContent).toContain("name: Bump version (semantic)");
+    expect(workflowContent).toContain("npm run version:bump-semantic");
+    expect(workflowContent).toContain("BUMP_TYPE");
   });
 
-  test("git-auto-commit-action should have skip_fetch disabled", () => {
+  test("workflow should commit directly to main (no release branches)", () => {
     const workflowContent = fs.readFileSync(workflowPath, "utf8");
 
-    // Find the commit step
-    const commitStepStart = workflowContent.indexOf("name: Commit changes to release branch");
-    const nextStepStart = workflowContent.indexOf("name:", commitStepStart + 1);
-    const commitStepContent = workflowContent.substring(
-      commitStepStart,
-      nextStepStart > -1 ? nextStepStart : workflowContent.length
-    );
+    // Check for direct commit to main
+    expect(workflowContent).toContain("name: Commit version bump to main");
+    expect(workflowContent).toContain("branch: main");
+    expect(workflowContent).toContain("[skip ci]");
 
-    expect(commitStepContent).toContain("stefanzweifel/git-auto-commit-action@v5");
-    expect(commitStepContent).toContain("skip_fetch: false");
+    // Should NOT create release branches
+    expect(workflowContent).not.toContain("RELEASE_BRANCH");
+    expect(workflowContent).not.toContain("create_branch: true");
   });
 
-  test("commit step should use force-with-lease for safety", () => {
+  test("workflow should create GitHub Release using native API", () => {
     const workflowContent = fs.readFileSync(workflowPath, "utf8");
 
-    // Find the commit step
-    const commitStepStart = workflowContent.indexOf("name: Commit changes to release branch");
-    const nextStepStart = workflowContent.indexOf("name:", commitStepStart + 1);
-    const commitStepContent = workflowContent.substring(
-      commitStepStart,
-      nextStepStart > -1 ? nextStepStart : workflowContent.length
-    );
-
-    expect(commitStepContent).toContain("push_options: --force-with-lease");
+    // Check for GitHub Release creation
+    expect(workflowContent).toContain("name: Create GitHub Release");
+    expect(workflowContent).toContain("repos.createRelease");
+    expect(workflowContent).toContain("generateReleaseNotes");
   });
 
-  test("workflow should have proper branch creation logic", () => {
+  test("workflow should NOT create pull requests", () => {
     const workflowContent = fs.readFileSync(workflowPath, "utf8");
 
-    // Find the commit step
-    const commitStepStart = workflowContent.indexOf("name: Commit changes to release branch");
-    const nextStepStart = workflowContent.indexOf("name:", commitStepStart + 1);
-    const commitStepContent = workflowContent.substring(
-      commitStepStart,
-      nextStepStart > -1 ? nextStepStart : workflowContent.length
-    );
+    // Should not have PR creation logic
+    expect(workflowContent).not.toContain("pulls.create");
+    expect(workflowContent).not.toContain("Create release branch and PR");
+  });
 
-    expect(commitStepContent).toContain("create_branch: true");
-    expect(commitStepContent).toContain("branch: ${{ env.RELEASE_BRANCH }}");
+  test("workflow should have concurrency group", () => {
+    const workflowContent = fs.readFileSync(workflowPath, "utf8");
+
+    // Check for concurrency control
+    expect(workflowContent).toContain("concurrency:");
+    expect(workflowContent).toContain("group: release-");
+    expect(workflowContent).toContain("cancel-in-progress: false");
+  });
+
+  test("workflow should skip on release commits to prevent recursion", () => {
+    const workflowContent = fs.readFileSync(workflowPath, "utf8");
+
+    // Check for recursion prevention
+    expect(workflowContent).toContain("chore(release):");
+  });
+
+  test("git-auto-commit-action should have proper configuration", () => {
+    const workflowContent = fs.readFileSync(workflowPath, "utf8");
+
+    // Verify the workflow uses git-auto-commit-action properly
+    expect(workflowContent).toContain("stefanzweifel/git-auto-commit-action@v5");
+    expect(workflowContent).toContain("skip_fetch: false");
+    
+    // Verify it commits to main with skip ci
+    expect(workflowContent).toContain("branch: main");
+    expect(workflowContent).toContain("[skip ci]");
   });
 });
