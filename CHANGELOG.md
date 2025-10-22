@@ -7,18 +7,21 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Added
 
+- **Configurable Copilot model selection** (#146)
+  - Removed hardcoded `gpt-5` default from copilot-exec action
+  - Created centralized model configuration file (`.github/copilot/model-config.json`) with default `gpt-4.1`
+  - Implemented priority-based model resolution: input parameter → COPILOT_MODEL env var → config file → hardcoded default
+  - Added model validation and logging to copilot-exec composite action
+  - Updated documentation (README.md, docs/automation/overview.md) with configuration examples
+  - Supports repository-level and workflow-level model overrides via environment variables
+  - Maintains backward compatibility with explicit model parameters in workflows
+
 - **Copilot exec pre-checkout + dependency caching optimisation** (#101)
   - Added detection & conditional checkout to composite action (skips if .git present)
   - Implemented node_modules cache keyed by OS + package-lock.json hash with restore keys fallback
   - Added conditional npm ci install only on cache miss and when package.json exists
   - Added total duration metric step for performance tracking
   - Backward compatible: existing workflows need no changes
-
-- **GPT-5 as default model for all Copilot workflows** (#141)
-  - Changed copilot-exec action default model from empty string to "gpt-5"
-  - All Copilot workflows (issue-triage, todo-pr, ci-autofix, review) now automatically use GPT-5 for enhanced performance
-  - Maintains backward compatibility for workflows that explicitly specify a different model
-  - Model-specific caching continues to work correctly with GPT-5 in the cache key
 
 - **Standardized label system with state, type, and priority categories** (#138)
   - Implemented three-tier labeling system for improved issue and PR management
