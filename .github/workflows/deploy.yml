@@ -46,7 +46,7 @@ jobs:
             echo "Looking for version tag for commit $SHA"
             
             # First try to find a tag pointing to this exact commit
-            VERSION=$(git tag --points-at "$SHA" | grep -E '^v[0-9]' | head -n 1)
+            VERSION=$(git tag --points-at "$SHA" | grep -E '^v[0-9]' | head -n 1 || true)
             
             # If no tag found on this commit, get the latest version tag
             # This handles the case where the Post Merge Release workflow 
