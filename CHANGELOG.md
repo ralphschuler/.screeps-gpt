@@ -15,6 +15,7 @@ All notable changes to this project are documented here. This changelog now main
 - Added MCP server configuration files: `.github/mcp/screeps-api.json` and `.github/mcp/playwright.json`
 - Enhanced `copilot-exec` action to support multiple MCP servers via `additional-mcp-config` parameter
 - Added comprehensive MCP server documentation in `AGENTS.md` and `docs/automation/overview.md`
+- Implemented a basic Screeps runtime with headcount-based spawning and simple harvester/upgrader state machines
 
 ### Changed
 
