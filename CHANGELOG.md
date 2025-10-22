@@ -7,6 +7,7 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Fixed
 
+- Fixed vitest dependency conflict in Deploy Screeps AI workflow by upgrading @vitest/coverage-v8 from ^0.33.0 to ^3.2.4 for compatibility with vitest ^3.2.4 (workflow run: 18705052117)
 - Fixed email triage workflow not creating issues by removing contradictory JSON formatting in prompt template (#115)
 - Fixed CI failure in `npm run versions:update` by adding missing trailing newline to `docs/changelog/versions.md` (regression test: `tests/regression/versions-file-trailing-newline.test.ts`, workflow run: 18703566323)
 - Fixed git push conflict in post-merge release workflow by adding remote ref updates before commit operations (regression test: `tests/regression/post-merge-workflow-git-race-condition.test.ts`, workflow run: 18703919715)
