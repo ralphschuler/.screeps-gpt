@@ -44,6 +44,7 @@ them before acting.
 - [Automation Overview](automation/overview.md)
 - [PTR Monitoring Pipeline](operations/stats-monitoring.md)
 - [Respawn Handling](operations/respawn-handling.md)
+- [Deployment Troubleshooting](operations/deployment-troubleshooting.md) - Common deployment issues and solutions
 - [Developer Onboarding Resources](../DOCS.md)
 - [Release History](changelog/versions.md)
 
