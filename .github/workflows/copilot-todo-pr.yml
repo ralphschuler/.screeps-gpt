@@ -26,7 +26,6 @@ jobs:
           ISSUE_BODY: ${{ toJSON(github.event.issue.body || '') }}
           ISSUE_HTML_URL: ${{ toJSON(github.event.issue.html_url) }}
           ISSUE_AUTHOR: ${{ toJSON(github.event.issue.user.login) }}
-          PR_TEMPLATE: "copilot-todo.md"
         with:
           copilot-token: ${{ secrets.COPILOT_TOKEN }}
           prompt-path: .github/copilot/prompts/todo-issue

@@ -57,7 +57,7 @@ Follow this playbook:
 6. Run the necessary Bun commands/tests to confirm the fix.
 7. Commit the changes referencing the run ID, push them with `gh`, and either:
    - Push directly to the PR branch, or
-   - Open a new pull request targeting the affected branch using `gh pr create --template ${PR_TEMPLATE}` with labels `automation` and `copilot` plus a short summary of the
+   - Open a new pull request targeting the affected branch with labels `automation` and `copilot` plus a short summary of the
      regression and verification.
 8. If more work remains, open or update GitHub issues accordingly.
 
