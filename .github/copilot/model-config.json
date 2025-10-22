@@ -1,0 +1,5 @@
+{
+  "defaultModel": "gpt-4.1",
+  "fallbackModels": ["gpt-4o", "gpt-4"],
+  "description": "Centralized Copilot model configuration. Override with COPILOT_MODEL environment variable."
+}

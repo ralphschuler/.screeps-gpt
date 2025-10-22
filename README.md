@@ -108,6 +108,27 @@ Add the following GitHub Action secrets before enabling the workflows:
 
 **Note on Authentication:** The Stats Monitor workflow now uses the Screeps API MCP server for direct server interaction. It supports both token-based (`SCREEPS_TOKEN`) and email/password authentication (`SCREEPS_EMAIL` + `SCREEPS_PASSWORD`). Token authentication is recommended for security.
 
+### Copilot Model Configuration
+
+All Copilot workflows use a configurable model selection system. The model is resolved in this priority order:
+
+1. **Workflow input parameter** – Workflows can explicitly specify a model when calling `copilot-exec`
+2. **`COPILOT_MODEL` environment variable** – Set at workflow or repository level to override the default
+3. **Config file** – `.github/copilot/model-config.json` defines the default model
+4. **Hardcoded fallback** – `gpt-4.1` is used if no other configuration is found
+
+To change the default model for all workflows, edit `.github/copilot/model-config.json`:
+
+```json
+{
+  "defaultModel": "gpt-4.1",
+  "fallbackModels": ["gpt-4o", "gpt-4"],
+  "description": "Centralized Copilot model configuration. Override with COPILOT_MODEL environment variable."
+}
+```
+
+To override the model for a specific workflow run, set the `COPILOT_MODEL` environment variable in the workflow file or use GitHub's repository variables/secrets feature.
+
 All workflows rely on the default `GITHUB_TOKEN` for repository operations (pushes, PRs, issue management). Follow [Graphite's guidance on GitHub Action permissions](https://graphite.dev/guides/github-actions-permissions) when altering workflows so least-privilege scopes are preserved. See [DOCS.md](DOCS.md) for a deeper dive into automation prompts, PTR conventions, and recommended Screeps resources.
 
 ## Labels

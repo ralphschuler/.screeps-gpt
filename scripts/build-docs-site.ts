@@ -28,14 +28,14 @@ marked.use({
       if (nextHref.endsWith(".md")) {
         nextHref = nextHref.replace(/\.md(#[^#]+)?$/, (_, anchor) => `.html${anchor ?? ""}`);
       }
-      
+
       // Use the default link renderer with modified href
-      const titleAttr = title ? ` title="${title}"` : '';
+      const titleAttr = title ? ` title="${title}"` : "";
       return `<a href="${nextHref}"${titleAttr}>${text}</a>`;
     }
   },
-  mangle: false, 
-  headerIds: true 
+  mangle: false,
+  headerIds: true
 });
 
 async function ensureEmptyDir(directory: string): Promise<void> {

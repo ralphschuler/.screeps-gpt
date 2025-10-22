@@ -2,6 +2,71 @@
 
 This document expands on the workflows under `.github/workflows/` and how they combine with the Copilot CLI.
 
+## Copilot Model Configuration
+
+All Copilot workflows use the `copilot-exec` composite action (`.github/actions/copilot-exec/action.yml`), which provides centralized model selection with a flexible fallback chain.
+
+### Model Resolution Priority
+
+The model is resolved in the following order:
+
+1. **Workflow input parameter** – Explicit `model:` parameter passed to `copilot-exec`
+2. **`COPILOT_MODEL` environment variable** – Can be set at workflow, job, or step level
+3. **Configuration file** – `.github/copilot/model-config.json` (default: `gpt-4.1`)
+4. **Hardcoded fallback** – `gpt-4.1` if all else fails
+
+### Configuration File
+
+The centralized config at `.github/copilot/model-config.json`:
+
+```json
+{
+  "defaultModel": "gpt-4.1",
+  "fallbackModels": ["gpt-4o", "gpt-4"],
+  "description": "Centralized Copilot model configuration. Override with COPILOT_MODEL environment variable."
+}
+```
+
+### Override Examples
+
+**Repository-wide override** using GitHub Actions variables:
+
+1. Navigate to repository Settings → Secrets and variables → Actions → Variables
+2. Create a new variable `COPILOT_MODEL` with value `gpt-4o`
+3. Reference in workflows: `COPILOT_MODEL: ${{ vars.COPILOT_MODEL }}`
+
+**Workflow-specific override**:
+
+```yaml
+- name: Run Copilot with specific model
+  uses: ./.github/actions/copilot-exec
+  with:
+    model: "gpt-4o"
+    prompt-path: .github/copilot/prompts/custom-prompt
+```
+
+**Environment variable override**:
+
+```yaml
+env:
+  COPILOT_MODEL: "gpt-4o"
+```
+
+### Logging and Validation
+
+The `copilot-exec` action logs the selected model at runtime. Enable verbose mode to see the full resolution chain:
+
+```yaml
+with:
+  verbose: "true"
+```
+
+This will output:
+
+- Which configuration source was used (input, env var, config file, or default)
+- The final selected model
+- Cache key information
+
 ## Quality Gate (`quality-gate.yml`)
 
 - Trigger: Pull requests targeting `main`.

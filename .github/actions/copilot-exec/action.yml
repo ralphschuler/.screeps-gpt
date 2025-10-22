@@ -33,9 +33,9 @@ inputs:
     required: false
     default: "true"
   model:
-    description: Optional model identifier to pass to Copilot CLI
+    description: Optional model identifier to pass to Copilot CLI. If not provided, reads from .github/copilot/model-config.json or falls back to gpt-4.1
     required: false
-    default: "gpt-5"
+    default: ""
   copilot-token:
     description: Personal access token with Copilot Requests scope. Defaults to github.token
     required: false
@@ -151,12 +151,57 @@ runs:
           echo "✅ Prompt rendered in ${elapsed}s (size: ${rendered_size} bytes, sha256: $prompt_sha)"
         fi
 
+    - name: Install jq
+      shell: bash
+      run: |
+        set -euo pipefail
+        if ! command -v jq >/dev/null 2>&1; then
+          sudo apt-get update -qq && sudo apt-get install -y -qq jq
+        fi
+
+    - name: Resolve model configuration
+      id: resolve-model
+      shell: bash
+      env:
+        REQUESTED_MODEL: ${{ inputs.model }}
+        COPILOT_MODEL: ${{ env.COPILOT_MODEL }}
+        VERBOSE: ${{ inputs.verbose }}
+      run: |
+        set -euo pipefail
+
+        # Priority: 1. Input parameter, 2. COPILOT_MODEL env var, 3. Config file, 4. Hardcoded default
+        model=""
+
+        if [ -n "${REQUESTED_MODEL:-}" ]; then
+          model="$REQUESTED_MODEL"
+          echo "ℹ️  Using model from input parameter: $model"
+        elif [ -n "${COPILOT_MODEL:-}" ]; then
+          model="$COPILOT_MODEL"
+          echo "ℹ️  Using model from COPILOT_MODEL environment variable: $model"
+        elif [ -f .github/copilot/model-config.json ]; then
+          default_model=$(jq -r '.defaultModel // "gpt-4.1"' .github/copilot/model-config.json)
+          model="$default_model"
+          echo "ℹ️  Using model from config file: $model"
+        else
+          model="gpt-4.1"
+          echo "ℹ️  Using hardcoded default model: $model"
+        fi
+
+        echo "model=$model" >> "$GITHUB_OUTPUT"
+
+        if [ "$VERBOSE" = "true" ]; then
+          echo "✅ Resolved Copilot model: $model"
+          echo "   - Input parameter: ${REQUESTED_MODEL:-<empty>}"
+          echo "   - COPILOT_MODEL env: ${COPILOT_MODEL:-<empty>}"
+          echo "   - Final selection: $model"
+        fi
+
     - name: Restore result cache
       id: cache-result
       uses: actions/cache@v4
       with:
         path: .copilot-cache/output.txt
-        key: copilot-result-${{ steps.render.outputs.prompt-sha }}-${{ inputs.model }}-${{ runner.os }}
+        key: copilot-result-${{ steps.render.outputs.prompt-sha }}-${{ steps.resolve-model.outputs.model }}-${{ runner.os }}
 
     - name: Log cache status
       if: inputs.verbose == 'true'
@@ -164,12 +209,12 @@ runs:
       env:
         CACHE_HIT: ${{ steps.cache-result.outputs.cache-hit }}
         PROMPT_SHA: ${{ steps.render.outputs.prompt-sha }}
-        REQUESTED_MODEL: ${{ inputs.model }}
+        RESOLVED_MODEL: ${{ steps.resolve-model.outputs.model }}
       run: |
         if [ "$CACHE_HIT" = "true" ]; then
-          echo "✅ Cache hit for prompt sha256: $PROMPT_SHA (model: ${REQUESTED_MODEL:-default})"
+          echo "✅ Cache hit for prompt sha256: $PROMPT_SHA (model: $RESOLVED_MODEL)"
         else
-          echo "🔄 Cache miss - will execute Copilot CLI (prompt sha256: $PROMPT_SHA, model: ${REQUESTED_MODEL:-default})"
+          echo "🔄 Cache miss - will execute Copilot CLI (prompt sha256: $PROMPT_SHA, model: $RESOLVED_MODEL)"
         fi
 
     - name: Short-circuit if cached
@@ -193,15 +238,6 @@ runs:
           echo "✅ Reused cached Copilot output (size: ${cached_size} bytes, path: $out)"
         else
           echo "✅ Reused cached Copilot output"
-        fi
-
-    - name: Install jq
-      if: steps.cache-result.outputs.cache-hit != 'true'
-      shell: bash
-      run: |
-        set -euo pipefail
-        if ! command -v jq >/dev/null 2>&1; then
-          sudo apt-get update -qq && sudo apt-get install -y -qq jq
         fi
 
     - name: Setup MCP configuration
@@ -274,7 +310,7 @@ runs:
         PROMPT_FILE: ${{ steps.render.outputs.prompt-file }}
         RAW_OUTPUT_PATH: ${{ inputs.output-path }}
         EXTRA_ARGS: ${{ inputs.extra-args }}
-        REQUESTED_MODEL: ${{ inputs.model }}
+        RESOLVED_MODEL: ${{ steps.resolve-model.outputs.model }}
         GH_TOKEN: ${{ inputs.copilot-token != '' && inputs.copilot-token || github.token }}
         GITHUB_TOKEN: ${{ inputs.copilot-token != '' && inputs.copilot-token || github.token }}
         COPILOT_ALLOW_ALL: "1"
@@ -293,7 +329,7 @@ runs:
         prompt="$(cat "$PROMPT_FILE")"
 
         cmd=(copilot -p "$prompt" --allow-all-tools --no-color --add-dir "$WORKDIR")
-        [ -n "$REQUESTED_MODEL" ] && cmd+=(--model "$REQUESTED_MODEL")
+        [ -n "$RESOLVED_MODEL" ] && cmd+=(--model "$RESOLVED_MODEL")
         if [ -n "$EXTRA_ARGS" ]; then read -r -a extra <<< "$EXTRA_ARGS"; cmd+=("${extra[@]}"); fi
 
         if [ "$VERBOSE" = "true" ]; then
@@ -301,7 +337,7 @@ runs:
           echo "   Command: ${cmd[*]}"
           echo "   Working directory: $WORKDIR"
           echo "   Output path: $out"
-          echo "   Model: ${REQUESTED_MODEL:-default}"
+          echo "   Model: $RESOLVED_MODEL"
         else
           echo "🚀 ${cmd[*]}" >&2
         fi
