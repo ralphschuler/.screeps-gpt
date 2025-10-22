@@ -1,4 +1,5 @@
 import process from "node:process";
+import https from "node:https";
 
 interface PushNotificationOptions {
   title: string;
@@ -95,23 +96,40 @@ async function sendPushNotification(options: PushNotificationOptions): Promise<v
   };
 
   try {
-    const response = await fetch(apiUrl, {
+    // Use https module for Node.js 16 compatibility (fetch not available)
+    const url = new URL(apiUrl);
+    const postData = JSON.stringify(payload);
+    
+    const options = {
+      hostname: url.hostname,
+      port: url.port || 443,
+      path: url.pathname + url.search,
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": token
-      },
-      body: JSON.stringify(payload)
+        "x-api-key": token,
+        "Content-Length": Buffer.byteLength(postData)
+      }
+    };
+
+    const response = await new Promise<{status: number; data: string}>((resolve, reject) => {
+      const req = https.request(options, (res) => {
+        let data = '';
+        res.on('data', (chunk) => data += chunk);
+        res.on('end', () => resolve({status: res.statusCode || 0, data}));
+      });
+      req.on('error', reject);
+      req.write(postData);
+      req.end();
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
+    if (response.status < 200 || response.status >= 300) {
       // Log error but don't throw to prevent workflow failures
-      console.error(`Push notification failed (${response.status}): ${errorText}`);
+      console.error(`Push notification failed (${response.status}): ${response.data}`);
       return;
     }
 
-    const result: unknown = await response.json();
+    const result: unknown = JSON.parse(response.data);
     console.log("Push notification sent successfully:", result);
 
     // Update rate limit state
