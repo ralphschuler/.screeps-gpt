@@ -1,5 +1,4 @@
 import process from "node:process";
-import https from "node:https";
 
 interface PushNotificationOptions {
   title: string;
@@ -65,6 +64,21 @@ function updateRateLimit(): void {
  * @returns Promise that resolves when notification is sent
  */
 async function sendPushNotification(options: PushNotificationOptions): Promise<void> {
+  // Polyfill fetch for Node.js 16 compatibility
+  if (!globalThis.fetch) {
+    // Dynamic import to avoid bundling issues
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const { default: fetch, Request, Response, Headers } = await import("node-fetch");
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    globalThis.fetch = fetch;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    globalThis.Request = Request;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    globalThis.Response = Response;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    globalThis.Headers = Headers;
+  }
+
   const token = process.env.PUSH_TOKEN;
 
   if (!token) {
@@ -96,40 +110,23 @@ async function sendPushNotification(options: PushNotificationOptions): Promise<v
   };
 
   try {
-    // Use https module for Node.js 16 compatibility (fetch not available)
-    const url = new URL(apiUrl);
-    const postData = JSON.stringify(payload);
-    
-    const options = {
-      hostname: url.hostname,
-      port: url.port || 443,
-      path: url.pathname + url.search,
+    const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": token,
-        "Content-Length": Buffer.byteLength(postData)
-      }
-    };
-
-    const response = await new Promise<{status: number; data: string}>((resolve, reject) => {
-      const req = https.request(options, (res) => {
-        let data = '';
-        res.on('data', (chunk) => data += chunk);
-        res.on('end', () => resolve({status: res.statusCode || 0, data}));
-      });
-      req.on('error', reject);
-      req.write(postData);
-      req.end();
+        "x-api-key": token
+      },
+      body: JSON.stringify(payload)
     });
 
-    if (response.status < 200 || response.status >= 300) {
+    if (!response.ok) {
+      const errorText = await response.text();
       // Log error but don't throw to prevent workflow failures
-      console.error(`Push notification failed (${response.status}): ${response.data}`);
+      console.error(`Push notification failed (${response.status}): ${errorText}`);
       return;
     }
 
-    const result: unknown = JSON.parse(response.data);
+    const result: unknown = await response.json();
     console.log("Push notification sent successfully:", result);
 
     // Update rate limit state
