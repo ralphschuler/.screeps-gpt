@@ -1,0 +1,188 @@
+name: Automation/Workflow Issue
+description: Report problems with CI/CD, GitHub Actions, or automation workflows
+title: "automation: "
+labels: ["automation"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting an automation issue! Help us identify and fix workflow problems quickly.
+        
+        **Before submitting:** Check recent workflow runs to see if this is an intermittent issue.
+
+  - type: dropdown
+    id: workflow_type
+    attributes:
+      label: Workflow Type
+      description: Which automation system is affected?
+      options:
+        - GitHub Actions workflow
+        - Copilot automation (Todo, Issue Triage, etc.)
+        - Deployment pipeline
+        - Monitoring/alerting
+        - Build/test automation
+        - Dependency management
+        - Label synchronization
+        - Other automation
+    validations:
+      required: true
+
+  - type: textarea
+    id: workflow_name
+    attributes:
+      label: Specific Workflow/File
+      description: Which workflow file or automation is affected?
+      placeholder: |
+        Workflow: .github/workflows/quality-gate.yml
+        Job: build-and-test
+        Action: copilot-exec
+    validations:
+      required: true
+
+  - type: dropdown
+    id: issue_type
+    attributes:
+      label: Issue Type
+      description: What type of problem are you experiencing?
+      options:
+        - Workflow failing/erroring
+        - Workflow not triggering
+        - Incorrect behavior/output
+        - Performance/timeout issues
+        - Permission/authentication problems
+        - Missing or incorrect configuration
+        - Integration problems
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Issue Description
+      description: Describe the problem in detail
+      placeholder: What's happening vs what should happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this issue?
+      placeholder: |
+        1. Trigger workflow by...
+        2. Wait for step...
+        3. Observe that...
+    validations:
+      required: true
+
+  - type: textarea
+    id: workflow_run
+    attributes:
+      label: Workflow Run Information
+      description: Provide links to failed workflow runs
+      placeholder: |
+        - Run URL: https://github.com/ralphschuler/.screeps-gpt/actions/runs/...
+        - Run ID: 
+        - Timestamp:
+        - Branch/commit:
+
+  - type: textarea
+    id: error_logs
+    attributes:
+      label: Error Messages/Logs
+      description: Include relevant error messages, logs, or output
+      render: shell
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: Frequency
+      description: How often does this issue occur?
+      options:
+        - Always (100% of the time)
+        - Usually (>75% of the time)
+        - Sometimes (25-75% of the time)
+        - Rarely (<25% of the time)
+        - First occurrence
+    validations:
+      required: true
+
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Impact Level
+      description: How does this affect the project?
+      options:
+        - High (blocks development/deployment)
+        - Medium (slows down workflows)
+        - Low (minor inconvenience)
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: Relevant environment information
+      value: |
+        - Runner: ubuntu-latest / windows-latest / macos-latest
+        - Node.js version:
+        - GitHub Actions environment:
+        - Relevant secrets/variables:
+
+  - type: checkboxes
+    id: affected_workflows
+    attributes:
+      label: Affected Workflows
+      description: Which workflows are impacted by this issue?
+      options:
+        - label: quality-gate.yml (PR validation)
+        - label: post-merge-release.yml (versioning)
+        - label: deploy.yml (Screeps deployment)
+        - label: copilot-review.yml (repository audits)
+        - label: copilot-issue-triage.yml (issue reformulation)
+        - label: copilot-todo-pr.yml (Todo automation)
+        - label: copilot-ci-autofix.yml (CI failure fixes)
+        - label: screeps-stats-monitor.yml (PTR monitoring)
+        - label: Other workflow
+
+  - type: textarea
+    id: recent_changes
+    attributes:
+      label: Recent Changes
+      description: Any recent changes that might be related to this issue?
+      placeholder: |
+        - Recent commits:
+        - Updated dependencies:
+        - Changed workflow files:
+        - Modified secrets/variables:
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Workaround
+      description: Is there a temporary workaround for this issue?
+      placeholder: Describe any temporary solutions or manual steps
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other context, related issues, or debugging information
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      description: Please confirm before submitting
+      options:
+        - label: I have checked recent workflow runs for similar issues
+          required: true
+        - label: I have included workflow run URLs and error messages
+          required: true
+        - label: I have described the expected vs actual behavior
+          required: true
+        - label: I have checked if this affects multiple workflows
+          required: true
