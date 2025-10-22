@@ -41,13 +41,28 @@ jobs:
             echo "version=$VERSION" >> "$GITHUB_OUTPUT"
             echo "Deploying tagged version: $VERSION"
           elif [[ "${{ github.event_name }}" == "workflow_run" ]]; then
-            # Workflow run event - find tag pointing to the checked out commit
+            # Workflow run event - find the latest version tag
             SHA="${{ github.event.workflow_run.head_sha }}"
+            echo "Looking for version tag for commit $SHA"
+            
+            # First try to find a tag pointing to this exact commit
             VERSION=$(git tag --points-at "$SHA" | grep -E '^v[0-9]' | head -n 1)
+            
+            # If no tag found on this commit, get the latest version tag
+            # This handles the case where the Post Merge Release workflow 
+            # created a tag on a release branch commit
             if [[ -z "$VERSION" ]]; then
-              echo "Error: No version tag found at commit $SHA"
-              exit 1
+              echo "No tag found at commit $SHA, looking for latest version tag..."
+              VERSION=$(git tag -l 'v*' | sort -V | tail -n 1)
+              if [[ -z "$VERSION" ]]; then
+                echo "Error: No version tags found in repository"
+                exit 1
+              fi
+              echo "Using latest version tag: $VERSION"
+            else
+              echo "Found version tag at commit: $VERSION"
             fi
+            
             echo "version=$VERSION" >> "$GITHUB_OUTPUT"
             echo "Deploying version $VERSION from commit $SHA"
           else
