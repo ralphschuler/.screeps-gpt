@@ -1,3 +1,4 @@
+---
 name: Copilot Todo PR
 
 on:
@@ -29,4 +30,6 @@ jobs:
         with:
           copilot-token: ${{ secrets.COPILOT_TOKEN }}
           prompt-path: .github/copilot/prompts/todo-issue
-          output-path: reports/copilot/todo-issue-${{ github.event.issue.number }}.log
+          output-path: >-
+            reports/copilot/todo-issue-${{
+            github.event.issue.number }}.log

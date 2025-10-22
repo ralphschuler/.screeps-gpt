@@ -1,3 +1,4 @@
+---
 name: Quality Gate
 
 on:
@@ -26,11 +27,15 @@ jobs:
       - name: Export Python path for node-gyp
         shell: bash
         run: |
-          echo "GYP_DEFINES=standalone_static_library=0" >> $GITHUB_ENV
-          echo "PYTHON=$(command -v python2 || command -v python)" >> $GITHUB_ENV
+          echo "GYP_DEFINES=standalone_static_library=0" \
+            >> $GITHUB_ENV
+          echo "PYTHON=$(command -v python2 || command -v python)" \
+            >> $GITHUB_ENV
           python --version
       - name: Install dependencies (with Python 2)
         run: npm install
+      - name: YAML Lint
+        run: yamllint .github/workflows/
       - name: Lint
         run: npm run lint
       - name: Format (check)
@@ -38,9 +43,13 @@ jobs:
       - name: Validate version index
         run: |
           npm run versions:update
-          if ! git diff --quiet docs/changelog/versions.json docs/changelog/versions.md; then
-            echo "::error::Release index is out of date. Run 'npm run versions:update' locally and commit the changes." >&2
-            git diff -- docs/changelog/versions.json docs/changelog/versions.md
+          if ! git diff --quiet docs/changelog/versions.json \
+            docs/changelog/versions.md; then
+            echo "::error::Release index is out of date. Run \
+              'npm run versions:update' locally and commit the \
+              changes." >&2
+            git diff -- docs/changelog/versions.json \
+              docs/changelog/versions.md
             exit 1
           fi
       - name: Unit tests
@@ -69,6 +78,10 @@ jobs:
         with:
           push-token: ${{ secrets.PUSH_TOKEN }}
           title: "Quality Gate Failed"
-          body: "PR #${{ github.event.pull_request.number }} build failed - review required"
-          link: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          body: >-
+            PR #${{ github.event.pull_request.number }} build failed
+            - review required
+          link: >-
+            https://github.com/${{ github.repository }}/actions/runs/${{
+            github.run_id }}
           priority: "4"

@@ -1,3 +1,4 @@
+---
 name: Copilot Issue Triage
 
 on:
@@ -28,4 +29,6 @@ jobs:
         with:
           copilot-token: ${{ secrets.COPILOT_TOKEN }}
           prompt-path: .github/copilot/prompts/issue-triage
-          output-path: reports/copilot/issue-triage-${{ github.event.issue.number }}.log
+          output-path: >-
+            reports/copilot/issue-triage-${{
+            github.event.issue.number }}.log

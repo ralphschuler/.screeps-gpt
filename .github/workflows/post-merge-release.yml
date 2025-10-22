@@ -1,3 +1,4 @@
+---
 name: Post Merge Release
 
 on:
@@ -15,8 +16,9 @@ concurrency:
 jobs:
   release:
     runs-on: ubuntu-latest
-    # Skip workflow if the commit is a release commit (prevents recursive execution)
-    if: "!contains(github.event.head_commit.message, 'chore(release):')"
+    # Skip if commit is a release (prevents recursive execution)
+    if: >-
+      !contains(github.event.head_commit.message, 'chore(release):')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,8 +35,10 @@ jobs:
       - name: Export Python path for node-gyp
         shell: bash
         run: |
-          echo "GYP_DEFINES=standalone_static_library=0" >> $GITHUB_ENV
-          echo "PYTHON=$(command -v python2 || command -v python)" >> $GITHUB_ENV
+          echo "GYP_DEFINES=standalone_static_library=0" \
+            >> $GITHUB_ENV
+          echo "PYTHON=$(command -v python2 || command -v python)" \
+            >> $GITHUB_ENV
           python --version
 
       - name: Install dependencies (with Python 2)
@@ -51,8 +55,10 @@ jobs:
         shell: bash
         run: |
           # Use semantic versioning based on conventional commits
-          VERSION=$(npm run version:bump-semantic 2>&1 | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | tail -n 1)
-          BUMP_TYPE=$(npm run version:bump-semantic 2>&1 | grep 'Bump type:' | awk '{print $3}' || echo "patch")
+          VERSION=$(npm run version:bump-semantic 2>&1 | \
+            grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | tail -n 1)
+          BUMP_TYPE=$(npm run version:bump-semantic 2>&1 | \
+            grep 'Bump type:' | awk '{print $3}' || echo "patch")
           if [ -z "$VERSION" ]; then
             echo "Version bump did not return a version"; exit 1
           fi
@@ -67,15 +73,20 @@ jobs:
         id: commit
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore(release): bump version to ${{ steps.bump.outputs.version }} [skip ci]"
+          commit_message: >-
+            chore(release): bump version to ${{
+            steps.bump.outputs.version }} [skip ci]
           branch: main
           commit_user_name: github-actions[bot]
-          commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
+          commit_user_email: >-
+            41898282+github-actions[bot]@users.noreply.github.com
           skip_fetch: false
 
       # Create and push tag to trigger deploy workflow
       - name: Create and push tag
-        if: steps.bump.outputs.version != '' && steps.commit.outputs.commit_hash != ''
+        if: >-
+          steps.bump.outputs.version != ''
+          && steps.commit.outputs.commit_hash != ''
         shell: bash
         run: |
           VERSION="${{ steps.bump.outputs.version }}"
@@ -91,14 +102,16 @@ jobs:
           # Create and push the tag
           git tag "$TAG" "$SHA"
           git push origin "$TAG" || {
-            # Tag might have been created by another workflow run (race condition)
-            echo "Tag $TAG could not be pushed (may already exist remotely)"
+            # Tag might have been created by another workflow run
+            echo "Tag $TAG could not be pushed (may exist remotely)"
             exit 0
           }
 
       # Create GitHub Release using native API
       - name: Create GitHub Release
-        if: steps.bump.outputs.version != '' && steps.commit.outputs.commit_hash != ''
+        if: >-
+          steps.bump.outputs.version != ''
+          && steps.commit.outputs.commit_hash != ''
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -127,12 +140,14 @@ jobs:
 
             // Check if release already exists
             try {
-              const { data: existingRelease } = await github.rest.repos.getReleaseByTag({
-                owner,
-                repo,
-                tag
-              });
-              core.info(`Release ${tag} already exists: ${existingRelease.html_url}`);
+              const { data: existingRelease } = await
+                github.rest.repos.getReleaseByTag({
+                  owner,
+                  repo,
+                  tag
+                });
+              core.info(`Release ${tag} already exists: ${
+                existingRelease.html_url}`);
               return;
             } catch (err) {
               if (err.status !== 404) throw err;
@@ -140,15 +155,17 @@ jobs:
             }
 
             // Create the release
-            const { data: release } = await github.rest.repos.createRelease({
-              owner,
-              repo,
-              tag_name: tag,
-              target_commitish: sha,
-              name: `Release ${tag}`,
-              body: `## ${tag}\n\nVersion bump type: **${bumpType}**\n\n${releaseNotes}`,
-              draft: false,
-              prerelease: version.startsWith('0.') // Pre-1.0 versions are pre-releases
-            });
+            const { data: release } = await
+              github.rest.repos.createRelease({
+                owner,
+                repo,
+                tag_name: tag,
+                target_commitish: sha,
+                name: `Release ${tag}`,
+                body: `## ${tag}\n\nVersion bump type: **${
+                  bumpType}**\n\n${releaseNotes}`,
+                draft: false,
+                prerelease: version.startsWith('0.')
+              });
 
             core.info(`Created release: ${release.html_url}`);
