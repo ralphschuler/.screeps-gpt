@@ -1,0 +1,38 @@
+name: "Send Push Notification"
+description: "Send push notification via Push by Techulus API with rate limiting and error handling"
+inputs:
+  push-token:
+    description: "Push by Techulus API token"
+    required: true
+  title:
+    description: "Notification title"
+    required: true
+  body:
+    description: "Notification body text"
+    required: true
+  link:
+    description: "Optional URL to include in notification"
+    required: false
+    default: ""
+  priority:
+    description: "Notification priority (1-5, default: 3)"
+    required: false
+    default: "3"
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: "16"
+    - name: Send push notification
+      shell: bash
+      env:
+        PUSH_TOKEN: ${{ inputs.push-token }}
+        PUSH_TITLE: ${{ inputs.title }}
+        PUSH_BODY: ${{ inputs.body }}
+        PUSH_LINK: ${{ inputs.link }}
+        PUSH_PRIORITY: ${{ inputs.priority }}
+      run: |
+        cd ${{ github.action_path }}/../../..
+        npx tsx scripts/send-push-notification.ts

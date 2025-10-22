@@ -62,3 +62,13 @@ jobs:
         with:
           name: system-evaluation
           path: reports.tar.gz
+
+      - name: Notify build failure
+        if: failure()
+        uses: ./.github/actions/send-push-notification
+        with:
+          push-token: ${{ secrets.PUSH_TOKEN }}
+          title: "Quality Gate Failed"
+          body: "PR #${{ github.event.pull_request.number }} build failed - review required"
+          link: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          priority: "4"
