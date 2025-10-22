@@ -19,9 +19,9 @@ jobs:
     # 1. Triggered by tag push, OR
     # 2. Triggered by workflow_run AND it was successful AND from the base repository (not a fork)
     if: |
-      github.event_name == 'push' || 
-      (github.event_name == 'workflow_run' && 
-       github.event.workflow_run.conclusion == 'success' && 
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.head_repository.full_name == github.repository)
     steps:
       - name: Checkout
@@ -44,12 +44,12 @@ jobs:
             # Workflow run event - find the latest version tag
             SHA="${{ github.event.workflow_run.head_sha }}"
             echo "Looking for version tag for commit $SHA"
-            
+
             # First try to find a tag pointing to this exact commit
             VERSION=$(git tag --points-at "$SHA" | grep -E '^v[0-9]' | head -n 1 || true)
-            
+
             # If no tag found on this commit, get the latest version tag
-            # This handles the case where the Post Merge Release workflow 
+            # This handles the case where the Post Merge Release workflow
             # created a tag on a release branch commit
             if [[ -z "$VERSION" ]]; then
               echo "No tag found at commit $SHA, looking for latest version tag..."
@@ -62,7 +62,7 @@ jobs:
             else
               echo "Found version tag at commit: $VERSION"
             fi
-            
+
             echo "version=$VERSION" >> "$GITHUB_OUTPUT"
             echo "Deploying version $VERSION from commit $SHA"
           else
@@ -85,9 +85,9 @@ jobs:
       - name: Build and deploy
         env:
           SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
-          SCREEPS_HOST: ${{ secrets.SCREEPS_HOST }}
-          SCREEPS_PORT: ${{ secrets.SCREEPS_PORT }}
-          SCREEPS_PROTOCOL: ${{ secrets.SCREEPS_PROTOCOL }}
-          SCREEPS_BRANCH: ${{ secrets.SCREEPS_BRANCH }}
-          SCREEPS_PATH: ${{ secrets.SCREEPS_PATH }}
+          SCREEPS_HOST: ${{ vars.SCREEPS_HOST }}
+          SCREEPS_PORT: ${{ vars.SCREEPS_PORT }}
+          SCREEPS_PROTOCOL: ${{ vars.SCREEPS_PROTOCOL }}
+          SCREEPS_BRANCH: ${{ vars.SCREEPS_BRANCH }}
+          SCREEPS_PATH: ${{ vars.SCREEPS_PATH }}
         run: npm run deploy
