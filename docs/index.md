@@ -40,6 +40,7 @@ them before acting.
 
 ## Additional Guides
 
+- [Starter Bot Guide](starter-bot-guide.md) - Understanding and extending the basic Screeps bot implementation
 - [Agent Guidelines](../AGENTS.md) - Comprehensive rules and knowledge base for GitHub Copilot and automation agents
 - [Automation Overview](automation/overview.md)
 - [PTR Monitoring Pipeline](operations/stats-monitoring.md)

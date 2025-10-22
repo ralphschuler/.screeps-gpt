@@ -41,7 +41,7 @@ npm install
 ## Runtime Architecture
 
 - `src/runtime/bootstrap/` – Kernel wiring that orchestrates memory maintenance, behavioural control, performance tracking, and evaluation.
-- `src/runtime/behavior/` – High-level creep role orchestration and spawn logic.
+- `src/runtime/behavior/` – **Starter bot implementation** with auto-spawning, harvesting, and upgrading roles. High-level creep role orchestration and spawn logic. See [`docs/starter-bot-guide.md`](docs/starter-bot-guide.md) for details.
 - `src/runtime/memory/` – Helpers to keep `Memory` consistent between ticks.
 - `src/runtime/metrics/` – CPU usage and execution accounting.
 - `src/runtime/respawn/` – Automatic detection and handling of respawn scenarios when all spawns are lost.
@@ -51,7 +51,7 @@ npm install
 - `tests/` – Vitest suites split into unit, e2e, and regression directories.
 - `reports/` – Persistent analysis artifacts (e.g., `system-evaluation.json`).
 
-The main loop lives in `src/main.ts` and delegates to a kernel that can be exercised in tests or tooling. The system automatically detects when all spawns are lost and flags critical respawn conditions in evaluation reports—see [`docs/operations/respawn-handling.md`](docs/operations/respawn-handling.md) for details.
+The main loop lives in `src/main.ts` and delegates to a kernel that can be exercised in tests or tooling. The **starter bot** provides a minimal viable Screeps AI with harvester and upgrader roles that automatically collect energy and upgrade the room controller. The system automatically detects when all spawns are lost and flags critical respawn conditions in evaluation reports—see [`docs/operations/respawn-handling.md`](docs/operations/respawn-handling.md) for details.
 
 ## Automated Quality & Deployment
 
