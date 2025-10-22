@@ -5,6 +5,15 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Fixed
+
+- **Node.js 16 compatibility for lint-staged in CI workflows**
+  - Downgraded `lint-staged` from v16.2.5 to v13.3.0 to maintain Node.js 16.14.0+ compatibility
+  - Fixes `post-merge-release.yml` workflow failure caused by `nano-spawn@2.0.0` dependency requiring Node.js 17+ (`node:readline/promises`)
+  - Repository continues to use Node.js 16.x for native dependency compatibility (Python 2 requirement)
+  - Removed unused `@typescript-eslint/no-unsafe-return` ESLint disable directive in `tests/mockup/setup.ts`
+  - Verified no other dependencies have Node.js version incompatibilities
+
 ### Added
 
 - **Push notification system for repository and Screeps bot monitoring**
