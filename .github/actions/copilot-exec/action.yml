@@ -7,29 +7,6 @@ description: |
   - Configurable timeout (default: 30 minutes)
   - Verbose logging for debugging
   - MCP (Model Context Protocol) configuration support
-
-  Usage examples:
-
-  Basic usage:
-    uses: ./.github/actions/copilot-exec
-    with:
-      copilot-token: ${{ secrets.COPILOT_TOKEN }}
-      prompt-path: .github/copilot/prompts/my-prompt
-
-  With custom timeout and verbose logging:
-    uses: ./.github/actions/copilot-exec
-    with:
-      copilot-token: ${{ secrets.COPILOT_TOKEN }}
-      prompt-path: .github/copilot/prompts/my-prompt
-      timeout: 60
-      verbose: true
-
-  With additional MCP configuration:
-    uses: ./.github/actions/copilot-exec
-    with:
-      copilot-token: ${{ secrets.COPILOT_TOKEN }}
-      prompt-path: .github/copilot/prompts/my-prompt
-      additional-mcp-config: '@.github/mcp-servers.json'
 author: "ralph@nyphon.de"
 inputs:
   prompt-path:
@@ -254,7 +231,6 @@ runs:
     - name: Execute Copilot CLI
       if: steps.cache-result.outputs.cache-hit != 'true'
       id: copilot
-      timeout-minutes: ${{ fromJSON(inputs.timeout) }}
       shell: bash
       env:
         WORKDIR: ${{ inputs.working-directory != '' && inputs.working-directory || github.workspace }}
