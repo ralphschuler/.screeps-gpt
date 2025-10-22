@@ -16,6 +16,7 @@ error: failed to push some refs to 'https://github.com/ralphschuler/.screeps-gpt
 **Root Cause:** This occurs when there's a race condition between multiple workflow runs or when the remote repository has been updated between the fetch and push operations, causing the `--force-with-lease` option to fail due to stale lease information.
 
 **Solution (Fixed in #104):**
+
 1. Added "Update remote refs" step before committing to ensure fresh ref information
 2. Set `skip_fetch: false` in the git-auto-commit-action to fetch latest refs
 3. Used `git fetch origin --prune` and `git remote prune origin` to clean up stale refs
@@ -23,6 +24,7 @@ error: failed to push some refs to 'https://github.com/ralphschuler/.screeps-gpt
 **Prevention:** The regression test `tests/regression/post-merge-workflow-git-race-condition.test.ts` validates the fix remains in place.
 
 **Related Issues:**
+
 - Workflow run: #18703919715
 - Fix PR: #104
 
@@ -31,6 +33,7 @@ error: failed to push some refs to 'https://github.com/ralphschuler/.screeps-gpt
 **Problem:** Multiple concurrent merges to main can cause version bump conflicts.
 
 **Mitigation:**
+
 - The workflow includes a condition to skip if the commit message contains "chore: prepare release"
 - Use of `--force-with-lease` prevents accidental overwrites
 - Fresh ref fetching ensures latest state before operations
@@ -42,6 +45,7 @@ error: failed to push some refs to 'https://github.com/ralphschuler/.screeps-gpt
 **Problem:** Tests fail with "command not found" errors for Node.js tools.
 
 **Solution:**
+
 1. Ensure Node.js 16 setup is complete before running tests
 2. Run `npm install` to install dependencies
 3. Use proper environment variables for build tools
@@ -51,6 +55,7 @@ error: failed to push some refs to 'https://github.com/ralphschuler/.screeps-gpt
 **Problem:** ESLint or Prettier checks fail in CI.
 
 **Solution:**
+
 1. Run `npm run lint:fix` locally before committing
 2. Run `npm run format:write` to auto-format code
 3. Check for TypeScript compilation errors
@@ -62,6 +67,7 @@ error: failed to push some refs to 'https://github.com/ralphschuler/.screeps-gpt
 **Problem:** Deployment fails with authentication errors.
 
 **Solution:**
+
 1. Verify `SCREEPS_USERNAME`, `SCREEPS_PASSWORD`, and `SCREEPS_BRANCH` secrets are set
 2. Check that the Screeps account has proper permissions
 3. Ensure the API is accessible (not blocked by rate limits)
@@ -99,12 +105,14 @@ error: failed to push some refs to 'https://github.com/ralphschuler/.screeps-gpt
 ### Workflow Status Monitoring
 
 The repository includes automated monitoring via:
+
 - `copilot-ci-autofix.yml` - Automatically attempts to fix CI failures
 - `copilot-review.yml` - Scheduled repository health checks
 
 ### Issue Creation
 
 Failed workflows automatically create issues for investigation when:
+
 1. Multiple consecutive failures occur
 2. Critical path workflows (deploy, release) fail
 3. Security or dependency vulnerabilities are detected
