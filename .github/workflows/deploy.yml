@@ -1,3 +1,4 @@
+---
 name: Deploy Screeps AI
 
 on:
@@ -54,8 +55,10 @@ jobs:
       - name: Export Python path for node-gyp
         shell: bash
         run: |
-          echo "GYP_DEFINES=standalone_static_library=0" >> $GITHUB_ENV
-          echo "PYTHON=$(command -v python2 || command -v python)" >> $GITHUB_ENV
+          echo "GYP_DEFINES=standalone_static_library=0" \
+            >> $GITHUB_ENV
+          echo "PYTHON=$(command -v python2 || command -v python)" \
+            >> $GITHUB_ENV
           python --version
       - name: Install dependencies (with Python 2)
         run: npm install
@@ -76,8 +79,12 @@ jobs:
         with:
           push-token: ${{ secrets.PUSH_TOKEN }}
           title: "Screeps Deployment Success"
-          body: "Version ${{ steps.get_version.outputs.version }} deployed successfully to production"
-          link: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          body: >-
+            Version ${{ steps.get_version.outputs.version }} deployed
+            successfully to production
+          link: >-
+            https://github.com/${{ github.repository }}/actions/runs/${{
+            github.run_id }}
           priority: "3"
 
       - name: Notify deployment failure
@@ -86,6 +93,10 @@ jobs:
         with:
           push-token: ${{ secrets.PUSH_TOKEN }}
           title: "Screeps Deployment Failed"
-          body: "Version ${{ steps.get_version.outputs.version }} deployment failed - immediate attention required"
-          link: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          body: >-
+            Version ${{ steps.get_version.outputs.version }} deployment
+            failed - immediate attention required
+          link: >-
+            https://github.com/${{ github.repository }}/actions/runs/${{
+            github.run_id }}
           priority: "5"

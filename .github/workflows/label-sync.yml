@@ -1,8 +1,10 @@
+---
 name: Sync Labels
 
 on:
   schedule:
-    - cron: "0 0 */7 * *" # Run every 7 days at midnight UTC
+    # Run every 7 days at midnight UTC
+    - cron: "0 0 */7 * *"
   workflow_dispatch:
 
 permissions:

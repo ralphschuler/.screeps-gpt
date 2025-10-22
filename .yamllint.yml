@@ -1,0 +1,49 @@
+---
+# yamllint configuration for GitHub Actions workflows
+extends: default
+
+rules:
+  # Require document start marker
+  document-start:
+    present: true
+
+  # Enforce 80 character line limit
+  line-length:
+    max: 80
+    level: error
+
+  # Allow truthy values (on/off used in GitHub Actions)
+  truthy:
+    allowed-values: ["true", "false", "on", "off"]
+    check-keys: false
+
+  # Allow 1 space before comment (common in GitHub Actions)
+  comments:
+    min-spaces-from-content: 1
+
+  # Indentation rules
+  indentation:
+    spaces: 2
+    indent-sequences: true
+
+  # Empty lines
+  empty-lines:
+    max: 2
+    max-start: 0
+    max-end: 0
+
+  # Trailing spaces
+  trailing-spaces: enable
+
+  # Key duplicates
+  key-duplicates: enable
+
+  # Brackets
+  brackets:
+    min-spaces-inside: 0
+    max-spaces-inside: 0
+
+  # Braces
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1

@@ -1,3 +1,4 @@
+---
 name: Copilot Email Triage
 
 on:
@@ -19,12 +20,20 @@ jobs:
         uses: ./.github/actions/copilot-exec
         env:
           REPO_NAME: ${{ github.repository }}
-          EVENT_URL: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          EMAIL_SUBJECT: ${{ toJSON(github.event.client_payload.email.subject || '') }}
-          EMAIL_FROM: ${{ toJSON(github.event.client_payload.email.from || '') }}
-          EMAIL_TO: ${{ toJSON(github.event.client_payload.email.to || '') }}
-          EMAIL_BODY: ${{ toJSON(github.event.client_payload.email.body || '') }}
+          EVENT_URL: >-
+            https://github.com/${{ github.repository }}/actions/runs/${{
+            github.run_id }}
+          EMAIL_SUBJECT: >-
+            ${{ toJSON(github.event.client_payload.email.subject || '')
+            }}
+          EMAIL_FROM: >-
+            ${{ toJSON(github.event.client_payload.email.from || '') }}
+          EMAIL_TO: >-
+            ${{ toJSON(github.event.client_payload.email.to || '') }}
+          EMAIL_BODY: >-
+            ${{ toJSON(github.event.client_payload.email.body || '') }}
         with:
           copilot-token: ${{ secrets.COPILOT_TOKEN }}
           prompt-path: .github/copilot/prompts/email-triage
-          output-path: reports/copilot/email-triage-${{ github.run_id }}.log
+          output-path: >-
+            reports/copilot/email-triage-${{ github.run_id }}.log
