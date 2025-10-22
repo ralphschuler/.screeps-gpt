@@ -60,6 +60,7 @@ jobs:
       - name: Install dependencies (with Python 2)
         run: npm install
       - name: Build and deploy
+        id: deploy
         env:
           SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
           SCREEPS_HOST: ${{ vars.SCREEPS_HOST }}
@@ -68,3 +69,23 @@ jobs:
           SCREEPS_BRANCH: ${{ vars.SCREEPS_BRANCH }}
           SCREEPS_PATH: ${{ vars.SCREEPS_PATH }}
         run: npm run deploy
+
+      - name: Notify deployment success
+        if: success()
+        uses: ./.github/actions/send-push-notification
+        with:
+          push-token: ${{ secrets.PUSH_TOKEN }}
+          title: "Screeps Deployment Success"
+          body: "Version ${{ steps.get_version.outputs.version }} deployed successfully to production"
+          link: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          priority: "3"
+
+      - name: Notify deployment failure
+        if: failure()
+        uses: ./.github/actions/send-push-notification
+        with:
+          push-token: ${{ secrets.PUSH_TOKEN }}
+          title: "Screeps Deployment Failed"
+          body: "Version ${{ steps.get_version.outputs.version }} deployment failed - immediate attention required"
+          link: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          priority: "5"

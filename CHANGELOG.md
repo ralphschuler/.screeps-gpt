@@ -7,6 +7,22 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Added
 
+- **Push notification system for repository and Screeps bot monitoring**
+  - Integrated Push by Techulus API for real-time alerts on critical events
+  - Created `scripts/send-push-notification.ts` with rate limiting and error handling
+  - Added composite action `.github/actions/send-push-notification` for workflow integration
+  - Implemented notifications in deploy workflow (success/failure alerts)
+  - Implemented notifications in quality-gate workflow (build failure alerts)
+  - Implemented PTR monitoring alerts via `scripts/check-ptr-alerts.ts`
+  - Added automated notifications for high CPU usage (>80% sustained), critical CPU (>95%), and low energy
+  - Created comprehensive documentation at `docs/automation/push-notifications.md`
+  - Added unit tests for notification utility with 100% coverage
+  - Rate limiting: 5 second minimum interval, max 10 notifications per minute
+  - Graceful degradation: notification failures never break workflows
+  - Secure implementation: PUSH_TOKEN stored as GitHub secret, no sensitive data in notifications
+  - Complements existing email notification system (#134)
+  - Integrates with PTR monitoring infrastructure (#152, #117)
+
 - **ESLint flat config migration with Node 16 structuredClone polyfill** (#156)
   - Migrated from deprecated `.eslintrc.cjs` to modern `eslint.config.mjs` flat configuration format
   - Added `.eslintrc-polyfill.cjs` to provide `structuredClone` implementation for Node.js 16.x compatibility

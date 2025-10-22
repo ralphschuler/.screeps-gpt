@@ -106,8 +106,21 @@ Add the following GitHub Action secrets before enabling the workflows:
 | `SCREEPS_BRANCH` (optional)      | Deploy workflow       | Destination Screeps branch (default `main`).                    |
 | `SCREEPS_STATS_TOKEN` (optional) | Stats monitor         | Token for the stats API (falls back to `SCREEPS_TOKEN`).        |
 | `COPILOT_TOKEN` (optional)       | Copilot workflows     | GitHub personal access token with Copilot Requests scope.       |
+| `PUSH_TOKEN` (optional)          | All workflows         | Push by Techulus API key for push notifications.                |
 
 **Note on Authentication:** The Stats Monitor workflow now uses the Screeps API MCP server for direct server interaction. It supports both token-based (`SCREEPS_TOKEN`) and email/password authentication (`SCREEPS_EMAIL` + `SCREEPS_PASSWORD`). Token authentication is recommended for security.
+
+### Push Notifications
+
+The repository supports real-time push notifications via [Push by Techulus](https://push.techulus.com) for critical events:
+
+- Deploy pipeline successes and failures
+- Quality gate failures on pull requests
+- PTR monitoring alerts (high CPU usage, low energy, anomalies)
+
+Push notifications are **optional**. If `PUSH_TOKEN` is not configured, workflows continue normally without sending notifications. The notification system includes rate limiting and error handling to prevent spam and ensure workflow reliability.
+
+See [`docs/automation/push-notifications.md`](docs/automation/push-notifications.md) for detailed configuration and usage instructions.
 
 ### Copilot Model Configuration
 
