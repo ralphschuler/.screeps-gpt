@@ -24,8 +24,8 @@ Agents operate within these constraints:
 - **Prompt templates**: Located in `.github/copilot/prompts/` and rendered via the `copilot-exec` composite action
 - **MCP integration**: Agents have access to multiple Model Context Protocol (MCP) servers:
   - **GitHub MCP** - Repository operations (issues, PRs, code search, commits)
-  - **Screeps API MCP** - Direct Screeps server interaction (console commands, room data, memory segments, user stats)
   - **Playwright MCP** - Browser automation for web-based monitoring and testing
+- **Screeps integration**: Direct Screeps API access via `scripts/fetch-screeps-stats.mjs` (fetches user stats from `/api/user/stats`)
 
 ## Knowledge Base
 
@@ -127,17 +127,7 @@ Agents have access to Model Context Protocol (MCP) servers that extend their cap
    - Commit inspection: review diffs and history
    - Configuration: Built into `copilot-exec` action
 
-2. **Screeps API MCP Server** ([ralphschuler/screeps-api-mcp](https://github.com/ralphschuler/screeps-api-mcp))
-   - Direct Screeps server interaction
-   - Console command execution
-   - Room data access (terrain, objects, structures)
-   - Memory segment management
-   - User statistics and telemetry
-   - Configuration: `.github/mcp/screeps-api.json`
-   - Authentication: Uses `SCREEPS_TOKEN`, `SCREEPS_EMAIL`, or `SCREEPS_PASSWORD` environment variables
-   - Supports multiple servers: main, PTR, private servers
-
-3. **Playwright MCP Server** ([executeautomation/playwright-mcp-server](https://github.com/executeautomation/playwright-mcp-server))
+2. **Playwright MCP Server** ([executeautomation/playwright-mcp-server](https://github.com/executeautomation/playwright-mcp-server))
    - Browser automation for web-based monitoring
    - Page navigation and interaction
    - Screenshot capture
@@ -177,7 +167,7 @@ The configuration files in `.github/mcp/` define MCP server commands and environ
 6. **copilot-todo-pr.yml** - Automated Todo issue resolution
 7. **copilot-email-triage.yml** - Email-to-issue conversion
 8. **copilot-ci-autofix.yml** - Automated CI failure resolution
-9. **screeps-stats-monitor.yml** - PTR telemetry monitoring (uses Screeps API MCP)
+9. **screeps-stats-monitor.yml** - PTR telemetry monitoring (uses `scripts/fetch-screeps-stats.mjs`)
 10. **dependabot-automerge.yml** - Auto-merge non-major updates
 11. **label-sync.yml** - Repository label synchronization
 12. **docs-pages.yml** - GitHub Pages documentation site

@@ -3,12 +3,14 @@ environment variables (`SCREEPS_TOKEN`, `SCREEPS_STATS_TOKEN`, `SCREEPS_STATS_HO
 
 Available MCP servers:
 - `github` - GitHub repository operations (issues, PRs, code search)
-- `screeps-api` - Direct Screeps server interaction (console commands, room data, memory segments)
+
+Available tools:
+- `scripts/fetch-screeps-stats.mjs` - Node.js script to fetch user stats from Screeps API
 
 ## MANDATORY ACTIONS (failure to complete any item is a workflow failure)
 
 - [ ] **MUST authenticate GitHub CLI** and verify repository access
-- [ ] **MUST fetch telemetry data** using Screeps API MCP server with validation
+- [ ] **MUST fetch telemetry data** using `scripts/fetch-screeps-stats.mjs` with validation
 - [ ] **MUST analyze metrics** against defined anomaly criteria
 - [ ] **MUST create issues** for all detected anomalies meeting severity thresholds
 - [ ] **MUST store snapshot** with timestamp for historical tracking
@@ -53,9 +55,27 @@ Create issues for metrics exceeding these thresholds:
 Playbook:
 
 1. Authenticate the GitHub CLI.
-2. Fetch the latest Screeps PTR telemetry (JSON) using the Screeps API MCP server or provided credentials. 
-   You can use the screeps-api MCP server to directly access Screeps data, console, and memory.
-   Store the snapshot under `$GITHUB_WORKSPACE/reports/copilot/ptr-stats.json` and record the fetch timestamp.
+2. Fetch the latest Screeps PTR telemetry (JSON) using the provided fetch script:
+   ```bash
+   node scripts/fetch-screeps-stats.mjs
+   ```
+   This script will:
+   - Use environment variables: `SCREEPS_TOKEN` (or `SCREEPS_STATS_TOKEN`), `SCREEPS_HOST`, `SCREEPS_STATS_API`
+   - Fetch user stats from the Screeps API endpoint `/api/user/stats`
+   - Store results in `reports/screeps-stats/latest.json`
+   - Exit with error code 1 if the API is unavailable
+   
+   If the fetch succeeds, copy the snapshot to `reports/copilot/ptr-stats.json` for analysis.
+   If the fetch fails with authentication or network errors, create an issue documenting the API failure
+   with available error details and store a failure snapshot at `reports/copilot/ptr-stats.json` with:
+   ```json
+   {
+     "status": "api_unavailable",
+     "timestamp": "<ISO timestamp>",
+     "error": "<error message>",
+     "attempted_endpoint": "<endpoint URL>"
+   }
+   ```
 3. Analyse the metrics for regressions, degradations, or anomalies that require engineering attention.
 4. For every actionable issue, create or update a GitHub issue using `gh`:
    - Title starts with `PTR:`.

@@ -67,7 +67,7 @@ The repository defines the following GitHub workflows under `.github/workflows/`
 8. **`copilot-todo-daily.yml`** – Runs daily to automatically identify the oldest actionable issue (without incomplete sub-tasks) and apply the `Todo` label to trigger automated implementation.
 9. **`copilot-email-triage.yml`** – Triggered by `repository_dispatch` webhooks that contain email content; Copilot reviews the message and files any resulting GitHub issues itself, then records the triage summary in the workflow logs.
 10. **`dependabot-automerge.yml`** – Enables automatic merging of Dependabot updates (excluding semver-major bumps) once required checks pass.
-11. **`screeps-stats-monitor.yml`** – Runs every 30 minutes; Copilot fetches PTR telemetry using Screeps credentials, analyses the snapshot, and files/updates monitoring issues directly through the GitHub CLI.
+11. **`screeps-stats-monitor.yml`** – Runs every 30 minutes; Copilot uses the `scripts/fetch-screeps-stats.mjs` script to fetch PTR telemetry from the Screeps REST API, analyses the snapshot, and files/updates monitoring issues directly through the GitHub CLI.
 12. **`label-sync.yml`** – Keeps the repository labels aligned with `.github/labels.yml`.
 13. **`copilot-ci-autofix.yml`** – Watches for failures in any workflow (except itself to prevent infinite loops), lets Copilot download the logs, clone the affected branch, apply the fix with updated docs/tests/changelog, and push the result (either updating the PR or opening a fresh automation PR).
 
