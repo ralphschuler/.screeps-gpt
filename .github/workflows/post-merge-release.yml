@@ -78,13 +78,13 @@ jobs:
           VERSION="${{ steps.bump.outputs.version }}"
           TAG="v${VERSION}"
           SHA="${{ steps.commit.outputs.commit_hash }}"
-          
+
           # Check if tag already exists
           if git rev-parse "$TAG" >/dev/null 2>&1; then
             echo "Tag $TAG already exists"
             exit 0
           fi
-          
+
           # Create and push the tag
           git tag "$TAG" "$SHA"
           git push origin "$TAG" || {

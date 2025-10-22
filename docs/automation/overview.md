@@ -11,15 +11,17 @@ This document expands on the workflows under `.github/workflows/` and how they c
 
 ## Post Merge Release (`post-merge-release.yml`)
 
-- Trigger: Pushes to `main`.
-- Behaviour: Applies lint/format fixes, bumps the version, commits, and tags `v*` releases.
+- Trigger: Pushes to `main` (excludes release PR merges to prevent recursion).
+- Behaviour: Applies lint/format fixes, bumps the version, commits to a release branch, creates a tag, opens a PR to main, and triggers the Deploy workflow via workflow completion.
 - Secrets: Uses the default `GITHUB_TOKEN` with elevated `contents: write` permissions scoped to the workflow.
+- Notes: Skips execution when commit message contains "chore: prepare release" to prevent recursive workflow runs when release PRs are merged.
 
 ## Deploy (`deploy.yml`)
 
-- Trigger: Tags that match `v*`.
-- Behaviour: Builds and pushes code to the Screeps API (defaults to the PTR environment). Set `SCREEPS_DEPLOY_DRY_RUN=true` for local `act` dry-runs to skip the API call.
+- Trigger: Tags that match `v*` OR when Post Merge Release workflow completes successfully.
+- Behaviour: Builds and pushes code to the Screeps API (defaults to the PTR environment). Automatically deploys when triggered by the release workflow. Set `SCREEPS_DEPLOY_DRY_RUN=true` for local `act` dry-runs to skip the API call.
 - Secrets: `SCREEPS_TOKEN` (required), `SCREEPS_HOST`/`PORT`/`PROTOCOL`/`BRANCH` (optional overrides).
+- Notes: The `workflow_run` trigger ensures deployment happens even if tag creation doesn't trigger workflows (GitHub Actions limitation with `GITHUB_TOKEN`).
 
 ## Copilot Repository Audit (`copilot-review.yml`)
 
