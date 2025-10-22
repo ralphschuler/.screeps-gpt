@@ -5,6 +5,15 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Changed
+
+- **Simplified Copilot model configuration**
+  - Removed `.github/copilot/model-config.json` file
+  - Updated `copilot-exec` action to only pass `--model` flag when a model is explicitly specified
+  - Model resolution now: input parameter → COPILOT_MODEL env var → Copilot CLI default
+  - When no model is specified, Copilot CLI uses its own default model selection
+  - Updated documentation in README.md and docs/automation/overview.md
+
 ### Fixed
 
 - **Node.js 16 compatibility for lint-staged in CI workflows**

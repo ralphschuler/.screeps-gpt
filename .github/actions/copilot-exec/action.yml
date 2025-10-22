@@ -36,7 +36,7 @@ inputs:
     required: false
     default: "true"
   model:
-    description: Optional model identifier to pass to Copilot CLI. If not provided, reads from .github/copilot/model-config.json or falls back to gpt-4.1
+    description: Optional model identifier to pass to Copilot CLI. If not provided or empty, no model flag is passed to Copilot CLI.
     required: false
     default: ""
   copilot-token:
@@ -172,7 +172,7 @@ runs:
       run: |
         set -euo pipefail
 
-        # Priority: 1. Input parameter, 2. COPILOT_MODEL env var, 3. Config file, 4. Hardcoded default
+        # Priority: 1. Input parameter, 2. COPILOT_MODEL env var, 3. Empty (no default)
         model=""
 
         if [ -n "${REQUESTED_MODEL:-}" ]; then
@@ -181,22 +181,17 @@ runs:
         elif [ -n "${COPILOT_MODEL:-}" ]; then
           model="$COPILOT_MODEL"
           echo "ℹ️  Using model from COPILOT_MODEL environment variable: $model"
-        elif [ -f .github/copilot/model-config.json ]; then
-          default_model=$(jq -r '.defaultModel // "gpt-4.1"' .github/copilot/model-config.json)
-          model="$default_model"
-          echo "ℹ️  Using model from config file: $model"
         else
-          model="gpt-4.1"
-          echo "ℹ️  Using hardcoded default model: $model"
+          echo "ℹ️  No model specified, will use Copilot CLI default"
         fi
 
         echo "model=$model" >> "$GITHUB_OUTPUT"
 
         if [ "$VERBOSE" = "true" ]; then
-          echo "✅ Resolved Copilot model: $model"
+          echo "✅ Resolved Copilot model: ${model:-<empty>}"
           echo "   - Input parameter: ${REQUESTED_MODEL:-<empty>}"
           echo "   - COPILOT_MODEL env: ${COPILOT_MODEL:-<empty>}"
-          echo "   - Final selection: $model"
+          echo "   - Final selection: ${model:-<empty>}"
         fi
 
     - name: Restore result cache
@@ -340,7 +335,7 @@ runs:
           echo "   Command: ${cmd[*]}"
           echo "   Working directory: $WORKDIR"
           echo "   Output path: $out"
-          echo "   Model: $RESOLVED_MODEL"
+          echo "   Model: ${RESOLVED_MODEL:-<default>}"
         else
           echo "🚀 ${cmd[*]}" >&2
         fi

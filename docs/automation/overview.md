@@ -24,20 +24,7 @@ The model is resolved in the following order:
 
 1. **Workflow input parameter** – Explicit `model:` parameter passed to `copilot-exec`
 2. **`COPILOT_MODEL` environment variable** – Can be set at workflow, job, or step level
-3. **Configuration file** – `.github/copilot/model-config.json` (default: `gpt-4.1`)
-4. **Hardcoded fallback** – `gpt-4.1` if all else fails
-
-### Configuration File
-
-The centralized config at `.github/copilot/model-config.json`:
-
-```json
-{
-  "defaultModel": "gpt-4.1",
-  "fallbackModels": ["gpt-4o", "gpt-4"],
-  "description": "Centralized Copilot model configuration. Override with COPILOT_MODEL environment variable."
-}
-```
+3. **Copilot CLI default** – If no model is specified, the Copilot CLI uses its own default model
 
 ### Override Examples
 
