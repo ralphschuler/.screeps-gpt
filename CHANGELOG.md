@@ -7,6 +7,12 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Changed
 
+- **Updated package dependencies while maintaining Node.js 16 compatibility**
+  - Updated `semver` from 7.6.2 to 7.7.3 to address security vulnerability (GHSA-c2qf-rxjj-qqgw)
+  - Verified all build, lint, and test pipelines function correctly after update
+  - Maintained Node.js 16.x compatibility as required by package.json engines field
+  - Remaining vulnerabilities are primarily in optional @screeps/\* dependencies used only for local testing
+
 - **Simplified Copilot model configuration**
   - Removed `.github/copilot/model-config.json` file
   - Updated `copilot-exec` action to only pass `--model` flag when a model is explicitly specified

@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "screeps-api": "^1.16.1",
-    "semver": "^7.6.2",
+    "semver": "^7.7.3",
     "zod": "^4.1.12"
   },
   "devDependencies": {
