@@ -31,4 +31,3 @@ jobs:
           copilot-token: ${{ secrets.COPILOT_TOKEN }}
           prompt-path: .github/copilot/prompts/stats-analysis
           output-path: reports/copilot/stats-analysis-${{ github.run_id }}.log
-          additional-mcp-config: "@.github/mcp/screeps-api.json"
