@@ -21,16 +21,22 @@ interface VersionEntry {
   readonly slug: string;
 }
 
-const renderer = new marked.Renderer();
-const originalLink = renderer.link.bind(renderer);
-renderer.link = (href, title, text) => {
-  let nextHref = typeof href === "string" ? href : "";
-  if (nextHref.endsWith(".md")) {
-    nextHref = nextHref.replace(/\.md(#[^#]+)?$/, (_, anchor) => `.html${anchor ?? ""}`);
-  }
-  return originalLink(nextHref, title, text);
-};
-marked.use({ renderer, mangle: false, headerIds: true });
+marked.use({
+  renderer: {
+    link(href, title, text) {
+      let nextHref = typeof href === "string" ? href : "";
+      if (nextHref.endsWith(".md")) {
+        nextHref = nextHref.replace(/\.md(#[^#]+)?$/, (_, anchor) => `.html${anchor ?? ""}`);
+      }
+      
+      // Use the default link renderer with modified href
+      const titleAttr = title ? ` title="${title}"` : '';
+      return `<a href="${nextHref}"${titleAttr}>${text}</a>`;
+    }
+  },
+  mangle: false, 
+  headerIds: true 
+});
 
 async function ensureEmptyDir(directory: string): Promise<void> {
   await rm(directory, { recursive: true, force: true });
