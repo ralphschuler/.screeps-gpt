@@ -143,9 +143,13 @@ Before marking this PR as ready for review:
 
 ---
 
-**Automation Labels:** Add appropriate labels:
+**Labels:** Add appropriate labels from the standardized system:
 
-- Component: `runtime`, `automation`, `documentation`, `monitoring`
-- Type: `bug`, `enhancement`, `dependencies`
-- Process: `needs/regression-test`, `Todo`, `copilot`
-- Severity: `severity/high`, `severity/medium`, `severity/low` (if applicable)
+- **State:** `state/in-progress`, `state/blocked`, `state/done`
+- **Type:** `type/bug`, `type/feature`, `type/enhancement`, `type/chore`
+- **Priority:** `priority/critical`, `priority/high`, `priority/medium`, `priority/low`
+- **Domain:** `runtime`, `automation`, `documentation`, `monitoring`, `dependencies`
+- **Process:** `needs/regression-test`, `Todo`, `copilot`
+- **Workflow:** `good-first-issue`, `help-wanted`
+
+See [Label System Guide](../docs/automation/label-system.md) for details.
