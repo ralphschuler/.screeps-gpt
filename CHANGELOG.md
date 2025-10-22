@@ -37,6 +37,9 @@ All notable changes to this project are documented here. This changelog now main
 - **Fixed post-merge workflow recursive execution** by adding condition to skip when release PRs are merged back to main
 - **Fixed deployment workflow not triggering** by adding `workflow_run` trigger to chain deployment after successful release preparation
 - Simplified tag creation in post-merge workflow from GitHub API to git commands for clarity
+- Deploy workflow now falls back to latest version tag when no tag exists on triggering commit (resolves workflow run 18701965424)
+
+### Removed
 
 ## [0.1.0] - 2024-06-01
 
