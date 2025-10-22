@@ -55,7 +55,6 @@ async function updateVersionIndex(): Promise<void> {
       markdownLines.pop();
     }
   }
-  markdownLines.push("\n");
 
   const markdownPath = resolve("docs/changelog/versions.md");
   await mkdir(dirname(markdownPath), { recursive: true });
