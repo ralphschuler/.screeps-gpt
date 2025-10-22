@@ -5,6 +5,22 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Added
+
+- **Standardized label system with state, type, and priority categories** (#138)
+  - Implemented three-tier labeling system for improved issue and PR management
+  - Added state labels: `state/pending`, `state/backlog`, `state/in-progress`, `state/blocked`, `state/canceled`, `state/done`
+  - Added type labels: `type/bug`, `type/feature`, `type/enhancement`, `type/chore`, `type/question`
+  - Added priority labels: `priority/critical`, `priority/high`, `priority/medium`, `priority/low`, `priority/none`
+  - Added workflow labels: `good-first-issue`, `help-wanted`, `wontfix`, `duplicate`, `invalid`
+  - Preserved existing domain labels (automation, runtime, documentation, monitoring, dependencies, regression)
+  - Preserved process labels (Todo, monitoring, copilot, needs/regression-test)
+  - Updated all issue templates to use new label structure
+  - Updated all copilot prompts to use new labels (issue-triage, stats-analysis, repository-audit, ci-autofix, email-triage)
+  - Updated documentation (README.md, AGENTS.md, copilot-instructions.md) with comprehensive label guidance
+  - Created comprehensive label system guide at `docs/automation/label-system.md`
+  - Maintained backward compatibility by keeping deprecated labels (bug, enhancement, severity/*) marked as deprecated
+
 ### Changed
 
 - **Modernized CI/CD deployment workflow to use standard GitHub DevOps practices** (#126)

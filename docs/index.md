@@ -42,6 +42,7 @@ them before acting.
 
 - [Agent Guidelines](../AGENTS.md) - Comprehensive rules and knowledge base for GitHub Copilot and automation agents
 - [Automation Overview](automation/overview.md)
+- [Label System Guide](automation/label-system.md) - Standardized labeling system for issue and PR management
 - [Semantic Versioning Guide](automation/semantic-versioning-guide.md) - Conventional commits and automated version bumping
 - [PTR Monitoring Pipeline](operations/stats-monitoring.md)
 - [Respawn Handling](operations/respawn-handling.md)
