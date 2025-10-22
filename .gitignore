@@ -15,8 +15,9 @@
 # Screeps Config
 screeps.json
 
-# Copilot workflow logs (ephemeral artifacts)
+# Copilot workflow logs and cache (ephemeral artifacts)
 /reports/copilot/
+/.copilot-cache
 
 # ScreepsServer data from integration tests
 /server

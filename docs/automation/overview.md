@@ -6,6 +6,18 @@ This document expands on the workflows under `.github/workflows/` and how they c
 
 All Copilot workflows use the `copilot-exec` composite action (`.github/actions/copilot-exec/action.yml`), which provides centralized model selection with a flexible fallback chain.
 
+### Performance Optimizations
+
+The `copilot-exec` action includes several performance optimizations to reduce workflow execution time:
+
+1. **Conditional Repository Checkout**: Automatically detects if the repository is already checked out and skips the checkout step when not needed
+2. **npm Global Cache**: Caches the `@github/copilot` CLI installation to avoid repeated downloads
+3. **Project Dependency Cache**: Caches `node_modules` based on `package-lock.json` hash for faster dependency resolution
+4. **Result Caching**: Caches Copilot CLI output based on prompt SHA and model to avoid redundant AI calls for identical inputs
+5. **Timing Measurements**: Provides detailed execution timing in verbose mode for performance monitoring
+
+These optimizations significantly reduce workflow execution time, particularly for workflows that run frequently like issue triage and CI autofix.
+
 ### Model Resolution Priority
 
 The model is resolved in the following order:
