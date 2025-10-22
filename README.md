@@ -18,6 +18,10 @@ npm install
 
 ## Day-to-day Development
 
+### Node.js Version & Linting
+
+ESLint flat config (issue #156) required structuredClone which is absent in Node 16; a shim is applied in `eslint.config.js` so linting works in Node 16 while supporting Node 20 migration efforts (#124).
+
 | Command                   | Purpose                                                                                   |
 | ------------------------- | ----------------------------------------------------------------------------------------- |
 | `npm run build`           | Bundle the Screeps AI into `dist/main.js` using esbuild.                                  |

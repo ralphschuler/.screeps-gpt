@@ -5,6 +5,10 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Fixed
+
+- Resolved ESLint structuredClone crash by migrating to flat config (eslint.config.js) and adding Node 16 shim (#156)
+
 ### Added
 
 - **GPT-5 as default model for all Copilot workflows** (#141)
