@@ -57,6 +57,21 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Detect checkout status
+      id: detect-checkout
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [ -d .git ]; then
+          echo "need-checkout=false" >> "$GITHUB_OUTPUT"
+          echo "✅ Repository already present, skipping checkout"
+        else
+          echo "need-checkout=true" >> "$GITHUB_OUTPUT"
+          echo "🔄 Repository not present, will perform checkout"
+        fi
+    - name: Conditional checkout
+      if: steps.detect-checkout.outputs.need-checkout == 'true'
+      uses: actions/checkout@v4
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
@@ -69,6 +84,16 @@ runs:
           ~/.npm/_global
           ~/.npm/_cacache
         key: copilot-cli-${{ runner.os }}-node20-v1-@github/copilot@1.0.0-${{ hashFiles('.github/actions/copilot-exec/action.yml') }}
+
+    - name: Cache project dependencies
+      id: cache-deps
+      uses: actions/cache@v4
+      with:
+        path: |
+          node_modules
+        key: copilot-deps-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          copilot-deps-${{ runner.os }}-
 
     # 🚫 Remove apt-get entirely unless you *know* you need it
     # sharp will fetch its own prebuilt libvips bundle.
@@ -85,6 +110,18 @@ runs:
           npm install -g @github/copilot
         fi
         echo "$HOME/.npm/_global/bin" >> "$GITHUB_PATH"
+
+    - name: Install project dependencies (if package.json present)
+      if: steps.cache-deps.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [ -f package.json ]; then
+          echo "📦 Installing project dependencies"
+          npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+        else
+          echo "ℹ️ No package.json found, skipping dependency install"
+        fi
 
     - name: Render prompt
       id: render

@@ -7,6 +7,13 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Added
 
+- **Copilot exec pre-checkout + dependency caching optimisation** (#101)
+  - Added detection & conditional checkout to composite action (skips if .git present)
+  - Implemented node_modules cache keyed by OS + package-lock.json hash with restore keys fallback
+  - Added conditional npm ci install only on cache miss and when package.json exists
+  - Added total duration metric step for performance tracking
+  - Backward compatible: existing workflows need no changes
+
 - **GPT-5 as default model for all Copilot workflows** (#141)
   - Changed copilot-exec action default model from empty string to "gpt-5"
   - All Copilot workflows (issue-triage, todo-pr, ci-autofix, review) now automatically use GPT-5 for enhanced performance
