@@ -20,19 +20,20 @@ Follow the [Conventional Commits](https://www.conventionalcommits.org/) specific
 
 ### Commit Types and Version Bumps
 
-| Commit Type | Example | Version Bump | Description |
-|------------|---------|--------------|-------------|
-| `feat:` | `feat: add new harvester AI` | **Minor** (0.1.0 → 0.2.0) | New feature or capability |
-| `fix:` | `fix: correct spawn priority logic` | **Patch** (0.1.0 → 0.1.1) | Bug fix |
-| `chore:` | `chore: update dependencies` | **Patch** (0.1.0 → 0.1.1) | Maintenance tasks |
-| `docs:` | `docs: update API documentation` | **Patch** (0.1.0 → 0.1.1) | Documentation changes |
-| `BREAKING CHANGE:` | See below | **Major** (1.0.0 → 2.0.0) | Breaking API changes |
+| Commit Type        | Example                             | Version Bump              | Description               |
+| ------------------ | ----------------------------------- | ------------------------- | ------------------------- |
+| `feat:`            | `feat: add new harvester AI`        | **Minor** (0.1.0 → 0.2.0) | New feature or capability |
+| `fix:`             | `fix: correct spawn priority logic` | **Patch** (0.1.0 → 0.1.1) | Bug fix                   |
+| `chore:`           | `chore: update dependencies`        | **Patch** (0.1.0 → 0.1.1) | Maintenance tasks         |
+| `docs:`            | `docs: update API documentation`    | **Patch** (0.1.0 → 0.1.1) | Documentation changes     |
+| `BREAKING CHANGE:` | See below                           | **Major** (1.0.0 → 2.0.0) | Breaking API changes      |
 
 ### Breaking Changes
 
 Indicate breaking changes in two ways:
 
 1. **In commit footer:**
+
 ```
 feat: redesign spawning system
 
@@ -41,6 +42,7 @@ All existing spawn configurations will need to be updated.
 ```
 
 2. **With `!` after type/scope:**
+
 ```
 feat!: redesign spawning system
 
@@ -84,12 +86,14 @@ When a release is published:
 ### Writing Commit Messages
 
 ✅ **Good Examples:**
+
 - `feat: implement automatic tower targeting`
 - `fix: prevent creeps from getting stuck at exits`
 - `chore: upgrade TypeScript to 5.4.3`
 - `docs: add deployment environment setup guide`
 
 ❌ **Avoid:**
+
 - `update code` (too vague, no conventional type)
 - `feat add feature` (missing colon)
 - `WIP` or `tmp` (should be squashed before merge)
@@ -105,6 +109,7 @@ docs(readme): update deployment instructions
 ```
 
 Common scopes in this repository:
+
 - `kernel` - Core runtime system
 - `spawning` - Spawn management
 - `behavior` - Creep AI behavior
@@ -117,6 +122,7 @@ Common scopes in this repository:
 When a PR contains multiple logical changes:
 
 1. **Use separate commits** with appropriate types:
+
 ```
 feat: add new tower logic
 fix: correct energy calculation
@@ -129,12 +135,14 @@ docs: update tower documentation
 ### Release Notes
 
 GitHub's auto-generated release notes will include:
+
 - All commits since the last release
 - Grouped by type (if using conventional commits)
 - Links to pull requests
 - Contributor attribution
 
 You can edit release notes in GitHub after they're created to add:
+
 - Migration guides for breaking changes
 - Known issues or limitations
 - Special acknowledgments

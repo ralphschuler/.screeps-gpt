@@ -213,6 +213,7 @@ Before merging changes:
 Repository labels are synchronized from `.github/labels.yml` using a standardized three-tier system:
 
 **Process Labels:**
+
 - `Todo` - Triggers Copilot Todo automation
 - `monitoring` - Created by stats monitor for PTR anomalies
 - `needs/regression-test` - Apply when bug report lacks coverage

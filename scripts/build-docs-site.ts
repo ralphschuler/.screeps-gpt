@@ -24,7 +24,7 @@ interface VersionEntry {
 const renderer = new marked.Renderer();
 const originalLink = renderer.link.bind(renderer);
 renderer.link = (href, title, text) => {
-  let nextHref = typeof href === 'string' ? href : "";
+  let nextHref = typeof href === "string" ? href : "";
   if (nextHref.endsWith(".md")) {
     nextHref = nextHref.replace(/\.md(#[^#]+)?$/, (_, anchor) => `.html${anchor ?? ""}`);
   }
@@ -281,7 +281,7 @@ async function buildSite(): Promise<void> {
     const versionsJson = await readFile(versionsJsonPath, "utf8");
     const parsed = JSON.parse(versionsJson) as unknown;
     versionEntries = parseVersionEntries(parsed);
-  } catch (error: unknown) {
+  } catch {
     console.warn("No versions.json found; run `npm run versions:update` before building the docs site.");
   }
 

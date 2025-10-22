@@ -42,7 +42,7 @@ async function retryWithBackoff<T>(fn: () => Promise<T>, maxRetries: number = 3,
     }
   }
 
-  throw lastError;
+  throw lastError || new Error("Operation failed after all retries");
 }
 
 async function deploy(): Promise<void> {

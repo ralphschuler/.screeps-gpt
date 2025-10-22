@@ -30,7 +30,7 @@ async function runCommand(command: string, args: string[], options: { cwd?: stri
 async function ensureActBinary(binary: string): Promise<void> {
   try {
     await runCommand(binary, ["--version"]);
-  } catch (error) {
+  } catch {
     throw new Error(
       `The act CLI is required to validate workflows. Install it from https://github.com/nektos/act and ensure '${binary}' is on your PATH.`
     );
@@ -52,7 +52,7 @@ async function testWorkflows(): Promise<void> {
   const secretsFile = resolve("tests/actions/secrets.env");
   try {
     await access(secretsFile);
-  } catch (error) {
+  } catch {
     throw new Error(`Missing secrets file for act at ${secretsFile}`);
   }
 

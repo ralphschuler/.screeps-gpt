@@ -84,6 +84,7 @@ Common GitHub patterns for community engagement and issue management:
 ### For New Issues
 
 Issue templates automatically apply appropriate labels:
+
 - Bug reports get: `type/bug`, `needs/regression-test`, `state/pending`
 - Feature requests get: `type/feature`, `state/pending`
 - Automation issues get: `automation`, `type/bug`, `state/pending`
@@ -92,6 +93,7 @@ Issue templates automatically apply appropriate labels:
 ### During Triage
 
 The `copilot-issue-triage.yml` workflow automatically:
+
 1. Analyzes issue content
 2. Applies appropriate type, priority, and domain labels
 3. Sets state to `state/pending` or `state/backlog`
@@ -100,6 +102,7 @@ The `copilot-issue-triage.yml` workflow automatically:
 ### During Development
 
 Update state labels as work progresses:
+
 1. `state/pending` → `state/backlog` (after triage confirmation)
 2. `state/backlog` → `state/in-progress` (when starting work)
 3. `state/in-progress` → `state/blocked` (if blocked)
@@ -108,6 +111,7 @@ Update state labels as work progresses:
 ### For Pull Requests
 
 Automation workflows apply labels:
+
 - Copilot Todo PRs get: `automation`, `copilot`, `type/bug` or `type/enhancement`
 - CI Autofix PRs get: `automation`, `copilot`, `type/chore`, `priority/high`
 - Dependabot PRs get: `dependencies`
@@ -130,13 +134,14 @@ These labels will be automatically migrated over time. New issues and PRs should
 
 Existing issues can retain their old labels. The system supports both old and new labels simultaneously. When updating an existing issue:
 
-1. Add the appropriate new labels (type/*, priority/*, state/*)
-2. Optionally remove the deprecated labels (bug, enhancement, severity/*)
+1. Add the appropriate new labels (type/_, priority/_, state/\*)
+2. Optionally remove the deprecated labels (bug, enhancement, severity/\*)
 3. The label-sync workflow will not delete labels from existing issues
 
 ### For Automation
 
 All automation workflows and copilot prompts have been updated to:
+
 - Use the new label structure by default
 - Understand both old and new labels for backward compatibility
 - Gradually migrate to exclusive use of new labels
@@ -152,6 +157,7 @@ All automation workflows and copilot prompts have been updated to:
 ### Example 1: Critical Bug Report
 
 A production-blocking bug should have:
+
 - `type/bug` - It's a defect
 - `priority/critical` - Immediate attention required
 - `runtime` - Affects Screeps runtime
@@ -161,6 +167,7 @@ A production-blocking bug should have:
 ### Example 2: Documentation Enhancement
 
 A documentation improvement should have:
+
 - `type/enhancement` - Improving existing docs
 - `priority/medium` - Standard priority
 - `documentation` - Affects documentation
@@ -170,6 +177,7 @@ A documentation improvement should have:
 ### Example 3: Feature Request
 
 A new feature request should have:
+
 - `type/feature` - New functionality
 - `priority/low` or `priority/medium` - Based on importance
 - Domain labels as appropriate (`runtime`, `automation`, etc.)
@@ -181,6 +189,7 @@ A new feature request should have:
 ### Copilot Todo Workflow
 
 Issues labeled with `Todo` trigger automated implementation. The workflow:
+
 1. Creates a draft PR
 2. Implements the fix incrementally
 3. Updates PR description with progress
@@ -189,6 +198,7 @@ Issues labeled with `Todo` trigger automated implementation. The workflow:
 ### Stats Monitor Workflow
 
 PTR monitoring creates issues with:
+
 - `monitoring` and `copilot` (process labels)
 - `type/bug` (it's a detected problem)
 - `state/pending` (awaiting review)
@@ -198,6 +208,7 @@ PTR monitoring creates issues with:
 ### Issue Triage Workflow
 
 New issues are automatically triaged with:
+
 - Appropriate `type/*` label based on content
 - Suggested `priority/*` based on impact
 - Relevant domain labels

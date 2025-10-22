@@ -83,7 +83,7 @@ describe("Post Merge Release Workflow - Modernized CI/CD", () => {
     // Verify the workflow uses git-auto-commit-action properly
     expect(workflowContent).toContain("stefanzweifel/git-auto-commit-action@v5");
     expect(workflowContent).toContain("skip_fetch: false");
-    
+
     // Verify it commits to main with skip ci
     expect(workflowContent).toContain("branch: main");
     expect(workflowContent).toContain("[skip ci]");
