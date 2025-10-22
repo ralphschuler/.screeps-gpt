@@ -214,7 +214,6 @@ The `copilot-exec` composite action supports Model Context Protocol (MCP) server
 
 MCP server configurations are stored in `.github/mcp/` as JSON files defining server commands and environment variables:
 
-- `.github/mcp/screeps-api.json` - Screeps API server configuration
 - `.github/mcp/playwright.json` - Playwright server configuration
 
 ### Usage in Workflows
@@ -224,10 +223,10 @@ Enable additional MCP servers by passing the configuration file path to the `add
 ```yaml
 - uses: ./.github/actions/copilot-exec
   env:
-    SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   with:
     prompt-path: .github/copilot/prompts/my-prompt
-    additional-mcp-config: "@.github/mcp/screeps-api.json"
+    additional-mcp-config: "@.github/mcp/playwright.json"
 ```
 
 The action automatically merges the additional MCP configuration with the base GitHub MCP server configuration.

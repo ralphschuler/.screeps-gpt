@@ -142,10 +142,10 @@ To enable additional MCP servers in a workflow, use the `additional-mcp-config` 
 ```yaml
 - uses: ./.github/actions/copilot-exec
   env:
-    SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   with:
     prompt-path: .github/copilot/prompts/my-prompt
-    additional-mcp-config: "@.github/mcp/screeps-api.json"
+    additional-mcp-config: "@.github/mcp/playwright.json"
 ```
 
 The configuration files in `.github/mcp/` define MCP server commands and environment variables. The `copilot-exec` action automatically merges these with the base GitHub MCP configuration.
