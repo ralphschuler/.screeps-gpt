@@ -44,6 +44,7 @@ them before acting.
 - [Automation Overview](automation/overview.md)
 - [Label System Guide](automation/label-system.md) - Standardized labeling system for issue and PR management
 - [Semantic Versioning Guide](automation/semantic-versioning-guide.md) - Conventional commits and automated version bumping
+- [Push Notifications Guide](automation/push-notifications.md) - Real-time alerts for critical repository and Screeps bot events
 - [PTR Monitoring Pipeline](operations/stats-monitoring.md)
 - [Respawn Handling](operations/respawn-handling.md)
 - [Deployment Troubleshooting](operations/deployment-troubleshooting.md) - Common deployment issues and solutions

@@ -72,6 +72,8 @@ This will output:
 - Trigger: Pull requests targeting `main`.
 - Permissions: `contents: read` only.
 - Jobs: Lint, formatting checks, unit tests, PTR e2e tests, regression tests, coverage + evaluation artifact upload, plus verification that `docs/changelog/versions.*` matches `npm run versions:update`.
+- Push Notifications: Sent on build failure (Priority 4) to alert maintainers of issues requiring attention. See [Push Notifications Guide](push-notifications.md) for details.
+- Secrets: `PUSH_TOKEN` (optional) for build failure alerts.
 - Notes: Configure PTR secrets locally before running the e2e suite. Failures here must be reproduced with a regression test before applying fixes (see repository rules in [README](../../README.md)).
 
 ## Post Merge Release (`post-merge-release.yml`)
@@ -89,9 +91,10 @@ This will output:
 ## Deploy (`deploy.yml`)
 
 - Trigger: Tags that match `v*` OR GitHub Release published events.
-- Behaviour: Builds and pushes code to the Screeps API. Uses GitHub's `production` environment for deployment protection rules and approval workflows. Set `SCREEPS_DEPLOY_DRY_RUN=true` for local `act` dry-runs to skip the API call.
+- Behaviour: Builds and pushes code to the Screeps API. Uses GitHub's `production` environment for deployment protection rules and approval workflows. Set `SCREEPS_DEPLOY_DRY_RUN=true` for local `act` dry-runs to skip the API call. Sends push notifications on deployment success (Priority 3) and failure (Priority 5) via Push by Techulus.
 - Environment: Uses GitHub environment `production` with URL `https://screeps.com` for deployment tracking and protection rules.
-- Secrets: `SCREEPS_TOKEN` (required), `SCREEPS_HOST`/`PORT`/`PROTOCOL`/`BRANCH` (optional overrides).
+- Push Notifications: Sent for all deployment outcomes with workflow run links. See [Push Notifications Guide](push-notifications.md) for details.
+- Secrets: `SCREEPS_TOKEN` (required), `SCREEPS_HOST`/`PORT`/`PROTOCOL`/`BRANCH` (optional overrides). `PUSH_TOKEN` (optional) for deployment alerts.
 - Notes: Deployment is triggered automatically when releases are published, leveraging GitHub's native CI/CD features.
 
 ## Copilot Repository Review (`copilot-review.yml`)
@@ -167,9 +170,10 @@ This will output:
 ## Screeps Stats Monitor (`screeps-stats-monitor.yml`)
 
 - Trigger: Every 30 minutes + manual dispatch.
-- Behaviour: Copilot uses the `scripts/fetch-screeps-stats.mjs` Node.js script to fetch telemetry from Screeps API, analyse anomalies, and open/update monitoring issues through `gh` with severity labels.
+- Behaviour: Copilot uses the `scripts/fetch-screeps-stats.mjs` Node.js script to fetch telemetry from Screeps API, analyse anomalies, and open/update monitoring issues through `gh` with severity labels. After analysis, `scripts/check-ptr-alerts.ts` examines the stats for critical conditions and sends push notifications for high CPU usage (>80%), critical CPU (>95%), and low energy reserves.
 - Data Collection: Uses the native Screeps REST API endpoint `/api/user/stats` via the fetch script.
-- Secrets: `SCREEPS_TOKEN` (required), `SCREEPS_STATS_TOKEN`, `SCREEPS_EMAIL`, `SCREEPS_PASSWORD` (optional alternatives), plus optional host/port/protocol overrides.
+- Push Notifications: Automatically sent for critical and high severity alerts via Push by Techulus (requires `PUSH_TOKEN` secret). See [Push Notifications Guide](push-notifications.md) for details.
+- Secrets: `SCREEPS_TOKEN` (required), `SCREEPS_STATS_TOKEN`, `SCREEPS_EMAIL`, `SCREEPS_PASSWORD` (optional alternatives), plus optional host/port/protocol overrides. `PUSH_TOKEN` (optional) for real-time alerts.
 - Action Enforcement: Mandatory telemetry validation, explicit anomaly detection criteria with severity thresholds, and concrete evidence requirements for all monitoring issues.
 
 ## Label Sync (`label-sync.yml`)
