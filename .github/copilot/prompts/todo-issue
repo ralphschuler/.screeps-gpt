@@ -12,15 +12,32 @@ The workflow has already provided `GITHUB_TOKEN`/`GH_TOKEN`. Authenticate the Gi
 
 Execution checklist:
 
-1. Implement the required changes while respecting every rule in `AGENTS.md` (tests, docs, changelog discipline, deterministic
-   logic, etc.).
-2. Run the relevant Bun commands (`bun run lint`, `bun run test:unit`, targeted suites, etc.) so the pull request contains
-   verified results.
-3. Commit the work with a conventional message that references the issue (e.g. `fix: ... (#${ISSUE_NUMBER})`).
-4. Push the branch to the canonical repository using `gh`.
-5. Open a pull request via `gh pr create` that links back to the issue, applies the `automation` and `copilot` labels, and
-   includes a concise summary of the work and executed tests.
-6. Comment on the source issue mentioning the pull request URL.
+1. **Context Analysis**
+   - Use the GitHub MCP server to check if this issue has any related issues, sub-tasks, or dependencies
+   - Verify all dependent sub-tasks are completed before proceeding
+   - If sub-tasks are incomplete, add a comment to the issue explaining the blocking dependencies and exit
+
+2. **Implementation**
+   - Implement the required changes while respecting every rule in `AGENTS.md` (tests, docs, changelog discipline, deterministic
+     logic, etc.)
+   - Consider any related issues mentioned in the issue body when implementing
+
+3. **Validation**
+   - Run the relevant Bun commands (`bun run lint`, `bun run test:unit`, targeted suites, etc.) so the pull request contains
+     verified results
+
+4. **Commit and Push**
+   - Commit the work with a conventional message that references the issue (e.g. `fix: ... (#${ISSUE_NUMBER})`)
+   - Push the branch to the canonical repository using `gh`
+
+5. **Create Pull Request**
+   - Open a pull request via `gh pr create` that links back to the issue, applies the `automation` and `copilot` labels, and
+     includes a concise summary of the work and executed tests
+   - If related issues were identified, mention them in the PR description
+
+6. **Update Issue**
+   - Comment on the source issue mentioning the pull request URL
+   - If this issue is a parent with sub-tasks, note that sub-tasks may need updates as well
 
 When everything is complete, print minified JSON with this structure so the workflow captures the outcome:
 
