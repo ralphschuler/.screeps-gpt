@@ -10,7 +10,7 @@ const createMockCreep = (role: string, energy: { free: number; used: number }, r
     getUsedCapacity: vi.fn(() => energy.used)
   },
   pos: {
-    findClosestByPath: vi.fn((objects) => objects?.[0] ?? null)
+    findClosestByPath: vi.fn(objects => objects?.[0] ?? null)
   },
   room,
   harvest: vi.fn(() => OK),
@@ -87,11 +87,9 @@ describe("BehaviorController - Starter Bot MVP", () => {
 
       const spawn = mockGame.spawns.Spawn1;
       const spawnCreep = spawn.spawnCreep;
-      expect(spawnCreep).toHaveBeenCalledWith(
-        [WORK, CARRY, MOVE],
-        expect.stringMatching(/harvester-\d+-\d+/),
-        { memory: { role: "harvester", task: "harvest", version: 1 } }
-      );
+      expect(spawnCreep).toHaveBeenCalledWith([WORK, CARRY, MOVE], expect.stringMatching(/harvester-\d+-\d+/), {
+        memory: { role: "harvester", task: "harvest", version: 1 }
+      });
     });
 
     it("spawns upgrader creeps when below minimum", () => {
@@ -101,11 +99,9 @@ describe("BehaviorController - Starter Bot MVP", () => {
 
       const spawn = mockGame.spawns.Spawn1;
       const spawnCreep = spawn.spawnCreep;
-      expect(spawnCreep).toHaveBeenCalledWith(
-        [WORK, CARRY, MOVE],
-        expect.stringMatching(/upgrader-\d+-\d+/),
-        { memory: { role: "upgrader", task: "upgrade", version: 1 } }
-      );
+      expect(spawnCreep).toHaveBeenCalledWith([WORK, CARRY, MOVE], expect.stringMatching(/upgrader-\d+-\d+/), {
+        memory: { role: "upgrader", task: "upgrade", version: 1 }
+      });
     });
 
     it("does not spawn when spawn is busy", () => {
@@ -223,9 +219,7 @@ describe("BehaviorController - Starter Bot MVP", () => {
 
       const result = controllerWithLogger.execute(mockGame, mockMemory, {});
 
-      expect(logger.warn).toHaveBeenCalledWith(
-        expect.stringContaining("Unknown role 'unknown_role'")
-      );
+      expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("Unknown role 'unknown_role'"));
       expect(result.processedCreeps).toBe(1);
     });
 
@@ -261,9 +255,7 @@ describe("BehaviorController - Starter Bot MVP", () => {
 
       controllerWithLogger.execute(mockGame, mockMemory, { harvester: 0 });
 
-      expect(logger.warn).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to spawn harvester")
-      );
+      expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("Failed to spawn harvester"));
     });
   });
 
