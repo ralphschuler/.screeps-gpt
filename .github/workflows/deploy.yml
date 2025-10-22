@@ -4,6 +4,10 @@ on:
   push:
     tags:
       - "v*"
+  workflow_run:
+    workflows: ["Post Merge Release"]
+    types:
+      - completed
 
 permissions:
   contents: read
@@ -11,9 +15,36 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Only run if triggered by tag push or if triggered by workflow_run and it was successful
+    if: github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # For workflow_run, checkout the release branch that triggered it
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_branch || github.ref }}
+          fetch-depth: 0
+      
+      - name: Get version
+        id: get_version
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            # Tag push event - extract version from tag
+            VERSION="${{ github.ref_name }}"
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+            echo "Deploying tagged version: $VERSION"
+          elif [[ "${{ github.event_name }}" == "workflow_run" ]]; then
+            # Workflow run event - extract version from branch name (release/vX.Y.Z)
+            BRANCH="${{ github.event.workflow_run.head_branch }}"
+            VERSION=$(echo "$BRANCH" | sed 's|^release/||')
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+            echo "Deploying from release branch: $BRANCH (version: $VERSION)"
+          else
+            echo "Unknown event type: ${{ github.event_name }}"
+            exit 1
+          fi
+      
       - name: Setup Python 2
         uses: ./.github/actions/setup-python2
       - name: Setup Node.js 16
