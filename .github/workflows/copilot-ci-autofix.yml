@@ -43,6 +43,7 @@ jobs:
           TRIGGER_EVENT: ${{ toJSON(github.event.workflow_run.event) }}
           EVENT_PATH: "${{ github.event_path }}"
           WORKSPACE: "${{ github.workspace }}"
+          PR_TEMPLATE: "copilot-quickfix.md"
         with:
           copilot-token: ${{ secrets.COPILOT_TOKEN }}
           prompt-path: .github/copilot/prompts/ci-autofix

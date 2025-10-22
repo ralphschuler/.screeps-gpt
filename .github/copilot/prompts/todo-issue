@@ -19,11 +19,11 @@ Execution checklist:
 
 2. **Create Draft Pull Request**
    - Push the initial branch to the canonical repository using `gh`
-   - Create a DRAFT pull request immediately via `gh pr create --draft` that:
+   - Create a DRAFT pull request immediately via `gh pr create --draft --template ${PR_TEMPLATE}` that:
      - Links back to the issue
      - Applies the `automation` and `copilot` labels
      - Includes a title like "feat: resolve #${ISSUE_NUMBER} - ${ISSUE_TITLE}"
-     - Contains an initial PR description with an implementation plan as a markdown checklist
+     - Uses the specialized PR template for Todo automation workflow
      - Mentions related issues if identified
    - This makes the automation process transparent and allows users to follow along
 
