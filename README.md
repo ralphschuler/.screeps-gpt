@@ -32,6 +32,25 @@ npm install
 | `npm run analyze:system`  | Evaluate the current build quality and emit `reports/system-evaluation.json`.             |
 | `npm run deploy`          | Build and upload the AI to the Screeps API (requires deployment secrets).                 |
 
+### Pre-commit Hooks
+
+This repository uses [husky](https://typicode.github.io/husky/) and [lint-staged](https://github.com/okonet/lint-staged) to enforce code quality standards before commits. When you run `npm install`, the hooks are automatically installed.
+
+**What runs on commit:**
+
+- **Linting**: ESLint automatically fixes and checks TypeScript files for code quality issues
+- **Formatting**: Prettier formats all staged files to maintain consistent code style
+- **Unit Tests**: All unit tests run to catch regressions early (typically completes in <1 second)
+
+**Bypassing hooks:**
+If you need to commit without running the hooks (e.g., work-in-progress commits), use the `--no-verify` flag:
+
+```bash
+git commit --no-verify -m "WIP: incomplete feature"
+```
+
+**Note:** The CI pipeline will still run all checks on pull requests, so bypassing hooks locally doesn't skip quality validation.
+
 ### Bug Fix Protocol
 
 - **Capture the failure first.** Write or update a regression test that demonstrates the bug before committing any fix.
@@ -96,23 +115,29 @@ All workflows rely on the default `GITHUB_TOKEN` for repository operations (push
 Repository labels are synchronised via [`label-sync.yml`](.github/workflows/label-sync.yml) from [`.github/labels.yml`](.github/labels.yml). Do not edit labels manually in the UI—update the YAML file instead. The repository uses a standardized three-tier labeling system:
 
 **Process Labels** – Workflow triggers and automation:
+
 - `Todo` – Triggers Copilot Todo automation.
 - `monitoring` – Created by the stats monitor for PTR anomalies.
 - `needs/regression-test` – Apply when a bug report lacks coverage.
 
 **State Labels** – Issue lifecycle management:
+
 - `state/pending`, `state/backlog`, `state/in-progress`, `state/blocked`, `state/canceled`, `state/done`
 
 **Type Labels** – Issue classification:
+
 - `type/bug`, `type/feature`, `type/enhancement`, `type/chore`, `type/question`
 
 **Priority Labels** – Urgency and importance:
+
 - `priority/critical`, `priority/high`, `priority/medium`, `priority/low`, `priority/none`
 
 **Domain Labels** – Technical areas:
+
 - `automation`, `documentation`, `runtime`, `monitoring`, `dependencies`, `regression`
 
 **Workflow Labels** – Common GitHub patterns:
+
 - `good-first-issue`, `help-wanted`, `wontfix`, `duplicate`, `invalid`
 
 **Note:** Legacy labels (`bug`, `enhancement`, `severity/*`) are deprecated in favor of the new `type/*` and `priority/*` labels but are temporarily kept for backward compatibility.
