@@ -86,7 +86,8 @@ describe("BehaviorController - Starter Bot MVP", () => {
       controller.execute(mockGame, mockMemory, roleCounts);
 
       const spawn = mockGame.spawns.Spawn1;
-      expect(spawn.spawnCreep).toHaveBeenCalledWith(
+      const spawnCreep = spawn.spawnCreep;
+      expect(spawnCreep).toHaveBeenCalledWith(
         [WORK, CARRY, MOVE],
         expect.stringMatching(/harvester-\d+-\d+/),
         { memory: { role: "harvester", task: "harvest", version: 1 } }
@@ -99,7 +100,8 @@ describe("BehaviorController - Starter Bot MVP", () => {
       controller.execute(mockGame, mockMemory, roleCounts);
 
       const spawn = mockGame.spawns.Spawn1;
-      expect(spawn.spawnCreep).toHaveBeenCalledWith(
+      const spawnCreep = spawn.spawnCreep;
+      expect(spawnCreep).toHaveBeenCalledWith(
         [WORK, CARRY, MOVE],
         expect.stringMatching(/upgrader-\d+-\d+/),
         { memory: { role: "upgrader", task: "upgrade", version: 1 } }
@@ -112,7 +114,8 @@ describe("BehaviorController - Starter Bot MVP", () => {
 
       controller.execute(mockGame, mockMemory, roleCounts);
 
-      expect(mockGame.spawns.Spawn1.spawnCreep).not.toHaveBeenCalled();
+      const spawnCreep = mockGame.spawns.Spawn1.spawnCreep;
+      expect(spawnCreep).not.toHaveBeenCalled();
     });
 
     it("does not spawn when role minimums are met", () => {
@@ -120,7 +123,8 @@ describe("BehaviorController - Starter Bot MVP", () => {
 
       controller.execute(mockGame, mockMemory, roleCounts);
 
-      expect(mockGame.spawns.Spawn1.spawnCreep).not.toHaveBeenCalled();
+      const spawnCreep = mockGame.spawns.Spawn1.spawnCreep;
+      expect(spawnCreep).not.toHaveBeenCalled();
     });
   });
 
@@ -131,7 +135,8 @@ describe("BehaviorController - Starter Bot MVP", () => {
 
       controller.execute(mockGame, mockMemory, {});
 
-      expect(creep.harvest).toHaveBeenCalled();
+      const harvest = creep.harvest;
+      expect(harvest).toHaveBeenCalled();
     });
 
     it("harvester moves to source when not in range", () => {
@@ -141,7 +146,8 @@ describe("BehaviorController - Starter Bot MVP", () => {
 
       controller.execute(mockGame, mockMemory, {});
 
-      expect(creep.moveTo).toHaveBeenCalled();
+      const moveTo = creep.moveTo;
+      expect(moveTo).toHaveBeenCalled();
     });
 
     it("harvester transfers energy to structures when full", () => {
@@ -150,7 +156,8 @@ describe("BehaviorController - Starter Bot MVP", () => {
 
       controller.execute(mockGame, mockMemory, {});
 
-      expect(creep.transfer).toHaveBeenCalled();
+      const transfer = creep.transfer;
+      expect(transfer).toHaveBeenCalled();
     });
 
     it("harvester upgrades controller when no transfer targets available", () => {
@@ -169,7 +176,8 @@ describe("BehaviorController - Starter Bot MVP", () => {
 
       controller.execute(mockGame, mockMemory, {});
 
-      expect(creep.upgradeController).toHaveBeenCalled();
+      const upgradeController = creep.upgradeController;
+      expect(upgradeController).toHaveBeenCalled();
     });
   });
 
@@ -180,7 +188,8 @@ describe("BehaviorController - Starter Bot MVP", () => {
 
       controller.execute(mockGame, mockMemory, {});
 
-      expect(creep.withdraw).toHaveBeenCalled();
+      const withdraw = creep.withdraw;
+      expect(withdraw).toHaveBeenCalled();
     });
 
     it("upgrader upgrades controller when has energy", () => {
@@ -189,7 +198,8 @@ describe("BehaviorController - Starter Bot MVP", () => {
 
       controller.execute(mockGame, mockMemory, {});
 
-      expect(creep.upgradeController).toHaveBeenCalled();
+      const upgradeController = creep.upgradeController;
+      expect(upgradeController).toHaveBeenCalled();
     });
 
     it("upgrader moves to controller when not in range", () => {
@@ -199,7 +209,8 @@ describe("BehaviorController - Starter Bot MVP", () => {
 
       controller.execute(mockGame, mockMemory, {});
 
-      expect(creep.moveTo).toHaveBeenCalled();
+      const moveTo = creep.moveTo;
+      expect(moveTo).toHaveBeenCalled();
     });
   });
 
@@ -235,8 +246,8 @@ describe("BehaviorController - Starter Bot MVP", () => {
 
       expect(result).toMatchObject({
         processedCreeps: 2,
-        spawnedCreeps: expect.any(Array),
-        tasksExecuted: expect.any(Object)
+        spawnedCreeps: expect.any(Array) as unknown[],
+        tasksExecuted: expect.any(Object) as Record<string, unknown>
       });
       expect(result.tasksExecuted.harvest).toBeGreaterThan(0);
       expect(result.tasksExecuted.upgrade).toBeGreaterThan(0);
