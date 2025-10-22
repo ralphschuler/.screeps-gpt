@@ -1,7 +1,7 @@
 name: Bug Report
 description: Report a confirmed defect that requires fixing
 title: "bug: "
-labels: ["bug", "needs/regression-test"]
+labels: ["type/bug", "needs/regression-test", "state/pending"]
 assignees: []
 body:
   - type: markdown

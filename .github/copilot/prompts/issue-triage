@@ -93,10 +93,13 @@ Follow this process:
    
 7. **Apply Labels**
    - Apply appropriate labels from the repository set based on the issue content:
-     - Area labels: `automation`, `documentation`, `runtime`, `monitoring`
-     - Priority labels: `severity/high`, `severity/medium`, `severity/low`
-     - Process labels: `needs/regression-test`
+     - Type labels: `type/bug`, `type/feature`, `type/enhancement`, `type/chore`, `type/question`
+     - State labels: `state/pending` (default for new issues), `state/backlog`, `state/blocked`
+     - Priority labels: `priority/critical`, `priority/high`, `priority/medium`, `priority/low`, `priority/none`
+     - Domain labels: `automation`, `documentation`, `runtime`, `monitoring`, `dependencies`, `regression`
+     - Process labels: `needs/regression-test`, `good-first-issue`, `help-wanted`
    - **IMPORTANT**: Do NOT automatically apply the `Todo` label - this should be a deliberate manual decision by maintainers
+   - **NOTE**: Legacy labels (bug, enhancement, severity/*) are deprecated; use the new type/* and priority/* labels instead
 
 8. **Add Triage Comment**
    - Add a SINGLE comment to the issue explaining:

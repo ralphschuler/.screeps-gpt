@@ -220,15 +220,24 @@ Before merging changes:
 
 ### Labels
 
-Repository labels are synchronized from `.github/labels.yml`. Key labels:
+Repository labels are synchronized from `.github/labels.yml` using a standardized three-tier system:
 
+**Process Labels:**
 - `Todo` - Triggers Copilot Todo automation
 - `monitoring` - Created by stats monitor for PTR anomalies
-- `severity/{high,medium,low}` - Convey urgency for alerts
 - `needs/regression-test` - Apply when bug report lacks coverage
-- `documentation`, `automation`, `runtime` - Highlight affected areas
 
-Do not edit labels manually in the UI—update the YAML file instead.
+**State Labels:** `state/pending`, `state/backlog`, `state/in-progress`, `state/blocked`, `state/canceled`, `state/done`
+
+**Type Labels:** `type/bug`, `type/feature`, `type/enhancement`, `type/chore`, `type/question`
+
+**Priority Labels:** `priority/critical`, `priority/high`, `priority/medium`, `priority/low`, `priority/none`
+
+**Domain Labels:** `automation`, `documentation`, `runtime`, `monitoring`, `dependencies`, `regression`
+
+**Workflow Labels:** `good-first-issue`, `help-wanted`, `wontfix`, `duplicate`, `invalid`
+
+Do not edit labels manually in the UI—update the YAML file instead. Legacy labels (`bug`, `enhancement`, `severity/*`) are deprecated but kept for backward compatibility.
 
 ### Issue and PR Management
 
@@ -240,7 +249,7 @@ Do not edit labels manually in the UI—update the YAML file instead.
 ### PTR Monitoring
 
 - Stats fetched every 30 minutes via `screeps-stats-monitor.yml`.
-- Anomalies result in labelled issues (`monitoring`, `copilot`, severity).
+- Anomalies result in labelled issues with `monitoring`, `copilot`, `type/bug`, `state/pending`, and appropriate priority labels.
 - Duplicates are avoided by searching existing issues before filing new ones.
 - Use `SCREEPS_STATS_TOKEN` or fallback to `SCREEPS_TOKEN`.
 

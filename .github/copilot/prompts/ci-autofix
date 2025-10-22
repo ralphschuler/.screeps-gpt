@@ -23,7 +23,7 @@ The workflow has provided:
 
 ## FAILURE HANDLING
 
-- **IF logs are insufficient for diagnosis** → Create issue with "needs investigation" label and available evidence
+- **IF logs are insufficient for diagnosis** → Create issue with `help-wanted` label, `state/pending`, and available evidence
 - **IF failure is complex/systemic** → Create issue for manual review instead of attempting auto-fix
 - **IF fix validation fails** → Revert changes and create issue with reproduction steps
 - **IF multiple failures present** → Fix only the primary/first failure, create issues for others
@@ -57,8 +57,8 @@ Follow this playbook:
 6. Run the necessary Bun commands/tests to confirm the fix.
 7. Commit the changes referencing the run ID, push them with `gh`, and either:
    - Push directly to the PR branch, or
-   - Open a new pull request targeting the affected branch with labels `automation` and `copilot` plus a short summary of the
-     regression and verification.
+   - Open a new pull request targeting the affected branch with labels `automation`, `copilot`, `type/chore`, and `priority/high` 
+     plus a short summary of the regression and verification.
 8. If more work remains, open or update GitHub issues accordingly.
 
 ## FINAL OUTPUT VALIDATION

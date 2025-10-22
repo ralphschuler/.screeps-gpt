@@ -31,19 +31,19 @@ Available MCP servers:
 
 Create issues for metrics exceeding these thresholds:
 
-**High Severity Anomalies** (`severity/high`):
+**Critical Priority Anomalies** (`priority/critical`):
 - CPU usage > 95% for 3+ consecutive ticks
 - Memory crashes or persistent errors
 - Zero creep spawning for 10+ ticks when resources available
 - Room abandonment without explicit strategy
 
-**Medium Severity Anomalies** (`severity/medium`):
+**High Priority Anomalies** (`priority/high`):
 - CPU usage > 80% for 10+ consecutive ticks  
 - Energy efficiency drop > 20% from baseline
 - Creep population deviation > 30% from target
 - Construction progress stalled for 50+ ticks
 
-**Low Severity Anomalies** (`severity/low`):
+**Medium Priority Anomalies** (`priority/medium`):
 - Suboptimal resource allocation patterns
 - Minor performance degradations < 10%
 - Non-critical strategy execution delays
@@ -60,8 +60,8 @@ Playbook:
 4. For every actionable issue, create or update a GitHub issue using `gh`:
    - Title starts with `PTR:`.
    - Body summarises evidence, cites exact metrics, and suggests next steps.
-   - Apply labels `monitoring`, `copilot`, and an appropriate severity label (`severity/high`, `severity/medium`, or
-     `severity/low`).
+   - Apply labels: `monitoring`, `copilot`, `type/bug`, `state/pending`, and an appropriate priority label 
+     (`priority/critical`, `priority/high`, or `priority/medium`).
    - Avoid duplicates by searching existing issues first; add a comment instead of opening a new ticket when one already exists.
 5. When the snapshot is healthy, explicitly note that no action was required.
 

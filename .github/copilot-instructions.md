@@ -188,15 +188,24 @@ This repository has extensive GitHub Actions automation. Key workflows:
 
 ## Labels & Issue Management
 
-Repository labels are synchronized from `.github/labels.yml`. Key labels:
+Repository labels are synchronized from `.github/labels.yml` using a standardized three-tier system:
 
-- `Todo` - Triggers Copilot Todo automation
-- `monitoring` - PTR anomaly alerts
-- `severity/{high,medium,low}` - Alert urgency
-- `needs/regression-test` - Bug reports lacking coverage
-- `documentation`, `automation`, `runtime` - Affected areas
+**Process Labels:** `Todo` (automation trigger), `monitoring` (PTR alerts), `needs/regression-test`
 
-**Never edit labels in the UI** - update `.github/labels.yml` instead.
+**State Labels:** `state/pending`, `state/backlog`, `state/in-progress`, `state/blocked`, `state/canceled`, `state/done`
+
+**Type Labels:** `type/bug`, `type/feature`, `type/enhancement`, `type/chore`, `type/question`
+
+**Priority Labels:** `priority/critical`, `priority/high`, `priority/medium`, `priority/low`, `priority/none`
+
+**Domain Labels:** `automation`, `documentation`, `runtime`, `monitoring`, `dependencies`, `regression`
+
+**Workflow Labels:** `good-first-issue`, `help-wanted`, `wontfix`, `duplicate`, `invalid`
+
+**Important:** 
+- Never edit labels in the UI - update `.github/labels.yml` instead
+- Use new `type/*` and `priority/*` labels instead of deprecated `bug`, `enhancement`, `severity/*` labels
+- Apply `state/pending` to new issues, update states as work progresses
 
 ## Additional Resources
 
