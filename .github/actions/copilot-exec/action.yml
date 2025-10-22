@@ -35,7 +35,7 @@ inputs:
   model:
     description: Optional model identifier to pass to Copilot CLI
     required: false
-    default: ""
+    default: "gpt-5"
   copilot-token:
     description: Personal access token with Copilot Requests scope. Defaults to github.token
     required: false
