@@ -56,14 +56,19 @@ This document expands on the workflows under `.github/workflows/` and how they c
 - Behaviour: Copilot performs context-aware implementation by:
   - Checking for related issues, sub-tasks, and dependencies via GitHub MCP server
   - Verifying all dependent sub-tasks are completed before proceeding
-  - Cloning the repository and implementing the fix while running npm checks
+  - Cloning the repository and creating a `copilot/todo-*` branch
+  - **Creating a draft pull request immediately** for transparency and user visibility
+  - Implementing the fix incrementally with frequent progress updates using the `report_progress` tool
+  - Showing which files are being modified and why through commit messages and PR description updates
+  - Running npm checks (`npm run lint`, `npm run test:unit`, etc.) and reporting results
   - Considering any related issues mentioned in the issue body during implementation
-  - Pushing a `copilot/todo-*` branch and opening a PR with automation labels
   - Mentioning related issues in the PR description when applicable
-  - Commenting back on the triggering issue with the PR link
+  - **Marking the PR as ready for review** once all changes are validated
+  - Commenting back on the triggering issue with the draft PR link
   - Noting if the issue is a parent with sub-tasks that may need updates
-- Permissions: Uses the default `GITHUB_TOKEN` for `gh` pushes, PR creation, and issue comments.
+- Permissions: Uses the default `GITHUB_TOKEN` for `gh` pushes, PR creation, issue comments, and PR status updates.
 - Integration: Uses GitHub MCP server for dependency and relationship analysis.
+- Visibility: Users can follow along with the implementation process in real-time through the draft PR and commit history.
 
 ## Copilot Daily Todo Prioritization (`copilot-todo-daily.yml`)
 

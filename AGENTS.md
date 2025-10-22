@@ -8,7 +8,7 @@ This repository manages an autonomous Screeps AI and the automation surrounding 
 
 1. **GitHub Copilot** - General-purpose code editing, issue triage, and repository maintenance
 2. **Copilot Review** - Scheduled repository audits and quality assessments
-3. **Copilot Todo Automation** - Automated issue resolution via pull requests
+3. **Copilot Todo Automation** - Automated issue resolution via draft pull requests with visible implementation progress
 4. **Copilot Issue Triage** - Automatic issue reformulation and labeling
 5. **Copilot Stats Monitor** - PTR telemetry analysis and anomaly detection
 6. **Copilot CI AutoFix** - Automated fixing of CI failures
