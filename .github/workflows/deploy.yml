@@ -15,14 +15,20 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # Only run if triggered by tag push or if triggered by workflow_run and it was successful
-    if: github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+    # Only run if:
+    # 1. Triggered by tag push, OR
+    # 2. Triggered by workflow_run AND it was successful AND from the base repository (not a fork)
+    if: |
+      github.event_name == 'push' || 
+      (github.event_name == 'workflow_run' && 
+       github.event.workflow_run.conclusion == 'success' && 
+       github.event.workflow_run.head_repository.full_name == github.repository)
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          # For workflow_run, checkout the release branch that triggered it
-          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_branch || github.ref }}
+          # For workflow_run, checkout the specific commit SHA instead of branch name to prevent code injection
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.ref }}
           fetch-depth: 0
 
       - name: Get version
@@ -35,11 +41,15 @@ jobs:
             echo "version=$VERSION" >> "$GITHUB_OUTPUT"
             echo "Deploying tagged version: $VERSION"
           elif [[ "${{ github.event_name }}" == "workflow_run" ]]; then
-            # Workflow run event - extract version from branch name (release/vX.Y.Z)
-            BRANCH="${{ github.event.workflow_run.head_branch }}"
-            VERSION=$(echo "$BRANCH" | sed 's|^release/||')
+            # Workflow run event - find tag pointing to the checked out commit
+            SHA="${{ github.event.workflow_run.head_sha }}"
+            VERSION=$(git tag --points-at "$SHA" | grep -E '^v[0-9]' | head -n 1)
+            if [[ -z "$VERSION" ]]; then
+              echo "Error: No version tag found at commit $SHA"
+              exit 1
+            fi
             echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-            echo "Deploying from release branch: $BRANCH (version: $VERSION)"
+            echo "Deploying version $VERSION from commit $SHA"
           else
             echo "Unknown event type: ${{ github.event_name }}"
             exit 1
