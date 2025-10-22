@@ -8,7 +8,7 @@ body:
     attributes:
       value: |
         Thanks for suggesting a feature! Help us understand your needs so we can build the right solution.
-        
+
         **Before submitting:** Search existing issues to see if this has been requested before.
 
   - type: textarea
@@ -103,7 +103,7 @@ body:
       description: What types of testing would this feature need?
       options:
         - label: Unit tests for core functionality
-        - label: End-to-end tests for user workflows  
+        - label: End-to-end tests for user workflows
         - label: Performance/load testing
         - label: Regression tests to prevent future breaks
         - label: Integration tests with Screeps server

@@ -8,7 +8,7 @@ body:
     attributes:
       value: |
         Thanks for helping improve our documentation! Clear docs make the project more accessible to everyone.
-        
+
         **Before submitting:** Check if there's already an issue for this documentation area.
 
   - type: dropdown

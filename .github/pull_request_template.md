@@ -19,26 +19,30 @@ Provide a clear and concise description of your changes.
 
 Describe the specific changes made in this PR:
 
-- 
-- 
-- 
+-
+-
+-
 
 ## Testing Performed
 
 ### Test Coverage
+
 - [ ] Unit tests added/updated (`npm run test:unit`)
-- [ ] End-to-end tests added/updated (`npm run test:e2e`)  
+- [ ] End-to-end tests added/updated (`npm run test:e2e`)
 - [ ] Regression tests added/updated (`npm run test:regression`)
 - [ ] Manual testing performed
 - [ ] No tests required (documentation only)
 
 ### Test Results
+
 Provide evidence of testing:
+
 ```
 # Paste test output here
 ```
 
 ### Regression Test Requirements
+
 - [ ] This is a bug fix and includes a regression test (required per AGENTS.md)
 - [ ] This change doesn't fix a bug (regression test not required)
 - [ ] Existing regression tests cover this change
@@ -46,18 +50,21 @@ Provide evidence of testing:
 ## Code Quality Checklist
 
 ### AGENTS.md Compliance
+
 - [ ] Code follows repository coding standards
 - [ ] Changes are minimal and surgical (smallest possible changes)
 - [ ] No unrelated changes or fixes included
 - [ ] TypeScript strict mode compliance maintained
 
 ### Quality Gates
+
 - [ ] Code formatted with Prettier (`npm run format:write`)
 - [ ] Linting passes (`npm run lint`)
 - [ ] Build succeeds (`npm run build`)
 - [ ] All relevant test suites pass
 
 ### Runtime Considerations (if applicable)
+
 - [ ] Changes are deterministic (no unguarded `Math.random()`)
 - [ ] Memory usage considerations addressed
 - [ ] CPU performance impact evaluated
@@ -78,6 +85,7 @@ Provide evidence of testing:
 - [ ] Breaking changes documented below
 
 If breaking changes exist, describe:
+
 - What breaks:
 - Migration path:
 - Backward compatibility considerations:
@@ -93,16 +101,19 @@ If breaking changes exist, describe:
 ## Additional Notes
 
 ### Performance Impact
+
 - [ ] No performance impact expected
 - [ ] Performance impact measured and acceptable
 - [ ] Performance optimization (include benchmarks)
 
 ### Security Considerations
+
 - [ ] No security implications
 - [ ] Security review completed
 - [ ] New secrets/credentials properly handled
 
 ### Automation Impact
+
 - [ ] No impact on existing workflows
 - [ ] Workflow changes tested with `npm run test:actions`
 - [ ] New automation added/modified
@@ -110,13 +121,16 @@ If breaking changes exist, describe:
 ## Reviewer Guidance
 
 **Focus Areas:**
-- 
+
+-
 
 **Known Limitations:**
-- 
+
+-
 
 **Questions for Reviewers:**
-- 
+
+-
 
 ## Pre-Merge Checklist
 
@@ -134,7 +148,8 @@ Before marking this PR as ready for review:
 ---
 
 **Automation Labels:** Add appropriate labels:
+
 - Component: `runtime`, `automation`, `documentation`, `monitoring`
-- Type: `bug`, `enhancement`, `dependencies`  
+- Type: `bug`, `enhancement`, `dependencies`
 - Process: `needs/regression-test`, `Todo`, `copilot`
 - Severity: `severity/high`, `severity/medium`, `severity/low` (if applicable)

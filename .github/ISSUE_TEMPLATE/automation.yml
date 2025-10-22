@@ -8,7 +8,7 @@ body:
     attributes:
       value: |
         Thanks for reporting an automation issue! Help us identify and fix workflow problems quickly.
-        
+
         **Before submitting:** Check recent workflow runs to see if this is an intermittent issue.
 
   - type: dropdown
