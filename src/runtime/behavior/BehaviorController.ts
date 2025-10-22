@@ -1,25 +1,56 @@
 import type { BehaviorSummary } from "@shared/contracts";
 import type { CreepLike, GameContext, SpawnLike } from "@runtime/types/GameContext";
 
+type RoleName = "harvester" | "upgrader";
+
+interface BaseCreepMemory extends CreepMemory {
+  role: RoleName;
+  task: string;
+  version: number;
+}
+
+interface ManagedCreep extends CreepLike {
+  memory: CreepMemory & Partial<BaseCreepMemory>;
+}
+
 interface RoleDefinition {
   minimum: number;
   body: BodyPartConstant[];
-  run(creep: CreepLike): string;
-  memory: () => CreepMemory;
+  run(creep: ManagedCreep): string;
+  memory: () => BaseCreepMemory;
 }
 
-const ROLE_DEFINITIONS: Record<string, RoleDefinition> = {
+const HARVESTER_VERSION = 1;
+const UPGRADER_VERSION = 1;
+
+const HARVEST_TASK = "harvest" as const;
+const DELIVER_TASK = "deliver" as const;
+const RECHARGE_TASK = "recharge" as const;
+const UPGRADE_TASK = "upgrade" as const;
+
+type HarvesterTask = typeof HARVEST_TASK | typeof DELIVER_TASK | typeof UPGRADE_TASK;
+type UpgraderTask = typeof RECHARGE_TASK | typeof UPGRADE_TASK;
+
+interface HarvesterMemory extends BaseCreepMemory {
+  task: HarvesterTask;
+}
+
+interface UpgraderMemory extends BaseCreepMemory {
+  task: UpgraderTask;
+}
+
+const ROLE_DEFINITIONS: Record<RoleName, RoleDefinition> = {
   harvester: {
     minimum: 2,
     body: [WORK, CARRY, MOVE],
-    memory: () => ({ role: "harvester", task: "harvest", version: 1 }),
-    run: (creep: CreepLike) => runHarvester(creep)
+    memory: () => ({ role: "harvester", task: HARVEST_TASK, version: HARVESTER_VERSION }),
+    run: (creep: ManagedCreep) => runHarvester(creep)
   },
   upgrader: {
     minimum: 1,
     body: [WORK, CARRY, MOVE],
-    memory: () => ({ role: "upgrader", task: "upgrade", version: 1 }),
-    run: (creep: CreepLike) => runUpgrader(creep)
+    memory: () => ({ role: "upgrader", task: RECHARGE_TASK, version: UPGRADER_VERSION }),
+    run: (creep: ManagedCreep) => runUpgrader(creep)
   }
 };
 
@@ -38,13 +69,23 @@ export class BehaviorController {
 
     this.ensureRoleMinimums(game, roleCounts, spawned);
 
-    for (const creep of Object.values(game.creeps)) {
+    for (const creep of Object.values(game.creeps) as ManagedCreep[]) {
       const role = creep.memory.role;
-      const handler = ROLE_DEFINITIONS[role];
+      const handler = role ? ROLE_DEFINITIONS[role] : undefined;
       if (!handler) {
         this.logger.warn?.(`Unknown role '${role}' for creep ${creep.name}`);
         continue;
       }
+
+      const defaults = handler.memory();
+      if (creep.memory.version !== defaults.version) {
+        creep.memory.task = defaults.task;
+        creep.memory.version = defaults.version;
+      }
+      if (typeof creep.memory.task !== "string") {
+        creep.memory.task = defaults.task;
+      }
+      creep.memory.role = role;
 
       const task = handler.run(creep);
       tasksExecuted[task] = (tasksExecuted[task] ?? 0) + 1;
@@ -88,71 +129,120 @@ export class BehaviorController {
   }
 }
 
-function runHarvester(creep: CreepLike): string {
-  if (creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+function ensureHarvesterTask(memory: HarvesterMemory, creep: CreepLike): HarvesterTask {
+  if (memory.task !== HARVEST_TASK && memory.task !== DELIVER_TASK && memory.task !== UPGRADE_TASK) {
+    memory.task = HARVEST_TASK;
+    return memory.task;
+  }
+
+  if (memory.task === HARVEST_TASK && creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+    memory.task = DELIVER_TASK;
+  } else if (memory.task === DELIVER_TASK && creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+    memory.task = HARVEST_TASK;
+  } else if (memory.task === UPGRADE_TASK && creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+    memory.task = HARVEST_TASK;
+  }
+
+  return memory.task;
+}
+
+function runHarvester(creep: ManagedCreep): string {
+  const memory = creep.memory as HarvesterMemory;
+  const task = ensureHarvesterTask(memory, creep);
+
+  if (task === HARVEST_TASK) {
     const sources = creep.room.find(FIND_SOURCES_ACTIVE) as Source[];
-    const source = sources.length > 0 ? (creep.pos.findClosestByPath(sources) ?? sources[0]) : null;
+    const source = sources.length > 0 ? creep.pos.findClosestByPath(sources) ?? sources[0] : null;
     if (source) {
       const result = creep.harvest(source);
       if (result === ERR_NOT_IN_RANGE) {
-        creep.moveTo(source);
+        creep.moveTo(source, { range: 1, reusePath: 5 });
       }
     }
-    return "harvest";
+    return HARVEST_TASK;
   }
 
-  const targets = creep.room.find(FIND_STRUCTURES, {
+  const deliveryTargets = creep.room.find(FIND_STRUCTURES, {
     filter: (structure: AnyStructure) =>
       (structure.structureType === STRUCTURE_SPAWN || structure.structureType === STRUCTURE_EXTENSION) &&
       (structure as AnyStoreStructure).store.getFreeCapacity(RESOURCE_ENERGY) > 0
   }) as AnyStoreStructure[];
 
-  const target = targets.length > 0 ? (creep.pos.findClosestByPath(targets) ?? targets[0]) : null;
+  const target = deliveryTargets.length > 0 ? creep.pos.findClosestByPath(deliveryTargets) ?? deliveryTargets[0] : null;
   if (target) {
     const result = creep.transfer(target, RESOURCE_ENERGY);
     if (result === ERR_NOT_IN_RANGE) {
-      creep.moveTo(target);
+      creep.moveTo(target, { range: 1, reusePath: 5 });
     }
-    return "supply";
+    return DELIVER_TASK;
   }
 
-  if (creep.room.controller) {
-    const upgrade = creep.upgradeController(creep.room.controller);
+  memory.task = UPGRADE_TASK;
+  const controller = creep.room.controller;
+  if (controller) {
+    const upgrade = creep.upgradeController(controller);
     if (upgrade === ERR_NOT_IN_RANGE) {
-      creep.moveTo(creep.room.controller);
+      creep.moveTo(controller, { range: 3, reusePath: 5 });
     }
-    return "upgrade";
+    return UPGRADE_TASK;
   }
 
-  return "idle";
+  return DELIVER_TASK;
 }
 
-function runUpgrader(creep: CreepLike): string {
-  if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
-    const targets = creep.room.find(FIND_STRUCTURES, {
-      filter: (structure: AnyStructure) =>
-        (structure.structureType === STRUCTURE_SPAWN || structure.structureType === STRUCTURE_EXTENSION) &&
-        (structure as AnyStoreStructure).store.getUsedCapacity(RESOURCE_ENERGY) > 50
+function ensureUpgraderTask(memory: UpgraderMemory, creep: CreepLike): UpgraderTask {
+  if (memory.task !== RECHARGE_TASK && memory.task !== UPGRADE_TASK) {
+    memory.task = RECHARGE_TASK;
+    return memory.task;
+  }
+
+  if (memory.task === RECHARGE_TASK && creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+    memory.task = UPGRADE_TASK;
+  } else if (memory.task === UPGRADE_TASK && creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+    memory.task = RECHARGE_TASK;
+  }
+
+  return memory.task;
+}
+
+function runUpgrader(creep: ManagedCreep): string {
+  const memory = creep.memory as UpgraderMemory;
+  const task = ensureUpgraderTask(memory, creep);
+
+  if (task === RECHARGE_TASK) {
+    const sources = creep.room.find(FIND_STRUCTURES, {
+      filter: (structure: AnyStructure) => {
+        if (
+          structure.structureType !== STRUCTURE_SPAWN &&
+          structure.structureType !== STRUCTURE_EXTENSION &&
+          structure.structureType !== STRUCTURE_CONTAINER
+        ) {
+          return false;
+        }
+
+        const store = structure as AnyStoreStructure;
+        return store.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
+      }
     }) as AnyStoreStructure[];
 
-    const target = targets.length > 0 ? (creep.pos.findClosestByPath(targets) ?? targets[0]) : null;
+    const target = sources.length > 0 ? creep.pos.findClosestByPath(sources) ?? sources[0] : null;
     if (target) {
       const result = creep.withdraw(target, RESOURCE_ENERGY);
       if (result === ERR_NOT_IN_RANGE) {
-        creep.moveTo(target);
+        creep.moveTo(target, { range: 1, reusePath: 5 });
       }
     }
-    return "recharge";
+    return RECHARGE_TASK;
   }
 
   const controller = creep.room.controller;
   if (controller) {
     const result = creep.upgradeController(controller);
     if (result === ERR_NOT_IN_RANGE) {
-      creep.moveTo(controller);
+      creep.moveTo(controller, { range: 3, reusePath: 5 });
     }
-    return "upgrade";
+    return UPGRADE_TASK;
   }
 
-  return "idle";
+  return RECHARGE_TASK;
 }
