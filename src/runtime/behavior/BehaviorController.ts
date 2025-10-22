@@ -152,7 +152,7 @@ function runHarvester(creep: ManagedCreep): string {
 
   if (task === HARVEST_TASK) {
     const sources = creep.room.find(FIND_SOURCES_ACTIVE) as Source[];
-    const source = sources.length > 0 ? creep.pos.findClosestByPath(sources) ?? sources[0] : null;
+    const source = sources.length > 0 ? (creep.pos.findClosestByPath(sources) ?? sources[0]) : null;
     if (source) {
       const result = creep.harvest(source);
       if (result === ERR_NOT_IN_RANGE) {
@@ -168,7 +168,8 @@ function runHarvester(creep: ManagedCreep): string {
       (structure as AnyStoreStructure).store.getFreeCapacity(RESOURCE_ENERGY) > 0
   }) as AnyStoreStructure[];
 
-  const target = deliveryTargets.length > 0 ? creep.pos.findClosestByPath(deliveryTargets) ?? deliveryTargets[0] : null;
+  const target =
+    deliveryTargets.length > 0 ? (creep.pos.findClosestByPath(deliveryTargets) ?? deliveryTargets[0]) : null;
   if (target) {
     const result = creep.transfer(target, RESOURCE_ENERGY);
     if (result === ERR_NOT_IN_RANGE) {
@@ -225,7 +226,7 @@ function runUpgrader(creep: ManagedCreep): string {
       }
     }) as AnyStoreStructure[];
 
-    const target = sources.length > 0 ? creep.pos.findClosestByPath(sources) ?? sources[0] : null;
+    const target = sources.length > 0 ? (creep.pos.findClosestByPath(sources) ?? sources[0]) : null;
     if (target) {
       const result = creep.withdraw(target, RESOURCE_ENERGY);
       if (result === ERR_NOT_IN_RANGE) {
