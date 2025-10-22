@@ -74,14 +74,19 @@ The repository defines the following GitHub workflows under `.github/workflows/`
 
 Add the following GitHub Action secrets before enabling the workflows:
 
-| Secret                           | Used by         | Description                                              |
-| -------------------------------- | --------------- | -------------------------------------------------------- |
-| `SCREEPS_TOKEN`                  | Deploy workflow | Screeps authentication token.                            |
-| `SCREEPS_HOST` (optional)        | Deploy workflow | Hostname for Screeps server (default `screeps.com`).     |
-| `SCREEPS_PORT` (optional)        | Deploy workflow | Port for Screeps server (default `443`).                 |
-| `SCREEPS_PROTOCOL` (optional)    | Deploy workflow | Protocol (`https` by default).                           |
-| `SCREEPS_BRANCH` (optional)      | Deploy workflow | Destination Screeps branch (default `main`).             |
-| `SCREEPS_STATS_TOKEN` (optional) | Stats monitor   | Token for the stats API (falls back to `SCREEPS_TOKEN`). |
+| Secret                           | Used by               | Description                                                     |
+| -------------------------------- | --------------------- | --------------------------------------------------------------- |
+| `SCREEPS_TOKEN`                  | Deploy, Stats monitor | Screeps authentication token (primary authentication method).   |
+| `SCREEPS_EMAIL` (optional)       | Stats monitor         | Screeps account email (alternative to token authentication).    |
+| `SCREEPS_PASSWORD` (optional)    | Stats monitor         | Screeps account password (alternative to token authentication). |
+| `SCREEPS_HOST` (optional)        | Deploy, Stats monitor | Hostname for Screeps server (default `screeps.com`).            |
+| `SCREEPS_PORT` (optional)        | Deploy, Stats monitor | Port for Screeps server (default `443`).                        |
+| `SCREEPS_PROTOCOL` (optional)    | Deploy, Stats monitor | Protocol (`https` by default).                                  |
+| `SCREEPS_BRANCH` (optional)      | Deploy workflow       | Destination Screeps branch (default `main`).                    |
+| `SCREEPS_STATS_TOKEN` (optional) | Stats monitor         | Token for the stats API (falls back to `SCREEPS_TOKEN`).        |
+| `COPILOT_TOKEN` (optional)       | Copilot workflows     | GitHub personal access token with Copilot Requests scope.       |
+
+**Note on Authentication:** The Stats Monitor workflow now uses the Screeps API MCP server for direct server interaction. It supports both token-based (`SCREEPS_TOKEN`) and email/password authentication (`SCREEPS_EMAIL` + `SCREEPS_PASSWORD`). Token authentication is recommended for security.
 
 All workflows rely on the default `GITHUB_TOKEN` for repository operations (pushes, PRs, issue management). Follow [Graphite's guidance on GitHub Action permissions](https://graphite.dev/guides/github-actions-permissions) when altering workflows so least-privilege scopes are preserved. See [DOCS.md](DOCS.md) for a deeper dive into automation prompts, PTR conventions, and recommended Screeps resources.
 

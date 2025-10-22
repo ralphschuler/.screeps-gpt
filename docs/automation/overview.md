@@ -59,8 +59,9 @@ This document expands on the workflows under `.github/workflows/` and how they c
 ## Screeps Stats Monitor (`screeps-stats-monitor.yml`)
 
 - Trigger: Every 30 minutes + manual dispatch.
-- Behaviour: Copilot uses Screeps API credentials to fetch telemetry, analyse anomalies, and open/update monitoring issues through `gh` with severity labels.
-- Secrets: `SCREEPS_STATS_TOKEN` (or reuse `SCREEPS_TOKEN`).
+- Behaviour: Copilot uses Screeps API MCP server to fetch telemetry directly from Screeps, analyse anomalies, and open/update monitoring issues through `gh` with severity labels.
+- MCP Servers: Integrates with the Screeps API MCP server for direct Screeps server interaction.
+- Secrets: `SCREEPS_TOKEN` (required), `SCREEPS_STATS_TOKEN`, `SCREEPS_EMAIL`, `SCREEPS_PASSWORD` (optional alternatives), plus optional host/port/protocol overrides.
 
 ## Label Sync (`label-sync.yml`)
 
@@ -73,6 +74,55 @@ This document expands on the workflows under `.github/workflows/` and how they c
 - Behaviour: Copilot downloads the failing logs, clones the affected branch, applies the fix with changelog/docs/tests updates, and pushes the result (updating the PR or opening a dedicated automation PR).
 
 Keep this file accurate—workflows load these expectations via the Copilot CLI when planning fixes.
+
+---
+
+## MCP Server Integration
+
+The `copilot-exec` composite action supports Model Context Protocol (MCP) servers that extend Copilot's capabilities beyond the standard GitHub operations.
+
+### Available MCP Servers
+
+1. **GitHub MCP** (default) - Repository operations, code search, commit inspection
+2. **Screeps API MCP** - Direct Screeps server interaction, console commands, room data, memory segments
+3. **Playwright MCP** - Browser automation for web-based monitoring and testing
+
+### Configuration
+
+MCP server configurations are stored in `.github/mcp/` as JSON files defining server commands and environment variables:
+
+- `.github/mcp/screeps-api.json` - Screeps API server configuration
+- `.github/mcp/playwright.json` - Playwright server configuration
+
+### Usage in Workflows
+
+Enable additional MCP servers by passing the configuration file path to the `additional-mcp-config` parameter:
+
+```yaml
+- uses: ./.github/actions/copilot-exec
+  env:
+    SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
+  with:
+    prompt-path: .github/copilot/prompts/my-prompt
+    additional-mcp-config: "@.github/mcp/screeps-api.json"
+```
+
+The action automatically merges the additional MCP configuration with the base GitHub MCP server configuration.
+
+### Authentication
+
+MCP servers requiring authentication use environment variables passed through the workflow:
+
+- **Screeps API**: `SCREEPS_TOKEN`, `SCREEPS_EMAIL`, `SCREEPS_PASSWORD`, plus optional `SCREEPS_HOST`, `SCREEPS_PORT`, `SCREEPS_PROTOCOL`
+- **Playwright**: No authentication required (uses headless browser)
+
+All credentials must be stored as GitHub Actions secrets and referenced in workflow `env` sections. Never hardcode credentials in MCP configuration files.
+
+### Current Integrations
+
+- **screeps-stats-monitor.yml**: Uses Screeps API MCP for direct telemetry access
+
+See `AGENTS.md` for detailed MCP server capabilities and best practices.
 
 ---
 

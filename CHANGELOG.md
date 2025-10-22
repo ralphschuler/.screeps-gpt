@@ -10,6 +10,11 @@ All notable changes to this project are documented here. This changelog now main
 - Created `.github/copilot-instructions.md` with repository-specific guidelines for GitHub Copilot coding agent
 - Includes coding standards, development workflow, testing expectations, and documentation requirements
 - References comprehensive documentation in AGENTS.md, README.md, and docs/ for detailed guidance
+- **Integrated Screeps API MCP server** with GitHub Copilot workflows for direct Screeps server interaction
+- **Integrated Playwright MCP server** for browser automation capabilities
+- Added MCP server configuration files: `.github/mcp/screeps-api.json` and `.github/mcp/playwright.json`
+- Enhanced `copilot-exec` action to support multiple MCP servers via `additional-mcp-config` parameter
+- Added comprehensive MCP server documentation in `AGENTS.md` and `docs/automation/overview.md`
 
 ### Changed
 
@@ -19,6 +24,9 @@ All notable changes to this project are documented here. This changelog now main
 - Added .nvmrc file to specify Node.js 16.20.2
 - Updated package.json to remove pnpm references and specify npm in engines
 - **Copilot CI AutoFix workflow now monitors all workflow failures** (except itself) instead of only Quality Gate failures, enabling automated fixes for any CI failure
+- Updated `screeps-stats-monitor.yml` to use Screeps API MCP server for direct telemetry access
+- Enhanced `.github/copilot/prompts/stats-analysis` to document available MCP servers
+- Updated README.md secrets documentation to include MCP authentication variables
 
 ### Fixed
 

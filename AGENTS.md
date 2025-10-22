@@ -22,7 +22,10 @@ Agents operate within these constraints:
 - **Write access**: Limited to specific workflows with explicit `contents: write` or `pull_requests: write` permissions
 - **Authentication**: All agents use the default `GITHUB_TOKEN` with least-privilege scopes
 - **Prompt templates**: Located in `.github/copilot/prompts/` and rendered via the `copilot-exec` composite action
-- **MCP integration**: Agents use the GitHub MCP server for repository operations (issues, PRs, code search)
+- **MCP integration**: Agents have access to multiple Model Context Protocol (MCP) servers:
+  - **GitHub MCP** - Repository operations (issues, PRs, code search, commits)
+  - **Screeps API MCP** - Direct Screeps server interaction (console commands, room data, memory segments, user stats)
+  - **Playwright MCP** - Browser automation for web-based monitoring and testing
 
 ## Knowledge Base
 
@@ -112,7 +115,59 @@ Agents working on runtime code should understand:
 - Secrets referenced by workflows must be documented in `README.md` under the automation section.
 - Use the GitHub Copilot CLI via the shared `copilot-exec` composite action and template prompts in `.github/copilot/prompts/`.
 
-**Key workflows:**
+### 5. MCP Server Integration
+
+Agents have access to Model Context Protocol (MCP) servers that extend their capabilities:
+
+**Available MCP Servers:**
+
+1. **GitHub MCP Server** (default, always enabled)
+   - Repository operations: create/update issues and PRs
+   - Code search: find files, symbols, and content across repositories
+   - Commit inspection: review diffs and history
+   - Configuration: Built into `copilot-exec` action
+
+2. **Screeps API MCP Server** ([ralphschuler/screeps-api-mcp](https://github.com/ralphschuler/screeps-api-mcp))
+   - Direct Screeps server interaction
+   - Console command execution
+   - Room data access (terrain, objects, structures)
+   - Memory segment management
+   - User statistics and telemetry
+   - Configuration: `.github/mcp/screeps-api.json`
+   - Authentication: Uses `SCREEPS_TOKEN`, `SCREEPS_EMAIL`, or `SCREEPS_PASSWORD` environment variables
+   - Supports multiple servers: main, PTR, private servers
+
+3. **Playwright MCP Server** ([executeautomation/playwright-mcp-server](https://github.com/executeautomation/playwright-mcp-server))
+   - Browser automation for web-based monitoring
+   - Page navigation and interaction
+   - Screenshot capture
+   - Element inspection and validation
+   - Configuration: `.github/mcp/playwright.json`
+   - Use cases: Web UI testing, visual regression checks, automated form filling
+
+**Using MCP Servers in Workflows:**
+
+To enable additional MCP servers in a workflow, use the `additional-mcp-config` parameter:
+
+```yaml
+- uses: ./.github/actions/copilot-exec
+  env:
+    SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
+  with:
+    prompt-path: .github/copilot/prompts/my-prompt
+    additional-mcp-config: "@.github/mcp/screeps-api.json"
+```
+
+The configuration files in `.github/mcp/` define MCP server commands and environment variables. The `copilot-exec` action automatically merges these with the base GitHub MCP configuration.
+
+**Best Practices:**
+
+- Reference MCP server capabilities in prompt templates so agents know what tools are available
+- Use environment variables for credentials, never hardcode secrets in MCP configuration files
+- Test MCP integrations locally when possible before deploying to workflows
+- Document new MCP use cases in workflow-specific documentation
+
+**Key Workflows:**
 
 1. **quality-gate.yml** - PR validation (lint, format, tests, coverage)
 2. **post-merge-release.yml** - Auto-versioning and tagging on merge to main
@@ -122,18 +177,18 @@ Agents working on runtime code should understand:
 6. **copilot-todo-pr.yml** - Automated Todo issue resolution
 7. **copilot-email-triage.yml** - Email-to-issue conversion
 8. **copilot-ci-autofix.yml** - Automated CI failure resolution
-9. **screeps-stats-monitor.yml** - PTR telemetry monitoring
+9. **screeps-stats-monitor.yml** - PTR telemetry monitoring (uses Screeps API MCP)
 10. **dependabot-automerge.yml** - Auto-merge non-major updates
 11. **label-sync.yml** - Repository label synchronization
 12. **docs-pages.yml** - GitHub Pages documentation site
 
-### 5. Testing Artifacts
+### 6. Testing Artifacts
 
 - Place long-lived automation or evaluation reports in the `reports/` directory.
 - Coverage information consumed by scripts must remain compatible with `scripts/evaluate-system.ts`.
 - Run `npm run test:actions` to dry-run workflows locally with the `act` CLI.
 
-### 6. Regression Discipline
+### 7. Regression Discipline
 
 **Bug fix protocol:**
 
