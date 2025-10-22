@@ -13,8 +13,8 @@
     "build": "tsx scripts/build.ts",
     "build:docs-site": "tsx scripts/build-docs-site.ts",
     "build:watch": "tsx scripts/build.ts --watch",
-    "lint": "ESLINT_USE_FLAT_CONFIG=false eslint . --ext .ts",
-    "lint:fix": "ESLINT_USE_FLAT_CONFIG=false eslint . --ext .ts --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "format": "prettier .",
     "format:check": "prettier --check .",
     "format:write": "prettier --write .",
@@ -64,7 +64,7 @@
   },
   "lint-staged": {
     "*.ts": [
-      "bash -c 'ESLINT_USE_FLAT_CONFIG=false eslint --fix \"$@\"' --",
+      "eslint --fix",
       "prettier --write"
     ],
     "*.{js,mjs,cjs,json,md,yml,yaml}": [

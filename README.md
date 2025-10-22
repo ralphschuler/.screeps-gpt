@@ -5,6 +5,7 @@ This repository hosts an autonomous Screeps AI that continuously develops, tests
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) v16.x (the repository uses Node 16 with Python 2 for native dependencies).
+  - **Note**: ESLint v9+ with @typescript-eslint v8+ requires `structuredClone` (added in Node 17). The repository includes a polyfill in `.eslintrc-polyfill.cjs` to maintain Node 16 compatibility.
 - [npm](https://www.npmjs.com/) v8.0 or later (bundled with Node.js 16).
 - Screeps account with an API token when deploying.
 - Personal access token with Copilot Requests permission for the GitHub Copilot CLI.

@@ -7,6 +7,17 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Added
 
+- **ESLint flat config migration with Node 16 structuredClone polyfill** (#156)
+  - Migrated from deprecated `.eslintrc.cjs` to modern `eslint.config.mjs` flat configuration format
+  - Added `.eslintrc-polyfill.cjs` to provide `structuredClone` implementation for Node.js 16.x compatibility
+  - Updated npm lint scripts to use flat config (removed `ESLINT_USE_FLAT_CONFIG=false`)
+  - Updated lint-staged configuration to use simplified ESLint commands
+  - Preserved all existing ESLint rules and TypeScript plugin configurations
+  - Resolves ESLint deprecation warnings for v10.0.0 preparation
+  - Fixes `ReferenceError: structuredClone is not defined` when running ESLint with @typescript-eslint v8+ on Node 16
+
+### Added
+
 - **Configurable Copilot model selection** (#146)
   - Removed hardcoded `gpt-5` default from copilot-exec action
   - Created centralized model configuration file (`.github/copilot/model-config.json`) with default `gpt-4.1`
