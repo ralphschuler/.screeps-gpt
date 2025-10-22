@@ -68,15 +68,15 @@ async function sendPushNotification(options: PushNotificationOptions): Promise<v
   if (!globalThis.fetch) {
     // Dynamic import to avoid bundling issues
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const { default: fetch, Request, Response, Headers } = await import("node-fetch");
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    globalThis.fetch = fetch;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    globalThis.Request = Request;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    globalThis.Response = Response;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    globalThis.Headers = Headers;
+    const nodeFetch = await import("node-fetch");
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    globalThis.fetch = nodeFetch.default as typeof fetch;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    globalThis.Request = nodeFetch.Request as typeof Request;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    globalThis.Response = nodeFetch.Response as typeof Response;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    globalThis.Headers = nodeFetch.Headers as typeof Headers;
   }
 
   const token = process.env.PUSH_TOKEN;
