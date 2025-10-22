@@ -24,7 +24,7 @@ interface VersionEntry {
 const renderer = new marked.Renderer();
 const originalLink = renderer.link.bind(renderer);
 renderer.link = (href, title, text) => {
-  let nextHref = href ?? "";
+  let nextHref = typeof href === 'string' ? href : "";
   if (nextHref.endsWith(".md")) {
     nextHref = nextHref.replace(/\.md(#[^#]+)?$/, (_, anchor) => `.html${anchor ?? ""}`);
   }
