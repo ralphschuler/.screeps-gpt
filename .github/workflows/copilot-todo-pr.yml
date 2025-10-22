@@ -1,0 +1,32 @@
+name: Copilot Todo PR
+
+on:
+  issues:
+    types:
+      - labeled
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  implement:
+    if: github.event.label.name == 'Todo'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Run Copilot Todo automation
+        uses: ./.github/actions/copilot-exec
+        env:
+          REPO_NAME: "${{ github.repository }}"
+          ISSUE_NUMBER: "${{ github.event.issue.number }}"
+          ISSUE_TITLE: ${{ toJSON(github.event.issue.title) }}
+          ISSUE_BODY: ${{ toJSON(github.event.issue.body || '') }}
+          ISSUE_HTML_URL: ${{ toJSON(github.event.issue.html_url) }}
+          ISSUE_AUTHOR: ${{ toJSON(github.event.issue.user.login) }}
+        with:
+          copilot-token: ${{ secrets.COPILOT_TOKEN }}
+          prompt-path: .github/copilot/prompts/todo-issue
+          output-path: reports/copilot/todo-issue-${{ github.event.issue.number }}.log

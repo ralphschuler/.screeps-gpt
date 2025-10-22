@@ -47,6 +47,13 @@ This document expands on the workflows under `.github/workflows/` and how they c
 - Behaviour: Copilot clones the repository, implements the fix while running npm checks, pushes a `copilot/todo-*` branch, opens a PR with automation labels, and comments back on the triggering issue.
 - Permissions: Uses the default `GITHUB_TOKEN` for `gh` pushes, PR creation, and issue comments.
 
+## Copilot Daily Todo Prioritization (`copilot-todo-daily.yml`)
+
+- Trigger: Daily schedule (9:00 AM UTC) + manual dispatch.
+- Behaviour: Copilot automatically identifies the oldest actionable issue (no incomplete sub-tasks) without the Todo label, applies the Todo label to trigger automated implementation, and adds a comment explaining the prioritization. Uses GitHub MCP server to query issues and analyze dependencies.
+- Permissions: Uses the default `GITHUB_TOKEN` with `issues: write` for label management.
+- Concurrency: Single execution at a time via `copilot-todo-daily` concurrency group.
+
 ## Copilot Email Triage (`copilot-email-triage.yml`)
 
 - Trigger: `repository_dispatch` events with `event_type` set to `copilot_email_triage`.
