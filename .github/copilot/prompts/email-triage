@@ -24,13 +24,11 @@ Follow this process:
 
 Finish by printing minified JSON so the workflow log captures the decision:
 
-```
 {
   "run_url": "${EVENT_URL}",
   "issues_created": ["#123", ...],
   "notes": "short triage summary"
 }
-```
 
 Rules:
 
