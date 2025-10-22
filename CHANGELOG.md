@@ -5,6 +5,10 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed CI failure in `npm run versions:update` by adding missing trailing newline to `docs/changelog/versions.md` (regression test: `tests/regression/versions-file-trailing-newline.test.ts`, workflow run: 18703566323)
+
 ### Added
 
 - Created `.github/copilot-instructions.md` with repository-specific guidelines for GitHub Copilot coding agent
