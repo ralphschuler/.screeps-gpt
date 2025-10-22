@@ -107,6 +107,66 @@ runs:
         echo "output-path=$out" >> "$GITHUB_OUTPUT"
         echo "✅ Reused cached Copilot output"
 
+    - name: Install jq
+      if: steps.cache-result.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        if ! command -v jq >/dev/null 2>&1; then
+          sudo apt-get update -qq && sudo apt-get install -y -qq jq
+        fi
+
+    - name: Setup MCP configuration
+      if: steps.cache-result.outputs.cache-hit != 'true'
+      id: mcp-config
+      shell: bash
+      env:
+        ADDITIONAL_MCP_CONFIG: ${{ inputs.additional-mcp-config }}
+      run: |
+        set -euo pipefail
+        mcp_config_file="$HOME/.copilot-mcp-config.json"
+
+        # Start with base GitHub MCP server configuration
+        cat > "$mcp_config_file" << 'EOF'
+        {
+          "mcpServers": {
+            "github": {
+              "command": "npx",
+              "args": ["-y", "@modelcontextprotocol/server-github"]
+            }
+          }
+        }
+        EOF
+
+        # If additional MCP config is provided, merge it
+        if [ -n "$ADDITIONAL_MCP_CONFIG" ]; then
+          if [[ "$ADDITIONAL_MCP_CONFIG" == @* ]]; then
+            # It's a file path reference (starts with @)
+            config_file="${ADDITIONAL_MCP_CONFIG:1}"
+            if [ -f "$config_file" ]; then
+              echo "📋 Merging MCP config from $config_file"
+              # Use jq to merge the configurations
+              jq -s '.[0].mcpServers * .[1].mcpServers | {mcpServers: .}' \
+                "$mcp_config_file" "$config_file" > "$mcp_config_file.tmp"
+              mv "$mcp_config_file.tmp" "$mcp_config_file"
+            else
+              echo "⚠️  MCP config file not found: $config_file"
+            fi
+          else
+            # It's inline JSON
+            echo "📋 Merging inline MCP config"
+            echo "$ADDITIONAL_MCP_CONFIG" > "$mcp_config_file.tmp"
+            jq -s '.[0].mcpServers * .[1].mcpServers | {mcpServers: .}' \
+              "$mcp_config_file" "$mcp_config_file.tmp" > "$mcp_config_file.merged"
+            mv "$mcp_config_file.merged" "$mcp_config_file"
+            rm "$mcp_config_file.tmp"
+          fi
+        fi
+
+        echo "✅ MCP configuration prepared at $mcp_config_file"
+        cat "$mcp_config_file" >&2
+        echo "mcp-config-file=$mcp_config_file" >> "$GITHUB_OUTPUT"
+
     - name: Execute Copilot CLI
       if: steps.cache-result.outputs.cache-hit != 'true'
       id: copilot
@@ -121,7 +181,7 @@ runs:
         GITHUB_TOKEN: ${{ inputs.copilot-token != '' && inputs.copilot-token || github.token }}
         COPILOT_ALLOW_ALL: "1"
         COPILOT_TELEMETRY_OPTOUT: "1"
-        COPILOT_MCP_SERVER: github
+        COPILOT_MCP_CONFIG: ${{ steps.mcp-config.outputs.mcp-config-file }}
       run: |
         set -euo pipefail
         export PATH="$HOME/.npm/_global/bin:$PATH"

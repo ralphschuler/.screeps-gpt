@@ -22,7 +22,13 @@ jobs:
           SCREEPS_STATS_TOKEN: ${{ secrets.SCREEPS_STATS_TOKEN }}
           SCREEPS_STATS_HOST: ${{ secrets.SCREEPS_STATS_HOST }}
           SCREEPS_STATS_API: ${{ secrets.SCREEPS_STATS_API }}
+          SCREEPS_EMAIL: ${{ secrets.SCREEPS_EMAIL }}
+          SCREEPS_PASSWORD: ${{ secrets.SCREEPS_PASSWORD }}
+          SCREEPS_HOST: ${{ secrets.SCREEPS_HOST }}
+          SCREEPS_PORT: ${{ secrets.SCREEPS_PORT }}
+          SCREEPS_PROTOCOL: ${{ secrets.SCREEPS_PROTOCOL }}
         with:
           copilot-token: ${{ secrets.COPILOT_TOKEN }}
           prompt-path: .github/copilot/prompts/stats-analysis
           output-path: reports/copilot/stats-analysis-${{ github.run_id }}.log
+          additional-mcp-config: "@.github/mcp/screeps-api.json"
