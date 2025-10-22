@@ -16,25 +16,69 @@ ${ISSUE_BODY}
 
 Follow this process:
 
-1. Authenticate the GitHub CLI using the provided `GITHUB_TOKEN`/`GH_TOKEN`.
-2. Read and analyze the issue to understand:
-   - The core problem or request being described
-   - What changes or actions are required
-   - Expected outcomes and acceptance criteria
-   - Relevant technical context and constraints
-3. Reformulate the issue with:
-   - A clear, concise title that describes the objective (use conventional commit prefixes like `feat:`, `fix:`, `chore:`, `docs:` when appropriate)
-   - A well-structured body with sections for:
-     - **Problem/Requirement:** What needs to be addressed
-     - **Proposed Changes:** Specific changes or implementation approach
-     - **Acceptance Criteria:** Clear success conditions
-     - **Additional Context:** Any relevant technical details, constraints, or references
-4. Update the issue directly using `gh issue edit ${ISSUE_NUMBER}` with the reformulated title and body.
-5. Apply appropriate labels from the repository set based on the issue content:
-   - Area labels: `automation`, `documentation`, `runtime`, `monitoring`
-   - Priority labels: `severity/high`, `severity/medium`, `severity/low`
-   - Process labels: `needs/regression-test`, `Todo` (if actionable immediately)
-6. Add a comment to the issue explaining the triage and any recommendations for next steps.
+1. **Authenticate and Gather Context**
+   - Authenticate the GitHub CLI using the provided `GITHUB_TOKEN`/`GH_TOKEN`
+   - Use the GitHub MCP server to fetch ALL open issues in the repository for context-aware analysis
+   - Store the list of existing issues for duplicate detection and relationship analysis
+
+2. **Duplicate Detection**
+   - Compare the new issue against all existing open issues to identify potential duplicates
+   - Check for similarity in:
+     - Issue titles (semantic similarity, not just exact matches)
+     - Issue descriptions and problem statements
+     - Applied labels and categories
+   - If a duplicate is detected:
+     - Add a comment to the NEW issue explaining it's a duplicate and linking to the original
+     - Close the NEW issue with the reason "duplicate"
+     - Add a comment to the ORIGINAL issue noting the duplicate was filed
+     - Skip the rest of the triage process and exit
+     - Record the duplicate in the final JSON output
+
+3. **Analyze Issue Content**
+   - Read and analyze the issue to understand:
+     - The core problem or request being described
+     - What changes or actions are required
+     - Expected outcomes and acceptance criteria
+     - Relevant technical context and constraints
+
+4. **Relationship Detection**
+   - Identify potential parent-child relationships with existing issues:
+     - Check if this issue is a sub-task of an existing larger issue
+     - Check if existing issues could be sub-tasks of this issue
+   - Identify related issues that share:
+     - Similar technical areas (automation, runtime, documentation, monitoring)
+     - Dependencies or blocking relationships
+   - Link related issues in the reformulated body using GitHub's issue reference syntax (#123)
+
+5. **Reformulate and Update**
+   - Reformulate the issue with:
+     - A clear, concise title that describes the objective (use conventional commit prefixes like `feat:`, `fix:`, `chore:`, `docs:` when appropriate)
+     - A well-structured body with sections for:
+       - **Problem/Requirement:** What needs to be addressed
+       - **Proposed Changes:** Specific changes or implementation approach
+       - **Acceptance Criteria:** Clear success conditions
+       - **Additional Context:** Any relevant technical details, constraints, or references
+       - **Related Issues:** Links to related, parent, or blocking issues (if detected)
+   - Update the issue directly using `gh issue edit ${ISSUE_NUMBER}` with the reformulated title and body
+   - IMPORTANT: Only update the issue description once - do not make redundant updates
+
+6. **Sub-Task Linking**
+   - If parent-child relationships were detected, use GitHub CLI to establish sub-issue connections:
+     - For sub-tasks: Use `gh issue edit <child-issue> --body` to add task list references in parent
+     - Document the relationship in both issue comments for visibility
+   
+7. **Apply Labels**
+   - Apply appropriate labels from the repository set based on the issue content:
+     - Area labels: `automation`, `documentation`, `runtime`, `monitoring`
+     - Priority labels: `severity/high`, `severity/medium`, `severity/low`
+     - Process labels: `needs/regression-test`, `Todo` (if actionable immediately)
+
+8. **Add Triage Comment**
+   - Add a SINGLE comment to the issue explaining:
+     - The triage summary
+     - Any detected relationships or related issues
+     - Recommendations for next steps
+   - Do NOT add redundant comments if the issue description was the only update
 
 Finish by printing minified JSON so the workflow log captures the triage:
 
@@ -44,6 +88,11 @@ Finish by printing minified JSON so the workflow log captures the triage:
   "original_title": "...",
   "new_title": "...",
   "labels_applied": ["automation", ...],
+  "is_duplicate": false,
+  "duplicate_of": null,
+  "related_issues": [123, 456],
+  "sub_tasks_detected": [789],
+  "parent_issue_detected": null,
   "notes": "short triage summary"
 }
 ```
@@ -55,3 +104,7 @@ Rules:
 - Preserve the original author's intent while improving clarity.
 - Only add labels that accurately reflect the issue content.
 - Include specific, measurable acceptance criteria whenever possible.
+- Set `is_duplicate` to true if a duplicate was detected and the issue was closed.
+- Set `duplicate_of` to the issue number of the original issue if a duplicate was found.
+- List detected related, sub-task, and parent issue numbers in their respective arrays.
+- Only add ONE comment per triage - avoid redundant comments when only updating the description.

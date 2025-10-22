@@ -37,15 +37,33 @@ This document expands on the workflows under `.github/workflows/` and how they c
 
 ## Copilot Issue Triage (`copilot-issue-triage.yml`)
 
-- Trigger: Issues opened.
-- Behaviour: Copilot reads the newly created issue, reformulates its title and description to clearly outline required changes and expectations, applies appropriate labels based on content, and adds a triage comment with recommendations.
-- Permissions: Uses the default `GITHUB_TOKEN` with `issues: write` to edit issue metadata and add comments.
+- Trigger: Issues opened or reopened.
+- Behaviour: Copilot performs comprehensive context-aware triage by:
+  - Fetching all existing open issues for duplicate detection and relationship analysis
+  - Detecting and handling duplicate issues automatically (comments on both issues, closes duplicate with "duplicate" reason)
+  - Identifying related issues, sub-tasks, and parent-child relationships
+  - Reformulating title and description to clearly outline required changes and expectations
+  - Applying appropriate labels based on content analysis
+  - Linking related issues in the reformulated description
+  - Establishing sub-issue connections via GitHub CLI when parent-child relationships are detected
+  - Adding a single triage comment with summary and recommendations (avoids redundant comments)
+- Permissions: Uses the default `GITHUB_TOKEN` with `issues: write` to edit issue metadata, add comments, and close duplicates.
+- Integration: Uses GitHub MCP server for querying all issues and performing relationship analysis.
 
 ## Copilot Todo Automation (`copilot-todo-pr.yml`)
 
 - Trigger: Issues labelled `Todo`.
-- Behaviour: Copilot clones the repository, implements the fix while running npm checks, pushes a `copilot/todo-*` branch, opens a PR with automation labels, and comments back on the triggering issue.
+- Behaviour: Copilot performs context-aware implementation by:
+  - Checking for related issues, sub-tasks, and dependencies via GitHub MCP server
+  - Verifying all dependent sub-tasks are completed before proceeding
+  - Cloning the repository and implementing the fix while running npm checks
+  - Considering any related issues mentioned in the issue body during implementation
+  - Pushing a `copilot/todo-*` branch and opening a PR with automation labels
+  - Mentioning related issues in the PR description when applicable
+  - Commenting back on the triggering issue with the PR link
+  - Noting if the issue is a parent with sub-tasks that may need updates
 - Permissions: Uses the default `GITHUB_TOKEN` for `gh` pushes, PR creation, and issue comments.
+- Integration: Uses GitHub MCP server for dependency and relationship analysis.
 
 ## Copilot Daily Todo Prioritization (`copilot-todo-daily.yml`)
 
