@@ -127,21 +127,10 @@ See [`docs/automation/push-notifications.md`](docs/automation/push-notifications
 All Copilot workflows use a configurable model selection system. The model is resolved in this priority order:
 
 1. **Workflow input parameter** – Workflows can explicitly specify a model when calling `copilot-exec`
-2. **`COPILOT_MODEL` environment variable** – Set at workflow or repository level to override the default
-3. **Config file** – `.github/copilot/model-config.json` defines the default model
-4. **Hardcoded fallback** – `gpt-4.1` is used if no other configuration is found
+2. **`COPILOT_MODEL` environment variable** – Set at workflow or repository level
+3. **Copilot CLI default** – If no model is specified, Copilot CLI uses its own default model
 
-To change the default model for all workflows, edit `.github/copilot/model-config.json`:
-
-```json
-{
-  "defaultModel": "gpt-4.1",
-  "fallbackModels": ["gpt-4o", "gpt-4"],
-  "description": "Centralized Copilot model configuration. Override with COPILOT_MODEL environment variable."
-}
-```
-
-To override the model for a specific workflow run, set the `COPILOT_MODEL` environment variable in the workflow file or use GitHub's repository variables/secrets feature.
+To specify a model for a specific workflow, set the `model` input parameter when calling the `copilot-exec` action, or set the `COPILOT_MODEL` environment variable in the workflow file or use GitHub's repository variables/secrets feature.
 
 All workflows rely on the default `GITHUB_TOKEN` for repository operations (pushes, PRs, issue management). Follow [Graphite's guidance on GitHub Action permissions](https://graphite.dev/guides/github-actions-permissions) when altering workflows so least-privilege scopes are preserved. See [DOCS.md](DOCS.md) for a deeper dive into automation prompts, PTR conventions, and recommended Screeps resources.
 
