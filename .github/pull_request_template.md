@@ -122,13 +122,9 @@ If breaking changes exist, describe:
 
 **Focus Areas:**
 
--
+- **Known Limitations:**
 
-**Known Limitations:**
-
--
-
-**Questions for Reviewers:**
+- **Questions for Reviewers:**
 
 -
 

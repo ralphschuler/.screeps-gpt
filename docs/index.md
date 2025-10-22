@@ -42,6 +42,7 @@ them before acting.
 
 - [Agent Guidelines](../AGENTS.md) - Comprehensive rules and knowledge base for GitHub Copilot and automation agents
 - [Automation Overview](automation/overview.md)
+- [Semantic Versioning Guide](automation/semantic-versioning-guide.md) - Conventional commits and automated version bumping
 - [PTR Monitoring Pipeline](operations/stats-monitoring.md)
 - [Respawn Handling](operations/respawn-handling.md)
 - [Deployment Troubleshooting](operations/deployment-troubleshooting.md) - Common deployment issues and solutions

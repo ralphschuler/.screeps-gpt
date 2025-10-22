@@ -2,35 +2,30 @@ name: Deploy Screeps AI
 
 on:
   push:
-    branches:
-      - main
     tags:
       - "v*"
-  workflow_run:
-    workflows: ["Post Merge Release"]
+  release:
     types:
-      - completed
+      - published
 
 permissions:
   contents: read
 
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # Only run if:
-    # 1. Triggered by tag push, OR
-    # 2. Triggered by workflow_run AND it was successful AND from the base repository (not a fork)
-    if: |
-      github.event_name == 'push' ||
-      (github.event_name == 'workflow_run' &&
-       github.event.workflow_run.conclusion == 'success' &&
-       github.event.workflow_run.head_repository.full_name == github.repository)
+    # Use GitHub environment for deployment protection rules
+    environment:
+      name: production
+      url: https://screeps.com
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          # For workflow_run, checkout the specific commit SHA instead of branch name to prevent code injection
-          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.ref }}
           fetch-depth: 0
 
       - name: Get version
@@ -42,31 +37,11 @@ jobs:
             VERSION="${{ github.ref_name }}"
             echo "version=$VERSION" >> "$GITHUB_OUTPUT"
             echo "Deploying tagged version: $VERSION"
-          elif [[ "${{ github.event_name }}" == "workflow_run" ]]; then
-            # Workflow run event - find the latest version tag
-            SHA="${{ github.event.workflow_run.head_sha }}"
-            echo "Looking for version tag for commit $SHA"
-
-            # First try to find a tag pointing to this exact commit
-            VERSION=$(git tag --points-at "$SHA" | grep -E '^v[0-9]' | head -n 1 || true)
-
-            # If no tag found on this commit, get the latest version tag
-            # This handles the case where the Post Merge Release workflow
-            # created a tag on a release branch commit
-            if [[ -z "$VERSION" ]]; then
-              echo "No tag found at commit $SHA, looking for latest version tag..."
-              VERSION=$(git tag -l 'v*' | sort -V | tail -n 1)
-              if [[ -z "$VERSION" ]]; then
-                echo "Error: No version tags found in repository"
-                exit 1
-              fi
-              echo "Using latest version tag: $VERSION"
-            else
-              echo "Found version tag at commit: $VERSION"
-            fi
-
+          elif [[ "${{ github.event_name }}" == "release" ]]; then
+            # Release event - extract version from release tag
+            VERSION="${{ github.event.release.tag_name }}"
             echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-            echo "Deploying version $VERSION from commit $SHA"
+            echo "Deploying release version: $VERSION"
           else
             echo "Unknown event type: ${{ github.event_name }}"
             exit 1

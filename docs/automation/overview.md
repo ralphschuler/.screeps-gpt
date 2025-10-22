@@ -11,17 +11,23 @@ This document expands on the workflows under `.github/workflows/` and how they c
 
 ## Post Merge Release (`post-merge-release.yml`)
 
-- Trigger: Pushes to `main` (excludes release PR merges to prevent recursion).
-- Behaviour: Applies lint/format fixes, bumps the version, commits to a release branch, creates a tag, opens a PR to main, and triggers the Deploy workflow via workflow completion.
-- Secrets: Uses the default `GITHUB_TOKEN` with elevated `contents: write` permissions scoped to the workflow.
-- Notes: Skips execution when commit message contains "chore: prepare release" to prevent recursive workflow runs when release PRs are merged.
+- Trigger: Pushes to `main` (excludes release commits to prevent recursion).
+- Behaviour: Applies lint/format fixes, uses semantic versioning based on conventional commits to determine version bump type (major/minor/patch), commits version bump directly to main, creates a version tag, and creates a GitHub Release using the native API with auto-generated release notes.
+- Semantic Versioning: Analyzes commits since the last version tag using conventional commit format:
+  - `feat:` commits trigger **minor** version bumps (0.1.0 → 0.2.0)
+  - `fix:`, `chore:`, `docs:` trigger **patch** version bumps (0.1.0 → 0.1.1)
+  - `BREAKING CHANGE:` in commit body or `!` after type triggers **major** version bumps (1.0.0 → 2.0.0)
+  - Note: During pre-1.0 development, major bumps are converted to minor bumps per semver specification
+- Secrets: Uses the default `GITHUB_TOKEN` with elevated `contents: write` and `pull-requests: write` permissions.
+- Notes: Skips execution when commit message contains "chore(release):" to prevent recursive workflow runs. No longer creates release PRs - releases are created automatically.
 
 ## Deploy (`deploy.yml`)
 
-- Trigger: Tags that match `v*` OR when Post Merge Release workflow completes successfully.
-- Behaviour: Builds and pushes code to the Screeps API (defaults to the PTR environment). Automatically deploys when triggered by the release workflow. Set `SCREEPS_DEPLOY_DRY_RUN=true` for local `act` dry-runs to skip the API call.
+- Trigger: Tags that match `v*` OR GitHub Release published events.
+- Behaviour: Builds and pushes code to the Screeps API. Uses GitHub's `production` environment for deployment protection rules and approval workflows. Set `SCREEPS_DEPLOY_DRY_RUN=true` for local `act` dry-runs to skip the API call.
+- Environment: Uses GitHub environment `production` with URL `https://screeps.com` for deployment tracking and protection rules.
 - Secrets: `SCREEPS_TOKEN` (required), `SCREEPS_HOST`/`PORT`/`PROTOCOL`/`BRANCH` (optional overrides).
-- Notes: The `workflow_run` trigger ensures deployment happens even if tag creation doesn't trigger workflows (GitHub Actions limitation with `GITHUB_TOKEN`).
+- Notes: Deployment is triggered automatically when releases are published, leveraging GitHub's native CI/CD features.
 
 ## Copilot Repository Review (`copilot-review.yml`)
 
@@ -154,11 +160,13 @@ All prompts include comprehensive failure handling for common scenarios:
 ### Validation and Quality Gates
 
 Pre-execution validation ensures all required resources are available:
+
 - Environment variables and tokens are present and valid
 - Required permissions are verified before operations begin
 - Input data meets expected format and quality requirements
 
 Post-execution validation confirms successful completion:
+
 - All mandatory actions completed successfully
 - Generated outputs exist and are accessible
 - Content quality meets established standards
@@ -166,6 +174,7 @@ Post-execution validation confirms successful completion:
 ### Prompt Template Naming
 
 Standardized naming conventions for clarity:
+
 - `issue-triage` - GitHub issue triage and reformulation
 - `todo-automation` - Automated issue implementation (renamed from `todo-issue`)
 - `ci-autofix` - Continuous integration failure remediation
@@ -179,11 +188,13 @@ Standardized naming conventions for clarity:
 Each prompt includes explicit criteria for when automatic actions are appropriate versus when manual intervention is required. This prevents inappropriate automation and ensures quality outcomes.
 
 For example, CI autofix only attempts repairs for:
+
 - ✅ Linting/formatting violations
 - ✅ Simple compilation errors
 - ✅ Broken tests due to trivial changes
 
 But creates issues for manual review when encountering:
+
 - ❌ Complex logic errors requiring design decisions
 - ❌ Security vulnerabilities needing careful review
 - ❌ Breaking changes affecting public APIs

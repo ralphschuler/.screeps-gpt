@@ -7,13 +7,16 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   release:
     runs-on: ubuntu-latest
-    # Skip workflow if the commit is a release PR merge (prevents recursive execution)
-    if: "!contains(github.event.head_commit.message, 'chore: prepare release')"
+    # Skip workflow if the commit is a release commit (prevents recursive execution)
+    if: "!contains(github.event.head_commit.message, 'chore(release):')"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,41 +46,34 @@ jobs:
       - name: Format with write
         run: npm run format:write
 
-      - name: Bump version
+      - name: Bump version (semantic)
         id: bump
         shell: bash
         run: |
-          VERSION=$(npm run version:bump | tail -n 1)
+          # Use semantic versioning based on conventional commits
+          VERSION=$(npm run version:bump-semantic 2>&1 | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | tail -n 1)
+          BUMP_TYPE=$(npm run version:bump-semantic 2>&1 | grep 'Bump type:' | awk '{print $3}' || echo "patch")
           if [ -z "$VERSION" ]; then
             echo "Version bump did not return a version"; exit 1
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "RELEASE_BRANCH=release/v$VERSION" >> "$GITHUB_ENV"
+          echo "bump_type=$BUMP_TYPE" >> "$GITHUB_OUTPUT"
 
       - name: Refresh version index
         run: npm run versions:update
 
-      # Ensure we have latest refs before committing
-      - name: Update remote refs
-        run: |
-          git fetch origin --prune
-          git remote prune origin
-
-      # ⬇️ Commit to the release branch instead of main
-      - name: Commit changes to release branch
+      # Commit version bump and changelog directly to main
+      - name: Commit version bump to main
         id: commit
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: prepare release ${{ steps.bump.outputs.version }}"
-          branch: ${{ env.RELEASE_BRANCH }}
-          create_branch: true
+          commit_message: "chore(release): bump version to ${{ steps.bump.outputs.version }} [skip ci]"
+          branch: main
           commit_user_name: github-actions[bot]
           commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
-          push_options: --force-with-lease
           skip_fetch: false
 
       # Create and push tag to trigger deploy workflow
-      # Using git commands instead of API to ensure deploy workflow triggers
       - name: Create and push tag
         if: steps.bump.outputs.version != '' && steps.commit.outputs.commit_hash != ''
         shell: bash
@@ -100,8 +96,8 @@ jobs:
             exit 0
           }
 
-      # Open or reuse PR from release/vX.Y.Z (aka release/v${version}) into main
-      - name: Create release branch and PR for tag
+      # Create GitHub Release using native API
+      - name: Create GitHub Release
         if: steps.bump.outputs.version != '' && steps.commit.outputs.commit_hash != ''
         uses: actions/github-script@v7
         with:
@@ -111,66 +107,48 @@ jobs:
             const repo = context.repo.repo;
             const version = '${{ steps.bump.outputs.version }}';
             const tag = `v${version}`;
-            const branch = `release/${tag}`;
-            const sha = '${{ steps.commit.outputs.commit_hash || github.sha }}';
+            const sha = '${{ steps.commit.outputs.commit_hash }}';
+            const bumpType = '${{ steps.bump.outputs.bump_type }}';
 
-            // 1) Ensure the branch exists at the tag's commit (idempotent)
-            async function ensureBranch() {
-              try {
-                await github.rest.git.getRef({ owner, repo, ref: `heads/${branch}` });
-                core.info(`Branch ${branch} already exists`);
-              } catch (err) {
-                if (err.status !== 404) throw err;
-                await github.rest.git.createRef({
-                  owner, repo,
-                  ref: `refs/heads/${branch}`,
-                  sha
-                });
-                core.info(`Created branch ${branch} at ${sha}`);
-              }
-            }
-
-            // 2) Generate release notes (best-effort)
-            async function generateNotes() {
-              try {
-                const { data } = await github.rest.repos.generateReleaseNotes({
-                  owner, repo,
-                  tag_name: tag,
-                  target_commitish: sha
-                });
-                return data.body || `Release ${tag}`;
-              } catch (e) {
-                core.warning(`Could not generate notes: ${e.message}`);
-                return `Release ${tag}`;
-              }
-            }
-
-            // 3) Create (or reuse) PR release/<tag> -> main
-            async function ensurePullRequest(body) {
-              const baseBranch = 'main';
-              const headBranch = branch;
-
-              const { data: prs } = await github.rest.pulls.list({
-                owner, repo, state: 'open', head: `${owner}:${headBranch}`, base: baseBranch
+            // Generate release notes using GitHub's API
+            let releaseNotes = '';
+            try {
+              const { data } = await github.rest.repos.generateReleaseNotes({
+                owner,
+                repo,
+                tag_name: tag,
+                target_commitish: sha
               });
-
-              if (prs.length > 0) {
-                core.info(`PR already exists: #${prs[0].number}`);
-                core.setOutput('pr_number', prs[0].number);
-                return;
-              }
-
-              const { data: pr } = await github.rest.pulls.create({
-                owner, repo,
-                title: `Release ${tag}`,
-                head: headBranch,
-                base: baseBranch,
-                body
-              });
-              core.info(`Created PR #${pr.number} for ${headBranch} -> ${baseBranch}`);
-              core.setOutput('pr_number', pr.number);
+              releaseNotes = data.body || '';
+            } catch (e) {
+              core.warning(`Could not generate release notes: ${e.message}`);
+              releaseNotes = `Automated release ${tag}`;
             }
 
-            await ensureBranch();
-            const body = await generateNotes();
-            await ensurePullRequest(body)
+            // Check if release already exists
+            try {
+              const { data: existingRelease } = await github.rest.repos.getReleaseByTag({
+                owner,
+                repo,
+                tag
+              });
+              core.info(`Release ${tag} already exists: ${existingRelease.html_url}`);
+              return;
+            } catch (err) {
+              if (err.status !== 404) throw err;
+              // Release doesn't exist, create it
+            }
+
+            // Create the release
+            const { data: release } = await github.rest.repos.createRelease({
+              owner,
+              repo,
+              tag_name: tag,
+              target_commitish: sha,
+              name: `Release ${tag}`,
+              body: `## ${tag}\n\nVersion bump type: **${bumpType}**\n\n${releaseNotes}`,
+              draft: false,
+              prerelease: version.startsWith('0.') // Pre-1.0 versions are pre-releases
+            });
+
+            core.info(`Created release: ${release.html_url}`);
