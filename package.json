@@ -27,6 +27,7 @@
     "test:coverage": "vitest run --coverage",
     "deploy": "tsx scripts/deploy.ts",
     "version:bump": "tsx scripts/bump-version.ts",
+    "version:bump-semantic": "tsx scripts/bump-version-semantic.ts",
     "versions:update": "tsx scripts/update-version-index.ts",
     "analyze:system": "tsx scripts/evaluate-system.ts"
   },
