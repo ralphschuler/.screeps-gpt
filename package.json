@@ -39,6 +39,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.9.1",
+    "@types/node-fetch": "^2.6.13",
     "@types/screeps": "^3.3.8",
     "@types/semver": "^7.5.8",
     "@typescript-eslint/eslint-plugin": "^8.46.2",
@@ -51,6 +52,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^13.3.0",
     "marked": "^16.4.1",
+    "node-fetch": "^3.3.2",
     "prettier": "^3.6.2",
     "tsx": "^4.20.6",
     "typescript": "^5.4.3",

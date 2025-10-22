@@ -95,7 +95,18 @@ async function sendPushNotification(options: PushNotificationOptions): Promise<v
   };
 
   try {
-    const response = await fetch(apiUrl, {
+    // Use global fetch in Node.js 18+ or import node-fetch for Node.js 16
+    let fetchImpl: typeof globalThis.fetch;
+    if (typeof globalThis.fetch !== "undefined") {
+      fetchImpl = globalThis.fetch;
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const nodeFetch = await import("node-fetch");
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      fetchImpl = nodeFetch.default as typeof globalThis.fetch;
+    }
+
+    const response = await fetchImpl(apiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
