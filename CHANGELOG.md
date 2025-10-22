@@ -30,6 +30,10 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Fixed
 
+- Fixed `copilot-ci-autofix.yml` workflow missing `workflows` specification in `workflow_run` trigger (#69)
+
+### Fixed
+
 - Fixed build error caused by node-gyp attempting to use Python 2 syntax with Python 3
 - Moved `@screeps/common`, `@screeps/driver`, `@screeps/engine`, and `screeps-server-mockup` packages to `optionalDependencies` to allow installation to succeed even when native modules fail to build
 - Added `.npmrc` to configure build behavior for optional dependencies

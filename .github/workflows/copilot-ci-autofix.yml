@@ -2,6 +2,7 @@ name: Copilot CI AutoFix
 
 on:
   workflow_run:
+    workflows: ["Quality Gate", "Post Merge Release"]
     types:
       - completed
 
