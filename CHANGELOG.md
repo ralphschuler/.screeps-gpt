@@ -19,7 +19,7 @@ All notable changes to this project are documented here. This changelog now main
   - Updated all copilot prompts to use new labels (issue-triage, stats-analysis, repository-audit, ci-autofix, email-triage)
   - Updated documentation (README.md, AGENTS.md, copilot-instructions.md) with comprehensive label guidance
   - Created comprehensive label system guide at `docs/automation/label-system.md`
-  - Maintained backward compatibility by keeping deprecated labels (bug, enhancement, severity/*) marked as deprecated
+  - Maintained backward compatibility by keeping deprecated labels (bug, enhancement, severity/\*) marked as deprecated
 
 ### Changed
 

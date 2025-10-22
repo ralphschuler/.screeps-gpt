@@ -38,7 +38,7 @@ describe("Semantic Version Bump Script", () => {
     const content = await readFile(scriptPath, "utf8");
 
     // Verify semver usage
-    expect(content).toContain("from \"semver\"");
+    expect(content).toContain('from "semver"');
     expect(content).toContain("inc(");
     expect(content).toContain("parse(");
   });

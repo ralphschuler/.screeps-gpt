@@ -19,11 +19,18 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import semver from "semver";
 
+interface PackageJson {
+  devDependencies?: {
+    vitest?: string;
+    "@vitest/coverage-v8"?: string;
+  };
+}
+
 describe("Vitest Coverage Compatibility Regression", () => {
   it("should have compatible vitest and @vitest/coverage-v8 versions", () => {
     // Read package.json to get current dependency versions
     const packageJsonPath = resolve(process.cwd(), "package.json");
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8")) as PackageJson;
 
     const vitestVersion = packageJson.devDependencies?.vitest;
     const coverageVersion = packageJson.devDependencies?.["@vitest/coverage-v8"];

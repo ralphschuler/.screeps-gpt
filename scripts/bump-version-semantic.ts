@@ -44,7 +44,7 @@ function getCommitsSinceLastTag(): CommitInfo[] {
       const body = lines.slice(1).join("\n").trim();
       return { message, body };
     });
-  } catch (error) {
+  } catch {
     console.warn("Warning: Could not retrieve git commits, defaulting to patch bump");
     return [];
   }
