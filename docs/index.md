@@ -45,6 +45,7 @@ them before acting.
 - [PTR Monitoring Pipeline](operations/stats-monitoring.md)
 - [Respawn Handling](operations/respawn-handling.md)
 - [Deployment Troubleshooting](operations/deployment-troubleshooting.md) - Common deployment issues and solutions
+- [Workflow Troubleshooting](operations/workflow-troubleshooting.md) - GitHub Actions workflow issues and fixes
 - [Developer Onboarding Resources](../DOCS.md)
 - [Release History](changelog/versions.md)
 
