@@ -14,11 +14,11 @@ async function deploy(): Promise<void> {
     throw new Error("SCREEPS_TOKEN secret is required for deployment");
   }
 
-  const branch = process.env.SCREEPS_BRANCH ?? "main";
-  const hostname = process.env.SCREEPS_HOST ?? "screeps.com";
-  const protocol = process.env.SCREEPS_PROTOCOL ?? "https";
-  const port = Number(process.env.SCREEPS_PORT ?? 443);
-  const path = process.env.SCREEPS_PATH ?? "/";
+  const branch = process.env.SCREEPS_BRANCH || "main";
+  const hostname = process.env.SCREEPS_HOST || "screeps.com";
+  const protocol = process.env.SCREEPS_PROTOCOL || "https";
+  const port = Number(process.env.SCREEPS_PORT || 443);
+  const path = process.env.SCREEPS_PATH || "/";
 
   const bundlePath = resolve("dist/main.js");
   const source = await readFile(bundlePath, "utf8");

@@ -39,6 +39,7 @@ All notable changes to this project are documented here. This changelog now main
 - **Fixed deployment workflow not triggering** by adding `workflow_run` trigger to chain deployment after successful release preparation
 - Simplified tag creation in post-merge workflow from GitHub API to git commands for clarity
 - Deploy workflow now falls back to latest version tag when no tag exists on triggering commit (resolves workflow run 18701965424)
+- **Fixed deployment failure with empty environment variables** - Changed deploy script to use `||` instead of `??` operator so empty string secrets default to proper Screeps API values (resolves workflow run 18702433741)
 
 ### Removed
 
