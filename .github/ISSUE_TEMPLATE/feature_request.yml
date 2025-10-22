@@ -1,7 +1,7 @@
 name: Feature Request
 description: Suggest a new feature or enhancement beyond bug fixes
 title: "feat: "
-labels: ["enhancement"]
+labels: ["type/feature", "state/pending"]
 assignees: []
 body:
   - type: markdown

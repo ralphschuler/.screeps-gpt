@@ -93,13 +93,29 @@ All workflows rely on the default `GITHUB_TOKEN` for repository operations (push
 
 ## Labels
 
-Repository labels are synchronised via [`label-sync.yml`](.github/workflows/label-sync.yml) from [`.github/labels.yml`](.github/labels.yml). Do not edit labels manually in the UI—update the YAML file instead. Key labels include:
+Repository labels are synchronised via [`label-sync.yml`](.github/workflows/label-sync.yml) from [`.github/labels.yml`](.github/labels.yml). Do not edit labels manually in the UI—update the YAML file instead. The repository uses a standardized three-tier labeling system:
 
+**Process Labels** – Workflow triggers and automation:
 - `Todo` – Triggers Copilot Todo automation.
 - `monitoring` – Created by the stats monitor for PTR anomalies.
-- `severity/{high,medium,low}` – Used by Copilot-driven alerts to convey urgency.
 - `needs/regression-test` – Apply when a bug report lacks coverage.
-- `documentation`, `automation`, `runtime` – Highlight affected areas for triage.
+
+**State Labels** – Issue lifecycle management:
+- `state/pending`, `state/backlog`, `state/in-progress`, `state/blocked`, `state/canceled`, `state/done`
+
+**Type Labels** – Issue classification:
+- `type/bug`, `type/feature`, `type/enhancement`, `type/chore`, `type/question`
+
+**Priority Labels** – Urgency and importance:
+- `priority/critical`, `priority/high`, `priority/medium`, `priority/low`, `priority/none`
+
+**Domain Labels** – Technical areas:
+- `automation`, `documentation`, `runtime`, `monitoring`, `dependencies`, `regression`
+
+**Workflow Labels** – Common GitHub patterns:
+- `good-first-issue`, `help-wanted`, `wontfix`, `duplicate`, `invalid`
+
+**Note:** Legacy labels (`bug`, `enhancement`, `severity/*`) are deprecated in favor of the new `type/*` and `priority/*` labels but are temporarily kept for backward compatibility.
 
 ## Repository Evaluation Pipeline
 

@@ -54,8 +54,12 @@ Follow this process:
 
 1. Authenticate the GitHub CLI using the provided `GITHUB_TOKEN`/`GH_TOKEN`.
 2. Decide whether the email contains actionable follow-up items. If it does, draft GitHub issues with clear titles, detailed
-   Markdown bodies (problem, expectations, diagnostics, next steps), and sensible labels from the repository set
-   (`automation`, `documentation`, `runtime`, `monitoring`, `needs/regression-test`, `severity/{high,medium,low}`, etc.).
+   Markdown bodies (problem, expectations, diagnostics, next steps), and sensible labels from the repository set:
+   - Type: `type/bug`, `type/feature`, `type/enhancement`, `type/chore`, `type/question`
+   - State: `state/pending`
+   - Priority: `priority/critical`, `priority/high`, `priority/medium`, `priority/low`
+   - Domain: `automation`, `documentation`, `runtime`, `monitoring`
+   - Process: `needs/regression-test`
 3. Create the issues directly using `gh issue create`, linking back to the email context when helpful.
 4. When the message does not require action, explicitly record that no issue was filed.
 

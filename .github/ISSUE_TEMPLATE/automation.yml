@@ -1,7 +1,7 @@
 name: Automation/Workflow Issue
 description: Report problems with CI/CD, GitHub Actions, or automation workflows
 title: "automation: "
-labels: ["automation"]
+labels: ["automation", "type/bug", "state/pending"]
 assignees: []
 body:
   - type: markdown
