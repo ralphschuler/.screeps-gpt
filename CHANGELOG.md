@@ -25,6 +25,13 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Fixed
 
+- **Node.js 16 compatibility for Vitest testing framework**
+  - Added `crypto.getRandomValues()` polyfill in `tests/setup.ts` for Node.js 16 compatibility
+  - Fixes Vitest startup error: "TypeError: crypto.getRandomValues is not a function"
+  - Node.js 16 doesn't include Web Crypto API, but it's required by Vite/Vitest
+  - Uses Node.js built-in `webcrypto` module to polyfill the missing API
+  - Ensures all test suites run successfully in CI workflows using Node.js 16
+
 - **Node.js 16 compatibility for lint-staged in CI workflows**
   - Downgraded `lint-staged` from v16.2.5 to v13.3.0 to maintain Node.js 16.14.0+ compatibility
   - Fixes `post-merge-release.yml` workflow failure caused by `nano-spawn@2.0.0` dependency requiring Node.js 17+ (`node:readline/promises`)
