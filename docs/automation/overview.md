@@ -115,7 +115,14 @@ This document expands on the workflows under `.github/workflows/` and how they c
 ## Copilot CI AutoFix (`copilot-ci-autofix.yml`)
 
 - Trigger: Failed runs of any workflow except `Copilot CI AutoFix` itself (to prevent infinite loops).
-- Behaviour: Copilot downloads the failing logs, clones the affected branch, applies the fix with changelog/docs/tests updates, and pushes the result (updating the PR or opening a dedicated automation PR).
+- Behaviour: Copilot downloads the failing logs, analyzes the workflow context (PR vs non-PR trigger), clones the affected branch, applies the fix with changelog/docs/tests updates, and pushes the result based on context-aware decision logic.
+- Context Awareness: The workflow passes `TRIGGER_EVENT` and event payload to enable intelligent decision-making about fix application strategy.
+- Fix Application Strategy:
+  - **PR-triggered failures**: Commits directly to the PR branch for fast iteration
+  - **Main branch failures**: Creates new PR (`copilot/autofix-{run_id}`) to avoid direct commits to protected branches
+  - **Feature branch failures**: Commits directly to the feature branch
+  - **Scheduled/manual triggers**: Creates new PR for review and validation
+- Branch Protection: Never pushes directly to `main` or production branches - always creates a PR to maintain audit trail and review process.
 - Action Enforcement: Mandatory root cause analysis, minimal targeted fixes with validation, explicit criteria for fix appropriateness, and comprehensive failure handling for complex issues.
 
 Keep this file accurate—workflows load these expectations via the Copilot CLI when planning fixes.

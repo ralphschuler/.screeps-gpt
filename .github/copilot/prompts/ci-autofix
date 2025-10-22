@@ -42,24 +42,54 @@ Do NOT attempt automatic fixes for:
 - ❌ Breaking changes affecting public APIs
 - ❌ Performance regressions requiring profiling
 
+## WORKFLOW CONTEXT & BRANCH STRATEGY
+
+The workflow provides `TRIGGER_EVENT` (from `${TRIGGER_EVENT}`) indicating the event type that triggered the failing workflow. Use this to determine the appropriate fix strategy:
+
+**Decision Matrix for Fix Application:**
+
+| Trigger Event | Source Branch | Action Strategy |
+|--------------|---------------|-----------------|
+| `pull_request` | PR head branch | Push directly to the existing PR branch |
+| `push` to `main` | `main` | Create new PR (`copilot/autofix-${RUN_ID}`) targeting `main` |
+| `push` to feature branch | Feature branch | Push directly to the feature branch |
+| `schedule` | Default branch | Create new PR with fix for review |
+| `workflow_dispatch` | Triggering branch | Create new PR with fix for review |
+
+**Protected Branch Security:**
+- **NEVER push directly to `main` or production branches** - always create a PR instead
+- Avoid direct commits to protected branches to maintain audit trail and review process
+- Feature branches and PR branches can receive direct commits for faster iteration
+- All PR creation must include labels: `automation`, `copilot`, `type/chore`, `priority/high`
+
+**Branch Determination Process:**
+1. Parse `EVENT_PATH` JSON to extract `workflow_run.head_branch` and `workflow_run.pull_requests[]`
+2. If `pull_requests` array is non-empty → PR-triggered workflow
+3. If `head_branch` is `main` or matches protected branch pattern → Protected branch
+4. Use trigger event type to determine if PR creation is mandatory
+
 ---
 
 Follow this playbook:
 
 1. Authenticate the GitHub CLI.
-2. Load the event payload to determine whether the run came from a pull request or the `main` branch.
-3. Download the failing logs with `gh run download ${RUN_ID}` for context.
-4. Clone the appropriate repository/branch into `$GITHUB_WORKSPACE/repo` and check out a working branch:
-   - Pull request: reuse the PR head branch.
-   - `main`/tag failures: create `copilot/autofix-${RUN_ID}` off the failing ref.
-5. Investigate the failure using the downloaded logs and apply the minimal fix while following every rule in `AGENTS.md`
+2. Load the event payload at `${EVENT_PATH}` and extract workflow context:
+   - `workflow_run.event` (trigger event type: pull_request, push, schedule, etc.)
+   - `workflow_run.head_branch` (source branch name)
+   - `workflow_run.pull_requests[]` (associated PRs if any)
+3. Determine fix application strategy using the **WORKFLOW CONTEXT & BRANCH STRATEGY** decision matrix above.
+4. Download the failing logs with `gh run download ${RUN_ID}` for context.
+5. Clone the appropriate repository/branch into `$GITHUB_WORKSPACE/repo` and check out a working branch:
+   - PR-triggered: Check out the PR head branch
+   - Protected branch (main): Create `copilot/autofix-${RUN_ID}` branch
+   - Feature branch: Check out the feature branch
+6. Investigate the failure using the downloaded logs and apply the minimal fix while following every rule in `AGENTS.md`
    (changelog updates, regression tests, docs alignment, deterministic logic, etc.).
-6. Run the necessary Bun commands/tests to confirm the fix.
-7. Commit the changes referencing the run ID, push them with `gh`, and either:
-   - Push directly to the PR branch, or
-   - Open a new pull request targeting the affected branch with labels `automation`, `copilot`, `type/chore`, and `priority/high` 
-     plus a short summary of the regression and verification.
-8. If more work remains, open or update GitHub issues accordingly.
+7. Run the necessary npm commands/tests to confirm the fix.
+8. Commit the changes referencing the run ID, then apply fix according to decision matrix:
+   - **Direct push**: Push to the current branch with `gh`
+   - **Create PR**: Open a new pull request targeting the affected branch with labels `automation`, `copilot`, `type/chore`, and `priority/high` plus a short summary of the regression and verification
+9. If more work remains, open or update GitHub issues accordingly.
 
 ## FINAL OUTPUT VALIDATION
 
