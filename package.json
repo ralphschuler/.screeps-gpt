@@ -46,7 +46,7 @@
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.29.1",
-    "marked": "^9.1.0",
+    "marked": "^16.4.1",
     "prettier": "^3.6.2",
     "tsx": "^3.14.0",
     "typescript": "^5.4.3",
