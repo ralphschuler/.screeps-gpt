@@ -2,6 +2,19 @@ name: Copilot CI AutoFix
 
 on:
   workflow_run:
+    workflows:
+      - "Quality Gate"
+      - "Post Merge Release"
+      - "Deploy Screeps AI"
+      - "Copilot Repository Audit"
+      - "Copilot Issue Triage"
+      - "Copilot Todo PR"
+      - "Copilot Daily Todo Prioritization"
+      - "Copilot Email Triage"
+      - "Dependabot Auto Merge"
+      - "Publish Documentation Site"
+      - "Sync Labels"
+      - "Screeps Stats Monitor"
     types:
       - completed
 
