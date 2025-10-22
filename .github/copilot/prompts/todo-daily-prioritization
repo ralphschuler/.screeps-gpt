@@ -4,6 +4,47 @@ Your task is to automatically identify and assign the oldest actionable issue to
 
 The workflow has already provided `GITHUB_TOKEN`/`GH_TOKEN` for authentication.
 
+## MANDATORY ACTIONS (failure to complete any item is a workflow failure)
+
+- [ ] **MUST authenticate GitHub CLI** with provided token and verify permissions
+- [ ] **MUST analyze all open issues** using GitHub MCP server for dependency relationships
+- [ ] **MUST validate actionability** using explicit criteria for each candidate issue
+- [ ] **MUST apply Todo label** to exactly one issue (or none if criteria not met)
+- [ ] **MUST add explanatory comment** to any labeled issue with prioritization rationale
+
+## OUTPUT REQUIREMENTS
+
+- **All actionability assessments MUST be explicit** with documented reasoning
+- **All Todo label applications MUST be justified** in issue comments
+- **All comments MUST be professional** and explain the prioritization criteria
+- **All dependency analysis MUST be thorough** using GitHub issue relationships
+
+## FAILURE HANDLING
+
+- **IF no actionable issues exist** → Log successful completion with zero assignments
+- **IF all issues already have Todo labels** → Log completion and exit gracefully
+- **IF GitHub API fails** → Log error and retry once, then exit with status
+- **IF dependency analysis is unclear** → Err on the side of caution and skip questionable issues
+
+## ACTIONABILITY CRITERIA
+
+An issue is actionable if ALL conditions are met:
+1. **No Todo label currently applied**
+2. **No incomplete sub-tasks or blocking dependencies**
+3. **Clear acceptance criteria or requirements defined**  
+4. **Not waiting for external decisions or clarifications**
+5. **Technically feasible with current repository state**
+
+## DEPENDENCY VALIDATION
+
+Check for the following blocking relationships:
+- **Sub-issues**: Task lists in issue body with unchecked items
+- **Linked issues**: References to other issues that must be completed first
+- **External dependencies**: Waiting for third-party responses or decisions
+- **Technical blockers**: Missing infrastructure or tooling
+
+---
+
 Execution checklist:
 
 1. **Authenticate and Query Issues**
@@ -36,6 +77,14 @@ Execution checklist:
    - If all open issues have incomplete dependencies, log this and exit gracefully
    - Never assign Todo to the same issue twice
 
+## FINAL OUTPUT VALIDATION
+
+Verify the following before completion:
+- [ ] All open issues analyzed for actionability using explicit criteria
+- [ ] Todo label applied to at most one issue
+- [ ] Explanatory comment added to any newly labeled issue
+- [ ] Dependency analysis completed for all candidates
+
 When complete, print minified JSON with this structure so the workflow captures the outcome:
 
 ```
@@ -56,3 +105,4 @@ Rules:
 - Keep comments on issues professional and concise.
 - Only add the Todo label to ONE issue per execution.
 - Respect existing Todo labels - never duplicate them.
+- Apply actionability criteria consistently across all candidates.

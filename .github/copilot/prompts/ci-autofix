@@ -6,6 +6,44 @@ The workflow has provided:
 - Authentication through `GITHUB_TOKEN`/`GH_TOKEN`.
 - An empty workspace at `${WORKSPACE}`.
 
+## MANDATORY ACTIONS (failure to complete any item is a workflow failure)
+
+- [ ] **MUST authenticate GitHub CLI** and verify access to repository and run logs
+- [ ] **MUST analyze failure root cause** using downloaded logs and code inspection
+- [ ] **MUST apply minimal fix** that directly addresses the identified failure
+- [ ] **MUST validate fix** by running relevant build/test commands
+- [ ] **MUST document changes** with clear commit messages referencing run ID
+
+## OUTPUT REQUIREMENTS
+
+- **All fixes MUST be minimal and targeted** - change only what's necessary for the failure
+- **All commit messages MUST reference** the failing run ID for traceability
+- **All changes MUST follow** repository rules in `AGENTS.md` (changelog, tests, docs)
+- **All fixes MUST be validated** before committing to ensure they resolve the failure
+
+## FAILURE HANDLING
+
+- **IF logs are insufficient for diagnosis** → Create issue with "needs investigation" label and available evidence
+- **IF failure is complex/systemic** → Create issue for manual review instead of attempting auto-fix
+- **IF fix validation fails** → Revert changes and create issue with reproduction steps
+- **IF multiple failures present** → Fix only the primary/first failure, create issues for others
+
+## FIX APPROPRIATENESS CRITERIA
+
+Only attempt automatic fixes for:
+- ✅ Linting/formatting violations
+- ✅ Simple compilation errors (missing imports, typos)
+- ✅ Broken tests due to trivial changes
+- ✅ Dependency version conflicts
+
+Do NOT attempt automatic fixes for:
+- ❌ Complex logic errors requiring design decisions  
+- ❌ Security vulnerabilities requiring careful review
+- ❌ Breaking changes affecting public APIs
+- ❌ Performance regressions requiring profiling
+
+---
+
 Follow this playbook:
 
 1. Authenticate the GitHub CLI.
@@ -23,6 +61,14 @@ Follow this playbook:
      regression and verification.
 8. If more work remains, open or update GitHub issues accordingly.
 
+## FINAL OUTPUT VALIDATION
+
+Verify the following before completion:
+- [ ] Root cause identified and documented
+- [ ] Fix applied and validated successfully  
+- [ ] Changes committed with proper run ID reference
+- [ ] Fix scope limited to addressing the specific failure
+
 Finally, print minified JSON so the workflow log records the results:
 
 ```
@@ -31,7 +77,7 @@ Finally, print minified JSON so the workflow log records the results:
   "trigger": "${TRIGGER_EVENT}",
   "branch": "...",
   "pull_request_url": "https://github.com/..." | null,
-  "tests": ["bun run lint", ...],
+  "tests": ["npm run lint", ...],
   "notes": "concise summary"
 }
 ```
@@ -41,3 +87,4 @@ Rules:
 - Do not wrap the JSON in Markdown fences.
 - Use empty arrays/nulls when appropriate.
 - Keep edits tightly scoped to the failure being remediated.
+- Only attempt fixes that meet the appropriateness criteria above.

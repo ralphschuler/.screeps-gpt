@@ -11,8 +11,28 @@ All notable changes to this project are documented here. This changelog now main
 - Fixed email triage workflow not creating issues by removing contradictory JSON formatting in prompt template (#115)
 - Fixed CI failure in `npm run versions:update` by adding missing trailing newline to `docs/changelog/versions.md` (regression test: `tests/regression/versions-file-trailing-newline.test.ts`, workflow run: 18703566323)
 - Fixed git push conflict in post-merge release workflow by adding remote ref updates before commit operations (regression test: `tests/regression/post-merge-workflow-git-race-condition.test.ts`, workflow run: 18703919715)
+- **Fixed automatic Todo label assignment in issue triage** by removing Todo from automatic labeling per issue #78 to prevent unwanted automation triggers
 
 ### Added
+
+- **Enhanced Copilot prompt templates with action enforcement rules** (#127)
+  - Added mandatory action requirements with explicit "MUST" criteria for all workflows  
+  - Implemented comprehensive failure handling for GitHub API issues, missing data, and timeout conditions
+  - Added explicit output quality requirements and validation criteria
+  - Included actionable finding criteria and severity assessment guidelines
+  - Added pre/post-execution validation steps for all automated operations
+- **Standardized prompt template naming and structure**
+  - Renamed `todo-issue` → `todo-automation` for consistency with workflow purpose
+  - Renamed `repository-audit` → `repository-review` for clarity
+  - Updated corresponding workflow files to reference new prompt paths
+- **Enhanced action appropriateness criteria**
+  - Added explicit guidelines for when automatic fixes are appropriate vs. manual intervention required
+  - Implemented quality gates preventing inappropriate automation of complex issues
+  - Added concrete thresholds and examples for anomaly detection and severity assessment
+- **Comprehensive prompt template audit documentation** in `docs/automation/prompt-audit.md`
+  - Detailed analysis of existing templates with strengths and gaps identified
+  - Enhancement framework and recommendations for consistent action enforcement
+  - Impact assessment and validation requirements for template changes
 
 - Created `.github/copilot-instructions.md` with repository-specific guidelines for GitHub Copilot coding agent
 - Includes coding standards, development workflow, testing expectations, and documentation requirements

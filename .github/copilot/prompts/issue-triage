@@ -14,6 +14,30 @@ Issue metadata:
 ${ISSUE_BODY}
 ```
 
+## MANDATORY ACTIONS (failure to complete any item is a workflow failure)
+
+- [ ] **MUST authenticate GitHub CLI** with provided token and verify permissions
+- [ ] **MUST analyze issue content** and detect duplicates using GitHub MCP server
+- [ ] **MUST reformulate issue** with clear structure and actionable content
+- [ ] **MUST apply appropriate labels** based on content analysis (excluding Todo label)
+- [ ] **MUST add triage comment** with summary and recommendations
+
+## OUTPUT REQUIREMENTS
+
+- **All reformulated content MUST be actionable** with specific next steps
+- **All applied labels MUST accurately reflect** the issue content and scope
+- **All triage comments MUST be professional** and provide concrete guidance
+- **All relationship detection MUST be thorough** using GitHub MCP server queries
+
+## FAILURE HANDLING
+
+- **IF GitHub API is unavailable** → Log error and exit gracefully with partial results
+- **IF duplicate detection fails** → Proceed with reformulation but log the limitation
+- **IF label application fails** → Retry once, then proceed without labeling
+- **IF reformulation is unclear** → Preserve original content and add clarification request
+
+---
+
 Follow this process:
 
 1. **Authenticate and Gather Context**
@@ -71,7 +95,8 @@ Follow this process:
    - Apply appropriate labels from the repository set based on the issue content:
      - Area labels: `automation`, `documentation`, `runtime`, `monitoring`
      - Priority labels: `severity/high`, `severity/medium`, `severity/low`
-     - Process labels: `needs/regression-test`, `Todo` (if actionable immediately)
+     - Process labels: `needs/regression-test`
+   - **IMPORTANT**: Do NOT automatically apply the `Todo` label - this should be a deliberate manual decision by maintainers
 
 8. **Add Triage Comment**
    - Add a SINGLE comment to the issue explaining:
@@ -79,6 +104,14 @@ Follow this process:
      - Any detected relationships or related issues
      - Recommendations for next steps
    - Do NOT add redundant comments if the issue description was the only update
+
+## FINAL OUTPUT VALIDATION
+
+Verify the following before completion:
+- [ ] Issue content reformulated with clear structure
+- [ ] Appropriate labels applied (excluding Todo)
+- [ ] Relationships detected and documented
+- [ ] Triage comment added with recommendations
 
 Finish by printing minified JSON so the workflow log captures the triage:
 

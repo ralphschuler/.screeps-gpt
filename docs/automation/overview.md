@@ -23,11 +23,12 @@ This document expands on the workflows under `.github/workflows/` and how they c
 - Secrets: `SCREEPS_TOKEN` (required), `SCREEPS_HOST`/`PORT`/`PROTOCOL`/`BRANCH` (optional overrides).
 - Notes: The `workflow_run` trigger ensures deployment happens even if tag creation doesn't trigger workflows (GitHub Actions limitation with `GITHUB_TOKEN`).
 
-## Copilot Repository Audit (`copilot-review.yml`)
+## Copilot Repository Review (`copilot-review.yml`)
 
 - Trigger: Daily schedule + manual dispatch.
 - Behaviour: Copilot authenticates with `gh`, clones the repo, audits automation/runtime quality, files or updates GitHub issues directly, and prints a JSON recap to the logs.
 - Output: Summary is logged instead of uploading an artifact.
+- Action Enforcement: Mandatory comprehensive audit with actionable finding criteria, issue quality validation, duplicate prevention, and severity assessment guidelines.
 
 ## Documentation Pages (`docs-pages.yml`)
 
@@ -43,19 +44,20 @@ This document expands on the workflows under `.github/workflows/` and how they c
   - Detecting and handling duplicate issues automatically (comments on both issues, closes duplicate with "duplicate" reason)
   - Identifying related issues, sub-tasks, and parent-child relationships
   - Reformulating title and description to clearly outline required changes and expectations
-  - Applying appropriate labels based on content analysis
+  - Applying appropriate labels based on content analysis (**excludes automatic Todo labeling** per issue #78)
   - Linking related issues in the reformulated description
   - Establishing sub-issue connections via GitHub CLI when parent-child relationships are detected
   - Adding a single triage comment with summary and recommendations (avoids redundant comments)
 - Permissions: Uses the default `GITHUB_TOKEN` with `issues: write` to edit issue metadata, add comments, and close duplicates.
 - Integration: Uses GitHub MCP server for querying all issues and performing relationship analysis.
+- Action Enforcement: Mandatory reformulation, labeling, and triage comments with failure handling for API issues.
 
 ## Copilot Todo Automation (`copilot-todo-pr.yml`)
 
 - Trigger: Issues labelled `Todo`.
 - Behaviour: Copilot performs context-aware implementation by:
   - Checking for related issues, sub-tasks, and dependencies via GitHub MCP server
-  - Verifying all dependent sub-tasks are completed before proceeding
+  - Verifying all dependent sub-tasks are completed before proceeding (blocks execution if incomplete)
   - Cloning the repository and creating a `copilot/todo-*` branch
   - **Creating a draft pull request immediately** for transparency and user visibility
   - Implementing the fix incrementally with frequent progress updates using the `report_progress` tool
@@ -69,6 +71,7 @@ This document expands on the workflows under `.github/workflows/` and how they c
 - Permissions: Uses the default `GITHUB_TOKEN` for `gh` pushes, PR creation, issue comments, and PR status updates.
 - Integration: Uses GitHub MCP server for dependency and relationship analysis.
 - Visibility: Users can follow along with the implementation process in real-time through the draft PR and commit history.
+- Action Enforcement: Mandatory dependency validation, PR creation, progress reporting, and validation testing with comprehensive failure handling.
 
 ## Copilot Daily Todo Prioritization (`copilot-todo-daily.yml`)
 
@@ -76,12 +79,14 @@ This document expands on the workflows under `.github/workflows/` and how they c
 - Behaviour: Copilot automatically identifies the oldest actionable issue (no incomplete sub-tasks) without the Todo label, applies the Todo label to trigger automated implementation, and adds a comment explaining the prioritization. Uses GitHub MCP server to query issues and analyze dependencies.
 - Permissions: Uses the default `GITHUB_TOKEN` with `issues: write` for label management.
 - Concurrency: Single execution at a time via `copilot-todo-daily` concurrency group.
+- Action Enforcement: Mandatory actionability validation with explicit criteria, comprehensive dependency analysis, and professional explanatory comments for all label assignments.
 
 ## Copilot Email Triage (`copilot-email-triage.yml`)
 
 - Trigger: `repository_dispatch` events with `event_type` set to `copilot_email_triage`.
 - Behaviour: Copilot reviews the email payload, files any required GitHub issues directly with `gh`, and records a concise summary in the logs.
 - Notes: External webhook callers must include the email payload under `client_payload.email`.
+- Action Enforcement: Mandatory email content validation, actionable item criteria, and high-quality issue creation with proper structure and labeling.
 
 ## Dependabot Auto Merge (`dependabot-automerge.yml`)
 
@@ -94,6 +99,7 @@ This document expands on the workflows under `.github/workflows/` and how they c
 - Behaviour: Copilot uses Screeps API MCP server to fetch telemetry directly from Screeps, analyse anomalies, and open/update monitoring issues through `gh` with severity labels.
 - MCP Servers: Integrates with the Screeps API MCP server for direct Screeps server interaction.
 - Secrets: `SCREEPS_TOKEN` (required), `SCREEPS_STATS_TOKEN`, `SCREEPS_EMAIL`, `SCREEPS_PASSWORD` (optional alternatives), plus optional host/port/protocol overrides.
+- Action Enforcement: Mandatory telemetry validation, explicit anomaly detection criteria with severity thresholds, and concrete evidence requirements for all monitoring issues.
 
 ## Label Sync (`label-sync.yml`)
 
@@ -104,8 +110,83 @@ This document expands on the workflows under `.github/workflows/` and how they c
 
 - Trigger: Failed runs of any workflow except `Copilot CI AutoFix` itself (to prevent infinite loops).
 - Behaviour: Copilot downloads the failing logs, clones the affected branch, applies the fix with changelog/docs/tests updates, and pushes the result (updating the PR or opening a dedicated automation PR).
+- Action Enforcement: Mandatory root cause analysis, minimal targeted fixes with validation, explicit criteria for fix appropriateness, and comprehensive failure handling for complex issues.
 
 Keep this file accurate—workflows load these expectations via the Copilot CLI when planning fixes.
+
+---
+
+## Enhanced Prompt Template Patterns
+
+As of issue #127, all Copilot prompt templates follow enhanced patterns with explicit action enforcement rules and output validation requirements.
+
+### Action Enforcement Framework
+
+All prompts include mandatory action requirements that must be completed for successful workflow execution:
+
+```markdown
+## MANDATORY ACTIONS (failure to complete any item is a workflow failure)
+
+- [ ] **MUST authenticate GitHub CLI** with provided token and verify permissions
+- [ ] **MUST validate input parameters** before proceeding with operations
+- [ ] **MUST create/update specified outputs** with required format and quality
+- [ ] **MUST validate outputs** meet quality requirements before completion
+```
+
+### Output Quality Requirements
+
+All generated content must meet explicit quality standards:
+
+- **Actionable Content**: All issues, PRs, and comments must include specific next steps
+- **Professional Language**: All generated text must be concise and professional
+- **Concrete Evidence**: All findings must reference specific files, metrics, or reproduction steps
+- **Proper Structure**: All outputs must follow repository conventions and formatting standards
+
+### Failure Handling Patterns
+
+All prompts include comprehensive failure handling for common scenarios:
+
+- **API Failures**: GitHub/Screeps API unavailability with graceful degradation
+- **Missing Data**: Input validation with clear error messages and exit conditions
+- **Complex Issues**: Escalation to manual review when automatic handling is inappropriate
+- **Timeout Conditions**: Resource limits and progress preservation for long operations
+
+### Validation and Quality Gates
+
+Pre-execution validation ensures all required resources are available:
+- Environment variables and tokens are present and valid
+- Required permissions are verified before operations begin
+- Input data meets expected format and quality requirements
+
+Post-execution validation confirms successful completion:
+- All mandatory actions completed successfully
+- Generated outputs exist and are accessible
+- Content quality meets established standards
+
+### Prompt Template Naming
+
+Standardized naming conventions for clarity:
+- `issue-triage` - GitHub issue triage and reformulation
+- `todo-automation` - Automated issue implementation (renamed from `todo-issue`)
+- `ci-autofix` - Continuous integration failure remediation
+- `repository-review` - Comprehensive repository auditing (renamed from `repository-audit`)
+- `email-triage` - Email to GitHub issue conversion
+- `stats-analysis` - Screeps telemetry monitoring and anomaly detection
+- `todo-daily-prioritization` - Automated Todo label assignment
+
+### Action Appropriateness Criteria
+
+Each prompt includes explicit criteria for when automatic actions are appropriate versus when manual intervention is required. This prevents inappropriate automation and ensures quality outcomes.
+
+For example, CI autofix only attempts repairs for:
+- ✅ Linting/formatting violations
+- ✅ Simple compilation errors
+- ✅ Broken tests due to trivial changes
+
+But creates issues for manual review when encountering:
+- ❌ Complex logic errors requiring design decisions
+- ❌ Security vulnerabilities needing careful review
+- ❌ Breaking changes affecting public APIs
 
 ---
 
