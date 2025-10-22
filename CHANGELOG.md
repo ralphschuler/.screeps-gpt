@@ -28,6 +28,13 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Added
 
+- **Specialized PR templates for Copilot automation workflows** (#130)
+  - Created `.github/PULL_REQUEST_TEMPLATE/copilot-todo.md` for Todo workflow PRs with automation-specific checklists
+  - Created `.github/PULL_REQUEST_TEMPLATE/copilot-quickfix.md` for CI autofix PRs with validation-focused content
+  - Templates reduce cognitive load by removing irrelevant manual checklist items
+  - Improved reviewer guidance specific to Copilot-generated changes
+  - Maintained quality standards while tailoring context to automated change types
+  - Ready workflow integration (requires manual application due to workflow permission constraints)
 - **Enhanced Copilot prompt templates with action enforcement rules** (#127)
   - Added mandatory action requirements with explicit "MUST" criteria for all workflows
   - Implemented comprehensive failure handling for GitHub API issues, missing data, and timeout conditions
