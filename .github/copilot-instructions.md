@@ -2,12 +2,44 @@
 
 This repository hosts an autonomous Screeps AI with comprehensive automation. When working on this codebase, follow these guidelines to ensure consistency and quality.
 
+## Technology Stack
+
+- **Runtime**: Node.js 16.x with npm 8.0+
+- **Language**: TypeScript (strict mode enabled)
+- **Package Manager**: npm
+- **Build Tool**: esbuild
+- **Testing Framework**: Vitest
+- **Linting**: ESLint with TypeScript plugin
+- **Formatting**: Prettier
+- **Target Environment**: Screeps MMO game engine
+
 ## Core Principles
 
 - **Minimal changes**: Make the smallest possible modifications to achieve the goal
 - **Test-driven**: Write or update tests before fixing bugs
 - **Documentation-first**: Update docs when behavior changes
 - **Quality gates**: Always run lint, format, and relevant test suites before committing
+
+## Suitable Tasks for Copilot
+
+### Recommended Task Types
+
+- **Bug fixes** with clear reproduction steps and existing test coverage
+- **Test coverage improvements** for existing functionality
+- **Documentation updates** to reflect code changes
+- **Linting and formatting fixes** using existing tooling
+- **Dependency updates** (non-breaking changes)
+- **Performance optimizations** with measurable benchmarks
+- **CI/CD workflow improvements** within the `.github/workflows/` directory
+
+### Tasks Requiring Careful Review
+
+- **New features** affecting game behavior or strategy
+- **Architectural changes** to the runtime kernel or evaluation system
+- **Breaking changes** to APIs or contracts
+- **Complex refactoring** across multiple modules
+- **Security-sensitive code** (authentication, secrets handling, deployment)
+- **Algorithm changes** affecting AI decision-making
 
 ## Repository Structure
 
@@ -51,6 +83,22 @@ This repository hosts an autonomous Screeps AI with comprehensive automation. Wh
 - One primary export per file when possible
 - Group related functionality in directories with index.ts
 - Keep test files adjacent to source or in parallel test directories
+
+### Internal Utilities and Libraries
+
+**Prefer these internal modules:**
+
+- `src/shared/` - Use shared types and contracts instead of duplicating definitions
+- `src/runtime/metrics/` - Use existing CPU tracking utilities for performance monitoring
+- `src/runtime/memory/` - Use memory helpers for consistent Memory object access
+- `src/runtime/evaluation/` - Use evaluation types for health reports and recommendations
+
+**External libraries:**
+
+- Use `screeps-api` for deployment and server interaction
+- Use `zod` for runtime type validation
+- Use `semver` for version comparison and validation
+- Avoid adding new dependencies unless absolutely necessary
 
 ## Development Workflow
 
