@@ -29,7 +29,8 @@
     "version:bump": "tsx scripts/bump-version.ts",
     "version:bump-semantic": "tsx scripts/bump-version-semantic.ts",
     "versions:update": "tsx scripts/update-version-index.ts",
-    "analyze:system": "tsx scripts/evaluate-system.ts"
+    "analyze:system": "tsx scripts/evaluate-system.ts",
+    "prepare": "husky"
   },
   "dependencies": {
     "screeps-api": "^1.16.1",
@@ -47,6 +48,8 @@
     "eslint": "^9.38.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.29.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.5",
     "marked": "^16.4.1",
     "prettier": "^3.6.2",
     "tsx": "^4.20.6",
@@ -58,5 +61,14 @@
     "@screeps/driver": "^5.2.5",
     "@screeps/engine": "^4.2.22",
     "screeps-server-mockup": "^1.5.1"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "bash -c 'ESLINT_USE_FLAT_CONFIG=false eslint --fix \"$@\"' --",
+      "prettier --write"
+    ],
+    "*.{js,mjs,cjs,json,md,yml,yaml}": [
+      "prettier --write"
+    ]
   }
 }
