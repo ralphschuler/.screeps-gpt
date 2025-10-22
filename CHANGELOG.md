@@ -28,6 +28,13 @@ All notable changes to this project are documented here. This changelog now main
 - Updated `screeps-stats-monitor.yml` to use Screeps API MCP server for direct telemetry access
 - Enhanced `.github/copilot/prompts/stats-analysis` to document available MCP servers
 - Updated README.md secrets documentation to include MCP authentication variables
+- **Enhanced Copilot Todo automation workflow** to create draft pull requests immediately and show visible implementation progress
+  - Draft PRs are created at the start of the automation process for transparency
+  - Implementation progress is shown through frequent commits and PR description updates using the `report_progress` tool
+  - Users can follow along with the implementation in real-time
+  - PRs are marked as ready for review only after all validation passes
+  - Updated `.github/copilot/prompts/todo-issue` with new draft PR workflow
+  - Updated documentation in `README.md`, `docs/automation/overview.md`, and `AGENTS.md`
 
 ### Fixed
 
