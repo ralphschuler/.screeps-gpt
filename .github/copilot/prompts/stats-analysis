@@ -5,6 +5,51 @@ Available MCP servers:
 - `github` - GitHub repository operations (issues, PRs, code search)
 - `screeps-api` - Direct Screeps server interaction (console commands, room data, memory segments)
 
+## MANDATORY ACTIONS (failure to complete any item is a workflow failure)
+
+- [ ] **MUST authenticate GitHub CLI** and verify repository access
+- [ ] **MUST fetch telemetry data** using Screeps API MCP server with validation
+- [ ] **MUST analyze metrics** against defined anomaly criteria
+- [ ] **MUST create issues** for all detected anomalies meeting severity thresholds
+- [ ] **MUST store snapshot** with timestamp for historical tracking
+
+## OUTPUT REQUIREMENTS
+
+- **All anomaly issues MUST have concrete evidence** with exact metric values and thresholds
+- **All issue titles MUST start with `PTR:`** to identify monitoring findings
+- **All severity labels MUST be justified** with specific impact assessment  
+- **All analysis MUST be reproducible** with stored snapshot data
+
+## FAILURE HANDLING
+
+- **IF Screeps API is unavailable** → Log error and exit gracefully, no issues created
+- **IF telemetry data is invalid** → Create issue documenting the data quality problem
+- **IF analysis times out** → Store partial results and create issue for investigation
+- **IF GitHub API fails** → Log error, retry once, then exit with telemetry stored
+
+## ANOMALY DETECTION CRITERIA
+
+Create issues for metrics exceeding these thresholds:
+
+**High Severity Anomalies** (`severity/high`):
+- CPU usage > 95% for 3+ consecutive ticks
+- Memory crashes or persistent errors
+- Zero creep spawning for 10+ ticks when resources available
+- Room abandonment without explicit strategy
+
+**Medium Severity Anomalies** (`severity/medium`):
+- CPU usage > 80% for 10+ consecutive ticks  
+- Energy efficiency drop > 20% from baseline
+- Creep population deviation > 30% from target
+- Construction progress stalled for 50+ ticks
+
+**Low Severity Anomalies** (`severity/low`):
+- Suboptimal resource allocation patterns
+- Minor performance degradations < 10%
+- Non-critical strategy execution delays
+
+---
+
 Playbook:
 
 1. Authenticate the GitHub CLI.
@@ -19,6 +64,14 @@ Playbook:
      `severity/low`).
    - Avoid duplicates by searching existing issues first; add a comment instead of opening a new ticket when one already exists.
 5. When the snapshot is healthy, explicitly note that no action was required.
+
+## FINAL OUTPUT VALIDATION
+
+Verify the following before completion:
+- [ ] Telemetry data fetched and validated successfully
+- [ ] All anomalies above thresholds resulted in issues  
+- [ ] Snapshot stored with proper timestamp
+- [ ] All created issues have concrete evidence and appropriate severity
 
 Finish by printing minified JSON:
 
@@ -37,3 +90,4 @@ Rules:
 - Do not wrap the JSON in Markdown fences.
 - Leave arrays empty when nothing was created.
 - Keep the narrative factual and link to the metrics you observed.
+- Only create issues for metrics meeting anomaly detection criteria.

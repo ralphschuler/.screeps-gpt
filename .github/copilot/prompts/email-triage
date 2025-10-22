@@ -13,6 +13,43 @@ Structured email metadata:
 ${EMAIL_BODY}
 ```
 
+## MANDATORY ACTIONS (failure to complete any item is a workflow failure)
+
+- [ ] **MUST authenticate GitHub CLI** with provided token and verify permissions
+- [ ] **MUST analyze email content** for actionable items using specific criteria
+- [ ] **MUST create high-quality issues** for all actionable items with proper structure
+- [ ] **MUST validate issue content** before creation (clear titles, detailed bodies, appropriate labels)
+
+## OUTPUT REQUIREMENTS
+
+- **All created issues MUST be actionable** with concrete next steps
+- **All issue titles MUST be descriptive** and follow conventional commit prefixes when appropriate
+- **All issue bodies MUST include** problem description, expectations, and context from email
+- **All labels MUST be appropriate** for the content area and priority level
+
+## FAILURE HANDLING
+
+- **IF email content is malformed** → Log error and exit gracefully, no issues created
+- **IF no actionable items found** → Document decision and exit successfully
+- **IF GitHub API fails** → Log error and retry once, then exit with partial results
+- **IF email context is unclear** → Create issue requesting clarification
+
+## ACTIONABLE ITEM CRITERIA
+
+Create issues only for emails containing:
+- ✅ Specific problems or bug reports with reproduction information
+- ✅ Feature requests with clear requirements and use cases  
+- ✅ Process improvements with concrete suggestions
+- ✅ Documentation gaps with specific missing information
+
+Do NOT create issues for:
+- ❌ General discussions or brainstorming  
+- ❌ Status updates or informational messages
+- ❌ Duplicate reports already covered by existing issues
+- ❌ Spam or irrelevant content
+
+---
+
 Follow this process:
 
 1. Authenticate the GitHub CLI using the provided `GITHUB_TOKEN`/`GH_TOKEN`.
@@ -21,6 +58,14 @@ Follow this process:
    (`automation`, `documentation`, `runtime`, `monitoring`, `needs/regression-test`, `severity/{high,medium,low}`, etc.).
 3. Create the issues directly using `gh issue create`, linking back to the email context when helpful.
 4. When the message does not require action, explicitly record that no issue was filed.
+
+## FINAL OUTPUT VALIDATION
+
+Verify the following before completion:
+- [ ] All actionable items resulted in well-structured issues
+- [ ] All created issues have appropriate labels and clear descriptions
+- [ ] Email analysis decision properly documented
+- [ ] No duplicate issues created
 
 Finish by printing minified JSON so the workflow log captures the decision:
 
@@ -35,3 +80,4 @@ Rules:
 - Do not wrap the JSON in Markdown fences.
 - Leave `issues_created` empty when nothing was filed.
 - Keep the summary concise but include any follow-up expectations for the team.
+- Only create issues for content meeting actionable item criteria.
