@@ -15,8 +15,15 @@ All notable changes to this project are documented here. This changelog now main
 - Added MCP server configuration files: `.github/mcp/screeps-api.json` and `.github/mcp/playwright.json`
 - Enhanced `copilot-exec` action to support multiple MCP servers via `additional-mcp-config` parameter
 - Added comprehensive MCP server documentation in `AGENTS.md` and `docs/automation/overview.md`
+- **Implemented starter Screeps bot MVP functionality** with comprehensive test coverage (#73)
+- Added `behaviorController.test.ts` with full test suite for auto-spawning, harvesting, and upgrading behaviors
+- Enhanced error handling in BehaviorController with detailed spawn error messages and robust failure recovery
 
 ### Changed
+
+- **Improved BehaviorController deterministic behavior** by replacing Math.random() with deterministic creep naming
+- Enhanced harvester and upgrader functions with better error handling and edge case management
+- Added comprehensive error state handling for harvest, transfer, withdraw, and upgrade operations
 
 - Migrated from pnpm to npm as the package manager
 - Updated all workflow files to use npm instead of pnpm

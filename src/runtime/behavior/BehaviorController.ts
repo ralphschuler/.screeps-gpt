@@ -72,13 +72,16 @@ export class BehaviorController {
         continue;
       }
 
-      const name = `${role}-${game.time}-${Math.floor(Math.random() * 1000)}`;
+      // Use deterministic naming based on game time and role count for reproducibility
+      const name = `${role}-${game.time}-${current}`;
       const result = spawn.spawnCreep(definition.body, name, { memory: definition.memory() });
       if (result === OK) {
         spawned.push(name);
         roleCounts[role] = current + 1;
+        this.logger.log?.(`Spawned ${name} at ${spawn.name}`);
       } else {
-        this.logger.warn?.(`Failed to spawn ${role}: ${result}`);
+        const errorMessage = this.getSpawnErrorMessage(result);
+        this.logger.warn?.(`Failed to spawn ${role}: ${errorMessage}`);
       }
     }
   }
@@ -86,16 +89,34 @@ export class BehaviorController {
   private findAvailableSpawn(spawns: Record<string, SpawnLike>): SpawnLike | null {
     return Object.values(spawns).find(spawn => spawn.spawning === null) ?? null;
   }
+
+  private getSpawnErrorMessage(result: ScreepsReturnCode): string {
+    const errorMessages: Record<ScreepsReturnCode, string> = {
+      [ERR_NOT_ENOUGH_ENERGY]: "not enough energy",
+      [ERR_BUSY]: "spawn is busy",
+      [ERR_NAME_EXISTS]: "name already exists",
+      [ERR_INVALID_ARGS]: "invalid arguments",
+      [ERR_RCL_NOT_ENOUGH]: "room controller level too low"
+    };
+    return errorMessages[result] ?? `error code ${result}`;
+  }
 }
 
 function runHarvester(creep: CreepLike): string {
   if (creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
     const sources = creep.room.find(FIND_SOURCES_ACTIVE) as Source[];
-    const source = sources.length > 0 ? (creep.pos.findClosestByPath(sources) ?? sources[0]) : null;
+    if (sources.length === 0) {
+      return "waiting"; // No active sources available
+    }
+    
+    const source = creep.pos.findClosestByPath(sources) ?? sources[0];
     if (source) {
       const result = creep.harvest(source);
       if (result === ERR_NOT_IN_RANGE) {
         creep.moveTo(source);
+      } else if (result !== OK && result !== ERR_BUSY) {
+        // Handle harvest errors (e.g., no WORK parts, source depleted)
+        return "error";
       }
     }
     return "harvest";
@@ -112,14 +133,21 @@ function runHarvester(creep: CreepLike): string {
     const result = creep.transfer(target, RESOURCE_ENERGY);
     if (result === ERR_NOT_IN_RANGE) {
       creep.moveTo(target);
+    } else if (result !== OK && result !== ERR_FULL) {
+      // Handle transfer errors
+      return "error";
     }
     return "supply";
   }
 
+  // Fallback to upgrading controller if no transfer targets
   if (creep.room.controller) {
     const upgrade = creep.upgradeController(creep.room.controller);
     if (upgrade === ERR_NOT_IN_RANGE) {
       creep.moveTo(creep.room.controller);
+    } else if (upgrade !== OK) {
+      // Handle upgrade errors
+      return "error";
     }
     return "upgrade";
   }
@@ -135,11 +163,18 @@ function runUpgrader(creep: CreepLike): string {
         (structure as AnyStoreStructure).store.getUsedCapacity(RESOURCE_ENERGY) > 50
     }) as AnyStoreStructure[];
 
-    const target = targets.length > 0 ? (creep.pos.findClosestByPath(targets) ?? targets[0]) : null;
+    if (targets.length === 0) {
+      return "waiting"; // No energy sources available
+    }
+
+    const target = creep.pos.findClosestByPath(targets) ?? targets[0];
     if (target) {
       const result = creep.withdraw(target, RESOURCE_ENERGY);
       if (result === ERR_NOT_IN_RANGE) {
         creep.moveTo(target);
+      } else if (result !== OK && result !== ERR_NOT_ENOUGH_RESOURCES) {
+        // Handle withdraw errors
+        return "error";
       }
     }
     return "recharge";
@@ -150,6 +185,9 @@ function runUpgrader(creep: CreepLike): string {
     const result = creep.upgradeController(controller);
     if (result === ERR_NOT_IN_RANGE) {
       creep.moveTo(controller);
+    } else if (result !== OK) {
+      // Handle upgrade errors
+      return "error";
     }
     return "upgrade";
   }
