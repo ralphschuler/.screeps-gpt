@@ -7,12 +7,13 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Fixed
 
-- **Node.js 16 compatibility for lint-staged in CI workflows**
-  - Downgraded `lint-staged` from v16.2.5 to v13.3.0 to maintain Node.js 16.14.0+ compatibility
-  - Fixes `post-merge-release.yml` workflow failure caused by `nano-spawn@2.0.0` dependency requiring Node.js 17+ (`node:readline/promises`)
-  - Repository continues to use Node.js 16.x for native dependency compatibility (Python 2 requirement)
-  - Removed unused `@typescript-eslint/no-unsafe-return` ESLint disable directive in `tests/mockup/setup.ts`
-  - Verified no other dependencies have Node.js version incompatibilities
+- **Node.js 18+ compatibility for modern tooling dependencies**
+  - Upgraded Node.js requirement from 16.x to ^18.18.0 || ^20.9.0 || >=21.1.0 in package.json engines
+  - Updated post-merge-release workflow to use Node.js 18 via actions/setup-node@v4
+  - Removed Python 2 setup dependency from post-merge-release workflow
+  - Fixes Vitest startup error: `crypto.getRandomValues is not a function` on Node.js 16
+  - Resolves npm WARN EBADENGINE errors for ESLint 9.x, TypeScript-ESLint 8.x, and other modern tooling
+  - Addresses workflow run 18724342548 failure in post-merge release automation
 
 ### Added
 

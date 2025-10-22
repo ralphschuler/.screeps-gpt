@@ -6,7 +6,7 @@
   "author": "OpenAI Automations",
   "type": "module",
   "engines": {
-    "node": "16.x",
+    "node": "^18.18.0 || ^20.9.0 || >=21.1.0",
     "npm": ">=8.0.0"
   },
   "scripts": {

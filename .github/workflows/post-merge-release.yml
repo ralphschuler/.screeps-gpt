@@ -24,20 +24,12 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Setup Python 2
-        uses: ./.github/actions/setup-python2
+      - name: Setup Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
 
-      - name: Setup Node.js 16
-        uses: ./.github/actions/setup-node16
-
-      - name: Export Python path for node-gyp
-        shell: bash
-        run: |
-          echo "GYP_DEFINES=standalone_static_library=0" >> $GITHUB_ENV
-          echo "PYTHON=$(command -v python2 || command -v python)" >> $GITHUB_ENV
-          python --version
-
-      - name: Install dependencies (with Python 2)
+      - name: Install dependencies
         run: npm install
 
       - name: Lint with fixes
