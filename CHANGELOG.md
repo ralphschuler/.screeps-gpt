@@ -7,6 +7,12 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Added
 
+- **GPT-5 as default model for all Copilot workflows** (#141)
+  - Changed copilot-exec action default model from empty string to "gpt-5"
+  - All Copilot workflows (issue-triage, todo-pr, ci-autofix, review) now automatically use GPT-5 for enhanced performance
+  - Maintains backward compatibility for workflows that explicitly specify a different model
+  - Model-specific caching continues to work correctly with GPT-5 in the cache key
+
 - **Standardized label system with state, type, and priority categories** (#138)
   - Implemented three-tier labeling system for improved issue and PR management
   - Added state labels: `state/pending`, `state/backlog`, `state/in-progress`, `state/blocked`, `state/canceled`, `state/done`
