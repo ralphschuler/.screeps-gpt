@@ -26,19 +26,19 @@ function getCommitsSinceLastTag(): CommitInfo[] {
   try {
     // Get the last version tag
     const lastTag = execSync('git describe --tags --abbrev=0 --match "v*" 2>/dev/null || echo ""', {
-      encoding: "utf8",
+      encoding: "utf8"
     }).trim();
 
     // Get commits since last tag, or all commits if no tag exists
     const range = lastTag ? `${lastTag}..HEAD` : "HEAD";
     const commitMessages = execSync(`git log ${range} --format="%s%n%b%n---COMMIT_SEPARATOR---"`, {
-      encoding: "utf8",
+      encoding: "utf8"
     })
       .trim()
       .split("---COMMIT_SEPARATOR---")
-      .filter((msg) => msg.trim().length > 0);
+      .filter(msg => msg.trim().length > 0);
 
-    return commitMessages.map((msg) => {
+    return commitMessages.map(msg => {
       const lines = msg.trim().split("\n");
       const message = lines[0] || "";
       const body = lines.slice(1).join("\n").trim();

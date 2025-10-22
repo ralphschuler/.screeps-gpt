@@ -5,6 +5,19 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Changed
+
+- **Modernized CI/CD deployment workflow to use standard GitHub DevOps practices** (#126)
+  - Replaced manual release PR creation with automated semantic versioning based on conventional commits
+  - Post-merge workflow now commits version bumps directly to main instead of creating release branches and PRs
+  - Implemented semantic version bumping: `feat:` → minor, `fix:`/`chore:` → patch, `BREAKING CHANGE:` → major
+  - GitHub Releases are now created automatically using GitHub's native API with auto-generated release notes
+  - Deploy workflow now uses GitHub's `production` environment for deployment protection and tracking
+  - Deploy workflow triggers on both version tags and GitHub Release published events
+  - Removed `workflow_run` trigger complexity in favor of native release events
+  - Added `version:bump-semantic` npm script and `scripts/bump-version-semantic.ts` for semantic versioning
+  - Updated documentation in README.md and docs/automation/overview.md to reflect new CI/CD workflow
+
 ### Fixed
 
 - Fixed vitest dependency conflict in Deploy Screeps AI workflow by upgrading @vitest/coverage-v8 from ^0.33.0 to ^3.2.4 for compatibility with vitest ^3.2.4 (workflow run: 18705052117)
@@ -16,7 +29,7 @@ All notable changes to this project are documented here. This changelog now main
 ### Added
 
 - **Enhanced Copilot prompt templates with action enforcement rules** (#127)
-  - Added mandatory action requirements with explicit "MUST" criteria for all workflows  
+  - Added mandatory action requirements with explicit "MUST" criteria for all workflows
   - Implemented comprehensive failure handling for GitHub API issues, missing data, and timeout conditions
   - Added explicit output quality requirements and validation criteria
   - Included actionable finding criteria and severity assessment guidelines
