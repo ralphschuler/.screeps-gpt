@@ -7,6 +7,9 @@ description: |
   - Configurable timeout (default: 30 minutes)
   - Verbose logging for debugging
   - MCP (Model Context Protocol) configuration support
+  - Conditional repository checkout (skips if already present)
+  - Dependency caching for npm global packages and project node_modules
+  - Performance optimizations for faster workflow execution
 author: "ralph@nyphon.de"
 inputs:
   prompt-path:
