@@ -34,6 +34,9 @@ All notable changes to this project are documented here. This changelog now main
 - Moved `@screeps/common`, `@screeps/driver`, `@screeps/engine`, and `screeps-server-mockup` packages to `optionalDependencies` to allow installation to succeed even when native modules fail to build
 - Added `.npmrc` to configure build behavior for optional dependencies
 - Mockup tests now gracefully skip when isolated-vm build fails (as documented in tests/mockup/README.md)
+- **Fixed post-merge workflow recursive execution** by adding condition to skip when release PRs are merged back to main
+- **Fixed deployment workflow not triggering** by adding `workflow_run` trigger to chain deployment after successful release preparation
+- Simplified tag creation in post-merge workflow from GitHub API to git commands for clarity
 
 ## [0.1.0] - 2024-06-01
 
