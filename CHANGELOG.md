@@ -26,6 +26,7 @@ All notable changes to this project are documented here. This changelog now main
   - Replaced `Math.random()` with memory-persisted counter for creep name generation
   - Ensures deterministic AI behavior for reliable testing and debugging
   - Creep names now follow pattern: `{role}-{game.time}-{counter}` (e.g., `harvester-100-0`)
+  - Documented the deterministic spawn naming scheme in `docs/runtime/strategy/creep-roles.md` so monitoring agents can trace counter resets
   - Added unit tests verifying deterministic naming behavior across test runs
   - Added regression test to prevent future `Math.random()` usage in runtime code
   - Resolves issue #174 and aligns with repository coding standards for deterministic runtime

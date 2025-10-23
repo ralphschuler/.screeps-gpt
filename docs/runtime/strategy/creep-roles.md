@@ -107,9 +107,12 @@ The `BehaviorController.ensureRoleMinimums()` method enforces minimum population
 3. **Spawn Priority**: Roles are processed in definition order (harvester → upgrader)
 4. **Spawn Selection**: Find first available (non-spawning) spawn
 5. **Creep Creation**:
-   - Name format: `{role}-{gameTick}-{random3digit}`
-   - Example: `harvester-12345-789`
+   - Name format: `{role}-{game.time}-{counter}` with the counter sourced from `Memory.creepCounter`
+   - Counter increments after every spawn attempt to maintain deterministic ordering across ticks
+   - Example: `harvester-12345-0`
    - Memory initialized with role defaults
+
+> **Note:** The counter is initialised to `0` if `Memory.creepCounter` is missing (e.g., on the first tick after a global reset, respawn, or manual memory wipe). Monitoring agents should expect the counter to restart at `0` in those scenarios. Name collisions are only possible during that reset tick if another process reuses the same `{role}-{game.time}-{counter}` combination.
 
 ### Spawn Failures
 
@@ -117,7 +120,7 @@ The `BehaviorController.ensureRoleMinimums()` method enforces minimum population
 
 - `ERR_NOT_ENOUGH_ENERGY`: Room doesn't have required energy (logged as warning)
 - `ERR_BUSY`: Spawn is already spawning another creep (silently skipped on next pass)
-- `ERR_NAME_EXISTS`: Random name collision (extremely rare, retried next tick)
+- `ERR_NAME_EXISTS`: Detected when another process reuses the deterministic name on the same tick (retry occurs on the next tick with an incremented counter)
 
 ## Memory Management
 
