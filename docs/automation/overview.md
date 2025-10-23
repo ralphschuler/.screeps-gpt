@@ -254,6 +254,7 @@ Quality checks are split into separate guard workflows for better granularity an
 - Integration: Works seamlessly with Copilot Todo automation - finalized plans are automatically picked up for implementation when the `Todo` label is applied.
 - Workflow Purpose: Provides a structured planning phase before implementation, allowing stakeholders to review and refine specifications before code changes are made.
 - Action Enforcement: Mandatory comprehensive planning, actionable specifications aligned with repository conventions, proper comment editing (no duplicates), and clear revision tracking.
+- Documentation: See [Spec-Kit Workflow Guide](./spec-kit-workflow.md) for detailed usage instructions, examples, and best practices.
 
 ## Copilot Email Triage (`copilot-email-triage.yml`)
 
