@@ -1,5 +1,4 @@
-import { webcrypto } from "node:crypto";
-import { randomBytes } from "node:crypto";
+import { webcrypto, randomBytes } from "node:crypto";
 
 const globals = globalThis as Record<string, unknown>;
 

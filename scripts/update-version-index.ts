@@ -58,7 +58,7 @@ async function updateVersionIndex(): Promise<void> {
 
   const markdownPath = resolve("docs/changelog/versions.md");
   await mkdir(dirname(markdownPath), { recursive: true });
-  await writeFile(markdownPath, markdownLines.join("\n"), "utf8");
+  await writeFile(markdownPath, markdownLines.join("\n") + "\n", "utf8");
 }
 
 updateVersionIndex().catch(error => {
