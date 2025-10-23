@@ -1,7 +1,7 @@
 # Dependency Security Vulnerabilities Assessment
 
 **Last Updated:** 2025-10-23  
-**Node.js Version:** 16.x - 20.x (as supported by package.json engines field)
+**Node.js Version:** >=16.0.0 <=20.x (as supported by package.json engines field)
 
 ## Executive Summary
 
