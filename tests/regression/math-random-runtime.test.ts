@@ -42,7 +42,7 @@ describe("Deterministic runtime requirements", () => {
 
     for (const file of runtimeFiles) {
       const content = readFileSync(file, "utf-8");
-      if (content.includes("Math.random()") || content.includes("Math.random(")) {
+      if (content.includes("Math.random(")) {
         filesWithMathRandom.push(file.replace(resolve(__dirname, "../.."), ""));
       }
     }
