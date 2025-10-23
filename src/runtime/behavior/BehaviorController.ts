@@ -124,7 +124,7 @@ export class BehaviorController {
       }
 
       const name = `${role}-${game.time}-${memory.creepCounter}`;
-      memory.creepCounter = (memory.creepCounter ?? 0) + 1;
+      memory.creepCounter += 1;
       const result = spawn.spawnCreep(definition.body, name, { memory: definition.memory() });
       if (result === OK) {
         spawned.push(name);
