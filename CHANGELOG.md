@@ -7,6 +7,13 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Fixed
 
+- **Fixed Post Merge Release workflow Node.js version incompatibility (run 18760153953)**
+  - Updated post-merge-release.yml workflow to use Node.js 20 instead of Node.js 16
+  - Created new setup-node20 action to support dependencies requiring Node.js 18+
+  - Fixed husky pre-commit hook failure due to lint-staged requiring `node:readline/promises` (Node 18+ feature)
+  - Resolved "ERR_UNKNOWN_BUILTIN_MODULE: No such built-in module: node:readline/promises" error
+  - Dependencies like eslint@9.38.0, lint-staged@16.2.6, and others now properly supported
+
 - **Fixed Quality Gate formatting failures (run 18742613967)**
   - Replaced Unicode em-dash and en-dash characters with ASCII dashes in `docs/changelog/versions.md`
   - Removed unsupported `priority` field from push notification API payload to fix 400 errors

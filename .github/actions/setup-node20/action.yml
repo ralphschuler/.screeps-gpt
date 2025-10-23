@@ -1,0 +1,106 @@
+name: "Setup Node.js 20"
+description: "Installs Node.js 20 with npm for dependency compatibility"
+author: "ralph@nyphon.de"
+
+outputs:
+  node-path:
+    description: "Path to the Node.js 20 binary"
+    value: ${{ steps.setout.outputs.node-path }}
+
+runs:
+  using: "composite"
+  steps:
+    # 1️⃣ Define environment
+    - name: Define environment
+      id: env
+      shell: bash
+      run: |
+        echo "os=$(uname -s)" >> $GITHUB_OUTPUT
+        echo "arch=$(uname -m)" >> $GITHUB_OUTPUT
+        echo "node-version=20.19.5" >> $GITHUB_OUTPUT
+        # Install into HOME to avoid sudo and /usr/local perms
+        echo "install-dir=$HOME/.node20" >> $GITHUB_OUTPUT
+
+    # 2️⃣ Ensure install directory exists (before cache restore)
+    - name: Prepare install directory
+      shell: bash
+      run: |
+        mkdir -p "${{ steps.env.outputs.install-dir }}"
+
+    # 3️⃣ Restore cached Node installation
+    - name: Restore Node.js 20 cache
+      id: cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.env.outputs.install-dir }}
+        key: node20-${{ steps.env.outputs.os }}-${{ steps.env.outputs.arch }}-${{ steps.env.outputs.node-version }}
+
+    # 4️⃣ Install Node.js 20 only if cache not hit
+    - name: Install Node.js 20
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        echo "📦 Installing Node.js ${{ steps.env.outputs.node-version }}..."
+
+        ARCH="${{ steps.env.outputs.arch }}"
+        OS="${{ steps.env.outputs.os }}"
+        NODE_VERSION="${{ steps.env.outputs.node-version }}"
+        INSTALL_DIR="${{ steps.env.outputs.install-dir }}"
+
+        if [[ "$OS" == "Linux" ]]; then
+          echo "🐧 Installing Node.js for Linux..."
+          case "$ARCH" in
+            x86_64) NODE_ARCH="x64" ;;
+            aarch64) NODE_ARCH="arm64" ;;
+            *) echo "❌ Unsupported architecture: $ARCH"; exit 1 ;;
+          esac
+          DOWNLOAD_URL="https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-${NODE_ARCH}.tar.xz"
+          TMPDIR="$(mktemp -d)"
+          echo "📥 Downloading from $DOWNLOAD_URL"
+          curl -fsSL "$DOWNLOAD_URL" -o "$TMPDIR/node.tar.xz"
+          tar -xJf "$TMPDIR/node.tar.xz" -C "$INSTALL_DIR" --strip-components=1
+          rm -rf "$TMPDIR"
+
+        elif [[ "$OS" == "Darwin" ]]; then
+          echo "🍏 Installing Node.js for macOS..."
+          case "$ARCH" in
+            x86_64) NODE_ARCH="x64" ;;
+            arm64) NODE_ARCH="arm64" ;;
+            *) echo "❌ Unsupported architecture: $ARCH"; exit 1 ;;
+          esac
+          DOWNLOAD_URL="https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-darwin-${NODE_ARCH}.tar.gz"
+          TMPDIR="$(mktemp -d)"
+          echo "📥 Downloading from $DOWNLOAD_URL"
+          curl -fsSL "$DOWNLOAD_URL" -o "$TMPDIR/node.tar.gz"
+          tar -xzf "$TMPDIR/node.tar.gz" -C "$INSTALL_DIR" --strip-components=1
+          rm -rf "$TMPDIR"
+
+        else
+          echo "❌ Unsupported OS: $OS"
+          exit 1
+        fi
+
+        echo "✅ Node.js $NODE_VERSION installed successfully at $INSTALL_DIR"
+
+    # 5️⃣ Add Node.js 20 to PATH (works for both cache-hit and fresh install)
+    - name: Add Node.js 20 to PATH
+      shell: bash
+      run: |
+        echo "${{ steps.env.outputs.install-dir }}/bin" >> $GITHUB_PATH
+        echo "✅ Node.js 20 added to PATH"
+
+    # 6️⃣ Verify Node & npm
+    - name: Verify Node.js installation
+      shell: bash
+      run: |
+        echo "✅ Verifying Node.js installation..."
+        node --version || (echo "❌ Node.js installation failed" && exit 1)
+        npm --version || (echo "❌ npm installation failed" && exit 1)
+
+    # 7️⃣ Expose output regardless of cache hit
+    - name: Set output
+      id: setout
+      shell: bash
+      run: |
+        echo "node-path=${{ steps.env.outputs.install-dir }}/bin/node" >> $GITHUB_OUTPUT
