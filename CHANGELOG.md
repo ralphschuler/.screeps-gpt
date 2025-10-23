@@ -7,6 +7,14 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Fixed
 
+- **Fixed Node.js compatibility in post-merge-release workflow (run 18760266575)**
+  - Updated `post-merge-release.yml` to use Node.js 18 instead of Node.js 16
+  - Fixes husky pre-commit hook failure: `Error [ERR_UNKNOWN_BUILTIN_MODULE]: No such built-in module: node:readline/promises`
+  - Modern dependencies (husky, lint-staged, etc.) require Node.js 18+ for `node:readline/promises` module
+  - Package.json engines field already supports Node.js 18: `">=16.0.0 <=20.x"`
+  - Uses standard `actions/setup-node@v4` instead of custom Node.js 16 setup action
+  - Maintains runtime compatibility while enabling modern CI toolchain
+
 - **Deterministic creep naming in BehaviorController**
   - Replaced `Math.random()` with memory-persisted counter for creep name generation
   - Ensures deterministic AI behavior for reliable testing and debugging

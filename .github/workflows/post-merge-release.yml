@@ -29,8 +29,11 @@ jobs:
       - name: Setup Python 2
         uses: ./.github/actions/setup-python2
 
-      - name: Setup Node.js 16
-        uses: ./.github/actions/setup-node16
+      - name: Setup Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
 
       - name: Cache npm dependencies
         uses: actions/cache@v4

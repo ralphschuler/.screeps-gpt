@@ -4,7 +4,7 @@ This repository hosts an autonomous Screeps AI with comprehensive automation. Wh
 
 ## Technology Stack
 
-- **Runtime**: Node.js 16.x with npm 8.0+
+- **Runtime**: Node.js 18.x with npm 8.0+
 - **Language**: TypeScript (strict mode enabled)
 - **Package Manager**: npm
 - **Build Tool**: esbuild
