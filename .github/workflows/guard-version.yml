@@ -15,26 +15,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js 16
-        uses: ./.github/actions/setup-node16
-      - name: Cache npm dependencies
-        uses: actions/cache@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          path: |
-            node_modules
-            ~/.npm
-          key: npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            npm-${{ runner.os }}-
+          bun-version: 1.3.1
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: bun install --no-optional
       - name: Validate version index
         run: |
-          npm run versions:update
+          bun run versions:update
           if ! git diff --quiet docs/changelog/versions.json \
             docs/changelog/versions.md; then
             echo "::error::Release index is out of date. Run \
-              'npm run versions:update' locally and commit the \
+              'bun run versions:update' locally and commit the \
               changes." >&2
             git diff -- docs/changelog/versions.json \
               docs/changelog/versions.md

@@ -15,18 +15,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js 16
-        uses: ./.github/actions/setup-node16
-      - name: Cache npm dependencies
-        uses: actions/cache@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          path: |
-            node_modules
-            ~/.npm
-          key: npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            npm-${{ runner.os }}-
+          bun-version: 1.3.1
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: bun install --no-optional
       - name: Format (check)
-        run: npm run format:check
+        run: bun run format:check
