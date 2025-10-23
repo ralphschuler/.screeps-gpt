@@ -30,7 +30,19 @@
     "version:bump-semantic": "tsx scripts/bump-version-semantic.ts",
     "versions:update": "tsx scripts/update-version-index.ts",
     "analyze:system": "tsx scripts/evaluate-system.ts",
-    "prepare": "husky"
+    "prepare": "husky",
+    "docker:build": "docker compose build",
+    "docker:test": "docker compose run --rm test",
+    "docker:test:unit": "docker compose run --rm test npm run test:unit",
+    "docker:test:e2e": "docker compose run --rm test npm run test:e2e",
+    "docker:test:mockup": "docker compose run --rm mockup",
+    "docker:test:regression": "docker compose run --rm test npm run test:regression",
+    "docker:test:coverage": "docker compose run --rm test npm run test:coverage",
+    "docker:build:ai": "docker compose run --rm build",
+    "docker:lint": "docker compose run --rm lint",
+    "docker:format": "docker compose run --rm format",
+    "docker:dev": "docker compose up dev",
+    "docker:shell": "docker compose run --rm test bash"
   },
   "dependencies": {
     "node-fetch": "^2.7.0",

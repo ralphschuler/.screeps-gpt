@@ -1,0 +1,77 @@
+services:
+  # Development environment with hot-reload support
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    volumes:
+      - .:/workspace
+      - /workspace/node_modules
+      - /workspace/dist
+    working_dir: /workspace
+    environment:
+      - NODE_ENV=development
+    command: npm run build:watch
+    stdin_open: true
+    tty: true
+
+  # Testing environment (Node.js 20 + Python 2)
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    volumes:
+      - .:/workspace
+      - /workspace/node_modules
+    working_dir: /workspace
+    environment:
+      - NODE_ENV=test
+    command: npm run test:unit
+
+  # Mockup testing environment (Node.js 16 + Python 2 for screeps-server-mockup)
+  mockup:
+    build:
+      context: .
+      dockerfile: Dockerfile.mockup
+    volumes:
+      - .:/workspace
+      - /workspace/node_modules
+    working_dir: /workspace
+    environment:
+      - NODE_ENV=test
+    command: npm run test:mockup
+
+  # Build environment (Node.js 20 for fast builds)
+  build:
+    build:
+      context: .
+      dockerfile: Dockerfile.build
+    volumes:
+      - .:/workspace
+      - /workspace/node_modules
+    working_dir: /workspace
+    environment:
+      - NODE_ENV=production
+    command: npm run build
+
+  # Linting service
+  lint:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    volumes:
+      - .:/workspace
+      - /workspace/node_modules
+    working_dir: /workspace
+    command: npm run lint
+
+  # Formatting check service
+  format:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    volumes:
+      - .:/workspace
+      - /workspace/node_modules
+    working_dir: /workspace
+    command: npm run format:check

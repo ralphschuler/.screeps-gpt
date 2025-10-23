@@ -1,0 +1,50 @@
+# Dependencies
+node_modules
+npm-debug.log
+yarn.lock
+
+# Build outputs
+dist
+build
+.rpt2_cache
+tsc-out
+coverage
+
+# Development files
+.git
+.gitignore
+.github
+.husky
+.vscode
+.devcontainer
+
+# Documentation and non-essential files
+*.md
+!package.json
+!package-lock.json
+docs
+reports/copilot
+
+# Test artifacts
+.copilot-cache
+server
+
+# Temporary files
+*.log
+*.tmp
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# CI/CD and automation
+.github/workflows
+validate-deploy-fix.sh
+
+# Editor files
+.idea
+*.sublime-*
+.cache
+.project
+.settings
