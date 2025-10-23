@@ -5,6 +5,21 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Added
+
+- **Docker containerization for development, testing, and building**
+  - Created `Dockerfile.test` with Node.js 20 + Python 2 for running test suites
+  - Created `Dockerfile.build` with Node.js 20 for building the Screeps AI
+  - Created `Dockerfile.mockup` with Node.js 16 + Python 2 for screeps-server-mockup compatibility
+  - Added `docker-compose.yml` orchestrating dev, test, build, lint, and format services
+  - Added `.dockerignore` to optimize Docker build context
+  - Added Docker commands to package.json: `docker:test:unit`, `docker:test:e2e`, `docker:test:mockup`, `docker:build:ai`, `docker:lint`, `docker:format`, `docker:dev`, `docker:shell`
+  - Created comprehensive Docker Development Guide at `docs/operations/docker-guide.md`
+  - Updated README.md with Docker prerequisites, commands table, and contributing workflow
+  - Provides isolated, reproducible development environments without local Node.js/Python installation
+  - Enables simultaneous support for Node.js 20 (testing/building) and Node.js 16 (mockup tests)
+  - Addresses issues #188 (Node.js migration), #204 (Bun integration), #200 (act CLI consistency)
+
 ### Fixed
 
 - **Deterministic creep naming in BehaviorController**

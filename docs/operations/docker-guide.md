@@ -284,6 +284,20 @@ docker compose build test
 docker compose run --rm --user $(id -u):$(id -g) test npm run test:unit
 ```
 
+**Problem**: Cannot delete dist/ directory created by Docker build container
+
+**Solution**: Files created by Docker containers are owned by root. Clean with:
+
+```bash
+sudo rm -rf dist
+```
+
+Alternatively, run the build container with host user permissions:
+
+```bash
+docker compose run --rm --user $(id -u):$(id -g) build
+```
+
 ## Performance Optimization
 
 ### Build Caching
