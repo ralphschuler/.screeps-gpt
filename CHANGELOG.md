@@ -7,6 +7,20 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Added
 
+- **Daily Autonomous Bot Monitoring workflow**
+  - Created `.github/workflows/copilot-autonomous-monitor.yml` scheduled daily at 06:00 UTC
+  - Comprehensive strategic analysis combining bot performance and repository health
+  - Six-phase analysis pipeline: authentication, bot performance, repository health, strategic decisions, issue management, strategic reporting
+  - MCP server integration via `.github/mcp/screeps-mcp.json` for bot console access using `@ralphschuler/screeps-api-mcp`
+  - Direct Screeps console interaction for analyzing spawning, CPU, energy, RCL, defense, and strategic execution
+  - GitHub repository analysis for codebase quality, automation effectiveness, and development velocity
+  - Intelligent autonomous issue creation/update/close with evidence-based recommendations (up to 10 issues per run)
+  - Bot health scoring (0-100) with top priorities and strategic recommendations
+  - Safety controls: read-only by default, rate limiting (daily schedule, max 5 console commands per phase), prohibited destructive actions
+  - Comprehensive documentation in `docs/automation/autonomous-monitoring.md` with architecture, usage, troubleshooting, and best practices
+  - Updated `README.md` to include Autonomous Monitor Agent in agent types list
+  - Addresses issue ralphschuler/.screeps-gpt#239 (autonomous monitoring and strategic automation)
+
 - **Documentation restructuring for improved navigation**
   - Created comprehensive `docs/getting-started.md` with detailed setup instructions, prerequisites, development commands, runtime architecture, and contributing workflow
   - Refactored `README.md` to focus on concise project overview emphasizing Copilot agent swarm concept
