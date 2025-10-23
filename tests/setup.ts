@@ -1,4 +1,4 @@
-import { webcrypto } from "node:crypto";
+import { randomBytes } from "node:crypto";
 
 const globals = globalThis as Record<string, unknown>;
 
@@ -6,7 +6,13 @@ const globals = globalThis as Record<string, unknown>;
 // Node 16 doesn't have Web Crypto API, but it's required by Vite/Vitest
 if (!globalThis.crypto) {
   Object.defineProperty(globalThis, "crypto", {
-    value: webcrypto,
+    value: {
+      getRandomValues: (array: Uint8Array | Uint16Array | Uint32Array) => {
+        const buffer = randomBytes(array.byteLength);
+        array.set(new Uint8Array(buffer));
+        return array;
+      }
+    },
     writable: true,
     configurable: true
   });
