@@ -5,6 +5,27 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Fixed
+
+- **Fixed Quality Gate formatting failures (run 18742613967)**
+  - Replaced Unicode em-dash and en-dash characters with ASCII dashes in `docs/changelog/versions.md`
+  - Removed unsupported `priority` field from push notification API payload to fix 400 errors
+  - Applied Prettier formatting fixes to ensure CI compliance
+  - Validated lint and format checks pass locally and in CI environment
+
+- **Resolved CI pipeline failures for PR #186**
+  - Fixed release index out-of-date error by updating `docs/changelog/versions.md` trailing newline
+  - Resolved Node.js 16 compatibility issue in `scripts/send-push-notification.ts` by replacing `fetch()` with `https` module
+  - Added Node.js 16-compatible HTTPS request implementation using built-in `node:https` and `node:url` modules
+  - Fixed TypeScript linting errors related to async methods and unsafe returns
+
+- **Fixed Vitest crypto.getRandomValues startup error for Node.js 16 (run 18743286586)**
+  - Enhanced existing crypto polyfill in `vitest.config.ts` to ensure proper initialization before Vite startup
+  - Fixed `send-push-notification.test.ts` mocking issues by properly typing https module mocks for ESM compatibility
+  - Resolved 8 TypeScript linting errors related to unsafe `any` type usage in test mocks
+  - All unit tests now pass successfully with proper crypto API emulation
+  - Applied code formatting to maintain consistency across codebase
+
 ### Changed
 
 - **Updated package dependencies while maintaining Node.js 16 compatibility**
@@ -25,13 +46,13 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Fixed
 
-- **Node.js 16 compatibility for Vitest testing framework**
-  - Added `crypto.getRandomValues()` polyfill in `tests/setup.ts` for Node.js 16 compatibility
+- **Fixed Vitest CI failure in Node.js 16 environment (run 18742323437)**
+  - Improved `crypto.getRandomValues()` polyfill in `tests/setup.ts` to use `randomBytes()` instead of `webcrypto`
   - Fixes Vitest startup error: "TypeError: crypto.getRandomValues is not a function"
-  - Enhanced polyfill implementation to use Node.js `randomBytes()` for proper cryptographic randomness
-  - Resolves post-merge release workflow failure during pre-commit unit tests (run 18731528835)
+  - Resolves post-merge-release workflow failures where husky pre-commit hook failed during version bump
+  - Maintains Node.js 16.x compatibility as required by package.json engines field
   - Node.js 16 doesn't include Web Crypto API, but it's required by Vite/Vitest
-  - Uses Node.js built-in `webcrypto` module to polyfill the missing API
+  - Uses Node.js built-in `randomBytes()` to implement the crypto polyfill
   - Ensures all test suites run successfully in CI workflows using Node.js 16
 
 - **Node.js 16 compatibility for lint-staged in CI workflows**

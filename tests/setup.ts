@@ -1,4 +1,3 @@
-import { webcrypto } from "node:crypto";
 import { randomBytes } from "node:crypto";
 
 const globals = globalThis as Record<string, unknown>;
@@ -16,7 +15,13 @@ if (!globalThis.crypto) {
   };
 
   Object.defineProperty(globalThis, "crypto", {
-    value: cryptoPolyfill,
+    value: {
+      getRandomValues: (array: Uint8Array | Uint16Array | Uint32Array) => {
+        const buffer = randomBytes(array.byteLength);
+        array.set(new Uint8Array(buffer));
+        return array;
+      }
+    },
     writable: true,
     configurable: true
   });
