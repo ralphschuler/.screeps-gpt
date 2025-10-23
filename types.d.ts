@@ -12,6 +12,7 @@ declare global {
       lastSpawnLostTick?: number;
       respawnRequested: boolean;
     };
+    creepCounter?: number;
   }
 
   interface CreepMemory {

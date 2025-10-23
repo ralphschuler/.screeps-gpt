@@ -67,7 +67,12 @@ export class BehaviorController {
     const tasksExecuted: Record<string, number> = {};
     const spawned: string[] = [];
 
-    this.ensureRoleMinimums(game, roleCounts, spawned);
+    // Initialize creep counter if not present
+    if (typeof memory.creepCounter !== "number") {
+      memory.creepCounter = 0;
+    }
+
+    this.ensureRoleMinimums(game, memory, roleCounts, spawned);
 
     for (const creep of Object.values(game.creeps) as ManagedCreep[]) {
       const role = creep.memory.role;
@@ -100,7 +105,12 @@ export class BehaviorController {
     };
   }
 
-  private ensureRoleMinimums(game: GameContext, roleCounts: Record<string, number>, spawned: string[]): void {
+  private ensureRoleMinimums(
+    game: GameContext,
+    memory: Memory,
+    roleCounts: Record<string, number>,
+    spawned: string[]
+  ): void {
     for (const [role, definition] of Object.entries(ROLE_DEFINITIONS)) {
       const current = roleCounts[role] ?? 0;
       if (current >= definition.minimum) {
@@ -113,7 +123,8 @@ export class BehaviorController {
         continue;
       }
 
-      const name = `${role}-${game.time}-${Math.floor(Math.random() * 1000)}`;
+      const name = `${role}-${game.time}-${memory.creepCounter}`;
+      memory.creepCounter = (memory.creepCounter ?? 0) + 1;
       const result = spawn.spawnCreep(definition.body, name, { memory: definition.memory() });
       if (result === OK) {
         spawned.push(name);
