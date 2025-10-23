@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 // Temporarily removes optionalDependencies to avoid isolated-vm build issues in CI
-import { readFileSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { readFileSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 
-const packageJsonPath = resolve('package.json');
-const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
+const packageJsonPath = resolve("package.json");
+const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
 
 // Remove optionalDependencies section to avoid isolated-vm Python 2 build issues
 delete packageJson.optionalDependencies;
@@ -17,4 +17,4 @@ if (packageJson.devDependencies) {
 }
 
 writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
-console.log('Removed optionalDependencies from package.json');
+console.log("Removed optionalDependencies from package.json");
