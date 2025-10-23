@@ -128,3 +128,9 @@ Potential improvements to the respawn system:
 - Evaluation: `src/runtime/evaluation/SystemEvaluator.ts`
 - Types: `types.d.ts` (Memory.respawn interface)
 - Tests: `tests/unit/respawnManager.test.ts`, `tests/e2e/respawnScenario.test.ts`
+
+## Related Documentation
+
+- [Memory Management](../runtime/operations/memory-management.md) - Memory state during respawn
+- [Performance Monitoring](../runtime/operations/performance-monitoring.md) - System evaluation during respawn
+- [Scaling Strategies](../runtime/strategy/scaling-strategies.md) - Post-respawn recovery strategies

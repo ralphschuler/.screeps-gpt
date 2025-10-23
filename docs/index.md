@@ -40,15 +40,34 @@ them before acting.
 
 ## Additional Guides
 
+### Automation & Workflows
+
 - [Agent Guidelines](../AGENTS.md) - Comprehensive rules and knowledge base for GitHub Copilot and automation agents
 - [Automation Overview](automation/overview.md)
 - [Label System Guide](automation/label-system.md) - Standardized labeling system for issue and PR management
 - [Semantic Versioning Guide](automation/semantic-versioning-guide.md) - Conventional commits and automated version bumping
 - [Push Notifications Guide](automation/push-notifications.md) - Real-time alerts for critical repository and Screeps bot events
+
+### Runtime Strategy & Behavior
+
+- [Creep Roles](runtime/strategy/creep-roles.md) - Role definitions, decision trees, and performance characteristics
+- [Task Prioritization](runtime/strategy/task-prioritization.md) - Task switching, efficiency optimization, and load balancing
+- [Scaling Strategies](runtime/strategy/scaling-strategies.md) - RCL progression, multi-room expansion, and CPU budgeting
+
+### Operations & Monitoring
+
+- [Memory Management](runtime/operations/memory-management.md) - Memory patterns, cleanup strategies, and corruption recovery
+- [Performance Monitoring](runtime/operations/performance-monitoring.md) - CPU tracking, optimization techniques, and alerting
 - [PTR Monitoring Pipeline](operations/stats-monitoring.md)
 - [Respawn Handling](operations/respawn-handling.md)
 - [Deployment Troubleshooting](operations/deployment-troubleshooting.md) - Common deployment issues and solutions
 - [Workflow Troubleshooting](operations/workflow-troubleshooting.md) - GitHub Actions workflow issues and fixes
+
+### Development Guidelines
+
+- [Strategy Testing](runtime/development/strategy-testing.md) - Testing methodologies, validation procedures, and benchmarking
+- [Safe Refactoring](runtime/development/safe-refactoring.md) - Guidelines for preserving game performance during code changes
+- [Improvement Metrics](runtime/development/improvement-metrics.md) - Measuring strategy effectiveness and detecting regressions
 - [Developer Onboarding Resources](../DOCS.md)
 - [Release History](changelog/versions.md)
 
