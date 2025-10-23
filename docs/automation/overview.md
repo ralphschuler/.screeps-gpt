@@ -277,6 +277,26 @@ Quality checks are split into separate guard workflows for better granularity an
 - Secrets: `SCREEPS_TOKEN` (required), `SCREEPS_STATS_TOKEN`, `SCREEPS_EMAIL`, `SCREEPS_PASSWORD` (optional alternatives), plus optional host/port/protocol overrides. `PUSH_TOKEN` (optional) for real-time alerts.
 - Action Enforcement: Mandatory telemetry validation, explicit anomaly detection criteria with severity thresholds, and concrete evidence requirements for all monitoring issues.
 
+## Daily Autonomous Bot Monitor (`copilot-autonomous-monitor.yml`)
+
+- Trigger: Daily schedule (06:00 UTC) + manual dispatch.
+- Behaviour: Comprehensive autonomous strategic analysis workflow that serves as the "strategic brain" of the project. Copilot performs multi-phase analysis combining:
+  - **Bot Performance Analysis**: Direct console access via screeps-mcp MCP server to evaluate spawning, CPU usage, energy economy, RCL progress, defense capabilities, and strategic execution
+  - **Repository Health Analysis**: GitHub MCP server integration to assess codebase quality, automation effectiveness, CI/CD health, and development velocity
+  - **Strategic Decision Making**: Intelligent prioritization of development tasks based on game performance impact and infrastructure health
+  - **Autonomous Issue Management**: Creates, updates, and closes issues with evidence-based recommendations and severity assessment (up to 10 issues per run)
+  - **Strategic Reporting**: Generates comprehensive analysis report with bot health score (0-100), top priorities, and actionable recommendations
+- MCP Integration: Uses three MCP servers for comprehensive analysis:
+  - `github` - Repository operations (issues, PRs, code search, workflow logs)
+  - `screeps-mcp` - Bot console access (commands, memory, room data) via `@ralphschuler/screeps-api-mcp`
+  - `screeps-api` - User stats and shard info via native Screeps API
+- Safety Controls: Read-only analysis mode by default with prohibited destructive actions, rate limiting (daily schedule, max 10 issues, max 5 console commands per phase), and graceful error handling
+- Secrets: `SCREEPS_TOKEN` (required), `SCREEPS_HOST`, `SCREEPS_SHARD` (optional), `SCREEPS_STATS_HOST`, `SCREEPS_STATS_API` (optional), `COPILOT_TOKEN` (required).
+- Permissions: `contents: read`, `issues: write`, `pull-requests: read`.
+- Timeout: 45 minutes with verbose logging enabled for debugging.
+- Output: Timestamped analysis report uploaded as workflow artifact (30-day retention) and minified JSON summary in logs.
+- Action Enforcement: Six-phase workflow with mandatory authentication, bot performance analysis, repository health checks, strategic decision-making, autonomous issue management, and strategic recommendations output.
+
 ## Label Sync (`label-sync.yml`)
 
 - Trigger: Manual dispatch or pushes to `main`.

@@ -50,6 +50,7 @@ GitHub Actions workflows that orchestrate specialized Copilot agents for differe
 - **Review Agent**: Performs scheduled repository audits
 - **CI Autofix Agent**: Automatically fixes failing workflows
 - **Stats Monitor Agent**: Analyzes PTR performance and creates monitoring issues
+- **Autonomous Monitor Agent**: Daily strategic analysis combining bot performance and repository health
 - **Spec-Kit Agent**: Generates detailed implementation plans from requirements
 
 See [Automation Overview](docs/automation/overview.md) for complete workflow documentation.
