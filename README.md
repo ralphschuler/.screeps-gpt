@@ -4,6 +4,8 @@ This repository hosts an autonomous Screeps AI that continuously develops, tests
 
 ## Prerequisites
 
+### Local Development
+
 - [Node.js](https://nodejs.org/) v16.x (the repository uses Node 16 with Python 2 for native dependencies).
   - **Note**: ESLint v9+ with @typescript-eslint v8+ requires `structuredClone` (added in Node 17). The repository includes a polyfill in `.eslintrc-polyfill.cjs` to maintain Node 16 compatibility.
 - [npm](https://www.npmjs.com/) v8.0 or later (bundled with Node.js 16).
@@ -11,13 +13,32 @@ This repository hosts an autonomous Screeps AI that continuously develops, tests
 - Personal access token with Copilot Requests permission for the GitHub Copilot CLI.
 - [`act`](https://github.com/nektos/act) CLI and Docker (for dry-running workflows locally).
 
-Install project dependencies with:
+### Docker Development (Alternative)
+
+For a consistent, isolated development environment:
+
+- [Docker](https://docs.docker.com/get-docker/) 20.10 or later
+- [Docker Compose](https://docs.docker.com/compose/install/) v2.0 or later
+
+Docker containers provide isolated environments with correct Node.js and Python versions without local installation. See [Docker Development Guide](docs/operations/docker-guide.md) for details.
+
+Install project dependencies:
+
+**Local development:**
 
 ```bash
 npm install
 ```
 
+**Docker development:**
+
+```bash
+npm run docker:build
+```
+
 ## Day-to-day Development
+
+### Local Development Commands
 
 | Command                   | Purpose                                                                                   |
 | ------------------------- | ----------------------------------------------------------------------------------------- |
@@ -32,6 +53,24 @@ npm install
 | `npm run format:write`    | Format the repository with Prettier.                                                      |
 | `npm run analyze:system`  | Evaluate the current build quality and emit `reports/system-evaluation.json`.             |
 | `npm run deploy`          | Build and upload the AI to the Screeps API (requires deployment secrets).                 |
+
+### Docker Development Commands
+
+For consistent, isolated environments without local Node.js/Python installation:
+
+| Command                      | Purpose                                                 |
+| ---------------------------- | ------------------------------------------------------- |
+| `npm run docker:build`       | Build all Docker containers (test, build, mockup).      |
+| `npm run docker:build:ai`    | Build the Screeps AI in a container.                    |
+| `npm run docker:test:unit`   | Run unit tests in container (Node.js 20).               |
+| `npm run docker:test:e2e`    | Run end-to-end tests in container.                      |
+| `npm run docker:test:mockup` | Run mockup tests in container (Node.js 16 + Python 2).  |
+| `npm run docker:lint`        | Run ESLint in container.                                |
+| `npm run docker:format`      | Check code formatting in container.                     |
+| `npm run docker:dev`         | Start development server with hot-reload in container.  |
+| `npm run docker:shell`       | Open interactive shell in test container for debugging. |
+
+See the [Docker Development Guide](docs/operations/docker-guide.md) for detailed usage, troubleshooting, and best practices.
 
 **Modular Build Option**: Set `MODULAR_BUILD=true` to build separate modules for each runtime component instead of a single bundle. See [`docs/automation/modular-deployment.md`](docs/automation/modular-deployment.md) for details on benefits, usage, and configuration.
 
@@ -197,11 +236,17 @@ Contributors and agents should review `AGENTS.md` before making changes to ensur
 
 ## Contributing
 
-1. Install dependencies with `npm install`.
+1. **Install dependencies**:
+   - Local: `npm install`
+   - Docker: `npm run docker:build`
 2. Read [`AGENTS.md`](AGENTS.md) to understand repository conventions and agent guidelines.
 3. Make changes, updating documentation and tasks along the way.
-4. Run `npm run format:write`, `npm run lint`, and the relevant test suites.
+4. **Run quality checks**:
+   - Local: `npm run format:write`, `npm run lint`, and the relevant test suites
+   - Docker: `npm run docker:format`, `npm run docker:lint`, `npm run docker:test:unit`
 5. Regenerate the system evaluation report if behaviour or test coverage changes.
 6. Submit a pull request and allow the automation to verify your changes.
+
+**Docker Development**: For isolated, reproducible environments, use Docker commands (e.g., `npm run docker:test:unit`). See [Docker Development Guide](docs/operations/docker-guide.md) for details.
 
 The automation stack is designed to improve iteratively; feel free to enhance the behaviours, evaluation heuristics, or workflows, but keep the guarantees above intact.
