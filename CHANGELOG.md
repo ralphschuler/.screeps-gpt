@@ -18,6 +18,12 @@ All notable changes to this project are documented here. This changelog now main
   - Resolved Node.js 16 compatibility issue in `scripts/send-push-notification.ts` by replacing `fetch()` with `https` module
   - Added Node.js 16-compatible HTTPS request implementation using built-in `node:https` and `node:url` modules
   - Fixed TypeScript linting errors related to async methods and unsafe returns
+
+- **Fixed Vitest crypto.getRandomValues startup error for Node.js 16 (run 18743286586)**
+  - Enhanced existing crypto polyfill in `vitest.config.ts` to ensure proper initialization before Vite startup
+  - Fixed `send-push-notification.test.ts` mocking issues by properly typing https module mocks for ESM compatibility
+  - Resolved 8 TypeScript linting errors related to unsafe `any` type usage in test mocks
+  - All unit tests now pass successfully with proper crypto API emulation
   - Applied code formatting to maintain consistency across codebase
 
 ### Changed
