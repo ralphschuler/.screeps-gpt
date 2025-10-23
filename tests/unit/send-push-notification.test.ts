@@ -3,9 +3,17 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 // Mock process.env
 const originalEnv = process.env;
 
+// Mock the https module
+const mockRequest = vi.fn();
+vi.mock("node:https", () => ({
+  default: { request: mockRequest },
+  request: mockRequest
+}));
+
 describe("send-push-notification", () => {
   beforeEach(() => {
     vi.resetModules();
+    vi.clearAllMocks();
     process.env = { ...originalEnv };
   });
 
@@ -60,11 +68,27 @@ describe("send-push-notification", () => {
     it("should construct correct API request", async () => {
       process.env.PUSH_TOKEN = "test-token";
 
-      const mockFetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({ success: true })
+      // Mock successful response
+      mockRequest.mockImplementation((options: unknown, callback: (res: unknown) => void) => {
+        const mockRes = {
+          statusCode: 200,
+          on: vi.fn().mockImplementation((event: string, handler: (data?: string) => void) => {
+            if (event === "data") {
+              handler('{"success": true}');
+            } else if (event === "end") {
+              handler();
+            }
+          })
+        };
+        callback(mockRes);
+        return {
+          on: vi.fn(),
+          write: vi.fn(),
+          end: vi.fn()
+        };
       });
-      global.fetch = mockFetch as typeof fetch;
+
+      const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
       const { sendPushNotification } = await import("../../scripts/send-push-notification.js");
 
@@ -75,30 +99,44 @@ describe("send-push-notification", () => {
         priority: 5
       });
 
-      expect(mockFetch).toHaveBeenCalledWith(
-        "https://push.techulus.com/api/v1/notify",
+      expect(mockRequest).toHaveBeenCalledWith(
         expect.objectContaining({
+          hostname: "push.techulus.com",
           method: "POST",
           headers: expect.objectContaining({
             "Content-Type": "application/json",
             "x-api-key": "test-token"
-          }) as HeadersInit,
-          body: expect.stringContaining("Test Title") as BodyInit
-        }) as RequestInit
+          }) as Record<string, string>
+        }),
+        expect.any(Function)
       );
+      expect(consoleSpy).toHaveBeenCalledWith("Push notification sent successfully:", { success: true });
     });
 
     it("should handle API errors gracefully", async () => {
       process.env.PUSH_TOKEN = "test-token";
 
-      const mockFetch = vi.fn().mockResolvedValue({
-        ok: false,
-        status: 400,
-        text: () => Promise.resolve("Bad Request")
+      // Mock API error response
+      mockRequest.mockImplementation((options: unknown, callback: (res: unknown) => void) => {
+        const mockRes = {
+          statusCode: 401,
+          on: vi.fn().mockImplementation((event: string, handler: (data?: string) => void) => {
+            if (event === "data") {
+              handler('{"success":false,"message":"Invalid API key, authentication failed"}');
+            } else if (event === "end") {
+              handler();
+            }
+          })
+        };
+        callback(mockRes);
+        return {
+          on: vi.fn(),
+          write: vi.fn(),
+          end: vi.fn()
+        };
       });
-      global.fetch = mockFetch as typeof fetch;
 
-      const consoleErrorSpy = vi.spyOn(console, "error");
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
       const { sendPushNotification } = await import("../../scripts/send-push-notification.js");
 
@@ -108,16 +146,26 @@ describe("send-push-notification", () => {
         body: "Test body"
       });
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining("Push notification failed (400)"));
+      expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining("Push notification failed (401)"));
     });
 
     it("should handle network errors gracefully", async () => {
       process.env.PUSH_TOKEN = "test-token";
 
-      const mockFetch = vi.fn().mockRejectedValue(new Error("Network error"));
-      global.fetch = mockFetch as typeof fetch;
+      // Mock network error
+      mockRequest.mockImplementation(() => {
+        return {
+          on: vi.fn().mockImplementation((event: string, handler: (error: Error) => void) => {
+            if (event === "error") {
+              handler(new Error("Network error"));
+            }
+          }),
+          write: vi.fn(),
+          end: vi.fn()
+        };
+      });
 
-      const consoleErrorSpy = vi.spyOn(console, "error");
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
       const { sendPushNotification } = await import("../../scripts/send-push-notification.js");
 
