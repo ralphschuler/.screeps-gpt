@@ -49,13 +49,6 @@ describe("Deterministic runtime requirements", () => {
 
     expect(filesWithMathRandom).toEqual([]);
 
-    if (filesWithMathRandom.length > 0) {
-      throw new Error(
-        `Found Math.random() usage in runtime code:\n${filesWithMathRandom.join("\n")}\n\n` +
-          `Runtime code must be deterministic. Use Memory-persisted counters or ` +
-          `deterministic alternatives instead.`
-      );
-    }
   });
 
   it("should use deterministic naming for creeps", () => {
