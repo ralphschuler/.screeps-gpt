@@ -1,0 +1,27 @@
+# Dockerfile.build - Node.js 20 environment for modern builds
+# This container uses Node.js 20 for fast, reliable builds
+
+FROM node:20-slim
+
+# Install git for version operations
+RUN apt-get update && apt-get install -y \
+    git \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /workspace
+
+# Copy package files
+COPY package.json package-lock.json ./
+
+# Install dependencies excluding optional deps (disable strict SSL for containerized builds)
+RUN npm config set strict-ssl false && \
+    npm install --no-optional --legacy-peer-deps && \
+    npm config set strict-ssl true
+
+# Copy source code
+COPY . .
+
+# Default command runs build
+CMD ["npm", "run", "build"]
