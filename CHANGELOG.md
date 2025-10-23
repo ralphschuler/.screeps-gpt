@@ -52,7 +52,7 @@ All notable changes to this project are documented here. This changelog now main
   - Resolves post-merge-release workflow failures where husky pre-commit hook failed during version bump
   - Maintains Node.js 16.x compatibility as required by package.json engines field
   - Node.js 16 doesn't include Web Crypto API, but it's required by Vite/Vitest
-  - Uses Node.js built-in `webcrypto` module to polyfill the missing API
+  - Uses Node.js built-in `randomBytes()` to implement the crypto polyfill
   - Ensures all test suites run successfully in CI workflows using Node.js 16
 
 - **Node.js 16 compatibility for lint-staged in CI workflows**
