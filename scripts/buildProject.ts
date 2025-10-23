@@ -70,7 +70,7 @@ async function buildModules(watch: boolean): Promise<void> {
       format: "cjs" as const,
       outfile: outFile,
       logLevel: "warning" as const,
-      external: [], // No external modules - each bundle is self-contained
+      external: [] // No external modules - each bundle is self-contained
     };
 
     if (watch) {
