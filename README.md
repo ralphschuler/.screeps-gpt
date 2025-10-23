@@ -21,7 +21,7 @@ npm install
 
 | Command                   | Purpose                                                                                   |
 | ------------------------- | ----------------------------------------------------------------------------------------- |
-| `npm run build`           | Bundle the Screeps AI into `dist/main.js` using esbuild.                                  |
+| `npm run build`           | Bundle the Screeps AI into `dist/main.js` using esbuild (single bundle by default).       |
 | `npm run test:unit`       | Run unit tests (Vitest).                                                                  |
 | `npm run test:e2e`        | Execute end-to-end kernel simulations (configured for the Screeps PTR).                   |
 | `npm run test:mockup`     | Run tick-based tests using screeps-server-mockup (skipped if isolated-vm fails to build). |
@@ -32,6 +32,8 @@ npm install
 | `npm run format:write`    | Format the repository with Prettier.                                                      |
 | `npm run analyze:system`  | Evaluate the current build quality and emit `reports/system-evaluation.json`.             |
 | `npm run deploy`          | Build and upload the AI to the Screeps API (requires deployment secrets).                 |
+
+**Modular Build Option**: Set `MODULAR_BUILD=true` to build separate modules for each runtime component instead of a single bundle. See [`docs/automation/modular-deployment.md`](docs/automation/modular-deployment.md) for details on benefits, usage, and configuration.
 
 ### Pre-commit Hooks
 

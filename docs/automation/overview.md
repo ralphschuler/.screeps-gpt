@@ -2,6 +2,15 @@
 
 This document expands on the workflows under `.github/workflows/` and how they combine with the Copilot CLI.
 
+## Build and Deployment
+
+The repository supports two deployment architectures:
+
+- **Single Bundle (Default)**: All code bundled into `dist/main.js`
+- **Modular**: Separate modules for each runtime component
+
+See [Modular Deployment Architecture](./modular-deployment.md) for details on the modular system, including usage, benefits, and configuration options.
+
 ## Copilot Model Configuration
 
 All Copilot workflows use the `copilot-exec` composite action (`.github/actions/copilot-exec/action.yml`), which provides centralized model selection with a flexible fallback chain.
