@@ -296,6 +296,7 @@ Quality checks are split into separate guard workflows for better granularity an
 - Timeout: 45 minutes with verbose logging enabled for debugging.
 - Output: Timestamped analysis report uploaded as workflow artifact (30-day retention) and minified JSON summary in logs.
 - Action Enforcement: Six-phase workflow with mandatory authentication, bot performance analysis, repository health checks, strategic decision-making, autonomous issue management, and strategic recommendations output.
+- Documentation: See [Autonomous Monitoring Guide](./autonomous-monitoring.md) for detailed usage, configuration, and best practices.
 
 ## Label Sync (`label-sync.yml`)
 
