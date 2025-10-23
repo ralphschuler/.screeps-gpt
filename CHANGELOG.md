@@ -1,7 +1,7 @@
 # Changelog
 
 All notable changes to this project are documented here. This changelog now maintains the full release history—update the
-`[Unreleased]` section with your changes and run `npm run versions:update` to refresh the release index.
+`[Unreleased]` section with your changes and run `bun run versions:update` to refresh the release index.
 
 ## [Unreleased]
 
@@ -34,6 +34,10 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Changed
 
+- **Documented Bun-first workflow and Node.js 18–22 support window**
+  - Updated README.md, AGENTS.md, DOCS.md, and docs/index.md to highlight Bun commands and supported Node versions.
+  - Verified `package.json` engines and scripts align with the documented workflow.
+  - Updated script messaging to reference `bun run versions:update` where applicable.
 - **Updated package dependencies while maintaining Node.js 16 compatibility**
   - Updated `semver` from 7.6.2 to 7.7.3 to address ReDoS security vulnerability (GHSA-c2qf-rxjj-qqgw)
   - Verified all build, lint, and test pipelines function correctly after update (66 tests passing)

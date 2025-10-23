@@ -85,7 +85,7 @@ Agents working on runtime code should understand:
 - Prefer small, testable modules. Share contracts through `src/shared/` rather than duplicating types.
 - Add TSDoc blocks for exported classes and functions when behaviour is non-trivial.
 - Keep runtime code deterministic; guard use of `Math.random()` behind helper utilities if predictable output matters for tests.
-- Node.js 16.x is the target runtime (specified in `.nvmrc` and `package.json`).
+- Node.js 18.x–22.x is the supported runtime window (see `.nvmrc` for the default Node 20 toolchain).
 
 ### 3. Documentation Discipline
 
