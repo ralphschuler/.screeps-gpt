@@ -2,8 +2,9 @@
   "mcpServers": {
     "screeps-mcp": {
       "command": "npx",
-      "args": ["-y", "@ralphschuler/screeps-api-mcp@latest", "--token", "${SCREEPS_TOKEN}"],
+      "args": ["-y", "@ralphschuler/screeps-api-mcp@latest"],
       "env": {
+        "SCREEPS_TOKEN": "${SCREEPS_TOKEN}",
         "SCREEPS_HOST": "${SCREEPS_HOST:-screeps.com}",
         "SCREEPS_SHARD": "${SCREEPS_SHARD:-shard3}"
       }
