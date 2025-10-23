@@ -153,7 +153,7 @@ Unit tests are available at `tests/unit/send-push-notification.test.ts` covering
 Run tests with:
 
 ```bash
-npm run test:unit
+bun run test:unit
 ```
 
 ## Troubleshooting

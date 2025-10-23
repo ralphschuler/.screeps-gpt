@@ -179,7 +179,7 @@ If you need to manually set a version:
 ### Script Location
 
 - Main script: `scripts/bump-version-semantic.ts`
-- npm script: `npm run version:bump-semantic`
+- npm script: `bun run version:bump-semantic`
 - Test file: `tests/unit/bump-version-semantic.test.ts`
 
 ### Algorithm

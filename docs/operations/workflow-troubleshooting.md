@@ -47,7 +47,7 @@ error: failed to push some refs to 'https://github.com/ralphschuler/.screeps-gpt
 **Solution:**
 
 1. Ensure Node.js 16 setup is complete before running tests
-2. Run `npm install` to install dependencies
+2. Run `bun install` to install dependencies
 3. Use proper environment variables for build tools
 
 ### Lint Failures
@@ -56,8 +56,8 @@ error: failed to push some refs to 'https://github.com/ralphschuler/.screeps-gpt
 
 **Solution:**
 
-1. Run `npm run lint:fix` locally before committing
-2. Run `npm run format:write` to auto-format code
+1. Run `bun run lint:fix` locally before committing
+2. Run `bun run format:write` to auto-format code
 3. Check for TypeScript compilation errors
 
 ## Deploy Workflow Issues
@@ -129,7 +129,7 @@ Failed workflows automatically create issues for investigation when:
 
 ### Testing Workflows
 
-1. Use `npm run test:actions` to dry-run workflows locally
+1. Use `bun run test:actions` to dry-run workflows locally
 2. Test with representative data and edge cases
 3. Verify secrets and environment setup in test environments
 4. Include both success and failure scenarios in testing

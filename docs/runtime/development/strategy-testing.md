@@ -50,7 +50,7 @@ describe("BehaviorController", () => {
 **Run Command**:
 
 ```bash
-npm run test:unit
+bun run test:unit
 ```
 
 ### Level 2: End-to-End Tests
@@ -95,7 +95,7 @@ describe("Kernel integration", () => {
 **Run Command**:
 
 ```bash
-npm run test:e2e
+bun run test:e2e
 ```
 
 ### Level 3: Mockup Tests
@@ -143,7 +143,7 @@ describe("Economy simulation", () => {
 **Run Command**:
 
 ```bash
-npm run test:mockup
+bun run test:mockup
 ```
 
 ### Level 4: Regression Tests
@@ -182,7 +182,7 @@ describe("Issue #123: Harvesters getting stuck", () => {
 **Run Command**:
 
 ```bash
-npm run test:regression
+bun run test:regression
 ```
 
 ## Strategy Validation Methodology
@@ -212,7 +212,7 @@ Target: 1.25 energy/tick, 0.40 CPU/creep
 1. Write unit tests for new logic
 2. Run full test suite: `npm test`
 3. Ensure all tests pass
-4. Review test coverage: `npm run test:coverage`
+4. Review test coverage: `bun run test:coverage`
 
 **Step 3: Simulate Performance**
 
@@ -439,13 +439,13 @@ console.log(`Improvement: ${improvement.toFixed(1)}%`);
 
 ```yaml
 - name: Run unit tests
-  run: npm run test:unit
+  run: bun run test:unit
 
 - name: Run e2e tests
-  run: npm run test:e2e
+  run: bun run test:e2e
 
 - name: Check test coverage
-  run: npm run test:coverage
+  run: bun run test:coverage
 
 - name: Verify coverage threshold
   run: |
