@@ -77,7 +77,7 @@ The main loop lives in `src/main.ts` and delegates to a kernel that can be exerc
 
 The repository defines the following GitHub workflows under `.github/workflows/` (see [`docs/automation/overview.md`](docs/automation/overview.md) for expanded notes):
 
-1. **`quality-gate.yml`** – Runs on every pull request targeting `main` and executes linting, formatting checks, unit tests, end-to-end simulations (against the PTR profile), regression tests, and coverage collection.
+1. **Quality Guards** (`guard-*.yml`) – Multiple focused workflows run on every pull request targeting `main`, including: linting (ESLint), formatting (Prettier), YAML linting, version validation, build checks, unit tests, end-to-end simulations (against the PTR profile), regression tests, and coverage collection. Each guard runs independently for better granularity and parallel execution.
 2. **`post-merge-release.yml`** – Fires on `push` to `main` (excludes release commits). It applies lint/format fixes, uses **semantic versioning** based on conventional commits to automatically determine version bump type (major/minor/patch), commits the version bump directly to main with `[skip ci]`, creates a version tag, and creates a GitHub Release with auto-generated release notes using GitHub's native API.
 3. **`deploy.yml`** – Listens for tags that match `v*` OR GitHub Release published events. It builds the bundle and executes `npm run deploy` to push the code to Screeps using the GitHub `production` environment for deployment protection rules (supports `SCREEPS_DEPLOY_DRY_RUN` for local workflow tests).
 4. **`docs-pages.yml`** – Builds the static documentation site from `README.md`, `docs/`, and `CHANGELOG.md`, then publishes it to GitHub Pages.

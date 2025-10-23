@@ -113,6 +113,16 @@ function updateRateLimit(): void {
  * @returns Promise that resolves when notification is sent
  */
 async function sendPushNotification(options: PushNotificationOptions): Promise<void> {
+  // Polyfill fetch for Node.js 16 compatibility
+  if (!globalThis.fetch) {
+    // Dynamic import to avoid bundling issues
+    const nodeFetch = await import("node-fetch");
+    globalThis.fetch = nodeFetch.default as typeof fetch;
+    globalThis.Request = nodeFetch.Request as typeof Request;
+    globalThis.Response = nodeFetch.Response as typeof Response;
+    globalThis.Headers = nodeFetch.Headers as typeof Headers;
+  }
+
   const token = process.env.PUSH_TOKEN;
 
   if (!token) {

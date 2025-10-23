@@ -52,6 +52,15 @@ jobs:
         uses: ./.github/actions/setup-python2
       - name: Setup Node.js 16
         uses: ./.github/actions/setup-node16
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-
       - name: Export Python path for node-gyp
         shell: bash
         run: |
@@ -62,6 +71,14 @@ jobs:
           python --version
       - name: Install dependencies (with Python 2)
         run: npm install
+      - name: Cache build output
+        id: cache-build
+        uses: actions/cache@v4
+        with:
+          path: dist
+          key: build-${{ runner.os }}-${{ hashFiles('src/**/*', 'scripts/build.ts', 'tsconfig.json', 'package-lock.json') }}
+          restore-keys: |
+            build-${{ runner.os }}-
       - name: Build and deploy
         id: deploy
         env:

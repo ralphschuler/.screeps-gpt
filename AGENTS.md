@@ -159,7 +159,7 @@ The configuration files in `.github/mcp/` define MCP server commands and environ
 
 **Key Workflows:**
 
-1. **quality-gate.yml** - PR validation (lint, format, tests, coverage)
+1. **Quality Guards** (guard-\*.yml) - Focused PR validation workflows (lint, format, YAML lint, version check, build, unit tests, e2e tests, regression tests, coverage)
 2. **post-merge-release.yml** - Auto-versioning and tagging on merge to main
 3. **deploy.yml** - Screeps deployment on version tags
 4. **copilot-review.yml** - Scheduled repository audits

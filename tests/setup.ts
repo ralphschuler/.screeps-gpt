@@ -5,6 +5,15 @@ const globals = globalThis as Record<string, unknown>;
 // Polyfill crypto.getRandomValues for Node 16 compatibility
 // Node 16 doesn't have Web Crypto API, but it's required by Vite/Vitest
 if (!globalThis.crypto) {
+  const cryptoPolyfill = {
+    ...webcrypto,
+    getRandomValues: (array: Uint8Array | Uint16Array | Uint32Array) => {
+      const bytes = randomBytes(array.byteLength);
+      array.set(new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength));
+      return array;
+    }
+  };
+
   Object.defineProperty(globalThis, "crypto", {
     value: {
       getRandomValues: (array: Uint8Array | Uint16Array | Uint32Array) => {

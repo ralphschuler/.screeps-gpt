@@ -86,7 +86,9 @@ runs:
         path: |
           ~/.npm/_global
           ~/.npm/_cacache
-        key: copilot-cli-${{ runner.os }}-node20-v1-@github/copilot@1.0.0-${{ hashFiles('.github/actions/copilot-exec/action.yml') }}
+        key: copilot-cli-${{ runner.os }}-node20-v2-@github/copilot@1.0.0
+        restore-keys: |
+          copilot-cli-${{ runner.os }}-node20-
 
     - name: Cache project dependencies
       id: cache-deps
@@ -128,6 +130,7 @@ runs:
 
     - name: Render prompt
       id: render
+      if: !cancelled()
       shell: bash
       env:
         PROMPT_TEMPLATE: ${{ inputs.prompt-path }}

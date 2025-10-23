@@ -1,23 +1,13 @@
 ---
-name: Publish Documentation Site
+name: Guard - Build
 
 on:
-  push:
+  pull_request:
     branches:
       - main
-  release:
-    types:
-      - published
-  workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "github-pages"
-  cancel-in-progress: false
 
 jobs:
   build:
@@ -25,8 +15,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - name: Setup Python 2
         uses: ./.github/actions/setup-python2
       - name: Setup Node.js 16
@@ -49,23 +37,17 @@ jobs:
             >> $GITHUB_ENV
           python --version
       - name: Install dependencies (with Python 2)
-        run: npm install
-      - name: Generate documentation site
-        run: |
-          npm run versions:update
-          npm run build:docs-site
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        run: npm install --legacy-peer-deps
+      - name: Cache build output
+        id: cache-build
+        uses: actions/cache@v4
         with:
-          path: build/docs-site
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deploy
-        uses: actions/deploy-pages@v4
+          path: dist
+          key: >-
+            build-${{ runner.os }}-${{ hashFiles('src/**/*',
+            'scripts/build.ts', 'tsconfig.json', 'package-lock.json') }}
+          restore-keys: |
+            build-${{ runner.os }}-
+      - name: Build AI
+        if: steps.cache-build.outputs.cache-hit != 'true'
+        run: npm run build

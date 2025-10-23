@@ -1,0 +1,19 @@
+---
+name: Guard - YAML Lint
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  yaml-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: YAML Lint
+        run: yamllint .github/workflows/
