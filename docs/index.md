@@ -7,9 +7,8 @@ them before acting.
 ## Quick Start
 
 1. **Install prerequisites**
-   - [Node.js](https://nodejs.org) 16.x with Python 2 for native dependencies.
-   - [npm](https://www.npmjs.com) 8.0 or newer (bundled with Node.js 16).
-   - Node.js 22 is used in CI to install the Copilot CLI.
+   - [Bun](https://bun.sh) 1.0 or newer.
+   - [Node.js](https://nodejs.org) 18.x–22.x (Node 22 is used in CI to install the Copilot CLI).
    - Screeps account with Public Test Realm (PTR) access for end-to-end trials.
 2. **Install dependencies**
    ```bash
