@@ -22,6 +22,11 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Fixed
 
+- **Post Merge Release workflow Node.js 16 compatibility**
+  - Downgraded `lint-staged` from v16.2.6 to v14.0.1 for Node.js 16 compatibility
+  - Fixes pre-commit hook failure due to `node:readline/promises` module not available in Node.js 16
+  - Resolves workflow run 18761286339 "Post Merge Release" failure
+  - Maintains Node.js 16 support as specified in repository guidelines
 - **Deterministic creep naming in BehaviorController**
   - Replaced `Math.random()` with memory-persisted counter for creep name generation
   - Ensures deterministic AI behavior for reliable testing and debugging
