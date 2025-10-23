@@ -35,7 +35,7 @@
   "dependencies": {
     "screeps-api": "^1.16.1",
     "semver": "^7.7.3",
-    "zod": "^4.1.12"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^24.9.1",
