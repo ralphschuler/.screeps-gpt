@@ -119,6 +119,7 @@ runs:
     - name: Install project dependencies (if package.json present)
       if: steps.cache-deps.outputs.cache-hit != 'true'
       shell: bash
+      fail
       run: |
         set -euo pipefail
         if [ -f package.json ]; then
@@ -130,6 +131,7 @@ runs:
 
     - name: Render prompt
       id: render
+      if: !cancelled()
       shell: bash
       env:
         PROMPT_TEMPLATE: ${{ inputs.prompt-path }}
