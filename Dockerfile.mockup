@@ -1,0 +1,35 @@
+# Dockerfile.mockup - Node.js 16 + Python 2 environment for screeps-server-mockup tests
+# This container provides the legacy environment specifically required for mockup testing
+
+FROM node:16.20.2-bullseye
+
+# Install Python 2.7 and build dependencies
+RUN apt-get update && apt-get install -y \
+    python2.7 \
+    python2.7-dev \
+    build-essential \
+    git \
+    && ln -sf /usr/bin/python2.7 /usr/bin/python \
+    && ln -sf /usr/bin/python2.7 /usr/bin/python2 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set Python 2 as default for node-gyp
+ENV PYTHON=/usr/bin/python2.7
+
+# Set working directory
+WORKDIR /workspace
+
+# Copy package files
+COPY package.json package-lock.json ./
+
+# Install dependencies (disable strict SSL for containerized builds)
+RUN npm config set strict-ssl false && \
+    npm install --legacy-peer-deps && \
+    npm config set strict-ssl true
+
+# Copy source code
+COPY . .
+
+# Default command runs mockup tests
+CMD ["npm", "run", "test:mockup"]
