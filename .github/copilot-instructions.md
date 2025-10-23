@@ -4,9 +4,9 @@ This repository hosts an autonomous Screeps AI with comprehensive automation. Wh
 
 ## Technology Stack
 
-- **Runtime**: Node.js 16.x with npm 8.0+
+- **Runtime**: Bun 1.3.1+ (JavaScript runtime with built-in TypeScript support)
 - **Language**: TypeScript (strict mode enabled)
-- **Package Manager**: npm
+- **Package Manager**: Bun
 - **Build Tool**: esbuild
 - **Testing Framework**: Vitest
 - **Linting**: ESLint with TypeScript plugin
@@ -55,7 +55,7 @@ This repository hosts an autonomous Screeps AI with comprehensive automation. Wh
 
 ### Supporting Infrastructure
 
-- `scripts/` - Build, deploy, and automation scripts (Node.js 16 + TypeScript)
+- `scripts/` - Build, deploy, and automation scripts (TypeScript executed with Bun)
 - `tests/` - Vitest suites (unit, e2e, regression, mockup)
 - `reports/` - Persistent analysis artifacts
 - `.github/workflows/` - GitHub Actions automation
@@ -105,25 +105,25 @@ This repository hosts an autonomous Screeps AI with comprehensive automation. Wh
 ### Available Commands
 
 ```bash
-npm run build              # Bundle AI into dist/main.js
-npm run lint               # Run ESLint (use lint:fix for auto-fixes)
-npm run format:write       # Format code with Prettier
-npm run test:unit          # Run unit tests
-npm run test:e2e           # Run end-to-end simulations (PTR profile)
-npm run test:regression    # Run regression tests
-npm run test:coverage      # Generate coverage reports
-npm run test:actions       # Dry-run workflows locally with act
-npm run analyze:system     # Evaluate build quality
-npm run deploy             # Deploy to Screeps (requires secrets)
+bun run build              # Bundle AI into dist/main.js
+bun run lint               # Run ESLint (use lint:fix for auto-fixes)
+bun run format:write       # Format code with Prettier
+bun run test:unit          # Run unit tests
+bun run test:e2e           # Run end-to-end simulations (PTR profile)
+bun run test:regression    # Run regression tests
+bun run test:coverage      # Generate coverage reports
+bun run test:actions       # Dry-run workflows locally with act
+bun run analyze:system     # Evaluate build quality
+bun run deploy             # Deploy to Screeps (requires secrets)
 ```
 
 ### Before Committing
 
-1. Run `npm run format:write` to format code
-2. Run `npm run lint` to check code style
+1. Run `bun run format:write` to format code
+2. Run `bun run lint` to check code style
 3. Run relevant test suites (`test:unit`, `test:e2e`, `test:regression`)
 4. Update `CHANGELOG.md` `[Unreleased]` section
-5. Run `npm run versions:update` after changelog updates
+5. Run `bun run versions:update` after changelog updates
 
 ### Bug Fix Protocol
 
@@ -156,7 +156,7 @@ npm run deploy             # Deploy to Screeps (requires secrets)
 - Keep main documentation in root (`README.md`, `DOCS.md`, `AGENTS.md`, `TASKS.md`)
 - Place detailed runbooks in `docs/` subdirectories
 - Link new documents from `README.md`, `DOCS.md`, or `docs/index.md`
-- Generate documentation site with `npm run build:docs-site`
+- Generate documentation site with `bun run build:docs-site`
 
 ## Automation & Workflows
 

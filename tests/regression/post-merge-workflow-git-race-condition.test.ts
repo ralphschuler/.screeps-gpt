@@ -27,7 +27,7 @@ describe("Post Merge Release Workflow - Modernized CI/CD", () => {
 
     // Check for semantic version bump step
     expect(workflowContent).toContain("name: Bump version (semantic)");
-    expect(workflowContent).toContain("npm run version:bump-semantic");
+    expect(workflowContent).toContain("bun run version:bump-semantic");
     expect(workflowContent).toContain("BUMP_TYPE");
   });
 

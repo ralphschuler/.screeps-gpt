@@ -72,12 +72,12 @@ Agents working on runtime code should understand:
 
 ### 1. Tooling
 
-- Use npm for running scripts (`npm run <script>`). Package scripts are defined in `package.json`.
-- Format code with `npm run format:write` and verify with `npm run format:check`.
-- Lint TypeScript code with `npm run lint` (use `lint:fix` for automatic fixes).
+- Use bun for running scripts (`bun run <script>`). Package scripts are defined in `package.json`.
+- Format code with `bun run format:write` and verify with `bun run format:check`.
+- Lint TypeScript code with `bun run lint` (use `lint:fix` for automatic fixes).
 - All tests are managed by Vitest. Run the relevant suites (`test:unit`, `test:e2e`, `test:regression`, `test:coverage`) before publishing changes.
-- Build with `npm run build` (uses esbuild to create `dist/main.js`).
-- System evaluation with `npm run analyze:system` produces `reports/system-evaluation.json`.
+- Build with `bun run build` (uses esbuild to create `dist/main.js`).
+- System evaluation with `bun run analyze:system` produces `reports/system-evaluation.json`.
 
 ### 2. Coding Standards
 
@@ -99,8 +99,8 @@ Agents working on runtime code should understand:
 **Changelog requirements:**
 
 - Update the `[Unreleased]` section of `CHANGELOG.md` with every pull request.
-- Run `npm run versions:update` after editing `CHANGELOG.md` to refresh `docs/changelog/versions.{json,md}`.
-- Regenerate the documentation site with `npm run build:docs-site` when previewing changes.
+- Run `bun run versions:update` after editing `CHANGELOG.md` to refresh `docs/changelog/versions.{json,md}`.
+- Regenerate the documentation site with `bun run build:docs-site` when previewing changes.
 
 **Cross-references:**
 
@@ -176,7 +176,7 @@ The configuration files in `.github/mcp/` define MCP server commands and environ
 
 - Place long-lived automation or evaluation reports in the `reports/` directory.
 - Coverage information consumed by scripts must remain compatible with `scripts/evaluate-system.ts`.
-- Run `npm run test:actions` to dry-run workflows locally with the `act` CLI.
+- Run `bun run test:actions` to dry-run workflows locally with the `act` CLI.
 
 ### 7. Regression Discipline
 
@@ -184,7 +184,7 @@ The configuration files in `.github/mcp/` define MCP server commands and environ
 
 1. **Capture first**: Add or update a regression test demonstrating the bug before implementing a fix.
 2. **Document**: Record the root cause, regression test name, and remediation in `docs/operations/`.
-3. **Update changelog**: Add to `CHANGELOG.md` `[Unreleased]` section and run `npm run versions:update`.
+3. **Update changelog**: Add to `CHANGELOG.md` `[Unreleased]` section and run `bun run versions:update`.
 4. **Reference**: Link the regression test in both documentation and changelog.
 
 ## Guardrails and Best Practices
@@ -200,13 +200,13 @@ The configuration files in `.github/mcp/` define MCP server commands and environ
 
 Before merging changes:
 
-1. Run `npm run format:write` to format code
-2. Run `npm run lint` to check code style
-3. Run `npm run test:unit` for unit tests
-4. Run `npm run test:e2e` for end-to-end tests (PTR profile)
-5. Run `npm run test:regression` for regression tests
-6. Run `npm run test:coverage` to verify coverage
-7. Run `npm run analyze:system` to check system evaluation
+1. Run `bun run format:write` to format code
+2. Run `bun run lint` to check code style
+3. Run `bun run test:unit` for unit tests
+4. Run `bun run test:e2e` for end-to-end tests (PTR profile)
+5. Run `bun run test:regression` for regression tests
+6. Run `bun run test:coverage` to verify coverage
+7. Run `bun run analyze:system` to check system evaluation
 
 ### Labels
 
@@ -269,7 +269,7 @@ When a new agent or contributor starts work:
 4. ✓ Browse [`docs/`](docs/) knowledge base, especially `docs/automation/overview.md`
 5. ✓ Review [`TASKS.md`](TASKS.md) for current priorities
 6. ✓ Check [`CHANGELOG.md`](CHANGELOG.md) for recent changes
-7. ✓ Run `npm install && npm run lint && npm run test:unit` to verify environment
+7. ✓ Run `bun install && bun run lint && bun run test:unit` to verify environment
 8. ✓ Understand workflow permissions in `.github/workflows/`
 9. ✓ Review prompt templates in `.github/copilot/prompts/`
 10. ✓ Familiarize with label definitions in `.github/labels.yml`

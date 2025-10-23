@@ -126,7 +126,7 @@ Quality checks are split into separate guard workflows for better granularity an
 
 - Trigger: Pull requests targeting `main`.
 - Permissions: `contents: read` only.
-- Jobs: Verification that `docs/changelog/versions.json` and `docs/changelog/versions.md` match `npm run versions:update`.
+- Jobs: Verification that `docs/changelog/versions.json` and `docs/changelog/versions.md` match `bun run versions:update`.
 
 ### Guard - Build (`guard-build.yml`)
 
@@ -195,7 +195,7 @@ Quality checks are split into separate guard workflows for better granularity an
 ## Documentation Pages (`docs-pages.yml`)
 
 - Trigger: Pushes to `main`, published releases, and manual dispatches.
-- Behaviour: Executes `npm run versions:update` and `npm run build:docs-site`, then publishes `build/docs-site` to GitHub Pages.
+- Behaviour: Executes `bun run versions:update` and `bun run build:docs-site`, then publishes `build/docs-site` to GitHub Pages.
 - Permissions: Requires `pages: write` and `id-token: write`.
 
 ## Copilot Issue Triage (`copilot-issue-triage.yml`)
@@ -224,7 +224,7 @@ Quality checks are split into separate guard workflows for better granularity an
   - **Creating a draft pull request immediately** for transparency and user visibility
   - Implementing the fix incrementally with frequent progress updates using the `report_progress` tool
   - Showing which files are being modified and why through commit messages and PR description updates
-  - Running npm checks (`npm run lint`, `npm run test:unit`, etc.) and reporting results
+  - Running npm checks (`bun run lint`, `bun run test:unit`, etc.) and reporting results
   - Considering any related issues mentioned in the issue body during implementation
   - Mentioning related issues in the PR description when applicable
   - **Marking the PR as ready for review** once all changes are validated
@@ -427,4 +427,4 @@ See `AGENTS.md` for detailed MCP server capabilities and best practices.
 
 ### Local workflow validation
 
-Run `npm run test:actions` to execute linting, formatting checks, and dry-run the key workflows (`quality-gate`, `post-merge-release`, `deploy`, `docs-pages`, `copilot-email-triage`) using the `act` CLI. Populate placeholder secrets in `tests/actions/secrets.env` before invoking the command.
+Run `bun run test:actions` to execute linting, formatting checks, and dry-run the key workflows (`quality-gate`, `post-merge-release`, `deploy`, `docs-pages`, `copilot-email-triage`) using the `act` CLI. Populate placeholder secrets in `tests/actions/secrets.env` before invoking the command.

@@ -5,9 +5,10 @@
   "license": "MIT",
   "author": "OpenAI Automations",
   "type": "module",
+  "packageManager": "bun@1.3.1",
   "engines": {
-    "node": ">=16.0.0 <=20.x",
-    "npm": ">=8.0.0"
+    "node": ">=18.0.0 <=22.x",
+    "bun": ">=1.0.0"
   },
   "scripts": {
     "build": "tsx scripts/build.ts",
@@ -18,7 +19,7 @@
     "format": "prettier .",
     "format:check": "prettier --check .",
     "format:write": "prettier --write .",
-    "test": "npm run test:unit",
+    "test": "bun run test:unit",
     "test:actions": "tsx scripts/test-actions.ts",
     "test:unit": "vitest run --dir tests/unit",
     "test:e2e": "vitest run --dir tests/e2e",
@@ -58,6 +59,7 @@
     "@typescript-eslint/eslint-plugin": "^8.46.2",
     "@typescript-eslint/parser": "^8.46.2",
     "@vitest/coverage-v8": "^4.0.1",
+    "bun-plugin-screeps": "^1.0.0",
     "esbuild": "^0.25.11",
     "eslint": "^9.38.0",
     "eslint-config-prettier": "^10.1.8",

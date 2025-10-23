@@ -147,7 +147,7 @@ To verify the production bundle excludes vulnerable dependencies:
 
 ```bash
 # Check bundled dependencies
-npm run build
+bun run build
 cat dist/main.js | grep -i "axios\|lodash\|angular" # Should find none
 
 # Verify production dependency tree

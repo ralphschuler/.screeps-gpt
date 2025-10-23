@@ -451,8 +451,8 @@ require("main").loop = previousLoopFunction;
 
 ```bash
 git revert HEAD
-npm run build
-npm run deploy
+bun run build
+bun run deploy
 ```
 
 **Wait**: ~10-30 seconds for deployment

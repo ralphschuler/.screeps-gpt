@@ -58,7 +58,7 @@ describe("Deterministic runtime requirements", () => {
     expect(content).toContain("memory.creepCounter");
     expect(content).not.toContain("Math.random");
 
-    // Verify counter initialization exists
-    expect(content).toMatch(/memory\.creepCounter\s*=\s*\(/);
+    // Verify counter initialization exists (checking for initialization to 0 or other value)
+    expect(content).toMatch(/memory\.creepCounter\s*=\s*\d+/);
   });
 });

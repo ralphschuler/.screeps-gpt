@@ -39,8 +39,8 @@ Both modes maintain full compatibility with the Screeps platform and produce ide
 No configuration needed. Works exactly as before:
 
 ```bash
-npm run build    # Produces dist/main.js
-npm run deploy   # Deploys single main module
+bun run build    # Produces dist/main.js
+bun run deploy   # Deploys single main module
 ```
 
 ### Modular Mode
@@ -48,16 +48,16 @@ npm run deploy   # Deploys single main module
 Set the `MODULAR_BUILD` environment variable:
 
 ```bash
-MODULAR_BUILD=true npm run build    # Produces multiple module files
-MODULAR_BUILD=true npm run deploy   # Deploys all modules
+MODULAR_BUILD=true bun run build    # Produces multiple module files
+MODULAR_BUILD=true bun run deploy   # Deploys all modules
 ```
 
 Or set it in your environment:
 
 ```bash
 export MODULAR_BUILD=true
-npm run build
-npm run deploy
+bun run build
+bun run deploy
 ```
 
 ## Module Structure
@@ -157,7 +157,7 @@ To use modular deployment in workflows, set the environment variable:
 
 ```yaml
 - name: Deploy with modular build
-  run: npm run deploy
+  run: bun run deploy
   env:
     MODULAR_BUILD: "true"
     SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
@@ -208,7 +208,7 @@ Two regression test suites validate the modular system:
 Run regression tests:
 
 ```bash
-npm run test:regression
+bun run test:regression
 ```
 
 ## Backward Compatibility
@@ -216,7 +216,7 @@ npm run test:regression
 The modular system is fully backward compatible:
 
 - **Default behavior unchanged**: Without `MODULAR_BUILD`, works exactly as before
-- **Same npm commands**: `npm run build` and `npm run deploy` work unchanged
+- **Same npm commands**: `bun run build` and `bun run deploy` work unchanged
 - **Same runtime behavior**: Both modes produce identical AI behavior in Screeps
 - **Existing workflows**: No changes needed to deployment workflows
 - **Secrets and configuration**: All existing settings work as-is
@@ -247,7 +247,7 @@ The Screeps platform handles both efficiently.
 
 ### Build Fails in Modular Mode
 
-**Problem**: `MODULAR_BUILD=true npm run build` fails
+**Problem**: `MODULAR_BUILD=true bun run build` fails
 
 **Solutions**:
 
@@ -261,7 +261,7 @@ The Screeps platform handles both efficiently.
 
 **Solutions**:
 
-- Ensure `MODULAR_BUILD` is set when running `npm run deploy`
+- Ensure `MODULAR_BUILD` is set when running `bun run deploy`
 - Check that `dist/` contains multiple `.js` files after build
 - Verify build completed successfully before deployment
 

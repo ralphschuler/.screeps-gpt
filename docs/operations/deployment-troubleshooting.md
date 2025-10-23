@@ -11,7 +11,7 @@ The deployment workflow (`.github/workflows/deploy.yml`) automatically deploys t
 
 The deployment uses `scripts/deploy.ts` which:
 
-1. Builds the project (`npm run build` → `dist/main.js`)
+1. Builds the project (`bun run build` → `dist/main.js`)
 2. Reads the compiled bundle
 3. Uploads it to the Screeps API using the `screeps-api` package
 
@@ -40,7 +40,7 @@ await api.code.set(branch, [{ name: "main", body: source }]);
 ```
 
 **Verification:**
-Run regression test: `npm run test:regression -- tests/regression/deploy-api-format.test.ts`
+Run regression test: `bun run test:regression -- tests/regression/deploy-api-format.test.ts`
 
 ### Issue: "SCREEPS_TOKEN secret is required for deployment"
 
@@ -71,7 +71,7 @@ Build step failed or `dist/main.js` was not generated.
 
 **Resolution:**
 
-1. Check build logs for errors: `npm run build`
+1. Check build logs for errors: `bun run build`
 2. Ensure `src/main.ts` exists and has no syntax errors
 3. Verify `buildProject.ts` configuration is correct
 4. Check disk space and file permissions
@@ -92,7 +92,7 @@ Network issues or Screeps API downtime. The deployment script includes retry log
 2. Verify `SCREEPS_HOST` configuration (default: screeps.com)
 3. Check `SCREEPS_PORT` and `SCREEPS_PROTOCOL` settings
 4. Wait and let the retry logic handle transient failures
-5. For persistent issues, run manually: `npm run deploy`
+5. For persistent issues, run manually: `bun run deploy`
 
 ### Issue: Authentication errors (401/403)
 
@@ -129,7 +129,7 @@ const hostname = process.env.SCREEPS_HOST || "screeps.com";
 ```
 
 **Verification:**
-Run regression test: `npm run test:regression -- tests/regression/deploy-env-vars.test.ts`
+Run regression test: `bun run test:regression -- tests/regression/deploy-env-vars.test.ts`
 
 ## Testing Deployment Locally
 
@@ -138,7 +138,7 @@ Run regression test: `npm run test:regression -- tests/regression/deploy-env-var
 Test deployment without actually uploading code:
 
 ```bash
-SCREEPS_DEPLOY_DRY_RUN=true npm run deploy
+SCREEPS_DEPLOY_DRY_RUN=true bun run deploy
 ```
 
 This will:
@@ -155,7 +155,7 @@ Deploy to your Screeps account from your local machine:
 ```bash
 export SCREEPS_TOKEN="your-api-token-here"
 export SCREEPS_BRANCH="dev"  # Optional, defaults to "main"
-npm run deploy
+bun run deploy
 ```
 
 ### Testing with Act CLI
@@ -167,7 +167,7 @@ Dry-run the deployment workflow locally:
 echo "SCREEPS_TOKEN=test-token" >> tests/actions/secrets.env
 
 # Run the workflow
-npm run test:actions
+bun run test:actions
 ```
 
 ## Monitoring Deployment
@@ -235,7 +235,7 @@ export SCREEPS_PATH="/"
 If you encounter issues not covered in this guide:
 
 1. Check GitHub Actions logs for detailed error messages
-2. Run `npm run deploy` locally with debugging enabled
+2. Run `bun run deploy` locally with debugging enabled
 3. Verify `screeps-api` package version and compatibility
 4. Review Screeps API documentation for server-specific requirements
 5. File an issue with reproduction steps and error logs
