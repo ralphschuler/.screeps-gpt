@@ -8,7 +8,7 @@ For GitHub Copilot and automation agents, comprehensive operational guidelines a
 
 1. **Install prerequisites**
    - [Bun](https://bun.sh) 1.0 or newer.
-   - Node.js 18+ (Node 22 is used in CI to install the Copilot CLI).
+   - Node.js 18.x–22.x (Node 22 is used in CI to install the Copilot CLI).
    - A Screeps account with access to the Public Test Realm (PTR) for end-to-end experiments.
 2. **Install dependencies**
    ```bash
