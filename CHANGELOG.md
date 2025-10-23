@@ -7,6 +7,12 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Fixed
 
+- **Post Merge Release workflow Node.js compatibility**
+  - Updated post-merge-release.yml to use Node.js 20 instead of Node.js 16
+  - Resolves `ERR_UNKNOWN_BUILTIN_MODULE: node:readline/promises` error in Husky pre-commit hooks
+  - Aligns runtime with lint-staged 16.2.6+ requirement for Node.js 20.17+
+  - Removes Python 2 setup dependency as modern Node.js doesn't require it for npm packages
+  - Fixes CI autofix workflow run 18760229405
 - **Deterministic creep naming in BehaviorController**
   - Replaced `Math.random()` with memory-persisted counter for creep name generation
   - Ensures deterministic AI behavior for reliable testing and debugging
