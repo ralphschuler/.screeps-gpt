@@ -11,10 +11,10 @@ This document provides a comprehensive assessment of the 47 security vulnerabili
 
 ### Total Vulnerabilities: 47
 
-- **Critical:** 4 (8.5%)
-- **High:** 24 (51%)
-- **Moderate:** 15 (32%)
-- **Low:** 4 (8.5%)
+- **Critical:** 4 (8.51%)
+- **High:** 24 (51.06%)
+- **Moderate:** 15 (31.91%)
+- **Low:** 4 (8.51%)
 
 ### By Dependency Type
 
