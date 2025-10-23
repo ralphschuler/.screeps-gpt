@@ -4,7 +4,16 @@ A composite GitHub Action that automatically checks spawn status and triggers re
 
 ## Description
 
-This action checks the Screeps bot's spawn status using the Screeps API and exits early if the bot is already active. If the bot needs respawning (all spawns destroyed or not yet placed after respawn), the action will log a warning and exit with an error code to signal manual intervention is required.
+This action automatically manages Screeps bot spawning:
+
+- **Checks spawn status** using the Screeps API
+- **Early exits** if bot is already active (no unnecessary API calls)
+- **Automatically respawns** when all spawns are destroyed (status: "lost")
+- **Places spawns** when respawn triggered but not yet placed (status: "empty")
+- **Intelligent room selection** using worldStartRoom API
+- **Optimal spawn placement** through terrain analysis
+
+The action eliminates manual intervention by fully automating the respawn process, including room selection and spawn placement.
 
 ## Inputs
 
@@ -51,22 +60,24 @@ For PTR, set to `/ptr`
 **Description**: Spawn status after check  
 **Possible values**:
 
-- `normal` - Bot is already spawned and active
-- `lost` - All spawns destroyed, manual respawn needed
-- `empty` - Respawned but spawn not yet placed, manual action needed
+- `normal` - Bot is spawned and active (or successfully respawned)
+- `lost` - All spawns destroyed (respawn attempted)
+- `empty` - Respawned but spawn not placed (placement attempted)
 
 ### `action-taken`
 
 **Description**: Action taken by the autospawner  
 **Possible values**:
 
-- `none` - No action taken (bot already active or manual intervention required)
-- `respawned` - Automatic respawn triggered (not yet implemented)
+- `none` - No action taken (bot already active)
+- `respawned` - Full automatic respawn completed (respawn + room selection + spawn placement)
+- `spawn_placed` - Spawn automatically placed after manual/previous respawn
+- `failed` - Respawn or spawn placement failed (manual intervention required)
 
 ## Exit Behavior
 
-- **Exit code 0**: Bot is already spawned and active (status: "normal")
-- **Exit code 1**: Manual intervention required (status: "lost" or "empty")
+- **Exit code 0**: Bot is active OR automatic respawn/placement succeeded
+- **Exit code 1**: Automatic respawn/placement failed (manual intervention required)
 
 ## Usage Example
 
@@ -114,31 +125,55 @@ Uses the `screeps-api` npm package to interact with the Screeps REST API:
 - Endpoint: `GET /api/user/world-status`
 - Returns: `{ ok: 1, status: "normal" | "lost" | "empty" }`
 
-### Early Exit Logic
+### Automatic Respawn Logic
 
-The action checks spawn status and exits early to prevent unnecessary API calls:
+The action performs different actions based on spawn status:
 
-1. **Status: "normal"** → Bot is active, exit with success (0)
-2. **Status: "lost"** → All spawns destroyed, exit with error (1)
-3. **Status: "empty"** → Respawned but not placed, exit with error (1)
+1. **Status: "normal"** → Bot is active, early exit with success (0), no API calls
+2. **Status: "lost"** → All spawns destroyed, triggers full automatic respawn:
+   - Calls `/api/user/respawn` to trigger respawn
+   - Gets suitable room via `/api/user/world-start-room`
+   - Analyzes terrain with `/api/game/room-terrain`
+   - Places spawn at optimal location via `/api/game/place-spawn`
+   - Returns success with action="respawned"
+3. **Status: "empty"** → Respawned but spawn not placed, places spawn:
+   - Gets start room (skips respawn call since already triggered)
+   - Analyzes terrain for optimal location
+   - Places spawn automatically
+   - Returns success with action="spawn_placed"
+
+### Spawn Placement Algorithm
+
+The action uses an intelligent algorithm to find the best spawn location:
+
+- Searches in expanding circles from room center (25, 25)
+- Prioritizes plain terrain (0) over swamp (2) and walls (1, 3)
+- Avoids edges with 3-tile buffer from boundaries
+- Searches up to 10-tile radius from center
+- Falls back to center location if no plain terrain found
 
 ### Error Handling
+
+Comprehensive error handling at each step:
 
 - Network errors are caught and logged with details
 - Authentication failures provide clear error messages
 - API response validation ensures data integrity
+- Room selection failures are handled gracefully
+- Terrain fetch errors trigger fallback behavior
+- Spawn placement failures exit with clear error messages
 
 ## Current Limitations
 
-- **Manual Respawn Required**: The action currently only checks spawn status. Automatic respawn logic (selecting suitable room and placing spawn) is not yet implemented.
-- **Single Shard**: Only checks the default shard. Multi-shard support not implemented.
+- **Single Shard**: Only works with default shard. Multi-shard support not implemented.
+- **Basic Room Selection**: Uses `worldStartRoom` API which provides a single recommended room. Does not compare multiple rooms.
 
 ## Future Enhancements
 
-- [ ] Automatic room selection based on terrain and resources
-- [ ] Automatic spawn placement at optimal location
-- [ ] Multi-shard support
+- [ ] Multi-shard support for distributed bot management
+- [ ] Advanced room scoring (multiple candidates, energy analysis, distance metrics)
 - [ ] Integration with push notifications for spawn failures
+- [ ] Respawn analytics and success rate tracking
 
 ## Development
 

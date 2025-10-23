@@ -61,12 +61,12 @@ function findSpawnLocation(terrain: string, roomName: string): { x: number; y: n
   // Terrain is a 50x50 grid encoded as a string (2500 characters)
   // Each character represents: 0=plain, 1=wall, 2=swamp, 3=wall
   const ROOM_SIZE = 50;
-  
+
   // Try to find a plain tile near the center, avoiding edges
   const centerX = 25;
   const centerY = 25;
   const searchRadius = 10;
-  
+
   // Search in expanding circles from center
   for (let radius = 0; radius < searchRadius; radius++) {
     for (let dx = -radius; dx <= radius; dx++) {
@@ -74,14 +74,14 @@ function findSpawnLocation(terrain: string, roomName: string): { x: number; y: n
         if (Math.abs(dx) === radius || Math.abs(dy) === radius) {
           const x = centerX + dx;
           const y = centerY + dy;
-          
+
           // Check bounds
           if (x < 3 || x > ROOM_SIZE - 3 || y < 3 || y > ROOM_SIZE - 3) continue;
-          
+
           // Get terrain at position
           const index = y * ROOM_SIZE + x;
           const terrainCode = terrain[index];
-          
+
           // Place on plain terrain (0)
           if (terrainCode === "0") {
             console.log(`  Found suitable location at (${x}, ${y}) in ${roomName}`);
@@ -91,7 +91,7 @@ function findSpawnLocation(terrain: string, roomName: string): { x: number; y: n
       }
     }
   }
-  
+
   // Fallback to center if no plain terrain found
   console.log(`  Using fallback center location (${centerX}, ${centerY}) in ${roomName}`);
   return { x: centerX, y: centerY };
@@ -107,40 +107,40 @@ async function performRespawn(api: any): Promise<boolean> {
     console.log("  Step 1: Triggering respawn...");
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
     const respawnResult = await api.raw.user.respawn();
-    
+
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (!respawnResult.ok) {
       console.error("  ✗ Failed to trigger respawn");
       return false;
     }
     console.log("  ✓ Respawn triggered successfully");
-    
+
     // Step 2: Get a suitable start room
     console.log("  Step 2: Finding suitable start room...");
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
     const startRoomResult = (await api.raw.user.worldStartRoom()) as WorldStartRoomResponse;
-    
+
     if (!startRoomResult.ok || !startRoomResult.room || startRoomResult.room.length === 0) {
       console.error("  ✗ Failed to get start room");
       return false;
     }
-    
+
     const roomName = startRoomResult.room[0];
     console.log(`  ✓ Selected room: ${roomName}`);
-    
+
     // Step 3: Get room terrain to find spawn location
     console.log("  Step 3: Analyzing room terrain...");
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
     const terrainResult = (await api.raw.game.roomTerrain(roomName, 1)) as RoomTerrainResponse;
-    
+
     if (!terrainResult.ok || !terrainResult.terrain || terrainResult.terrain.length === 0) {
       console.error("  ✗ Failed to get room terrain");
       return false;
     }
-    
+
     const terrain = terrainResult.terrain[0].terrain;
     const spawnLocation = findSpawnLocation(terrain, roomName);
-    
+
     // Step 4: Place the spawn
     console.log(`  Step 4: Placing spawn at (${spawnLocation.x}, ${spawnLocation.y})...`);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
@@ -150,12 +150,12 @@ async function performRespawn(api: any): Promise<boolean> {
       spawnLocation.y,
       "Spawn1"
     )) as PlaceSpawnResponse;
-    
+
     if (!placeResult.ok) {
       console.error("  ✗ Failed to place spawn");
       return false;
     }
-    
+
     console.log("  ✓ Spawn placed successfully!");
     return true;
   } catch (error) {
