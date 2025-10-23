@@ -5,6 +5,14 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Fixed
+
+- **Resolved vitest dependency version conflict (run 18736260526)**
+  - Fixed ERESOLVE error where `@vitest/coverage-v8@4.0.1` required `vitest@4.0.1` but project had `vitest@3.2.4`
+  - Updated `vitest` from `^3.2.4` to `^4.0.1` to match coverage package peer dependency
+  - Verified all tests pass (21 unit + 41 regression tests) and build succeeds
+  - Fixed formatting issues in `docs/changelog/versions.md`
+
 ### Changed
 
 - **Updated package dependencies while maintaining Node.js 16 compatibility**
