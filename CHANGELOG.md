@@ -7,24 +7,14 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Fixed
 
-- **Fixed Quality Gate formatting failures (run 18742613967)**
-  - Replaced Unicode em-dash and en-dash characters with ASCII dashes in `docs/changelog/versions.md`
-  - Removed unsupported `priority` field from push notification API payload to fix 400 errors
-  - Applied Prettier formatting fixes to ensure CI compliance
-  - Validated lint and format checks pass locally and in CI environment
-
-- **Resolved CI pipeline failures for PR #186**
-  - Fixed release index out-of-date error by updating `docs/changelog/versions.md` trailing newline
-  - Resolved Node.js 16 compatibility issue in `scripts/send-push-notification.ts` by replacing `fetch()` with `https` module
-  - Added Node.js 16-compatible HTTPS request implementation using built-in `node:https` and `node:url` modules
-  - Fixed TypeScript linting errors related to async methods and unsafe returns
-
-- **Fixed Vitest crypto.getRandomValues startup error for Node.js 16 (run 18743286586)**
-  - Enhanced existing crypto polyfill in `vitest.config.ts` to ensure proper initialization before Vite startup
-  - Fixed `send-push-notification.test.ts` mocking issues by properly typing https module mocks for ESM compatibility
-  - Resolved 8 TypeScript linting errors related to unsafe `any` type usage in test mocks
-  - All unit tests now pass successfully with proper crypto API emulation
-  - Applied code formatting to maintain consistency across codebase
+- **Deterministic creep naming in BehaviorController**
+  - Replaced `Math.random()` with memory-persisted counter for creep name generation
+  - Ensures deterministic AI behavior for reliable testing and debugging
+  - Creep names now follow pattern: `{role}-{game.time}-{counter}` (e.g., `harvester-100-0`)
+  - Added unit tests verifying deterministic naming behavior across test runs
+  - Added regression test to prevent future `Math.random()` usage in runtime code
+  - Resolves issue #174 and aligns with repository coding standards for deterministic runtime
+  - Improves testing reliability and debugging consistency for autonomous AI validation
 
 ### Changed
 
