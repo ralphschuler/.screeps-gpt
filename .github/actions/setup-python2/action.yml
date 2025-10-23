@@ -23,7 +23,9 @@ runs:
         path: |
           ${{ steps.env.outputs.install-dir }}
           ~/.ccache
-        key: python2-${{ steps.env.outputs.os }}-${{ steps.env.outputs.arch }}-${{ steps.env.outputs.python-version }}-${{ hashFiles('.github/actions/setup-python2/action.yml') }}
+        key: python2-${{ steps.env.outputs.os }}-${{ steps.env.outputs.arch }}-${{ steps.env.outputs.python-version }}-v2
+        restore-keys: |
+          python2-${{ steps.env.outputs.os }}-${{ steps.env.outputs.arch }}-${{ steps.env.outputs.python-version }}-
 
     # 3️⃣ Install build dependencies (Linux)
     - name: Install build dependencies
@@ -130,4 +132,4 @@ runs:
         path: |
           ${{ steps.env.outputs.install-dir }}
           ~/.ccache
-        key: python2-${{ steps.env.outputs.os }}-${{ steps.env.outputs.arch }}-${{ steps.env.outputs.python-version }}-${{ hashFiles('.github/actions/setup-python2/action.yml') }}
+        key: python2-${{ steps.env.outputs.os }}-${{ steps.env.outputs.arch }}-${{ steps.env.outputs.python-version }}-v2
