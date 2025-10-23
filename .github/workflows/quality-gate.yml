@@ -1,5 +1,8 @@
 ---
-name: Quality Gate
+# DEPRECATED: This monolithic workflow has been split into focused guard
+# workflows (guard-lint.yml, guard-format.yml, etc.) for better granularity
+# and parallel execution. This workflow is kept for backward compatibility.
+name: Quality Gate (Deprecated)
 
 on:
   pull_request:
