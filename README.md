@@ -11,7 +11,7 @@ This repository hosts an autonomous Screeps AI that continuously develops, tests
 - Personal access token with Copilot Requests permission for the GitHub Copilot CLI.
 - [`act`](https://github.com/nektos/act) CLI and Docker (for dry-running workflows locally).
 
-Install project dependencies with:
+Install project dependencies  with:
 
 ```bash
 bun install
