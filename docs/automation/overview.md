@@ -403,6 +403,158 @@ See `AGENTS.md` for detailed MCP server capabilities and best practices.
 
 ---
 
+## Spec-Driven Development Integration
+
+The repository integrates [GitHub spec-kit](https://github.com/github/spec-kit) to enable specification-driven development workflows alongside existing Copilot CLI automation.
+
+### What is Spec-Kit?
+
+Spec-kit is GitHub's toolkit for Spec-Driven Development, where specifications become executable through AI-assisted implementation. Instead of vibe-coding features from scratch, spec-kit provides:
+
+- **Structured specification creation** with templates and guardrails
+- **Multi-step refinement** from requirements → plan → tasks → implementation
+- **AI-native workflows** that integrate with GitHub Copilot and other coding assistants
+- **Repeatable processes** for features, fixes, and refactoring
+
+### Directory Structure
+
+```
+.specify/
+├── README.md                   # Spec-kit usage guide
+├── memory/
+│   └── constitution.md         # Project principles and governance
+├── scripts/
+│   └── setup-prerequisites.sh  # Setup verification script
+├── specs/                      # Feature specifications (one per feature)
+│   └── XXX-feature-name/
+│       ├── spec.md             # Functional requirements
+│       ├── plan.md             # Technical implementation plan
+│       └── tasks.md            # Task breakdown
+└── templates/                  # Templates for specifications
+    ├── spec-template.md        # Specification template
+    ├── plan-template.md        # Implementation plan template
+    └── tasks-template.md       # Task breakdown template
+```
+
+### Workflow Integration
+
+Spec-kit integrates with existing automation:
+
+1. **Copilot Todo PR** (`copilot-todo-pr.yml`):
+   - Issues labeled `Todo` can reference spec-kit specifications
+   - Implementation follows spec → plan → tasks workflow
+   - Quality gates validate spec-kit generated code
+
+2. **Copilot Exec Action** (`.github/actions/copilot-exec`):
+   - Spec-kit prompts can be rendered through this action
+   - MCP servers provide repository context
+   - Result caching optimizes repeated operations
+
+3. **Quality Guards** (`guard-*.yml`):
+   - All spec-kit generated code passes through existing checks
+   - Lint, format, test, and build validations apply
+   - Documentation updates are validated
+
+### Spec-Kit Slash Commands
+
+When using AI assistants with spec-kit initialized, these commands are available:
+
+| Command                 | Description                                      |
+| ----------------------- | ------------------------------------------------ |
+| `/speckit.constitution` | Create or update project governing principles    |
+| `/speckit.specify`      | Define feature requirements and user stories     |
+| `/speckit.plan`         | Create technical implementation plans            |
+| `/speckit.tasks`        | Generate actionable task lists                   |
+| `/speckit.implement`    | Execute all tasks systematically                 |
+| `/speckit.clarify`      | Structured clarification of underspecified areas |
+| `/speckit.analyze`      | Cross-artifact consistency analysis              |
+
+### Development Workflow
+
+1. **Define Requirements** (`/speckit.specify`):
+
+   ```
+   /speckit.specify Build a new creep behavior that optimizes energy harvesting
+   ```
+
+   Creates `.specify/specs/XXX-feature-name/spec.md`
+
+2. **Create Technical Plan** (`/speckit.plan`):
+
+   ```
+   /speckit.plan Use TypeScript strict mode, integrate with src/runtime/behavior/
+   ```
+
+   Generates `plan.md` with architecture and file structure
+
+3. **Generate Tasks** (`/speckit.tasks`):
+
+   ```
+   /speckit.tasks
+   ```
+
+   Creates `tasks.md` with ordered, dependency-aware tasks
+
+4. **Implement** (`/speckit.implement`):
+   ```
+   /speckit.implement
+   ```
+   Executes tasks, runs tests, updates documentation
+
+### Repository Constitution
+
+The `.specify/memory/constitution.md` file defines foundational principles that guide all development:
+
+- **Code Quality**: Strict TypeScript, minimal changes, test-driven development
+- **Testing Standards**: Unit, integration, and regression test requirements
+- **User Experience**: Deterministic runtime, clear error handling
+- **Performance**: CPU efficiency, memory management, build optimization
+- **Workflow**: Quality gates, incremental commits, security validation
+
+All spec-kit operations reference these principles to ensure consistency with repository standards.
+
+### Validation Workflow
+
+The `spec-kit-validate.yml` workflow validates spec-kit structure:
+
+- **Trigger**: Pull requests and pushes affecting `.specify/`
+- **Checks**: Directory structure, required files, template integrity
+- **Validation**: Constitution sections, template structure, script permissions
+- **Permissions**: `contents: read` only
+
+This ensures spec-kit infrastructure remains consistent and functional.
+
+### Setup Instructions
+
+See `.specify/README.md` for detailed setup and usage instructions, including:
+
+- Prerequisites (Python 3.11+, uv, spec-kit CLI)
+- Installation steps
+- Workflow examples
+- Troubleshooting guidance
+
+### Benefits
+
+Spec-kit enhances existing automation by:
+
+1. **Structured Development**: Clear progression from idea → spec → code
+2. **Quality Assurance**: Built-in review checklists and validation
+3. **Documentation**: Specifications serve as living documentation
+4. **Reusability**: Templates ensure consistent approach across features
+5. **AI Optimization**: Structured context improves AI-generated code quality
+
+### Compatibility
+
+Spec-kit is designed to **enhance, not replace** existing automation:
+
+- Works alongside `copilot-exec` and Copilot CLI workflows
+- Respects repository security and permission guidelines
+- Integrates with existing quality gates and testing infrastructure
+- Uses the same MCP server infrastructure
+- Follows conventional commit format for versioning
+
+---
+
 ### Local workflow validation
 
 Run `npm run test:actions` to execute linting, formatting checks, and dry-run the key workflows (`quality-gate`, `post-merge-release`, `deploy`, `docs-pages`, `copilot-email-triage`) using the `act` CLI. Populate placeholder secrets in `tests/actions/secrets.env` before invoking the command.

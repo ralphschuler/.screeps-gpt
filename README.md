@@ -58,6 +58,18 @@ git commit --no-verify -m "WIP: incomplete feature"
 - **Document the investigation.** Summarise the root cause, the regression test name, and any mitigations in [`docs/`](docs/) (usually under `docs/operations/`).
 - **Keep the changelog fresh.** Append your updates to the `[Unreleased]` section of [`CHANGELOG.md`](CHANGELOG.md) and run `npm run versions:update` so the release index stays current.
 
+## Specification-Driven Development
+
+This repository integrates [GitHub spec-kit](https://github.com/github/spec-kit) to enable structured, AI-assisted feature development:
+
+- **`.specify/`** directory contains templates, project constitution, and feature specifications
+- **Slash commands** (`/speckit.specify`, `/speckit.plan`, `/speckit.tasks`, `/speckit.implement`) guide AI assistants through structured workflows
+- **Integration** with existing Copilot CLI automation and quality gates
+- **Templates** ensure consistent specification quality and completeness
+- **Example** specification included (`001-example-energy-optimizer`)
+
+See [`.specify/README.md`](.specify/README.md) for setup instructions and workflow details. Spec-kit enhances the existing automation stack without replacing it.
+
 ## Runtime Architecture
 
 - `src/runtime/bootstrap/` – Kernel wiring that orchestrates memory maintenance, behavioural control, performance tracking, and evaluation.
@@ -90,6 +102,7 @@ The repository defines the following GitHub workflows under `.github/workflows/`
 11. **`screeps-stats-monitor.yml`** – Runs every 30 minutes; Copilot uses the `scripts/fetch-screeps-stats.mjs` script to fetch PTR telemetry from the Screeps REST API, analyses the snapshot, and files/updates monitoring issues directly through the GitHub CLI.
 12. **`label-sync.yml`** – Keeps the repository labels aligned with `.github/labels.yml`.
 13. **`copilot-ci-autofix.yml`** – Watches for failures in any workflow (except itself to prevent infinite loops), lets Copilot download the logs, clone the affected branch, apply the fix with updated docs/tests/changelog, and push the result (either updating the PR or opening a fresh automation PR).
+14. **`spec-kit-validate.yml`** – Validates the spec-kit directory structure and templates for specification-driven development workflows. Runs on changes to `.specify/` directory.
 
 ### Required Secrets
 

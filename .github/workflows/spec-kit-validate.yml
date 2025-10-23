@@ -1,0 +1,213 @@
+---
+name: Spec-Kit Structure Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".specify/**"
+      - ".github/workflows/spec-kit-validate.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - ".specify/**"
+      - ".github/workflows/spec-kit-validate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate Spec-Kit Structure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate directory structure
+        run: |
+          set -e
+          echo "🔍 Validating .specify directory structure..."
+
+          # Check required directories
+          required_dirs=(
+            ".specify"
+            ".specify/memory"
+            ".specify/scripts"
+            ".specify/specs"
+            ".specify/templates"
+          )
+
+          for dir in "${required_dirs[@]}"; do
+            if [[ ! -d "$dir" ]]; then
+              echo "❌ Missing required directory: $dir"
+              exit 1
+            fi
+            echo "✓ Found: $dir"
+          done
+
+          echo ""
+          echo "✅ All required directories exist"
+
+      - name: Validate required files
+        run: |
+          set -e
+          echo "🔍 Validating required files..."
+
+          # Check required files
+          required_files=(
+            ".specify/README.md"
+            ".specify/memory/constitution.md"
+            ".specify/templates/spec-template.md"
+            ".specify/templates/plan-template.md"
+            ".specify/templates/tasks-template.md"
+          )
+
+          for file in "${required_files[@]}"; do
+            if [[ ! -f "$file" ]]; then
+              echo "❌ Missing required file: $file"
+              exit 1
+            fi
+            echo "✓ Found: $file"
+          done
+
+          echo ""
+          echo "✅ All required files exist"
+
+      - name: Validate constitution content
+        run: |
+          set -e
+          echo "🔍 Validating constitution.md content..."
+
+          constitution_file=".specify/memory/constitution.md"
+
+          # Check for required sections
+          required_sections=(
+            "# Project Constitution"
+            "## Core Principles"
+            "## Technical Governance"
+            "## Implementation Guidelines"
+          )
+
+          for section in "${required_sections[@]}"; do
+            if ! grep -q "$section" "$constitution_file"; then
+              echo "❌ Missing required section in constitution: $section"
+              exit 1
+            fi
+            echo "✓ Found section: $section"
+          done
+
+          echo ""
+          echo "✅ Constitution contains required sections"
+
+      - name: Validate template structure
+        run: |
+          set -e
+          echo "🔍 Validating template files..."
+
+          # Validate spec template
+          spec_template=".specify/templates/spec-template.md"
+          if ! grep -q "# Feature Specification" "$spec_template"; then
+            echo "❌ Spec template missing title"
+            exit 1
+          fi
+          if ! grep -q "## User Stories" "$spec_template"; then
+            echo "❌ Spec template missing user stories section"
+            exit 1
+          fi
+          echo "✓ spec-template.md is valid"
+
+          # Validate plan template
+          plan_template=".specify/templates/plan-template.md"
+          if ! grep -q "# Technical Implementation Plan" "$plan_template"; then
+            echo "❌ Plan template missing title"
+            exit 1
+          fi
+          if ! grep -q "## Technology Stack" "$plan_template"; then
+            echo "❌ Plan template missing technology stack section"
+            exit 1
+          fi
+          echo "✓ plan-template.md is valid"
+
+          # Validate tasks template
+          tasks_template=".specify/templates/tasks-template.md"
+          if ! grep -q "# Task Breakdown" "$tasks_template"; then
+            echo "❌ Tasks template missing title"
+            exit 1
+          fi
+          if ! grep -q "## Execution Guidelines" "$tasks_template"; then
+            echo "❌ Tasks template missing execution guidelines"
+            exit 1
+          fi
+          echo "✓ tasks-template.md is valid"
+
+          echo ""
+          echo "✅ All templates are valid"
+
+      - name: Check for spec files
+        run: |
+          echo "🔍 Checking for specification files..."
+
+          spec_count=$(find .specify/specs -type d -mindepth 1 -maxdepth 1 | wc -l)
+
+          if [[ $spec_count -eq 0 ]]; then
+            echo "ℹ️  No specifications found yet (this is OK for initial setup)"
+          else
+            echo "✓ Found $spec_count specification(s)"
+            
+            # List specifications
+            for spec_dir in .specify/specs/*/; do
+              if [[ -d "$spec_dir" ]]; then
+                spec_name=$(basename "$spec_dir")
+                echo "  - $spec_name"
+                
+                # Check for spec files
+                if [[ -f "${spec_dir}spec.md" ]]; then
+                  echo "    ✓ spec.md"
+                fi
+                if [[ -f "${spec_dir}plan.md" ]]; then
+                  echo "    ✓ plan.md"
+                fi
+                if [[ -f "${spec_dir}tasks.md" ]]; then
+                  echo "    ✓ tasks.md"
+                fi
+              fi
+            done
+          fi
+
+          echo ""
+          echo "✅ Specification check complete"
+
+      - name: Validate scripts are executable
+        run: |
+          set -e
+          echo "🔍 Checking script permissions..."
+
+          if [[ -f ".specify/scripts/setup-prerequisites.sh" ]]; then
+            if [[ ! -x ".specify/scripts/setup-prerequisites.sh" ]]; then
+              echo "❌ setup-prerequisites.sh is not executable"
+              exit 1
+            fi
+            echo "✓ setup-prerequisites.sh is executable"
+          fi
+
+          echo ""
+          echo "✅ Script permissions validated"
+
+      - name: Summary
+        if: success()
+        run: |
+          echo ""
+          echo "=========================================="
+          echo "✅ Spec-Kit validation passed!"
+          echo "=========================================="
+          echo ""
+          echo "The .specify directory structure is valid and ready for use."
+          echo ""
+          echo "Next steps:"
+          echo "  1. Install spec-kit CLI: uv tool install specify-cli --from git+https://github.com/github/spec-kit.git"
+          echo "  2. Run: .specify/scripts/setup-prerequisites.sh"
+          echo "  3. See: .specify/README.md for usage instructions"

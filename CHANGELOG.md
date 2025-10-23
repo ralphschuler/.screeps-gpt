@@ -5,6 +5,22 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Added
+
+- **Spec-kit integration for specification-driven development**
+  - Integrated GitHub's spec-kit toolkit to enable structured specification-driven development workflows
+  - Created `.specify/` directory structure with templates, scripts, and example specifications
+  - Added project constitution (`.specify/memory/constitution.md`) defining core development principles
+  - Created specification, plan, and task breakdown templates for consistent feature development
+  - Implemented `spec-kit-validate.yml` workflow to validate spec-kit directory structure and integrity
+  - Added setup prerequisites script (`.specify/scripts/setup-prerequisites.sh`) for environment validation
+  - Provided comprehensive documentation in `.specify/README.md` with workflow examples and troubleshooting
+  - Created example specification (`001-example-energy-optimizer`) demonstrating the spec-kit integration
+  - Updated automation documentation (`docs/automation/overview.md`) with spec-kit workflow details
+  - Spec-kit enhances existing Copilot CLI workflows without replacing automation infrastructure
+  - Compatible with `copilot-exec` composite action and existing quality gates
+  - Follows repository security guidelines with least-privilege permissions
+
 ### Changed
 
 - **Updated package dependencies while maintaining Node.js 16 compatibility**
