@@ -117,7 +117,7 @@ Quality checks are split into separate guard workflows for better granularity an
 
 - Trigger: Pull requests targeting `main`.
 - Permissions: `contents: read` only.
-- Jobs: Verification that `docs/changelog/versions.*` matches `npm run versions:update`.
+- Jobs: Verification that `docs/changelog/versions.json` and `docs/changelog/versions.md` match `npm run versions:update`.
 
 ### Guard - Build (`guard-build.yml`)
 
