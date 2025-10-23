@@ -5,6 +5,13 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Fixed
+
+- **Post Merge Release workflow node-gyp failure**
+  - Replaced `bun install --no-optional` with `npm install --omit=optional` to properly exclude optional dependencies
+  - Fixes compilation issues with `isolated-vm` package that requires Python 2 syntax incompatible with GitHub Actions runners
+  - Maintains bun for execution while using npm only for dependency installation to avoid native build failures
+
 ### Added
 
 - **Docker containerization for development, testing, and building**
