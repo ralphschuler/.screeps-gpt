@@ -5,6 +5,15 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Fixed
+
+- **Resolved CI pipeline failures for PR #186**
+  - Fixed release index out-of-date error by updating `docs/changelog/versions.md` trailing newline
+  - Resolved Node.js 16 compatibility issue in `scripts/send-push-notification.ts` by replacing `fetch()` with `https` module
+  - Added Node.js 16-compatible HTTPS request implementation using built-in `node:https` and `node:url` modules
+  - Fixed TypeScript linting errors related to async methods and unsafe returns
+  - Applied code formatting to maintain consistency across codebase
+
 ### Changed
 
 - **Updated package dependencies while maintaining Node.js 16 compatibility**

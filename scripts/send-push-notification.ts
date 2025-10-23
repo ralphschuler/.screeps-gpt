@@ -1,4 +1,6 @@
 import process from "node:process";
+import https from "node:https";
+import { URL } from "node:url";
 
 interface PushNotificationOptions {
   title: string;
@@ -16,6 +18,53 @@ interface RateLimitState {
 const RATE_LIMIT_WINDOW_MS = 60000; // 1 minute
 const MAX_NOTIFICATIONS_PER_WINDOW = 10;
 const MIN_INTERVAL_BETWEEN_NOTIFICATIONS_MS = 5000; // 5 seconds
+
+// Node.js 16 compatible fetch replacement
+async function httpsRequest(
+  url: string,
+  options: { method: string; headers: Record<string, string>; body: string }
+): Promise<{ ok: boolean; status: number; text: () => Promise<string>; json: () => Promise<unknown> }> {
+  return new Promise((resolve, reject) => {
+    const parsedUrl = new URL(url);
+    const data = options.body;
+
+    const req = https.request(
+      {
+        hostname: parsedUrl.hostname,
+        port: parsedUrl.port,
+        path: parsedUrl.pathname + parsedUrl.search,
+        method: options.method,
+        headers: {
+          ...options.headers,
+          "Content-Length": Buffer.byteLength(data)
+        }
+      },
+      res => {
+        let responseData = "";
+
+        res.on("data", chunk => {
+          responseData += chunk;
+        });
+
+        res.on("end", () => {
+          resolve({
+            ok: res.statusCode >= 200 && res.statusCode < 300,
+            status: res.statusCode || 0,
+            text: () => Promise.resolve(responseData),
+            json: () => Promise.resolve(JSON.parse(responseData) as unknown)
+          });
+        });
+      }
+    );
+
+    req.on("error", err => {
+      reject(err);
+    });
+
+    req.write(data);
+    req.end();
+  });
+}
 
 // In-memory rate limit state (resets between script runs)
 const rateLimitState: RateLimitState = {
@@ -95,7 +144,7 @@ async function sendPushNotification(options: PushNotificationOptions): Promise<v
   };
 
   try {
-    const response = await fetch(apiUrl, {
+    const response = await httpsRequest(apiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
