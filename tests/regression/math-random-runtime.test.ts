@@ -48,7 +48,6 @@ describe("Deterministic runtime requirements", () => {
     }
 
     expect(filesWithMathRandom).toEqual([]);
-
   });
 
   it("should use deterministic naming for creeps", () => {
