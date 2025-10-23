@@ -126,7 +126,7 @@ async function sendPushNotification(options: PushNotificationOptions): Promise<v
     return;
   }
 
-  const { title, body, link, priority = 3 } = options;
+  const { title, body, link } = options;
 
   // Validate inputs
   if (!title || !body) {
@@ -139,8 +139,7 @@ async function sendPushNotification(options: PushNotificationOptions): Promise<v
   const payload = {
     title,
     body,
-    ...(link && { link }),
-    priority
+    ...(link && { link })
   };
 
   try {
