@@ -58,8 +58,8 @@ async function testWorkflows(): Promise<void> {
 
   const workflows: WorkflowTest[] = [
     {
-      name: "Quality Gate",
-      workflowPath: ".github/workflows/quality-gate.yml",
+      name: "Guard - Lint",
+      workflowPath: ".github/workflows/guard-lint.yml",
       eventName: "pull_request",
       eventFile: "tests/actions/events/pull_request.json"
     },

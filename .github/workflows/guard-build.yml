@@ -1,0 +1,53 @@
+---
+name: Guard - Build
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python 2
+        uses: ./.github/actions/setup-python2
+      - name: Setup Node.js 16
+        uses: ./.github/actions/setup-node16
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-
+      - name: Export Python path for node-gyp
+        shell: bash
+        run: |
+          echo "GYP_DEFINES=standalone_static_library=0" \
+            >> $GITHUB_ENV
+          echo "PYTHON=$(command -v python2 || command -v python)" \
+            >> $GITHUB_ENV
+          python --version
+      - name: Install dependencies (with Python 2)
+        run: npm install --legacy-peer-deps
+      - name: Cache build output
+        id: cache-build
+        uses: actions/cache@v4
+        with:
+          path: dist
+          key: >-
+            build-${{ runner.os }}-${{ hashFiles('src/**/*',
+            'scripts/build.ts', 'tsconfig.json', 'package-lock.json') }}
+          restore-keys: |
+            build-${{ runner.os }}-
+      - name: Build AI
+        if: steps.cache-build.outputs.cache-hit != 'true'
+        run: npm run build

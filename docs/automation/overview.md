@@ -91,14 +91,69 @@ This will output:
 - The final selected model
 - Cache key information
 
-## Quality Gate (`quality-gate.yml`)
+## Quality Guards
+
+Quality checks are split into separate guard workflows for better granularity and parallel execution:
+
+### Guard - Lint (`guard-lint.yml`)
 
 - Trigger: Pull requests targeting `main`.
 - Permissions: `contents: read` only.
-- Jobs: Lint, formatting checks, unit tests, PTR e2e tests, regression tests, coverage + evaluation artifact upload, plus verification that `docs/changelog/versions.*` matches `npm run versions:update`.
-- Push Notifications: Sent on build failure (Priority 4) to alert maintainers of issues requiring attention. See [Push Notifications Guide](push-notifications.md) for details.
-- Secrets: `PUSH_TOKEN` (optional) for build failure alerts.
-- Notes: Configure PTR secrets locally before running the e2e suite. Failures here must be reproduced with a regression test before applying fixes (see repository rules in [README](../../README.md)).
+- Jobs: ESLint code quality checks.
+
+### Guard - Format (`guard-format.yml`)
+
+- Trigger: Pull requests targeting `main`.
+- Permissions: `contents: read` only.
+- Jobs: Prettier formatting validation.
+
+### Guard - YAML Lint (`guard-yaml-lint.yml`)
+
+- Trigger: Pull requests targeting `main`.
+- Permissions: `contents: read` only.
+- Jobs: YAML workflow file linting.
+
+### Guard - Version Index (`guard-version.yml`)
+
+- Trigger: Pull requests targeting `main`.
+- Permissions: `contents: read` only.
+- Jobs: Verification that `docs/changelog/versions.*` matches `npm run versions:update`.
+
+### Guard - Build (`guard-build.yml`)
+
+- Trigger: Pull requests targeting `main`.
+- Permissions: `contents: read` only.
+- Jobs: Build validation with caching.
+
+### Guard - Unit Tests (`guard-test-unit.yml`)
+
+- Trigger: Pull requests targeting `main`.
+- Permissions: `contents: read` only.
+- Jobs: Unit test execution.
+
+### Guard - E2E Tests (`guard-test-e2e.yml`)
+
+- Trigger: Pull requests targeting `main`.
+- Permissions: `contents: read` only.
+- Jobs: PTR end-to-end tests.
+- Notes: Configure PTR secrets locally before running the e2e suite.
+
+### Guard - Regression Tests (`guard-test-regression.yml`)
+
+- Trigger: Pull requests targeting `main`.
+- Permissions: `contents: read` only.
+- Jobs: Regression test validation.
+- Notes: Failures here must be reproduced with a regression test before applying fixes (see repository rules in [README](../../README.md)).
+
+### Guard - Coverage (`guard-coverage.yml`)
+
+- Trigger: Pull requests targeting `main`.
+- Permissions: `contents: read` only.
+- Jobs: Test coverage reporting and evaluation artifact upload.
+
+## Quality Gate (`quality-gate.yml`)
+
+**Deprecated:** The monolithic quality-gate workflow has been split into multiple focused guard workflows (guard-lint, guard-format, etc.) for better granularity and parallel execution. This workflow is kept for backward compatibility but may be removed in a future version.
 
 ## Post Merge Release (`post-merge-release.yml`)
 

@@ -1,0 +1,43 @@
+---
+name: Guard - Coverage
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js 16
+        uses: ./.github/actions/setup-node16
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+      - name: Coverage
+        run: npm run test:coverage
+      - name: Publish evaluation report artifact
+        if: success()
+        run: |
+          npm run analyze:system
+          tar -czf reports.tar.gz reports || echo "no reports directory"
+      - name: Upload report
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: system-evaluation
+          path: reports.tar.gz
