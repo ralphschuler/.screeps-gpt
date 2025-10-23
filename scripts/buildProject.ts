@@ -69,8 +69,8 @@ async function buildModules(watch: boolean): Promise<void> {
       target: "es2021",
       format: "cjs" as const,
       outfile: outFile,
-      logLevel: "warning" as const
-      // No external modules - each bundle is self-contained
+      logLevel: "warning" as const,
+      external: [], // No external modules - each bundle is self-contained
     };
 
     if (watch) {
