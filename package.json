@@ -33,12 +33,14 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "node-fetch": "^2.7.0",
     "screeps-api": "^1.16.1",
     "semver": "^7.7.3",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^24.9.1",
+    "@types/node-fetch": "^2.6.13",
     "@types/screeps": "^3.3.8",
     "@types/semver": "^7.5.8",
     "@typescript-eslint/eslint-plugin": "^8.46.2",

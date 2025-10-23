@@ -28,6 +28,8 @@ All notable changes to this project are documented here. This changelog now main
 - **Node.js 16 compatibility for Vitest testing framework**
   - Added `crypto.getRandomValues()` polyfill in `tests/setup.ts` for Node.js 16 compatibility
   - Fixes Vitest startup error: "TypeError: crypto.getRandomValues is not a function"
+  - Enhanced polyfill implementation to use Node.js `randomBytes()` for proper cryptographic randomness
+  - Resolves post-merge release workflow failure during pre-commit unit tests (run 18731528835)
   - Node.js 16 doesn't include Web Crypto API, but it's required by Vite/Vitest
   - Uses Node.js built-in `webcrypto` module to polyfill the missing API
   - Ensures all test suites run successfully in CI workflows using Node.js 16
