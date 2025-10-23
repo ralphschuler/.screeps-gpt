@@ -6,6 +6,13 @@ This document describes the role-based creep behavior system implemented in `src
 
 The AI uses a role-based system where each creep is assigned a specific role that determines its behavior and task execution. Roles are defined with minimum population requirements, body part configurations, and task execution logic.
 
+Current roster:
+
+- **Harvester** – baseline economy and energy distribution
+- **Upgrader** – controller progress maintenance
+- **Builder** – construction and structural upkeep
+- **Remote Miner** – long-distance energy acquisition
+
 ## Role Definitions
 
 ### Harvester
@@ -96,6 +103,88 @@ RECHARGE ⟷ UPGRADE
 - Full cycle time: ~50-60 ticks (withdraw + upgrade + travel)
 - Controller points per cycle: 50 points
 
+### Builder
+
+**Purpose**: Establishes new infrastructure and keeps critical structures repaired when construction slows down.
+
+**Minimum Count**: 1 creep
+**Body Configuration**: `[WORK, CARRY, MOVE, MOVE]` (200 energy cost)
+**Version**: 1
+
+**Task State Machine**:
+
+```
+GATHER → BUILD → MAINTAIN
+   ↑               ↓
+   └───────────────┘
+```
+
+**Decision Tree**:
+
+1. **GATHER Task**
+   - **Trigger**: Default state and whenever the creep is empty
+   - **Energy Sources**: Spawns, extensions, containers, and storage structures with spare energy
+   - **Fallback**: Harvests from active sources if no stored energy is available
+   - **Transition**: When `store.getFreeCapacity(RESOURCE_ENERGY) === 0`, switch to BUILD
+
+2. **BUILD Task**
+   - **Trigger**: Inventory is full
+   - **Action**: Build the closest construction site (path priority)
+   - **Transition**:
+     - When the current site finishes or none exist, switch to MAINTAIN
+     - When `store.getUsedCapacity(RESOURCE_ENERGY) === 0`, switch to GATHER
+
+3. **MAINTAIN Task**
+   - **Trigger**: No construction sites are available
+   - **Action**: Repair damaged non-defensive structures; upgrade the controller when nothing needs repair
+   - **Transition**: When `store.getUsedCapacity(RESOURCE_ENERGY) === 0`, switch back to GATHER
+
+**Performance Characteristics**:
+
+- Construction throughput: 5 build power/tick (1 WORK part)
+- Repair throughput: 100 hits/tick (1 WORK part)
+- Travel speed: 1 road tile/tick, 2 ticks/plain tile
+- Utility coverage: Always contributes by repairing or upgrading even without construction work
+
+### Remote Miner
+
+**Purpose**: Harvests energy from remote rooms and ferries it back to the home economy.
+
+**Minimum Count**: 0 creeps (enabled once remote targets are configured)
+**Body Configuration**: `[WORK, WORK, CARRY, MOVE, MOVE]` (350 energy cost)
+**Version**: 1
+
+**Task State Machine**:
+
+```
+TRAVEL → MINE → RETURN ↴
+   ↑               └─────┘
+```
+
+**Decision Tree**:
+
+1. **TRAVEL Task**
+   - **Trigger**: Default state until the creep reaches the assigned `targetRoom`
+   - **Action**: Move toward the target room centre (25,25) using longer path reuse to conserve CPU
+   - **Transition**: When `creep.room.name === targetRoom`, switch to MINE
+
+2. **MINE Task**
+   - **Trigger**: Creep is in the target room with free capacity
+   - **Source Selection**: Remembers the chosen source by storing `sourceId`
+   - **Transition**: When `store.getFreeCapacity(RESOURCE_ENERGY) === 0`, switch to RETURN
+
+3. **RETURN Task**
+   - **Trigger**: Inventory contains harvested energy
+   - **Action**: Travel back to `homeRoom`, deposit into storage structures, spawns, or extensions; upgrades the controller if no delivery targets exist
+   - **Transition**: When `store.getUsedCapacity(RESOURCE_ENERGY) === 0`, switch back to TRAVEL and resume mining
+
+**Performance Characteristics**:
+
+- Harvest output: 2 energy/tick while mining (2 WORK parts)
+- Carry capacity: 50 energy (1 CARRY part)
+- Remote cadence: Balanced MOVE parts allow consistent round trips
+- Assignment memory: Persists `homeRoom`, `targetRoom`, and `sourceId` for deterministic routing
+
 ## Spawn Management
 
 ### Population Maintenance
@@ -104,11 +193,11 @@ The `BehaviorController.ensureRoleMinimums()` method enforces minimum population
 
 1. **Check Current Population**: Count living creeps for each role
 2. **Identify Gaps**: Compare against role minimum requirements
-3. **Spawn Priority**: Roles are processed in definition order (harvester → upgrader)
+3. **Spawn Priority**: Roles are processed in definition order (harvester → upgrader → builder → remoteMiner)
 4. **Spawn Selection**: Find first available (non-spawning) spawn
 5. **Creep Creation**:
-   - Name format: `{role}-{gameTick}-{random3digit}`
-   - Example: `harvester-12345-789`
+   - Name format: `{role}-{game.time}-{memory.creepCounter}`
+   - Example: `builder-12345-3`
    - Memory initialized with role defaults
 
 ### Spawn Failures
@@ -127,9 +216,12 @@ Each creep memory contains:
 
 ```typescript
 {
-  role: "harvester" | "upgrader",  // Role assignment
+  role: "harvester" | "upgrader" | "builder" | "remoteMiner",  // Role assignment
   task: string,                     // Current task state
-  version: number                   // Role version for migrations
+  version: number,                  // Role version for migrations
+  homeRoom?: string,                // Remote miner home anchor
+  targetRoom?: string,              // Remote miner destination
+  sourceId?: Id<Source>             // Cached source assignment
 }
 ```
 
@@ -140,7 +232,7 @@ When role version changes (e.g., new task logic or body parts):
 1. Old creeps detected by version mismatch
 2. Task reset to role default
 3. Version updated to current
-4. Allows gradual transition as old creeps expire
+4. Builder and remote miner migrations also seed their extended memory (`homeRoom`, `targetRoom`, `sourceId`) without breaking older creeps
 
 ### Memory Initialization
 
