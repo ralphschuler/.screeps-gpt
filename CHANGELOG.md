@@ -19,6 +19,11 @@ All notable changes to this project are documented here. This changelog now main
   - Provides isolated, reproducible development environments without local Node.js/Python installation
   - Enables simultaneous support for Node.js 20 (testing/building) and Node.js 16 (mockup tests)
   - Addresses issues #188 (Node.js migration), #204 (Bun integration), #200 (act CLI consistency)
+- **Builder and remote miner creep roles**
+  - Registered new role definitions in the behavior controller with dedicated state machines and spawn configurations
+  - Extended runtime types/memory helpers to track remote assignments deterministically
+  - Added unit, e2e, and regression tests covering spawn logic plus travel/mine/return transitions
+  - Documented strategy updates in `docs/runtime/strategy/creep-roles.md` and `docs/runtime/strategy/scaling-strategies.md`
 
 ### Fixed
 

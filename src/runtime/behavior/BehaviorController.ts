@@ -1,7 +1,7 @@
 import type { BehaviorSummary } from "@shared/contracts";
 import type { CreepLike, GameContext, SpawnLike } from "@runtime/types/GameContext";
 
-type RoleName = "harvester" | "upgrader";
+type RoleName = "harvester" | "upgrader" | "builder" | "remoteMiner";
 
 interface BaseCreepMemory extends CreepMemory {
   role: RoleName;
@@ -22,14 +22,24 @@ interface RoleDefinition {
 
 const HARVESTER_VERSION = 1;
 const UPGRADER_VERSION = 1;
+const BUILDER_VERSION = 1;
+const REMOTE_MINER_VERSION = 1;
 
 const HARVEST_TASK = "harvest" as const;
 const DELIVER_TASK = "deliver" as const;
 const RECHARGE_TASK = "recharge" as const;
 const UPGRADE_TASK = "upgrade" as const;
+const BUILDER_GATHER_TASK = "gather" as const;
+const BUILDER_BUILD_TASK = "build" as const;
+const BUILDER_MAINTAIN_TASK = "maintain" as const;
+const REMOTE_TRAVEL_TASK = "travel" as const;
+const REMOTE_MINE_TASK = "mine" as const;
+const REMOTE_RETURN_TASK = "return" as const;
 
 type HarvesterTask = typeof HARVEST_TASK | typeof DELIVER_TASK | typeof UPGRADE_TASK;
 type UpgraderTask = typeof RECHARGE_TASK | typeof UPGRADE_TASK;
+type BuilderTask = typeof BUILDER_GATHER_TASK | typeof BUILDER_BUILD_TASK | typeof BUILDER_MAINTAIN_TASK;
+type RemoteMinerTask = typeof REMOTE_TRAVEL_TASK | typeof REMOTE_MINE_TASK | typeof REMOTE_RETURN_TASK;
 
 interface HarvesterMemory extends BaseCreepMemory {
   task: HarvesterTask;
@@ -37,6 +47,17 @@ interface HarvesterMemory extends BaseCreepMemory {
 
 interface UpgraderMemory extends BaseCreepMemory {
   task: UpgraderTask;
+}
+
+interface BuilderMemory extends BaseCreepMemory {
+  task: BuilderTask;
+}
+
+interface RemoteMinerMemory extends BaseCreepMemory {
+  task: RemoteMinerTask;
+  homeRoom: string;
+  targetRoom: string;
+  sourceId?: Id<Source>;
 }
 
 const ROLE_DEFINITIONS: Record<RoleName, RoleDefinition> = {
@@ -51,6 +72,30 @@ const ROLE_DEFINITIONS: Record<RoleName, RoleDefinition> = {
     body: [WORK, CARRY, MOVE],
     memory: () => ({ role: "upgrader", task: RECHARGE_TASK, version: UPGRADER_VERSION }),
     run: (creep: ManagedCreep) => runUpgrader(creep)
+  },
+  builder: {
+    minimum: 1,
+    body: [WORK, CARRY, MOVE, MOVE],
+    memory: () =>
+      ({
+        role: "builder",
+        task: BUILDER_GATHER_TASK,
+        version: BUILDER_VERSION
+      }) satisfies BuilderMemory,
+    run: (creep: ManagedCreep) => runBuilder(creep)
+  },
+  remoteMiner: {
+    minimum: 0,
+    body: [WORK, WORK, CARRY, MOVE, MOVE],
+    memory: () =>
+      ({
+        role: "remoteMiner",
+        task: REMOTE_TRAVEL_TASK,
+        version: REMOTE_MINER_VERSION,
+        homeRoom: "",
+        targetRoom: ""
+      }) satisfies RemoteMinerMemory,
+    run: (creep: ManagedCreep) => runRemoteMiner(creep)
   }
 };
 
@@ -257,4 +302,226 @@ function runUpgrader(creep: ManagedCreep): string {
   }
 
   return RECHARGE_TASK;
+}
+
+function ensureBuilderTask(memory: BuilderMemory, creep: CreepLike): BuilderTask {
+  if (
+    memory.task !== BUILDER_GATHER_TASK &&
+    memory.task !== BUILDER_BUILD_TASK &&
+    memory.task !== BUILDER_MAINTAIN_TASK
+  ) {
+    memory.task = BUILDER_GATHER_TASK;
+    return memory.task;
+  }
+
+  if (memory.task === BUILDER_GATHER_TASK && creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+    memory.task = BUILDER_BUILD_TASK;
+  } else if (memory.task !== BUILDER_GATHER_TASK && creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+    memory.task = BUILDER_GATHER_TASK;
+  }
+
+  return memory.task;
+}
+
+function runBuilder(creep: ManagedCreep): string {
+  const memory = creep.memory as BuilderMemory;
+  const task = ensureBuilderTask(memory, creep);
+
+  if (task === BUILDER_GATHER_TASK) {
+    const energySources = creep.room.find(FIND_STRUCTURES, {
+      filter: (structure: AnyStructure) => {
+        if (
+          structure.structureType !== STRUCTURE_SPAWN &&
+          structure.structureType !== STRUCTURE_EXTENSION &&
+          structure.structureType !== STRUCTURE_CONTAINER &&
+          structure.structureType !== STRUCTURE_STORAGE
+        ) {
+          return false;
+        }
+
+        const store = structure as AnyStoreStructure;
+        return store.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
+      }
+    }) as AnyStoreStructure[];
+
+    const target = energySources.length > 0 ? (creep.pos.findClosestByPath(energySources) ?? energySources[0]) : null;
+    if (target) {
+      const result = creep.withdraw(target, RESOURCE_ENERGY);
+      if (result === ERR_NOT_IN_RANGE) {
+        creep.moveTo(target, { range: 1, reusePath: 5 });
+      }
+    } else {
+      const sources = creep.room.find(FIND_SOURCES_ACTIVE) as Source[];
+      const source = sources.length > 0 ? (creep.pos.findClosestByPath(sources) ?? sources[0]) : null;
+      if (source) {
+        const harvestResult = creep.harvest(source);
+        if (harvestResult === ERR_NOT_IN_RANGE) {
+          creep.moveTo(source, { range: 1, reusePath: 5 });
+        }
+      }
+    }
+
+    return BUILDER_GATHER_TASK;
+  }
+
+  if (task === BUILDER_BUILD_TASK) {
+    const sites = creep.room.find(FIND_CONSTRUCTION_SITES) as ConstructionSite[];
+    const site = sites.length > 0 ? (creep.pos.findClosestByPath(sites) ?? sites[0]) : null;
+
+    if (site) {
+      const result = creep.build(site);
+      if (result === ERR_NOT_IN_RANGE) {
+        creep.moveTo(site, { range: 3, reusePath: 5 });
+      }
+      return BUILDER_BUILD_TASK;
+    }
+
+    memory.task = BUILDER_MAINTAIN_TASK;
+  }
+
+  // Maintain (repair/upgrade) fallback
+  const repairTargets = creep.room.find(FIND_STRUCTURES, {
+    filter: (structure: AnyStructure) => {
+      if (!("hits" in structure) || typeof structure.hits !== "number") {
+        return false;
+      }
+
+      if (structure.structureType === STRUCTURE_WALL || structure.structureType === STRUCTURE_RAMPART) {
+        return false;
+      }
+
+      return structure.hits < structure.hitsMax;
+    }
+  }) as Structure[];
+
+  const target = repairTargets.length > 0 ? (creep.pos.findClosestByPath(repairTargets) ?? repairTargets[0]) : null;
+  if (target) {
+    const result = creep.repair(target);
+    if (result === ERR_NOT_IN_RANGE) {
+      creep.moveTo(target, { range: 3, reusePath: 5 });
+    }
+    return BUILDER_MAINTAIN_TASK;
+  }
+
+  const controller = creep.room.controller;
+  if (controller) {
+    const upgrade = creep.upgradeController(controller);
+    if (upgrade === ERR_NOT_IN_RANGE) {
+      creep.moveTo(controller, { range: 3, reusePath: 5 });
+    }
+  }
+
+  return BUILDER_MAINTAIN_TASK;
+}
+
+function ensureRemoteMinerTask(memory: RemoteMinerMemory): RemoteMinerTask {
+  if (memory.task !== REMOTE_TRAVEL_TASK && memory.task !== REMOTE_MINE_TASK && memory.task !== REMOTE_RETURN_TASK) {
+    memory.task = REMOTE_TRAVEL_TASK;
+  }
+
+  return memory.task;
+}
+
+function ensureRemoteAssignments(memory: RemoteMinerMemory, creep: ManagedCreep): void {
+  if (!memory.homeRoom) {
+    memory.homeRoom = creep.room.name ?? memory.homeRoom ?? "";
+  }
+  if (!memory.targetRoom) {
+    memory.targetRoom = memory.homeRoom;
+  }
+}
+
+function resolveRemoteSource(creep: ManagedCreep, memory: RemoteMinerMemory): Source | null {
+  const sources = creep.room.find(FIND_SOURCES_ACTIVE) as Source[];
+  if (sources.length === 0) {
+    return null;
+  }
+
+  if (memory.sourceId) {
+    const match = sources.find(source => source.id === memory.sourceId);
+    if (match) {
+      return match;
+    }
+  }
+
+  const chosen = creep.pos.findClosestByPath(sources) ?? sources[0];
+  if (chosen) {
+    memory.sourceId = chosen.id;
+  }
+  return chosen;
+}
+
+function runRemoteMiner(creep: ManagedCreep): string {
+  const memory = creep.memory as RemoteMinerMemory;
+  const task = ensureRemoteMinerTask(memory);
+  ensureRemoteAssignments(memory, creep);
+
+  if (task === REMOTE_TRAVEL_TASK) {
+    if (memory.targetRoom && creep.room.name !== memory.targetRoom) {
+      creep.moveTo(
+        { pos: { x: 25, y: 25, roomName: memory.targetRoom } as unknown as RoomPosition },
+        { reusePath: 20 }
+      );
+      return REMOTE_TRAVEL_TASK;
+    }
+
+    memory.task = REMOTE_MINE_TASK;
+  }
+
+  if (memory.task === REMOTE_MINE_TASK) {
+    if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+      memory.task = REMOTE_RETURN_TASK;
+      return REMOTE_RETURN_TASK;
+    }
+
+    const source = resolveRemoteSource(creep, memory);
+    if (source) {
+      const result = creep.harvest(source);
+      if (result === ERR_NOT_IN_RANGE) {
+        creep.moveTo(source, { range: 1, reusePath: 10 });
+      }
+    }
+
+    return REMOTE_MINE_TASK;
+  }
+
+  if (memory.homeRoom && creep.room.name !== memory.homeRoom) {
+    creep.moveTo({ pos: { x: 25, y: 25, roomName: memory.homeRoom } as unknown as RoomPosition }, { reusePath: 20 });
+    return REMOTE_RETURN_TASK;
+  }
+
+  const depositTargets = creep.room.find(FIND_STRUCTURES, {
+    filter: (structure: AnyStructure) =>
+      (structure.structureType === STRUCTURE_STORAGE ||
+        structure.structureType === STRUCTURE_SPAWN ||
+        structure.structureType === STRUCTURE_EXTENSION ||
+        structure.structureType === STRUCTURE_CONTAINER) &&
+      (structure as AnyStoreStructure).store.getFreeCapacity(RESOURCE_ENERGY) > 0
+  }) as AnyStoreStructure[];
+
+  const depositTarget =
+    depositTargets.length > 0 ? (creep.pos.findClosestByPath(depositTargets) ?? depositTargets[0]) : null;
+  if (depositTarget) {
+    const result = creep.transfer(depositTarget, RESOURCE_ENERGY);
+    if (result === ERR_NOT_IN_RANGE) {
+      creep.moveTo(depositTarget, { range: 1, reusePath: 10 });
+    } else if (result === OK && creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+      memory.task = REMOTE_TRAVEL_TASK;
+    }
+    return REMOTE_RETURN_TASK;
+  }
+
+  const controller = creep.room.controller;
+  if (controller) {
+    const result = creep.upgradeController(controller);
+    if (result === ERR_NOT_IN_RANGE) {
+      creep.moveTo(controller, { range: 3, reusePath: 10 });
+    }
+  }
+
+  if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+    memory.task = REMOTE_TRAVEL_TASK;
+  }
+
+  return REMOTE_RETURN_TASK;
 }

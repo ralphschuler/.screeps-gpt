@@ -19,6 +19,9 @@ declare global {
     role: string;
     task?: string;
     version?: number;
+    homeRoom?: string;
+    targetRoom?: string;
+    sourceId?: Id<Source>;
   }
 }
 

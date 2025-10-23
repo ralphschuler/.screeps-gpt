@@ -51,6 +51,7 @@ Scaling in Screeps involves managing increasing numbers of creeps, rooms, and st
 
 - 3-4 Harvesters (2 per source ideal)
 - 1-2 Upgraders (consume surplus energy)
+- 0-1 Builder (bootstrap road/ramp construction as extensions unlock)
 - Total: 4-6 creeps
 
 **CPU Budget**: ~3-5 CPU/tick
@@ -81,7 +82,8 @@ Scaling in Screeps involves managing increasing numbers of creeps, rooms, and st
 
 - 4-5 Harvesters
 - 2-3 Upgraders
-- 0-1 Builder (optional, for construction)
+- 1 Builder (continuous road/extension maintenance)
+- 0-1 Remote Miner (pilot route to nearby source if safe)
 - Total: 6-9 creeps
 
 **CPU Budget**: ~5-8 CPU/tick
@@ -116,7 +118,8 @@ Scaling in Screeps involves managing increasing numbers of creeps, rooms, and st
 
 - 2 Harvesters per source (4-6 total)
 - 3-5 Upgraders
-- 1-2 Builders (for infrastructure)
+- 1-2 Builders (for infrastructure and repairs)
+- 1-2 Remote Miners (sustain remote sources feeding storage)
 - Total: 8-13 creeps
 
 **CPU Budget**: ~8-15 CPU/tick
@@ -138,6 +141,7 @@ Scaling in Screeps involves managing increasing numbers of creeps, rooms, and st
 - Stable economy (10+ energy/tick surplus)
 - CPU bucket >5000 (safety margin)
 - Storage structure active
+- Remote miner routes established with safe travel corridors
 
 **Expansion Checklist**:
 
@@ -157,7 +161,8 @@ Scaling in Screeps involves managing increasing numbers of creeps, rooms, and st
 
 **Step 2: Remote Harvesting**
 
-- Send harvesters from main room
+- Assign dedicated remote miner creeps to target sources
+- Provide hauler or builder support once containers are placed
 - Establish energy pipeline
 - Build first spawn foundation
 - Cost: ~5000 energy for spawn, ~2-3 CPU/tick

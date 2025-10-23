@@ -14,6 +14,7 @@ export interface PositionLike {
 }
 
 export interface RoomLike {
+  name: string;
   controller: StructureController | null;
   find(type: FindConstant, opts?: { filter?: (object: unknown) => boolean }): unknown[];
 }
@@ -29,6 +30,8 @@ export interface CreepLike {
   moveTo(target: RoomPosition | { pos: RoomPosition }, opts?: MoveToOpts): ScreepsReturnCode;
   upgradeController(controller: StructureController): ScreepsReturnCode;
   withdraw(target: Structure, resource: ResourceConstant): ScreepsReturnCode;
+  build(target: ConstructionSite): ScreepsReturnCode;
+  repair(target: Structure): ScreepsReturnCode;
 }
 
 export interface SpawnLike {
