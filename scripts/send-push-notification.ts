@@ -48,8 +48,8 @@ async function httpsRequest(
 
         res.on("end", () => {
           resolve({
-            ok: res.statusCode >= 200 && res.statusCode < 300,
-            status: res.statusCode || 0,
+            ok: typeof res.statusCode === "number" && res.statusCode >= 200 && res.statusCode < 300,
+            status: typeof res.statusCode === "number" ? res.statusCode : 0,
             text: () => Promise.resolve(responseData),
             json: () => Promise.resolve(JSON.parse(responseData) as unknown)
           });
