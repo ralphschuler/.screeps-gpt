@@ -7,6 +7,15 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Added
 
+- **Documentation restructuring for improved navigation**
+  - Created comprehensive `docs/getting-started.md` with detailed setup instructions, prerequisites, development commands, runtime architecture, and contributing workflow
+  - Refactored `README.md` to focus on concise project overview emphasizing Copilot agent swarm concept
+  - Added clear description of Screeps GPT as autonomous AI playground where multiple GitHub Copilot agents collaboratively develop a Screeps bot
+  - Documented system architecture with three integrated layers: Runtime AI, Development Infrastructure, and AI Agent Orchestration
+  - Included key features section highlighting autonomous agent swarm, CI/CD, self-evaluation, and documentation-first approach
+  - Organized documentation links into categorized sections: Core, Technical, Monitoring & Operations, and Strategy & Development
+  - Improved onboarding experience with clear navigation from README to detailed documentation
+  - Addresses issue ralphschuler/.screeps-gpt#[issue_number] (documentation restructuring)
 - **Docker containerization for development, testing, and building**
   - Created `Dockerfile.test` with Node.js 20 + Python 2 for running test suites
   - Created `Dockerfile.build` with Node.js 20 for building the Screeps AI

@@ -6,28 +6,14 @@ them before acting.
 
 ## Quick Start
 
-1. **Install prerequisites**
-   - [Bun](https://bun.sh) 1.0 or newer.
-   - [Node.js](https://nodejs.org) 18.x–22.x (Node 22 is used in CI to install the Copilot CLI).
-   - Screeps account with Public Test Realm (PTR) access for end-to-end trials.
-2. **Install dependencies**
-   ```bash
-   bun install
-   ```
-3. **Local quality gates**
-   ```bash
-   bun run lint
-   bun run format:check
-   bun run test:unit
-   bun run test:e2e   # PTR configuration
-   bun run test:regression
-   bun run test:coverage
-   bun run test:actions
-   bun run analyze:system
-   ```
-4. **Build & deploy**
-   - Bundle with `bun run build`.
-   - Deploy to PTR: `SCREEPS_HOST=ptr.screeps.com bun run deploy` (requires `SCREEPS_TOKEN`).
+For a complete setup guide, see the **[Getting Started Guide](getting-started.md)**.
+
+**Quick reference:**
+
+1. **Install prerequisites**: Bun 1.0+, Node.js 18.x–22.x
+2. **Install dependencies**: `bun install`
+3. **Run quality checks**: `bun run lint && bun run test:unit`
+4. **Build & deploy**: `bun run build && bun run deploy`
 
 ## Documentation Rules
 
@@ -38,6 +24,10 @@ them before acting.
 - Preview the GitHub Pages site with `bun run build:docs-site` whenever you adjust documentation or changelog content.
 
 ## Additional Guides
+
+### Getting Started & Setup
+
+- [Getting Started Guide](getting-started.md) - Complete setup instructions, prerequisites, development workflow, and contributing guidelines
 
 ### Automation & Workflows
 
