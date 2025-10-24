@@ -1,8 +1,3 @@
----
-title: Copilot Prompt Template Audit
-date: 2025-10-24T12:33:51.453Z
----
-
 # Copilot Prompt Template Audit
 
 This document provides a comprehensive audit of existing Copilot prompt templates, identifying gaps in action enforcement and output specification patterns.
@@ -143,28 +138,33 @@ This document provides a comprehensive audit of existing Copilot prompt template
 - Include explicit issue structure requirements
 - Add fallback instructions for edge cases
 
-### 6. `stats-analysis` - Screeps Statistics Monitoring
+### 6. `screeps-monitor` - Screeps Monitoring
 
-**Purpose**: Analyzes Screeps PTR telemetry and creates monitoring issues  
-**Workflow**: `.github/workflows/screeps-stats-monitor.yml`
+**Purpose**: Comprehensive autonomous monitoring combining strategic analysis with PTR telemetry monitoring  
+**Workflow**: `.github/workflows/screeps-monitoring.yml`
 
 **Strengths**:
 
-- Clear MCP server integration guidance
+- Clear MCP server integration guidance (github, screeps-mcp, screeps-api)
+- Multi-phase analysis pipeline (7 phases)
 - Explicit issue creation workflow with severity labeling
-- JSON output structure with snapshot tracking
+- Combined strategic analysis with PTR anomaly detection
+- JSON output structure with comprehensive metrics tracking
+- Automated PTR alert notifications via check-ptr-alerts.ts
 
 **Action Enforcement Gaps**:
 
-- ⚠️ Missing explicit criteria for anomaly detection
+- ⚠️ Missing explicit criteria for strategic vs PTR issue creation
 - ⚠️ No validation requirements for telemetry data quality
 - ⚠️ Limited fallback handling when Screeps API is unavailable
+- ⚠️ No explicit guidance on prioritizing strategic vs anomaly findings
 
 **Recommendations**:
 
 - Add explicit anomaly detection criteria with thresholds
 - Include telemetry validation requirements
 - Add fallback instructions for API failures
+- Clarify prioritization when both strategic and PTR issues detected
 
 ### 7. `todo-daily-prioritization` - Daily Todo Assignment
 

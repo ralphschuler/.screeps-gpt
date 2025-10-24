@@ -1,8 +1,3 @@
----
-title: Automation Overview
-date: 2025-10-24T12:33:51.454Z
----
-
 # Automation Overview
 
 This document expands on the workflows under `.github/workflows/` and how they combine with the Copilot CLI.
@@ -183,13 +178,13 @@ Quality checks are split into separate guard workflows for better granularity an
 
 ## Deploy (`deploy.yml`)
 
-- Trigger: Tags that match `v*` OR GitHub Release published events.
+- Trigger: Tags that match `v*` pattern (e.g., `v1.0.0`, `v0.5.1`).
 - Behaviour: Builds and pushes code to the Screeps API. After successful deployment, automatically checks spawn status and triggers respawn if needed. Uses GitHub's `production` environment for deployment protection rules and approval workflows. Set `SCREEPS_DEPLOY_DRY_RUN=true` for local `act` dry-runs to skip the API call. Sends push notifications on deployment success (Priority 3) and failure (Priority 5) via Push by Techulus.
 - Environment: Uses GitHub environment `production` with URL `https://screeps.com` for deployment tracking and protection rules.
 - Auto-Respawn: The `screeps-autospawner` action checks spawn status after deployment. If the bot is already active (status: "normal"), it exits early with no action. If the bot needs respawning (status: "lost" or "empty"), it is automatically respawned—no manual intervention is required.
 - Push Notifications: Sent for all deployment outcomes with workflow run links. See [Push Notifications Guide](push-notifications.md) for details.
 - Secrets: `SCREEPS_TOKEN` (required), `SCREEPS_HOST`/`PORT`/`PROTOCOL`/`BRANCH` (optional overrides). `PUSH_TOKEN` (optional) for deployment alerts.
-- Notes: Deployment is triggered automatically when releases are published, leveraging GitHub's native CI/CD features. The autospawner ensures the bot is active after each deployment.
+- Notes: Deployment is triggered automatically when the `post-merge-release.yml` workflow pushes a version tag. The workflow uses only the `push.tags` trigger because GitHub Actions does not trigger `release.published` events when releases are created by workflows using `GITHUB_TOKEN` (security measure to prevent recursive workflow execution). The autospawner ensures the bot is active after each deployment.
 
 ## Copilot Repository Review (`copilot-review.yml`)
 
@@ -274,52 +269,33 @@ Quality checks are split into separate guard workflows for better granularity an
 - Trigger: Dependabot pull request updates.
 - Behaviour: Automatically enables auto-merge (squash) for non-major updates when checks pass.
 
-## Screeps Stats Monitor (`screeps-stats-monitor.yml`)
+## Screeps Monitoring (`screeps-monitoring.yml`)
 
-- Trigger: Every 30 minutes + manual dispatch.
-- Behaviour: Copilot uses the `scripts/fetch-screeps-stats.mjs` Node.js script to fetch telemetry from Screeps API, analyse anomalies, and open/update monitoring issues through `gh` with severity labels. After analysis, `scripts/check-ptr-alerts.ts` examines the stats for critical conditions and sends push notifications for high CPU usage (>80%), critical CPU (>95%), and low energy reserves.
-- Data Collection: Uses the native Screeps REST API endpoint `/api/user/stats` via the fetch script.
-- Push Notifications: Automatically sent for critical and high severity alerts via Push by Techulus (requires `PUSH_TOKEN` secret). See [Push Notifications Guide](push-notifications.md) for details.
-- Secrets: `SCREEPS_TOKEN` (required), `SCREEPS_STATS_TOKEN`, `SCREEPS_EMAIL`, `SCREEPS_PASSWORD` (optional alternatives), plus optional host/port/protocol overrides. `PUSH_TOKEN` (optional) for real-time alerts.
-- Action Enforcement: Mandatory telemetry validation, explicit anomaly detection criteria with severity thresholds, and concrete evidence requirements for all monitoring issues.
-
-## Screeps Spawn Monitor (`screeps-spawn-monitor.yml`)
-
-- Trigger: Every 30 minutes + manual dispatch.
-- Behaviour: Automatically checks spawn status and triggers respawn if needed. Uses the `screeps-autospawner` composite action to:
-  - Check current spawn status via Screeps API (`/api/user/world-status`)
-  - Early exit if bot is already active (status: "normal") with no action taken
-  - Automatically respawn when all spawns are lost (status: "lost")
-  - Place spawn when respawn triggered but not yet placed (status: "empty")
-  - Send push notifications for critical events (respawn, spawn placement, failures)
-- Integration: Uses the same `screeps-autospawner` action as the deployment workflow for consistency.
-- Push Notifications: Sent for spawn loss/respawn (Priority 5), spawn placement (Priority 4), and check failures (Priority 5) via Push by Techulus. See [Push Notifications Guide](push-notifications.md) for details.
-- Secrets: `SCREEPS_TOKEN` (required), `SCREEPS_HOST`, `SCREEPS_PORT`, `SCREEPS_PROTOCOL`, `SCREEPS_PATH` (optional overrides). `PUSH_TOKEN` (optional) for real-time alerts.
-- Purpose: Prevents extended bot downtime by monitoring spawn status between deployments and automatically recovering from spawn loss scenarios.
-- Documentation: See [Respawn Handling Guide](../operations/respawn-handling.md) for details on respawn detection and recovery procedures.
-
-## Daily Autonomous Bot Monitor (`copilot-autonomous-monitor.yml`)
-
-- Trigger: Daily schedule (06:00 UTC) + manual dispatch.
-- Behaviour: Comprehensive autonomous strategic analysis workflow that serves as the "strategic brain" of the project. Copilot performs multi-phase analysis combining:
+- Trigger: Every 30 minutes (cron schedule) + on "Deploy Screeps AI" completion + manual dispatch.
+- Behaviour: Comprehensive autonomous monitoring workflow combining strategic analysis with PTR telemetry monitoring. Copilot performs multi-phase analysis:
+  - **PTR Telemetry Collection**: Fetches stats from Screeps API using `scripts/fetch-screeps-stats.mjs`, stores in `reports/screeps-stats/latest.json`
   - **Bot Performance Analysis**: Direct console access via screeps-mcp MCP server to evaluate spawning, CPU usage, energy economy, RCL progress, defense capabilities, and strategic execution
+  - **PTR Anomaly Detection**: Analyzes telemetry for critical conditions (CPU >95%, >80%, low energy) with concrete evidence requirements
   - **Repository Health Analysis**: GitHub MCP server integration to assess codebase quality, automation effectiveness, CI/CD health, and development velocity
   - **Strategic Decision Making**: Intelligent prioritization of development tasks based on game performance impact and infrastructure health
-  - **Autonomous Issue Management**: Creates, updates, and closes issues with evidence-based recommendations and severity assessment (up to 10 issues per run)
-  - **Strategic Reporting**: Generates comprehensive analysis report with bot health score (0-100), top priorities, and actionable recommendations
+  - **Autonomous Issue Management**: Creates, updates, and closes issues with evidence-based recommendations (strategic issues prefixed with `[Autonomous Monitor]`, PTR anomalies with `PTR:`)
+  - **Strategic Reporting**: Generates comprehensive analysis report with bot health score (0-100), PTR status, top priorities, and actionable recommendations
+  - **Alert Notifications**: Executes `scripts/check-ptr-alerts.ts` to send push notifications for critical/high severity PTR alerts
 - MCP Integration: Uses three MCP servers for comprehensive analysis:
   - `github` - Repository operations (issues, PRs, code search, workflow logs)
   - `screeps-mcp` - Bot console access (commands, memory, room data) via `@ralphschuler/screeps-api-mcp`
   - `screeps-api` - User stats and shard info via native Screeps API
-- Safety Controls: Read-only analysis mode by default with prohibited destructive actions, rate limiting (daily schedule, max 10 issues, max 5 console commands per phase), and graceful error handling
-- Secrets: `SCREEPS_TOKEN` (required), `SCREEPS_HOST`, `SCREEPS_SHARD` (optional), `SCREEPS_STATS_HOST`, `SCREEPS_STATS_API` (optional), `COPILOT_TOKEN` (required).
+- Safety Controls: Read-only analysis mode by default with prohibited destructive actions, rate limiting (every 30 minutes, max 10 issues, max 5 console commands per phase), and graceful error handling
+- Secrets: `SCREEPS_TOKEN` (required), `SCREEPS_STATS_TOKEN`, `SCREEPS_EMAIL`, `SCREEPS_PASSWORD`, `SCREEPS_HOST`, `SCREEPS_PORT`, `SCREEPS_PROTOCOL`, `SCREEPS_SHARD` (optional), `SCREEPS_STATS_HOST`, `SCREEPS_STATS_API` (optional), `COPILOT_TOKEN` (required), `PUSH_TOKEN` (optional for notifications).
 - Permissions: `contents: read`, `issues: write`, `pull-requests: read`.
 - Timeout: 45 minutes with verbose logging enabled for debugging.
-- Output: Timestamped analysis report uploaded as workflow artifact (30-day retention) and minified JSON summary in logs.
-- Action Enforcement: Six-phase workflow with mandatory authentication, bot performance analysis, repository health checks, strategic decision-making, autonomous issue management, and strategic recommendations output.
-- Documentation: See [Autonomous Monitoring Guide](./autonomous-monitoring.md) for detailed usage, configuration, and best practices.
+- Output: Timestamped analysis report uploaded as workflow artifact (30-day retention), PTR stats snapshot, and minified JSON summary in logs.
+- Push Notifications: Automatically sent for critical and high severity PTR alerts via Push by Techulus. See [Push Notifications Guide](push-notifications.md) for details.
+- Action Enforcement: Seven-phase workflow with mandatory authentication, PTR telemetry fetch, bot performance analysis, PTR anomaly detection, repository health checks, strategic decision-making, autonomous issue management, and strategic recommendations output.
+- Documentation: See [Screeps Monitoring Guide](./autonomous-monitoring.md) for detailed usage, configuration, and best practices.
+- Consolidation: This workflow replaces the former `copilot-autonomous-monitor.yml` and `screeps-stats-monitor.yml` workflows, combining strategic monitoring with high-frequency PTR analysis.
 
-## Label Sync (`label-sync.yml`)
+## Screeps Spawn Monitor (`screeps-spawn-monitor.yml`)
 
 - Trigger: Manual dispatch or pushes to `main`.
 - Behaviour: Ensures the repository's labels match `.github/labels.yml`.
@@ -461,7 +437,7 @@ All credentials must be stored as GitHub Actions secrets and referenced in workf
 
 ### Current Integrations
 
-- **screeps-stats-monitor.yml**: Uses the `scripts/fetch-screeps-stats.mjs` script to fetch telemetry from the Screeps REST API
+- **screeps-monitoring.yml**: Uses the `scripts/fetch-screeps-stats.mjs` script to fetch telemetry from the Screeps REST API and integrates with screeps-mcp MCP server for console access
 
 See `AGENTS.md` for detailed MCP server capabilities and best practices.
 

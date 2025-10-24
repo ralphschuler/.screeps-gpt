@@ -1,8 +1,3 @@
----
-title: Performance Monitoring
-date: 2025-10-24T12:33:51.452Z
----
-
 # Performance Monitoring
 
 This document describes CPU tracking, performance metrics, and optimization techniques implemented in `src/runtime/metrics/PerformanceTracker.ts` and `src/runtime/evaluation/SystemEvaluator.ts`.
@@ -387,7 +382,8 @@ Memory.systemReport = {
 
 **External Monitoring** (GitHub Actions):
 
-- `screeps-stats-monitor.yml` polls Memory every 30 minutes
+- `screeps-monitoring.yml` polls Memory every 30 minutes
+- Combines strategic analysis with PTR telemetry monitoring
 - Sends push notifications for critical findings
 - Tracks bucket trends over time
 

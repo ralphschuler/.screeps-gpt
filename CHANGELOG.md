@@ -5,6 +5,17 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Changed
+
+- **Consolidated monitoring workflows for improved efficiency**
+  - Merged `copilot-autonomous-monitor.yml` and `screeps-stats-monitor.yml` into single `screeps-monitoring.yml` workflow
+  - Combines autonomous strategic monitoring with PTR telemetry analysis in unified execution
+  - Reduces workflow overhead from two parallel runs to one consolidated run every 30 minutes
+  - Maintains all existing functionality: MCP server integration, PTR anomaly detection, strategic analysis, push notifications
+  - Updated all documentation references to reflect consolidation
+  - Updated `copilot-ci-autofix.yml` workflow trigger list
+  - Created unified prompt template `.github/copilot/prompts/screeps-monitor` with 7-phase analysis pipeline
+
 ### Fixed
 
 - **Post Merge Release workflow permission error (run #18794330724)**
