@@ -66,7 +66,7 @@ Sends notifications for:
 
 - **Failure:** PR build failed, review required (Priority 4)
 
-### Screeps Stats Monitor Workflow (screeps-stats-monitor.yml)
+### Screeps Monitoring Workflow (screeps-monitoring.yml)
 
 Automatically analyzes PTR stats and sends notifications for:
 

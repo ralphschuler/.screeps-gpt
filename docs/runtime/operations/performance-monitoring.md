@@ -382,7 +382,8 @@ Memory.systemReport = {
 
 **External Monitoring** (GitHub Actions):
 
-- `screeps-stats-monitor.yml` polls Memory every 30 minutes
+- `screeps-monitoring.yml` polls Memory every 30 minutes
+- Combines strategic analysis with PTR telemetry monitoring
 - Sends push notifications for critical findings
 - Tracks bucket trends over time
 

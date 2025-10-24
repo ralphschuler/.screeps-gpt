@@ -169,7 +169,7 @@ This repository has extensive GitHub Actions automation. Key workflows:
 - **copilot-issue-triage.yml** - Automatic issue reformulation
 - **copilot-todo-pr.yml** - Automated Todo issue resolution
 - **copilot-ci-autofix.yml** - Automated CI failure resolution
-- **screeps-stats-monitor.yml** - PTR telemetry monitoring
+- **screeps-monitoring.yml** - Comprehensive monitoring combining strategic analysis with PTR telemetry
 
 ### Workflow Guidelines
 
