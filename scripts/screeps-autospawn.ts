@@ -267,7 +267,9 @@ async function checkAndRespawn(): Promise<void> {
         // eslint-disable-next-line @typescript-eslint/await-thenable
         const terrainResult = (await api.raw.game.roomTerrain(actualRoomName, 1, shardName)) as RoomTerrainResponse;
 
-        console.log("  Terrain API response:", JSON.stringify(terrainResult, null, 2));
+        if (process.env.DEBUG) {
+          console.log("  Terrain API response:", JSON.stringify(terrainResult, null, 2));
+        }
 
         if (!terrainResult.ok || !terrainResult.terrain || terrainResult.terrain.length === 0) {
           throw new Error(`Failed to get room terrain - API response: ${JSON.stringify(terrainResult)}`);
