@@ -4,11 +4,9 @@
     "": {
       "name": "screeps-gpt",
       "dependencies": {
-        "marked": "^16.4.1",
         "node-fetch": "^3.3.2",
         "screeps-api": "^1.16.1",
         "semver": "^7.7.3",
-        "tsx": "^4.20.6",
         "zod": "^4.1.12",
       },
       "devDependencies": {

@@ -5,6 +5,13 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Fixed
+
+- **Documentation Site Build Failure**: Fixed duplicate dependencies in package.json causing lockfile conflicts in CI
+  - Removed duplicate `tsx` and `marked` entries from dependencies section (keeping them in devDependencies)
+  - Updated bun.lock to reflect proper dependency resolution
+  - Fixes run ID: 18777257201
+
 ### Added
 
 - **Daily Autonomous Bot Monitoring workflow**
