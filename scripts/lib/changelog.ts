@@ -139,3 +139,87 @@ export function formatVersionLink(version: ChangelogVersion): string {
   const basenameAnchor = anchor ? `#${anchor}` : "";
   return `CHANGELOG.md${basenameAnchor}`;
 }
+
+/**
+ * Updates the changelog by moving unreleased changes to a new version section.
+ * Clears the [Unreleased] section after creating the new version.
+ *
+ * @param markdown - The current changelog markdown content
+ * @param version - The new version number (e.g., "0.5.41")
+ * @param date - The release date (e.g., "2024-06-01")
+ * @returns Updated changelog markdown
+ */
+export function releaseVersion(markdown: string, version: string, date: string): string {
+  const lines = markdown.split(/\r?\n/);
+  const result: string[] = [];
+  let inUnreleased = false;
+  const unreleasedContent: string[] = [];
+  let foundUnreleased = false;
+  let headerProcessed = false;
+
+  // Process the changelog line by line
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Detect the [Unreleased] section
+    if (line.startsWith("## [Unreleased]") || line.startsWith("## Unreleased")) {
+      foundUnreleased = true;
+      inUnreleased = true;
+      // Add the header lines before [Unreleased]
+      if (!headerProcessed) {
+        headerProcessed = true;
+      }
+      result.push(line);
+      result.push("");
+      continue;
+    }
+
+    // Detect the next section (end of unreleased)
+    if (inUnreleased && line.startsWith("## [") && !line.startsWith("## [Unreleased]")) {
+      inUnreleased = false;
+      // Check if unreleased content has meaningful content (not just whitespace)
+      const hasContent = unreleasedContent.some(line => line.trim().length > 0);
+
+      // Insert the new version section with unreleased content only if there's content
+      if (hasContent) {
+        result.push(`## [${version}] - ${date}`);
+        result.push("");
+        result.push(...unreleasedContent);
+        result.push("");
+      }
+      // Add the current line (next version section)
+      result.push(line);
+      continue;
+    }
+
+    // Collect unreleased content
+    if (inUnreleased) {
+      unreleasedContent.push(line);
+      continue;
+    }
+
+    // Add all other lines as-is
+    result.push(line);
+  }
+
+  // If we reached the end while still in unreleased section
+  if (inUnreleased) {
+    const hasContent = unreleasedContent.some(line => line.trim().length > 0);
+    if (hasContent) {
+      result.push(`## [${version}] - ${date}`);
+      result.push("");
+      result.push(...unreleasedContent);
+      result.push("");
+    }
+  }
+
+  // If no unreleased section was found, add the new version at the top after the header
+  if (!foundUnreleased) {
+    const headerEndIndex = result.findIndex(line => line.startsWith("## "));
+    if (headerEndIndex > 0) {
+      result.splice(headerEndIndex, 0, `## [${version}] - ${date}`, "", "");
+    }
+  }
+
+  return result.join("\n");
+}

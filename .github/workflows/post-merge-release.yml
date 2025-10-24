@@ -55,6 +55,13 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "bump_type=$BUMP_TYPE" >> "$GITHUB_OUTPUT"
 
+      - name: Release changelog
+        shell: bash
+        run: |
+          VERSION="${{ steps.bump.outputs.version }}"
+          DATE=$(date +%Y-%m-%d)
+          npx tsx scripts/release-changelog.ts "$VERSION" "$DATE"
+
       - name: Refresh version index
         run: bun run versions:update
 
