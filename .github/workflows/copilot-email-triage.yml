@@ -2,9 +2,24 @@
 name: Copilot Email Triage
 
 on:
-  repository_dispatch:
-    types:
-      - copilot_email_triage
+  workflow_dispatch:
+    inputs:
+      from:
+        description: 'Sender email address'
+        required: true
+        type: string
+      to:
+        description: 'Recipient email address'
+        required: true
+        type: string
+      subject:
+        description: 'Email subject'
+        required: true
+        type: string
+      body:
+        description: 'Email body'
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -24,13 +39,13 @@ jobs:
             https://github.com/${{ github.repository }}/actions/runs/${{
             github.run_id }}
           EMAIL_SUBJECT: >-
-            ${{ github.event.client_payload.email.subject }}
+            ${{ inputs.subject }}
           EMAIL_FROM: >-
-            ${{ github.event.client_payload.email.from }}
+            ${{ inputs.from }}
           EMAIL_TO: >-
-            ${{ github.event.client_payload.email.to }}
+            ${{ inputs.to }}
           EMAIL_BODY: >-
-            ${{ github.event.client_payload.email.body }}
+            ${{ inputs.body }}
         with:
           force-response: true
           copilot-token: ${{ secrets.COPILOT_TOKEN }}
