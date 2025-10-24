@@ -65,16 +65,29 @@ The finding includes:
 
 ## External Automation
 
-In a fully autonomous setup, external automation (like GitHub Actions) should:
+The repository includes automated respawn handling through GitHub Actions:
 
-1. Monitor `Memory.respawn.needsRespawn` or system evaluation findings
-2. When detected, trigger respawn via:
-   - Screeps Web UI (manual intervention)
-   - Screeps API (automated respawn call)
-3. Select an appropriate room for respawn
-4. Monitor for successful respawn completion
+### Screeps Spawn Monitor Workflow
 
-### Example API Call
+The `screeps-spawn-monitor.yml` workflow runs every 30 minutes and:
+
+1. **Checks spawn status** via the Screeps API (`/api/user/world-status`)
+2. **Detects spawn loss** (status: "lost" or "empty")
+3. **Automatically triggers respawn** when all spawns are destroyed
+4. **Selects optimal room** using the Screeps `worldStartRoom` API
+5. **Places spawn intelligently** by analyzing room terrain
+6. **Sends notifications** for critical events (spawn loss, respawn, failures)
+
+This workflow uses the `screeps-autospawner` composite action (`.github/actions/screeps-autospawner/`), which:
+
+- Early exits if the bot is already active (no unnecessary API calls)
+- Performs full automatic respawn (trigger + room selection + spawn placement)
+- Handles "empty" status (respawn triggered but spawn not yet placed)
+- Provides comprehensive error handling and logging
+
+### Manual API Call
+
+For manual intervention or custom automation:
 
 ```javascript
 // Using screeps-api package
@@ -87,6 +100,10 @@ await api.respawn({
   branch: "main" // Code branch to deploy
 });
 ```
+
+### Deployment Integration
+
+The deployment workflow (`deploy.yml`) also runs the autospawner after successful deployments to ensure the bot is active immediately after code updates.
 
 ## Testing
 
@@ -115,11 +132,14 @@ Monitor for respawn conditions through:
 
 Potential improvements to the respawn system:
 
-1. **Automatic Room Selection**: Scan nearby rooms and select optimal respawn location
-2. **API Integration**: Direct respawn triggering without manual intervention
-3. **Notification System**: Alert external monitoring when respawn is needed
-4. **Graceful Transition**: Save critical state before respawn for continuity
-5. **Historical Tracking**: Record respawn events for analysis
+1. ✅ **Automatic Room Selection**: Implemented via `worldStartRoom` API in the autospawner
+2. ✅ **API Integration**: Fully automated respawn triggering via scheduled workflow
+3. ✅ **Notification System**: Push notifications sent for spawn loss and respawn events
+4. ✅ **Intelligent Spawn Placement**: Terrain analysis finds optimal spawn locations
+5. **Graceful Transition**: Save critical state before respawn for continuity
+6. **Historical Tracking**: Record respawn events for analysis
+7. **Multi-shard Support**: Extend monitoring to cover multiple game shards
+8. **Advanced Room Scoring**: Compare multiple candidate rooms before selecting respawn location
 
 ## Related Files
 
