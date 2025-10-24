@@ -243,7 +243,7 @@ async function checkAndRespawn(): Promise<void> {
       try {
         // Get start room
         console.log("  Finding start room...");
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any
         const startRoomResult = (await (api as any).raw.user.worldStartRoom()) as WorldStartRoomResponse;
 
         if (!startRoomResult.ok || !startRoomResult.room || startRoomResult.room.length === 0) {
@@ -280,7 +280,7 @@ async function checkAndRespawn(): Promise<void> {
 
         // Place spawn
         console.log(`  Placing spawn at (${spawnLocation.x}, ${spawnLocation.y})...`);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any
         const placeResult = (await (api as any).raw.game.placeSpawn(
           actualRoomName,
           spawnLocation.x,
