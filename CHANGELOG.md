@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.7.1] - 2025-10-24
+
 ### Added
 
 - **Incremental changelog management for version releases**
