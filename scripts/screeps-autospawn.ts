@@ -257,7 +257,11 @@ async function checkAndRespawn(): Promise<void> {
         console.log("  Analyzing terrain...");
 
         // Parse shard and room from roomName format "shard3/E45S25"
-        const [shardName, actualRoomName] = roomName.split("/");
+        const splitRoom = roomName.split("/");
+        if (splitRoom.length !== 2) {
+          throw new Error(`Unexpected roomName format: "${roomName}". Expected "shard/room".`);
+        }
+        const [shardName, actualRoomName] = splitRoom;
         console.log(`  Parsed shard: ${shardName}, room: ${actualRoomName}`);
 
         // eslint-disable-next-line @typescript-eslint/await-thenable
