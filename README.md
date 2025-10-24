@@ -107,7 +107,8 @@ Multiple specialized Copilot agents collaborate on different aspects of developm
 - **Semantic Versioning**: Automatic version bumping based on conventional commits
 - **Automated Releases**: Tagged releases with auto-generated changelogs
 - **Screeps Deployment**: Push to Screeps servers on new releases with automatic spawn status verification
-- **Auto-Respawn Detection**: Post-deployment checks ensure bot is active and ready
+- **Spawn Monitoring**: Scheduled checks every 30 minutes ensure bot stays active between deployments
+- **Auto-Respawn**: Automatic respawn when all spawns are lost, with intelligent room selection and spawn placement
 - **CI Autofix**: Agents automatically fix failing workflows
 
 ### 📊 Self-Evaluation & Improvement

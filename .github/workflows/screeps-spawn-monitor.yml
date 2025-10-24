@@ -1,0 +1,71 @@
+---
+name: Screeps Spawn Monitor
+
+on:
+  schedule:
+    # Run every 30 minutes to check spawn status
+    - cron: "*/30 * * * *"
+  workflow_dispatch: # Allow manual trigger for testing
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check-spawn:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check spawn status and auto-respawn
+        id: autospawn
+        uses: ./.github/actions/screeps-autospawner
+        with:
+          screeps-token: ${{ secrets.SCREEPS_TOKEN }}
+          screeps-host: ${{ vars.SCREEPS_HOST }}
+          screeps-port: ${{ vars.SCREEPS_PORT }}
+          screeps-protocol: ${{ vars.SCREEPS_PROTOCOL }}
+          screeps-path: ${{ vars.SCREEPS_PATH }}
+
+      - name: Notify on spawn loss
+        if: steps.autospawn.outputs.action-taken == 'respawned'
+        uses: ./.github/actions/send-push-notification
+        with:
+          push-token: ${{ secrets.PUSH_TOKEN }}
+          title: "🚨 Screeps Bot Respawned"
+          body: >-
+            Bot lost all spawns and was automatically respawned.
+            Status: ${{ steps.autospawn.outputs.status }}
+          link: >-
+            https://github.com/${{ github.repository }}/actions/runs/${{
+            github.run_id }}
+          priority: "5"
+
+      - name: Notify on spawn placement
+        if: steps.autospawn.outputs.action-taken == 'spawn_placed'
+        uses: ./.github/actions/send-push-notification
+        with:
+          push-token: ${{ secrets.PUSH_TOKEN }}
+          title: "📍 Screeps Spawn Placed"
+          body: >-
+            Bot spawn was automatically placed after respawn.
+            Status: ${{ steps.autospawn.outputs.status }}
+          link: >-
+            https://github.com/${{ github.repository }}/actions/runs/${{
+            github.run_id }}
+          priority: "4"
+
+      - name: Notify on spawn check failure
+        if: failure()
+        uses: ./.github/actions/send-push-notification
+        with:
+          push-token: ${{ secrets.PUSH_TOKEN }}
+          title: "❌ Screeps Spawn Check Failed"
+          body: >-
+            Automatic spawn check or respawn failed.
+            Manual intervention required.
+          link: >-
+            https://github.com/${{ github.repository }}/actions/runs/${{
+            github.run_id }}
+          priority: "5"

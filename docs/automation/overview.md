@@ -278,6 +278,21 @@ Quality checks are split into separate guard workflows for better granularity an
 - Secrets: `SCREEPS_TOKEN` (required), `SCREEPS_STATS_TOKEN`, `SCREEPS_EMAIL`, `SCREEPS_PASSWORD` (optional alternatives), plus optional host/port/protocol overrides. `PUSH_TOKEN` (optional) for real-time alerts.
 - Action Enforcement: Mandatory telemetry validation, explicit anomaly detection criteria with severity thresholds, and concrete evidence requirements for all monitoring issues.
 
+## Screeps Spawn Monitor (`screeps-spawn-monitor.yml`)
+
+- Trigger: Every 30 minutes + manual dispatch.
+- Behaviour: Automatically checks spawn status and triggers respawn if needed. Uses the `screeps-autospawner` composite action to:
+  - Check current spawn status via Screeps API (`/api/user/world-status`)
+  - Early exit if bot is already active (status: "normal") with no action taken
+  - Automatically respawn when all spawns are lost (status: "lost")
+  - Place spawn when respawn triggered but not yet placed (status: "empty")
+  - Send push notifications for critical events (respawn, spawn placement, failures)
+- Integration: Uses the same `screeps-autospawner` action as the deployment workflow for consistency.
+- Push Notifications: Sent for spawn loss/respawn (Priority 5), spawn placement (Priority 4), and check failures (Priority 5) via Push by Techulus. See [Push Notifications Guide](push-notifications.md) for details.
+- Secrets: `SCREEPS_TOKEN` (required), `SCREEPS_HOST`, `SCREEPS_PORT`, `SCREEPS_PROTOCOL`, `SCREEPS_PATH` (optional overrides). `PUSH_TOKEN` (optional) for real-time alerts.
+- Purpose: Prevents extended bot downtime by monitoring spawn status between deployments and automatically recovering from spawn loss scenarios.
+- Documentation: See [Respawn Handling Guide](../operations/respawn-handling.md) for details on respawn detection and recovery procedures.
+
 ## Daily Autonomous Bot Monitor (`copilot-autonomous-monitor.yml`)
 
 - Trigger: Daily schedule (06:00 UTC) + manual dispatch.
