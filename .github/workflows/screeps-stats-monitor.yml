@@ -4,6 +4,9 @@ name: Screeps Stats Monitor
 on:
   schedule:
     - cron: "*/30 * * * *"
+  workflow_run:
+    workflows:
+      - "Deploy Screeps AI"
   workflow_dispatch:
 
 permissions:
