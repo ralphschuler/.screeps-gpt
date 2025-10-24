@@ -11,11 +11,23 @@ on:
       - "Copilot Todo PR"
       - "Copilot Daily Todo Prioritization"
       - "Copilot Email Triage"
+      - "Copilot Spec-Kit"
+      - "Daily Autonomous Bot Monitor"
       - "Dependabot Auto Merge"
       - "Publish Documentation Site"
       - "Sync Labels"
       - "Screeps Stats Monitor"
       - "Screeps Spawn Monitor"
+      - "Guard - Build"
+      - "Guard - Coverage"
+      - "Guard - Format"
+      - "Guard - Lint"
+      - "Guard - Documentation Tests"
+      - "Guard - E2E Tests"
+      - "Guard - Regression Tests"
+      - "Guard - Unit Tests"
+      - "Guard - Version Index"
+      - "Guard - YAML Lint"
     types:
       - completed
 
