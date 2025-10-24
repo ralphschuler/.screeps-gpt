@@ -1,6 +1,6 @@
 {
   "name": "screeps-gpt",
-  "version": "0.5.2",
+  "version": "0.5.6",
   "description": "Autonomously evolving Screeps AI with automated development and deployment workflows.",
   "license": "MIT",
   "author": "OpenAI Automations",
@@ -79,6 +79,9 @@
     ],
     "*.{js,mjs,cjs,json,md,yml,yaml}": [
       "prettier --write"
+    ],
+    ".github/workflows/*.{yml,yaml}": [
+      "yamllint"
     ]
   }
 }
