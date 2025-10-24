@@ -29,6 +29,7 @@ jobs:
             https://github.com/${{ github.repository }}/actions/runs/${{
             github.run_id }}
         with:
+          force-response: true
           copilot-token: ${{ secrets.COPILOT_TOKEN }}
           prompt-path: >-
             .github/copilot/prompts/todo-daily-prioritization
