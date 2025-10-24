@@ -155,7 +155,7 @@ jobs:
                 body: `## ${tag}\n\nVersion bump type: **${
                   bumpType}**\n\n${releaseNotes}`,
                 draft: false,
-                prerelease: version.startsWith('0.')
+                prerelease: false
               });
 
             core.info(`Created release: ${release.html_url}`);
