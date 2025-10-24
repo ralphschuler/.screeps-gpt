@@ -7,6 +7,11 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Fixed
 
+- **Screeps Spawn Monitor API Failure**: Fixed incorrect API call for room terrain on sharded servers
+  - Fixed screeps-api call to use correct room-terrain endpoint with proper shard parameter
+  - Parse shard from room name format (shard3/E45S25) instead of passing invalid parameters
+  - Resolves "Failed to get room terrain" error in autospawn workflow
+  - Fixes run ID: 18779519651
 - **Documentation Site Build Failure**: Fixed duplicate dependencies in package.json causing lockfile conflicts in CI
   - Removed duplicate `tsx` and `marked` entries from dependencies section (keeping them in devDependencies)
   - Updated bun.lock to reflect proper dependency resolution
