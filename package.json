@@ -46,7 +46,7 @@
     "docker:shell": "docker compose run --rm test bash"
   },
   "dependencies": {
-    "node-fetch": "^2.7.0",
+    "node-fetch": "^3.3.2",
     "screeps-api": "^1.16.1",
     "semver": "^7.7.3",
     "zod": "^4.1.12",
