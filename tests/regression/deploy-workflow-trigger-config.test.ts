@@ -12,7 +12,7 @@
  * GITHUB_TOKEN, so only the push.tags trigger works.
  *
  * Fix Commit: e0714e8
- * Related Issue: #[issue_number]
+ * Related Issue: #242
  */
 
 import { readFileSync } from "node:fs";

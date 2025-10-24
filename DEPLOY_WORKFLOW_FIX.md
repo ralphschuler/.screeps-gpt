@@ -15,6 +15,7 @@ The Deploy Screeps AI workflow (`.github/workflows/deploy.yml`) was not triggeri
 ### GitHub Actions Trigger Behavior
 
 The deploy workflow had two triggers configured:
+
 - `push.tags: v*` - **Works correctly** ✅
 - `release.published` - **Never fires** ❌
 
@@ -27,6 +28,7 @@ The deploy workflow had two triggers configured:
 3. Only releases created manually (via UI) or with a Personal Access Token (PAT) would trigger `release.published`
 
 **Evidence:**
+
 - [Stack Overflow Discussion](https://stackoverflow.com/questions/69063452/github-actions-on-release-created-workflow-trigger-not-working)
 - [GitHub Community Discussion](https://github.com/orgs/community/discussions/25281)
 
@@ -94,22 +96,26 @@ The current deployment flow (working correctly):
 ## Alternative Solutions Considered
 
 ### Option 1: Use PAT instead of GITHUB_TOKEN
+
 - ❌ Requires creating and maintaining a Personal Access Token
 - ❌ Additional security considerations
 - ❌ More complex setup
 - ❌ Not necessary since tag push works perfectly
 
 ### Option 2: Keep both triggers
+
 - ❌ Confusing and misleading
 - ❌ Only one trigger actually works
 - ❌ Makes troubleshooting harder
 
 ### Option 3: Remove tag push, keep release trigger (with PAT)
+
 - ❌ Requires PAT setup
 - ❌ More moving parts
 - ❌ Current tag-based approach works reliably
 
 **Selected Solution:** Remove non-functional trigger, keep working trigger
+
 - ✅ Simple and clear
 - ✅ No additional setup required
 - ✅ Maintains existing working behavior
@@ -141,7 +147,7 @@ Future releases will deploy automatically via this flow:
 
 ## References
 
-- Issue: #[issue_number]
+- Issue: #242
 - Commit: e0714e8
 - GitHub Actions Documentation: [Triggering a workflow](https://docs.github.com/en/actions/using-workflows/triggering-a-workflow)
 - Related: [How to automate tagging and release workflows in GitHub](https://graphite.dev/guides/how-to-automate-tagging-and-release-workflows-in-github)
