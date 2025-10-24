@@ -1,8 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { writeFileSync } from "node:fs";
 
@@ -12,8 +7,9 @@ vi.mock("node:fs", () => ({
   writeFileSync: vi.fn()
 }));
 
-// Mock fetch
-global.fetch = vi.fn();
+// Mock fetch with proper typing
+const mockFetch = vi.fn();
+global.fetch = mockFetch;
 
 const originalEnv = process.env;
 
@@ -38,17 +34,17 @@ describe("fetch-screeps-stats", () => {
         ok: true,
         json: vi.fn().mockResolvedValue({ stats: {} })
       };
-      (global.fetch as any).mockResolvedValue(mockResponse);
+      mockFetch.mockResolvedValue(mockResponse);
 
       // Dynamic import to get fresh module with env vars
       await import("../../scripts/fetch-screeps-stats.mjs");
 
       // Wait for async operations
       await vi.waitFor(() => {
-        expect(global.fetch).toHaveBeenCalled();
+        expect(mockFetch).toHaveBeenCalled();
       });
 
-      const fetchCall = (global.fetch as any).mock.calls[0];
+      const fetchCall = mockFetch.mock.calls[0] as [string, RequestInit];
       expect(fetchCall[0]).toContain("interval=180");
     });
 
@@ -65,15 +61,15 @@ describe("fetch-screeps-stats", () => {
           ok: true,
           json: vi.fn().mockResolvedValue({ stats: {} })
         };
-        (global.fetch as any).mockResolvedValue(mockResponse);
+        mockFetch.mockResolvedValue(mockResponse);
 
         await import("../../scripts/fetch-screeps-stats.mjs");
 
         await vi.waitFor(() => {
-          expect(global.fetch).toHaveBeenCalled();
+          expect(mockFetch).toHaveBeenCalled();
         });
 
-        const fetchCall = (global.fetch as any).mock.calls[0];
+        const fetchCall = mockFetch.mock.calls[0] as [string, RequestInit];
         expect(fetchCall[0]).toContain(`interval=${interval}`);
       }
     });
@@ -87,38 +83,38 @@ describe("fetch-screeps-stats", () => {
         ok: true,
         json: vi.fn().mockResolvedValue({ stats: {} })
       };
-      (global.fetch as any).mockResolvedValue(mockResponse);
+      mockFetch.mockResolvedValue(mockResponse);
 
       await import("../../scripts/fetch-screeps-stats.mjs");
 
       await vi.waitFor(() => {
-        expect(global.fetch).toHaveBeenCalled();
+        expect(mockFetch).toHaveBeenCalled();
       });
 
-      const fetchCall = (global.fetch as any).mock.calls[0];
-      const headers = fetchCall[1].headers;
-      expect(headers["X-Token"]).toBe("my-auth-token");
+      const fetchCall = mockFetch.mock.calls[0] as [string, RequestInit];
+      const headers = fetchCall[1]?.headers as Record<string, string>;
+      expect(headers?.["X-Token"]).toBe("my-auth-token");
     });
 
     it("should prefer SCREEPS_STATS_TOKEN over SCREEPS_TOKEN", async () => {
       process.env.SCREEPS_TOKEN = "generic-token";
       process.env.SCREEPS_STATS_TOKEN = "stats-specific-token";
 
-      const mockResponse = {
+      const fetchResponse = {
         ok: true,
         json: vi.fn().mockResolvedValue({ stats: {} })
       };
-      (global.fetch as any).mockResolvedValue(mockResponse);
+      mockFetch.mockResolvedValue(fetchResponse);
 
       await import("../../scripts/fetch-screeps-stats.mjs");
 
       await vi.waitFor(() => {
-        expect(global.fetch).toHaveBeenCalled();
+        expect(mockFetch).toHaveBeenCalled();
       });
 
-      const fetchCall = (global.fetch as any).mock.calls[0];
-      const headers = fetchCall[1].headers;
-      expect(headers["X-Token"]).toBe("stats-specific-token");
+      const fetchCall = mockFetch.mock.calls[0] as [string, RequestInit];
+      const headers = fetchCall[1]?.headers as Record<string, string>;
+      expect(headers?.["X-Token"]).toBe("stats-specific-token");
     });
   });
 
@@ -130,15 +126,15 @@ describe("fetch-screeps-stats", () => {
         ok: true,
         json: vi.fn().mockResolvedValue({ stats: {} })
       };
-      (global.fetch as any).mockResolvedValue(mockResponse);
+      mockFetch.mockResolvedValue(mockResponse);
 
       await import("../../scripts/fetch-screeps-stats.mjs");
 
       await vi.waitFor(() => {
-        expect(global.fetch).toHaveBeenCalled();
+        expect(mockFetch).toHaveBeenCalled();
       });
 
-      const fetchCall = (global.fetch as any).mock.calls[0];
+      const fetchCall = mockFetch.mock.calls[0] as [string, RequestInit];
       expect(fetchCall[0]).toBe("https://screeps.com/api/user/stats?interval=180");
     });
 
@@ -150,15 +146,15 @@ describe("fetch-screeps-stats", () => {
         ok: true,
         json: vi.fn().mockResolvedValue({ stats: {} })
       };
-      (global.fetch as any).mockResolvedValue(mockResponse);
+      mockFetch.mockResolvedValue(mockResponse);
 
       await import("../../scripts/fetch-screeps-stats.mjs");
 
       await vi.waitFor(() => {
-        expect(global.fetch).toHaveBeenCalled();
+        expect(mockFetch).toHaveBeenCalled();
       });
 
-      const fetchCall = (global.fetch as any).mock.calls[0];
+      const fetchCall = mockFetch.mock.calls[0] as [string, RequestInit];
       expect(fetchCall[0]).toContain("https://custom.screeps.com/api/user/stats");
     });
   });
@@ -173,7 +169,7 @@ describe("fetch-screeps-stats", () => {
         statusText: "Unauthorized",
         text: vi.fn().mockResolvedValue("Invalid token")
       };
-      (global.fetch as any).mockResolvedValue(mockResponse);
+      mockFetch.mockResolvedValue(mockResponse);
 
       const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
@@ -195,7 +191,7 @@ describe("fetch-screeps-stats", () => {
         ok: true,
         json: vi.fn().mockResolvedValue({ stats: { "12345": { cpu: { used: 10, limit: 100 } } } })
       };
-      (global.fetch as any).mockResolvedValue(mockResponse);
+      mockFetch.mockResolvedValue(mockResponse);
 
       await import("../../scripts/fetch-screeps-stats.mjs");
 
@@ -203,7 +199,8 @@ describe("fetch-screeps-stats", () => {
         expect(writeFileSync).toHaveBeenCalled();
       });
 
-      const writeCall = (writeFileSync as any).mock.calls[0];
+      const mockWriteFileSync = writeFileSync as ReturnType<typeof vi.fn>;
+      const writeCall = mockWriteFileSync.mock.calls[0] as [string, string];
       expect(writeCall[0]).toContain("reports/screeps-stats/latest.json");
     });
   });

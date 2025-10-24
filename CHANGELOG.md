@@ -5,6 +5,20 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Fixed
+
+- **Post Merge Release workflow permission error (run #18794121870)**
+  - Added `workflows: write` permission to post-merge-release.yml
+  - Resolves GitHub rejection when pushing commits that include workflow file modifications
+  - Enables automated releases when workflow files are updated in the same push
+- **TypeScript type safety violations in fetch-screeps-stats test (run #18793984308)**
+  - Removed unnecessary eslint-disable comments that weren't effective
+  - Added proper TypeScript types to vitest mocks using `ReturnType<typeof vi.fn>`
+  - Replaced `(global.fetch as any)` patterns with properly typed `mockFetch` variable
+  - Added type assertions for mock.calls access patterns with explicit types like `[string, RequestInit]`
+  - Used optional chaining for safer header access in assertions
+  - Resolves linting failures that were blocking post-merge release workflow
+
 ## [0.7.1] - 2025-10-24
 
 ### Added
