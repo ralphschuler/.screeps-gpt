@@ -99,6 +99,30 @@ All notable changes to this project are documented here.
     expect(parsed.versions[0].version).toBe("0.1.0");
   });
 
+  it("should handle unreleased section with only subsection headers (no entries)", () => {
+    const changelog = `# Changelog
+
+## [Unreleased]
+
+### Added
+
+### Fixed
+
+## [0.1.0] - 2024-06-01
+
+- Initial release
+`;
+
+    const result = releaseVersion(changelog, "0.2.0", "2024-06-15");
+
+    // Should not create a version section with only empty headers
+    const parsed = parseChangelog(result);
+
+    // Should only have the existing version since unreleased had no actual entries
+    expect(parsed.versions).toHaveLength(1);
+    expect(parsed.versions[0].version).toBe("0.1.0");
+  });
+
   it("should handle unreleased section with subsections", () => {
     const changelog = `# Changelog
 
