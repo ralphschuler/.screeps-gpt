@@ -36,7 +36,7 @@ export default [
     ]
   },
 
-  // TypeScript files configuration
+  // TypeScript files configuration (memory-optimized)
   {
     files: ["**/*.ts"],
     languageOptions: {
@@ -53,9 +53,8 @@ export default [
       import: importPlugin
     },
     rules: {
-      // TypeScript recommended rules
+      // TypeScript recommended rules (without expensive type-checking rules)
       ...tsPlugin.configs["recommended"].rules,
-      ...tsPlugin.configs["recommended-requiring-type-checking"].rules,
 
       // Custom rules (from original .eslintrc.cjs)
       "@typescript-eslint/explicit-member-accessibility": ["error", { accessibility: "explicit" }],
@@ -66,6 +65,27 @@ export default [
 
       // Prettier integration (disable conflicting rules)
       ...prettierConfig.rules
+    }
+  },
+
+  // Memory-intensive type-checking rules for core source files only
+  {
+    files: ["src/**/*.ts"],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: 2020,
+        sourceType: "module",
+        project: "./tsconfig.json",
+        tsconfigRootDir: __dirname
+      }
+    },
+    plugins: {
+      "@typescript-eslint": tsPlugin
+    },
+    rules: {
+      // Enable expensive type-checking rules only for core source code
+      ...tsPlugin.configs["recommended-requiring-type-checking"].rules
     }
   },
 
