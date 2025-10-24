@@ -1,3 +1,8 @@
+---
+title: Performance Monitoring
+date: 2025-10-24T23:38:43.771Z
+---
+
 # Performance Monitoring
 
 This document describes CPU tracking, performance metrics, and optimization techniques implemented in `src/runtime/metrics/PerformanceTracker.ts` and `src/runtime/evaluation/SystemEvaluator.ts`.

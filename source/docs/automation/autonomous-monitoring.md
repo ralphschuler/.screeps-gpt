@@ -1,3 +1,8 @@
+---
+title: Screeps Monitoring
+date: 2025-10-24T23:38:43.747Z
+---
+
 # Screeps Monitoring
 
 The Screeps Monitoring workflow is a comprehensive autonomous analysis system that serves as the "strategic brain" of the Screeps GPT project. It combines bot performance monitoring, PTR telemetry analysis, repository health assessment, and intelligent decision-making to guide project development.

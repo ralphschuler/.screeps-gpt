@@ -1,3 +1,8 @@
+---
+title: Copilot Prompt Template Audit
+date: 2025-10-24T23:38:43.757Z
+---
+
 # Copilot Prompt Template Audit
 
 This document provides a comprehensive audit of existing Copilot prompt templates, identifying gaps in action enforcement and output specification patterns.

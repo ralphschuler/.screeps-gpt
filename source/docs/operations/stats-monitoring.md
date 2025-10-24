@@ -1,3 +1,8 @@
+---
+title: PTR Monitoring Pipeline
+date: 2025-10-24T23:38:43.767Z
+---
+
 # PTR Monitoring Pipeline
 
 The Screeps Monitoring workflow (`screeps-monitoring.yml`) keeps a pulse on Public Test Realm performance through comprehensive autonomous analysis.

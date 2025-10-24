@@ -1,3 +1,8 @@
+---
+title: Push Notification System
+date: 2025-10-24T23:38:43.762Z
+---
+
 # Push Notification System
 
 The repository implements push notifications using [Push by Techulus](https://push.techulus.com) to provide real-time alerts for critical repository and Screeps bot events.
