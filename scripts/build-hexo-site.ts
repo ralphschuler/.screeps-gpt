@@ -49,6 +49,7 @@ async function buildHexoSite(): Promise<void> {
         } else {
           console.warn(`⚠ Failed to load ${pluginName}:`, err);
         }
+      }
     }
 
     // Clean up global
