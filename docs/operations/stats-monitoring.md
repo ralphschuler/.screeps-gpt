@@ -9,7 +9,7 @@ The Screeps Stats Monitor workflow (`screeps-stats-monitor.yml`) keeps a pulse o
   `SCREEPS_STATS_API` if needed.
 - Authentication: `SCREEPS_STATS_TOKEN` (falls back to `SCREEPS_TOKEN`). Store the secret in GitHub Actions settings.
 - Interval Parameter: `SCREEPS_STATS_INTERVAL` controls the statistics time window:
-  - `8` = 1 hour stats (480 data points at 5-minute intervals)
+  - `8` = 1 hour stats
   - `180` = 1 day stats (24 hours, default)
   - `1440` = 1 week stats (7 days)
 - Output: `reports/screeps-stats/latest.json` containing `{ fetchedAt, endpoint, payload }`.
