@@ -44,12 +44,14 @@ function isApiError(error: unknown): error is ApiError {
 /**
  * Set GitHub Actions output
  */
-function setOutput(name: string, value: string): void {
+async function setOutput(name: string, value: string): Promise<void> {
   const outputFile = process.env.GITHUB_OUTPUT;
   if (outputFile) {
-    writeFile(outputFile, `${name}=${value}\n`, { flag: "a" }).catch(err => {
+    try {
+      await writeFile(outputFile, `${name}=${value}\n`, { flag: "a" });
+    } catch (err) {
       console.error(`Failed to write output ${name}:`, err);
-    });
+    }
   }
 }
 
