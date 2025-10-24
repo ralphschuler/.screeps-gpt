@@ -7,6 +7,21 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Fixed
 
+- **Screeps Spawn Monitor Shard Parsing**: Fixed shard/room parsing in autospawn script API calls
+  - Parse shard name and room name from format "shard3/E45S25" for terrain and spawn placement API calls
+  - Pass shard parameter correctly to `roomTerrain()` and `placeSpawn()` API methods
+  - Fixes "Failed to get room terrain" error when spawn placement tries to analyze multi-shard rooms
+  - Fixes run ID: 18780039750
+- **Screeps Spawn Monitor API Failure**: Fixed terrain API method call in autospawn script
+  - Use correct `api.raw.game.roomTerrain(roomName, 1)` instead of invalid `api.raw.game["room-terrain"]({ room, shard })`
+  - Removed unused shard parsing logic that was unnecessary for working API call
+  - Fixes "api.raw.game.room-terrain is not a function" error
+  - Fixes run ID: 18779690172
+- **Screeps Spawn Monitor API Failure**: Fixed incorrect API call for room terrain on sharded servers
+  - Fixed screeps-api call to use correct room-terrain endpoint with proper shard parameter
+  - Parse shard from room name format (shard3/E45S25) instead of passing invalid parameters
+  - Resolves "Failed to get room terrain" error in autospawn workflow
+  - Fixes run ID: 18779519651
 - **Documentation Site Build Failure**: Fixed duplicate dependencies in package.json causing lockfile conflicts in CI
   - Removed duplicate `tsx` and `marked` entries from dependencies section (keeping them in devDependencies)
   - Updated bun.lock to reflect proper dependency resolution

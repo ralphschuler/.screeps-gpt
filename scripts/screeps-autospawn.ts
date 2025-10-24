@@ -132,8 +132,18 @@ async function performRespawn(api: any): Promise<boolean> {
 
     // Step 3: Get room terrain to find spawn location
     console.log("  Step 3: Analyzing room terrain...");
+
+    // Parse shard and room from roomName format "shard3/E45S25"
+    const splitRoom = roomName.split("/");
+    if (splitRoom.length !== 2) {
+      console.error(`  ✗ Unexpected roomName format: "${roomName}". Expected "shard/room".`);
+      return false;
+    }
+    const [shardName, actualRoomName] = splitRoom;
+    console.log(`  Parsed shard: ${shardName}, room: ${actualRoomName}`);
+
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-    const terrainResult = (await api.raw.game.roomTerrain(roomName, 1)) as RoomTerrainResponse;
+    const terrainResult = (await api.raw.game.roomTerrain(actualRoomName, 1, shardName)) as RoomTerrainResponse;
 
     if (!terrainResult.ok || !terrainResult.terrain || terrainResult.terrain.length === 0) {
       console.error("  ✗ Failed to get room terrain");
@@ -147,10 +157,11 @@ async function performRespawn(api: any): Promise<boolean> {
     console.log(`  Step 4: Placing spawn at (${spawnLocation.x}, ${spawnLocation.y})...`);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
     const placeResult = (await api.raw.game.placeSpawn(
-      roomName,
+      actualRoomName,
       spawnLocation.x,
       spawnLocation.y,
-      "Spawn1"
+      "Spawn1",
+      shardName
     )) as PlaceSpawnResponse;
 
     if (!placeResult.ok) {
@@ -244,11 +255,24 @@ async function checkAndRespawn(): Promise<void> {
 
         // Get terrain
         console.log("  Analyzing terrain...");
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-        const terrainResult = (await (api as any).raw.game.roomTerrain(roomName, 1)) as RoomTerrainResponse;
+
+        // Parse shard and room from roomName format "shard3/E45S25"
+        const splitRoom = roomName.split("/");
+        if (splitRoom.length !== 2) {
+          throw new Error(`Unexpected roomName format: "${roomName}". Expected "shard/room".`);
+        }
+        const [shardName, actualRoomName] = splitRoom;
+        console.log(`  Parsed shard: ${shardName}, room: ${actualRoomName}`);
+
+        // eslint-disable-next-line @typescript-eslint/await-thenable
+        const terrainResult = (await api.raw.game.roomTerrain(actualRoomName, 1, shardName)) as RoomTerrainResponse;
+
+        if (process.env.DEBUG) {
+          console.log("  Terrain API response:", JSON.stringify(terrainResult, null, 2));
+        }
 
         if (!terrainResult.ok || !terrainResult.terrain || terrainResult.terrain.length === 0) {
-          throw new Error("Failed to get room terrain");
+          throw new Error(`Failed to get room terrain - API response: ${JSON.stringify(terrainResult)}`);
         }
 
         const terrain = terrainResult.terrain[0].terrain;
@@ -258,10 +282,11 @@ async function checkAndRespawn(): Promise<void> {
         console.log(`  Placing spawn at (${spawnLocation.x}, ${spawnLocation.y})...`);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         const placeResult = (await (api as any).raw.game.placeSpawn(
-          roomName,
+          actualRoomName,
           spawnLocation.x,
           spawnLocation.y,
-          "Spawn1"
+          "Spawn1",
+          shardName
         )) as PlaceSpawnResponse;
 
         if (!placeResult.ok) {
