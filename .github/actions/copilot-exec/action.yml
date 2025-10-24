@@ -123,7 +123,7 @@ runs:
         set -euo pipefail
         if [ -f package.json ]; then
           echo "📦 Installing project dependencies"
-          npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+          bun bun install --frozen-lockfile
         else
           echo "ℹ️ No package.json found, skipping dependency install"
         fi
