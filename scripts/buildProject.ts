@@ -66,7 +66,7 @@ async function buildModules(watch: boolean): Promise<void> {
       bundle: true,
       sourcemap: true,
       platform: "browser" as const,
-      target: "es2021",
+      target: "es2018",
       format: "cjs" as const,
       outfile: outFile,
       logLevel: "warning" as const,
@@ -87,7 +87,7 @@ async function buildModules(watch: boolean): Promise<void> {
     bundle: true,
     sourcemap: true,
     platform: "browser" as const,
-    target: "es2021",
+    target: "es2018",
     format: "cjs" as const,
     outfile: resolve(outDir, "main.js"),
     logLevel: "info" as const
@@ -118,7 +118,7 @@ export async function buildProject(watch: boolean): Promise<void> {
       bundle: true,
       sourcemap: true,
       platform: "browser" as const,
-      target: "es2021",
+      target: "es2018",
       format: "cjs" as const,
       outfile: resolve(outDir, "main.js"),
       logLevel: "info" as const
