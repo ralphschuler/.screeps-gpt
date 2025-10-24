@@ -33,6 +33,7 @@ jobs:
           EMAIL_BODY: >-
             ${{ toJSON(github.event.client_payload.email.body || '') }}
         with:
+          force-response: true
           copilot-token: ${{ secrets.COPILOT_TOKEN }}
           prompt-path: .github/copilot/prompts/email-triage
           output-path: >-
