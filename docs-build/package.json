@@ -1,0 +1,28 @@
+{
+  "name": "screeps-gpt-docs",
+  "description": "Documentation site for Screeps GPT",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "clean": "hexo clean",
+    "build": "hexo generate",
+    "server": "hexo server",
+    "sync-version": "node ../scripts/sync-version.js"
+  },
+  "hexo": {
+    "version": "8.0.0"
+  },
+  "dependencies": {
+    "hexo": "^8.0.0",
+    "hexo-generator-archive": "^2.0.0",
+    "hexo-generator-category": "^2.0.0",
+    "hexo-generator-feed": "^3.0.0",
+    "hexo-generator-index": "^4.0.0",
+    "hexo-generator-search": "^2.4.3",
+    "hexo-generator-tag": "^2.0.0",
+    "hexo-renderer-ejs": "^2.0.0",
+    "hexo-renderer-marked": "^7.0.1",
+    "hexo-renderer-stylus": "^3.0.1",
+    "hexo-server": "^3.0.0"
+  }
+}

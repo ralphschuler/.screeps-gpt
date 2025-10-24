@@ -1,0 +1,8 @@
+# Build artifacts
+dist/
+build/
+public/
+node_modules/
+
+# Hexo scaffolds use {{ }} template syntax that Prettier breaks
+docs-build/scaffolds/
