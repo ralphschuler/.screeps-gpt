@@ -29,6 +29,7 @@ jobs:
           SCREEPS_PORT: ${{ secrets.SCREEPS_PORT }}
           SCREEPS_PROTOCOL: ${{ secrets.SCREEPS_PROTOCOL }}
         with:
+          force-response: true
           copilot-token: ${{ secrets.COPILOT_TOKEN }}
           prompt-path: .github/copilot/prompts/stats-analysis
           output-path: reports/copilot/stats-analysis-${{ github.run_id }}.log
