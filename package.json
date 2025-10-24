@@ -1,6 +1,6 @@
 {
   "name": "screeps-gpt",
-  "version": "0.5.14",
+  "version": "0.5.16",
   "description": "Autonomously evolving Screeps AI with automated development and deployment workflows.",
   "license": "MIT",
   "author": "OpenAI Automations",
