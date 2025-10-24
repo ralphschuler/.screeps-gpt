@@ -53,10 +53,11 @@ describe(`Respawn Scenario (${TEST_REALM})`, () => {
     const source = { id: "source" } as Source;
     const controller = { id: "controller" } as StructureController;
 
+    const spawnCreepMock = vi.fn(() => OK);
     const spawn = {
       name: "Spawn1",
       spawning: null,
-      spawnCreep: vi.fn(() => OK),
+      spawnCreep: spawnCreepMock,
       store: {
         getFreeCapacity: vi.fn(() => 300),
         getUsedCapacity: vi.fn(() => 0)
@@ -101,8 +102,6 @@ describe(`Respawn Scenario (${TEST_REALM})`, () => {
     expect(memory.respawn?.needsRespawn).toBe(false);
 
     // Verify spawn was attempted
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    const spawnCreepMock = spawn.spawnCreep as unknown as ReturnType<typeof vi.fn>;
     expect(spawnCreepMock).toHaveBeenCalled();
   });
 
@@ -120,10 +119,11 @@ describe(`Respawn Scenario (${TEST_REALM})`, () => {
     } as Memory;
 
     // Game state now has a spawn (player respawned)
+    const spawnCreepMock = vi.fn(() => OK);
     const spawn = {
       name: "Spawn1",
       spawning: null,
-      spawnCreep: vi.fn(() => OK),
+      spawnCreep: spawnCreepMock,
       store: {
         getFreeCapacity: vi.fn(() => 300),
         getUsedCapacity: vi.fn(() => 0)

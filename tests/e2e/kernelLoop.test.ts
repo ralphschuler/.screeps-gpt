@@ -35,10 +35,11 @@ describe(`Kernel (${TEST_REALM})`, () => {
       getUsedCapacity: vi.fn(() => 0)
     };
 
+    const spawnCreepMock = vi.fn(() => OK);
     const spawn = {
       name: "Spawn1",
       spawning: null,
-      spawnCreep: vi.fn(() => OK),
+      spawnCreep: spawnCreepMock,
       store: spawnStore,
       room: { controller, find: () => [] } as RoomLike
     } as unknown as StructureSpawn;
@@ -78,8 +79,6 @@ describe(`Kernel (${TEST_REALM})`, () => {
     kernel.run(game, memory);
     cpuReadings.value = 5;
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    const spawnCreepMock = spawn.spawnCreep as unknown as ReturnType<typeof vi.fn>;
     expect(spawnCreepMock).toHaveBeenCalled();
     expect(memory.systemReport?.report.summary).toBeDefined();
   });
