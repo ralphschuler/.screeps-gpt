@@ -67,17 +67,15 @@ describe("Deploy workflow trigger configuration", () => {
     expect(workflow).toBeDefined();
   });
 
-  it("should have push trigger with tags pattern", () => {
+  it("should have release trigger", () => {
+    // Deploy workflow is triggered by GitHub Release events created by post-merge workflow
     expect(workflow.on).toBeDefined();
-    expect(workflow.on.push).toBeDefined();
-    expect(workflow.on.push.tags).toBeDefined();
-    expect(workflow.on.push.tags).toContain("v*");
+    expect(workflow.on.release).toBeDefined();
   });
 
-  it("should NOT have release trigger", () => {
-    // Release trigger doesn't work when releases are created by workflows
-    // using GITHUB_TOKEN, so it should not be present
-    expect(workflow.on.release).toBeUndefined();
+  it("should NOT have push trigger with tags", () => {
+    // Using release trigger instead of push.tags for better integration with GitHub Releases
+    expect(workflow.on.push).toBeUndefined();
   });
 
   it("should NOT have workflow_run trigger", () => {
