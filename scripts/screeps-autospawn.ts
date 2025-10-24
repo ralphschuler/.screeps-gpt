@@ -199,8 +199,8 @@ async function checkAndRespawn(): Promise<void> {
     // Early exit if bot is already spawned
     if (status === "normal") {
       console.log("✅ Bot is already spawned and active. No action needed.");
-      setOutput("status", status);
-      setOutput("action", "none");
+      await setOutput("status", status);
+      await setOutput("action", "none");
       return;
     }
 
@@ -213,13 +213,13 @@ async function checkAndRespawn(): Promise<void> {
 
       if (success) {
         console.log("✅ Automatic respawn completed successfully!");
-        setOutput("status", "normal");
-        setOutput("action", "respawned");
+        await setOutput("status", "normal");
+        await setOutput("action", "respawned");
         return;
       } else {
         console.error("❌ Automatic respawn failed. Manual intervention required.");
-        setOutput("status", status);
-        setOutput("action", "failed");
+        await setOutput("status", status);
+        await setOutput("action", "failed");
         process.exitCode = 1;
         return;
       }
@@ -269,14 +269,14 @@ async function checkAndRespawn(): Promise<void> {
         }
 
         console.log("✅ Spawn placed successfully!");
-        setOutput("status", "normal");
-        setOutput("action", "spawn_placed");
+        await setOutput("status", "normal");
+        await setOutput("action", "spawn_placed");
         return;
       } catch (error) {
         console.error("❌ Failed to place spawn:", error);
         console.error("   Manual spawn placement required through Screeps web interface.");
-        setOutput("status", status);
-        setOutput("action", "failed");
+        await setOutput("status", status);
+        await setOutput("action", "failed");
         process.exitCode = 1;
         return;
       }
@@ -284,8 +284,8 @@ async function checkAndRespawn(): Promise<void> {
 
     // Unknown status
     console.warn(`⚠️ Unknown spawn status: ${String(status)}`);
-    setOutput("status", String(status));
-    setOutput("action", "none");
+    await setOutput("status", String(status));
+    await setOutput("action", "none");
   } catch (error: unknown) {
     if (isApiError(error)) {
       console.error("❌ Failed to check spawn status:");
