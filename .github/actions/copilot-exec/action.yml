@@ -51,6 +51,10 @@ inputs:
     description: Enable verbose logging for debugging (true/false, default false)
     required: false
     default: "false"
+  force-response:
+    description: Skip cache restoration to force fresh Copilot CLI execution (true/false, default false). Useful for time-sensitive data analysis or debugging.
+    required: false
+    default: "false"
 
 outputs:
   output-path:
@@ -198,6 +202,7 @@ runs:
         fi
 
     - name: Restore result cache
+      if: inputs.force-response != 'true'
       id: cache-result
       uses: actions/cache@v4
       with:
