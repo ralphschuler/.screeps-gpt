@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, expect, it, afterEach } from "vitest";
 
 /**
@@ -12,14 +8,72 @@ import { describe, expect, it, afterEach } from "vitest";
  * due to node-gyp and Python version compatibility issues.
  */
 
+interface BotMemory extends Record<string, unknown> {
+  lastTick?: number;
+  tickCount?: number;
+  creepCount?: number;
+  spawnResult?: number;
+  hasRoom?: boolean;
+  sourceCount?: number;
+  hasController?: boolean;
+}
+
+interface ScreepsServerBot {
+  memory: Promise<BotMemory>;
+}
+
+interface ScreepsServerWorld {
+  reset(): Promise<void>;
+  stubWorld(): Promise<void>;
+  addBot(options: {
+    username: string;
+    room: string;
+    x: number;
+    y: number;
+    modules: Record<string, string>;
+  }): Promise<ScreepsServerBot>;
+  addRoom(roomName: string): Promise<void>;
+  addRoomObject(roomName: string, type: string, x: number, y: number, details: Record<string, unknown>): Promise<void>;
+  readonly gameTime: Promise<number>;
+}
+
+interface ScreepsServerInstance {
+  world: ScreepsServerWorld;
+  start(): Promise<void>;
+  tick(): Promise<void>;
+  stop(): void;
+}
+
+type ScreepsServerConstructor = new () => ScreepsServerInstance;
+
+interface ScreepsServerMockupModule {
+  ScreepsServer: ScreepsServerConstructor;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function isScreepsServerConstructor(value: unknown): value is ScreepsServerConstructor {
+  return typeof value === "function";
+}
+
+function isMockupModule(value: unknown): value is ScreepsServerMockupModule {
+  return isRecord(value) && isScreepsServerConstructor(value.ScreepsServer);
+}
+
 // Check if isolated-vm is available by trying to import screeps-server-mockup
 let mockupAvailable = false;
-let ScreepsServerClass: any;
+let ScreepsServerClass: ScreepsServerConstructor | null = null;
 
 try {
-  const mockup = await import("screeps-server-mockup");
-  ScreepsServerClass = mockup.ScreepsServer;
-  mockupAvailable = true;
+  const mockupModule: unknown = await import("screeps-server-mockup");
+  if (isMockupModule(mockupModule)) {
+    ScreepsServerClass = mockupModule.ScreepsServer;
+    mockupAvailable = true;
+  } else {
+    console.warn("screeps-server-mockup module does not expose the expected ScreepsServer constructor.");
+  }
 } catch {
   console.warn(
     "Screeps Server Mockup tests skipped: isolated-vm build failed.",
@@ -27,8 +81,15 @@ try {
   );
 }
 
+function requireServerConstructor(): ScreepsServerConstructor {
+  if (!ScreepsServerClass) {
+    throw new Error("Screeps Server Mockup constructor is unavailable.");
+  }
+  return ScreepsServerClass;
+}
+
 describe.skipIf(!mockupAvailable)("Screeps Server Mockup - Tick-based Testing", () => {
-  let server: any = null;
+  let server: ScreepsServerInstance | null = null;
 
   afterEach(() => {
     if (server) {
@@ -42,7 +103,8 @@ describe.skipIf(!mockupAvailable)("Screeps Server Mockup - Tick-based Testing", 
   });
 
   it("initializes server and runs multiple ticks", async () => {
-    server = new ScreepsServerClass();
+    const ServerConstructor = requireServerConstructor();
+    server = new ServerConstructor();
     await server.world.reset();
     await server.world.stubWorld();
 
@@ -79,7 +141,8 @@ describe.skipIf(!mockupAvailable)("Screeps Server Mockup - Tick-based Testing", 
   }, 30000); // 30 second timeout for server operations
 
   it("tracks creep spawning and behavior across ticks", async () => {
-    server = new ScreepsServerClass();
+    const ServerConstructor = requireServerConstructor();
+    server = new ServerConstructor();
     await server.world.reset();
     await server.world.stubWorld();
 
@@ -134,7 +197,8 @@ describe.skipIf(!mockupAvailable)("Screeps Server Mockup - Tick-based Testing", 
   }, 30000);
 
   it("can create custom room with terrain and objects", async () => {
-    server = new ScreepsServerClass();
+    const ServerConstructor = requireServerConstructor();
+    server = new ServerConstructor();
 
     // Reset and manually set up a room
     await server.world.reset();

@@ -7,6 +7,10 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Fixed
 
+- **TypeScript lint compliance**: Removed unsafe `any` usage in automation scripts and tests
+  - Added a typed Screeps raw API wrapper and stricter spawn placement flow in `scripts/screeps-autospawn.ts`
+  - Declared a typed global Hexo reference for plugin loading and tightened test doubles to avoid unbound methods
+  - Hardened mockup integration tests and helpers to dynamically import `screeps-server-mockup` without `any` casts
 - **Hexo Documentation Build**: Fixed markdown renderer loading in Hexo build script
   - Added proper plugin loading mechanism using global hexo variable for hexo-renderer-marked
   - Ensures markdown files are rendered to HTML instead of staying as .md files

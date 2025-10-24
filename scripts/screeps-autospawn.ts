@@ -30,6 +30,22 @@ interface PlaceSpawnResponse {
   };
 }
 
+interface ScreepsRawUserAPI {
+  respawn(): Promise<WorldStatusResponse>;
+  worldStatus(): Promise<WorldStatusResponse>;
+  worldStartRoom(): Promise<WorldStartRoomResponse>;
+}
+
+interface ScreepsRawGameAPI {
+  roomTerrain(room: string, encoded: number, shard: string): Promise<RoomTerrainResponse>;
+  placeSpawn(room: string, x: number, y: number, name: string, shard: string): Promise<PlaceSpawnResponse>;
+}
+
+interface ScreepsRawAPI {
+  user: ScreepsRawUserAPI;
+  game: ScreepsRawGameAPI;
+}
+
 interface ApiError extends Error {
   response?: {
     status?: number;
@@ -39,6 +55,42 @@ interface ApiError extends Error {
 
 function isApiError(error: unknown): error is ApiError {
   return error instanceof Error && "response" in error;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function isScreepsRawAPI(raw: unknown): raw is ScreepsRawAPI {
+  if (!isRecord(raw)) {
+    return false;
+  }
+
+  const user = (raw as { user?: unknown }).user;
+  const game = (raw as { game?: unknown }).game;
+
+  if (!isRecord(user) || !isRecord(game)) {
+    return false;
+  }
+
+  const { respawn, worldStatus, worldStartRoom } = user;
+  const { roomTerrain, placeSpawn } = game;
+
+  return (
+    typeof respawn === "function" &&
+    typeof worldStatus === "function" &&
+    typeof worldStartRoom === "function" &&
+    typeof roomTerrain === "function" &&
+    typeof placeSpawn === "function"
+  );
+}
+
+function ensureRawApi(api: ScreepsAPI): ScreepsRawAPI {
+  const rawCandidate = (api as { raw?: unknown }).raw;
+  if (isScreepsRawAPI(rawCandidate)) {
+    return rawCandidate;
+  }
+  throw new Error("ScreepsAPI raw interface is missing expected methods");
 }
 
 /**
@@ -102,15 +154,12 @@ function findSpawnLocation(terrain: string, roomName: string): { x: number; y: n
 /**
  * Perform respawn operation: trigger respawn, select room, and place spawn
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function performRespawn(api: any): Promise<boolean> {
+async function performRespawn(rawApi: ScreepsRawAPI): Promise<boolean> {
   try {
     // Step 1: Trigger respawn
     console.log("  Step 1: Triggering respawn...");
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
-    const respawnResult = await api.raw.user.respawn();
+    const respawnResult = await rawApi.user.respawn();
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (!respawnResult.ok) {
       console.error("  ✗ Failed to trigger respawn");
       return false;
@@ -119,8 +168,7 @@ async function performRespawn(api: any): Promise<boolean> {
 
     // Step 2: Get a suitable start room
     console.log("  Step 2: Finding suitable start room...");
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-    const startRoomResult = (await api.raw.user.worldStartRoom()) as WorldStartRoomResponse;
+    const startRoomResult = await rawApi.user.worldStartRoom();
 
     if (!startRoomResult.ok || !startRoomResult.room || startRoomResult.room.length === 0) {
       console.error("  ✗ Failed to get start room");
@@ -142,8 +190,7 @@ async function performRespawn(api: any): Promise<boolean> {
     const [shardName, actualRoomName] = splitRoom;
     console.log(`  Parsed shard: ${shardName}, room: ${actualRoomName}`);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-    const terrainResult = (await api.raw.game.roomTerrain(actualRoomName, 1, shardName)) as RoomTerrainResponse;
+    const terrainResult = await rawApi.game.roomTerrain(actualRoomName, 1, shardName);
 
     if (!terrainResult.ok || !terrainResult.terrain || terrainResult.terrain.length === 0) {
       console.error("  ✗ Failed to get room terrain");
@@ -155,14 +202,13 @@ async function performRespawn(api: any): Promise<boolean> {
 
     // Step 4: Place the spawn
     console.log(`  Step 4: Placing spawn at (${spawnLocation.x}, ${spawnLocation.y})...`);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-    const placeResult = (await api.raw.game.placeSpawn(
+    const placeResult = await rawApi.game.placeSpawn(
       actualRoomName,
       spawnLocation.x,
       spawnLocation.y,
       "Spawn1",
       shardName
-    )) as PlaceSpawnResponse;
+    );
 
     if (!placeResult.ok) {
       console.error("  ✗ Failed to place spawn");
@@ -194,11 +240,11 @@ async function checkAndRespawn(): Promise<void> {
   console.log(`🔍 Checking spawn status on ${hostname}:${port}${path}...`);
 
   const api = new ScreepsAPI({ token, hostname, protocol, port, path });
+  const raw = ensureRawApi(api);
 
   try {
     // Check current world status using the API's raw.user.worldStatus() method
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-    const statusResult = (await (api as any).raw.user.worldStatus()) as WorldStatusResponse;
+    const statusResult = await raw.user.worldStatus();
 
     if (!statusResult.ok) {
       throw new Error("Failed to retrieve world status from Screeps API");
@@ -220,7 +266,7 @@ async function checkAndRespawn(): Promise<void> {
       console.log("⚠️ Bot lost all spawns. Initiating automatic respawn...");
       console.log("🚀 Starting respawn process...");
 
-      const success = await performRespawn(api);
+      const success = await performRespawn(raw);
 
       if (success) {
         console.log("✅ Automatic respawn completed successfully!");
@@ -243,8 +289,7 @@ async function checkAndRespawn(): Promise<void> {
       try {
         // Get start room
         console.log("  Finding start room...");
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-        const startRoomResult = (await (api as any).raw.user.worldStartRoom()) as WorldStartRoomResponse;
+        const startRoomResult = await raw.user.worldStartRoom();
 
         if (!startRoomResult.ok || !startRoomResult.room || startRoomResult.room.length === 0) {
           throw new Error("Failed to get start room");
@@ -264,8 +309,7 @@ async function checkAndRespawn(): Promise<void> {
         const [shardName, actualRoomName] = splitRoom;
         console.log(`  Parsed shard: ${shardName}, room: ${actualRoomName}`);
 
-        // eslint-disable-next-line @typescript-eslint/await-thenable
-        const terrainResult = (await api.raw.game.roomTerrain(actualRoomName, 1, shardName)) as RoomTerrainResponse;
+        const terrainResult = await raw.game.roomTerrain(actualRoomName, 1, shardName);
 
         if (process.env.DEBUG) {
           console.log("  Terrain API response:", JSON.stringify(terrainResult, null, 2));
@@ -280,14 +324,13 @@ async function checkAndRespawn(): Promise<void> {
 
         // Place spawn
         console.log(`  Placing spawn at (${spawnLocation.x}, ${spawnLocation.y})...`);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-        const placeResult = (await (api as any).raw.game.placeSpawn(
+        const placeResult = await raw.game.placeSpawn(
           actualRoomName,
           spawnLocation.x,
           spawnLocation.y,
           "Spawn1",
           shardName
-        )) as PlaceSpawnResponse;
+        );
 
         if (!placeResult.ok) {
           throw new Error("Failed to place spawn");
