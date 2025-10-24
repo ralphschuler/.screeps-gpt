@@ -87,6 +87,17 @@ jobs:
             github.run_id }}
           priority: "3"
 
+      - name: Check spawn status and auto-respawn
+        if: success()
+        id: autospawn
+        uses: ./.github/actions/screeps-autospawner
+        with:
+          screeps-token: ${{ secrets.SCREEPS_TOKEN }}
+          screeps-host: ${{ vars.SCREEPS_HOST }}
+          screeps-port: ${{ vars.SCREEPS_PORT }}
+          screeps-protocol: ${{ vars.SCREEPS_PROTOCOL }}
+          screeps-path: ${{ vars.SCREEPS_PATH }}
+
       - name: Notify deployment failure
         if: failure()
         uses: ./.github/actions/send-push-notification
