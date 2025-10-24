@@ -36,7 +36,7 @@ Bun-managed TypeScript codebase with comprehensive testing, linting, and build a
 
 - **Runtime**: Bun 1.3+ with TypeScript targeting Node.js 18–22
 - **Build**: esbuild for fast bundling
-- **Testing**: Vitest with unit, e2e, and regression test suites
+- **Testing**: Vitest with unit, e2e, and regression test suites (including documentation build validation)
 - **Quality**: ESLint, Prettier, pre-commit hooks
 
 ### 3. AI Agent Orchestration
@@ -161,7 +161,7 @@ We welcome contributions! Here's how to get started:
 2. **Install dependencies**: `bun install` (or use Docker: `bun run docker:build`)
 3. **Review documentation**: Read [AGENTS.md](AGENTS.md) for repository conventions
 4. **Make your changes**: Update code, tests, and documentation together
-5. **Run quality checks**: `bun run format:write && bun run lint && bun run test:unit`
+5. **Run quality checks**: `bun run format:write && bun run lint && bun run test:unit && bun run test:docs`
 6. **Submit a PR**: The automation will validate your changes
 
 **Need help?** Check out:

@@ -27,6 +27,7 @@
     "test:e2e": "vitest run --dir tests/e2e",
     "test:mockup": "vitest run --dir tests/mockup",
     "test:regression": "vitest run --dir tests/regression",
+    "test:docs": "vitest run tests/unit/build-hexo-site.test.ts tests/regression/hexo-documentation-build.test.ts tests/regression/documentation-workflow.test.ts",
     "test:coverage": "vitest run --coverage",
     "deploy": "tsx scripts/deploy.ts",
     "version:bump": "tsx scripts/bump-version.ts",
