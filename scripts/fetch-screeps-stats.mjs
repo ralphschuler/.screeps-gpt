@@ -8,9 +8,21 @@ if (!token) {
   process.exit(1);
 }
 
+// Validate interval parameter
+const interval = process.env.SCREEPS_STATS_INTERVAL || "180"; // Default to 1 day
+const validIntervals = ["8", "180", "1440"];
+if (!validIntervals.includes(interval)) {
+  console.error(`Invalid SCREEPS_STATS_INTERVAL: ${interval}`);
+  console.error(`Valid values are: ${validIntervals.join(", ")} (8=1hr, 180=1day, 1440=1week)`);
+  process.exit(1);
+}
+
 const baseHost = process.env.SCREEPS_STATS_HOST || process.env.SCREEPS_HOST || "https://screeps.com";
 const basePath = process.env.SCREEPS_STATS_API || `${baseHost.replace(/\/$/, "")}/api`;
-const endpoint = `${basePath.replace(/\/$/, "")}/user/stats`;
+
+// Interval parameter is required by Screeps API:
+// 8 = 1 hour stats, 180 = 1 day stats (24 hours), 1440 = 1 week stats (7 days)
+const endpoint = `${basePath.replace(/\/$/, "")}/user/stats?interval=${interval}`;
 
 const headers = {
   "X-Token": token,
@@ -18,13 +30,60 @@ const headers = {
   "User-Agent": "screeps-gpt-stats-monitor/1.0"
 };
 
-async function main() {
-  const response = await fetch(endpoint, { headers });
-  if (!response.ok) {
-    const text = await response.text();
-    console.error(`Failed to fetch Screeps stats (${response.status} ${response.statusText}): ${text}`);
-    process.exit(1);
+/**
+ * Retry a function with exponential backoff
+ * @param {Function} fn - The async function to retry
+ * @param {number} maxRetries - Maximum number of retry attempts
+ * @param {number} baseDelay - Base delay in milliseconds
+ * @returns {Promise<any>} - The result of the function
+ */
+async function retryWithBackoff(fn, maxRetries = 3, baseDelay = 1000) {
+  let lastError;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+
+      // Don't retry on authentication errors (401, 403) or client errors (400, 422)
+      if (
+        error.status &&
+        (error.status === 401 || error.status === 403 || error.status === 400 || error.status === 422)
+      ) {
+        throw error;
+      }
+
+      if (attempt < maxRetries) {
+        const delay = baseDelay * Math.pow(2, attempt - 1);
+        console.log(`  ⚠ Attempt ${attempt} failed, retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
   }
+
+  throw lastError;
+}
+
+async function main() {
+  const response = await retryWithBackoff(
+    async () => {
+      const res = await fetch(endpoint, { headers });
+
+      if (!res.ok) {
+        const text = await res.text();
+        const error = new Error(`Failed to fetch Screeps stats (${res.status} ${res.statusText}): ${text}`);
+        error.status = res.status;
+        error.statusText = res.statusText;
+        error.responseBody = text;
+        throw error;
+      }
+
+      return res;
+    },
+    3,
+    1000
+  );
 
   const payload = await response.json();
   const fetchedAt = new Date().toISOString();
@@ -42,6 +101,26 @@ async function main() {
 
 main().catch(error => {
   console.error("Unexpected error fetching Screeps stats");
-  console.error(error);
+  console.error(`Endpoint: ${endpoint}`);
+
+  if (error.status) {
+    console.error(`HTTP Status: ${error.status} ${error.statusText || ""}`);
+    console.error(`Response: ${error.responseBody || error.message}`);
+
+    // Provide helpful diagnostic information
+    if (error.status === 401 || error.status === 403) {
+      console.error("\n❌ Authentication failed. Please verify:");
+      console.error("   - SCREEPS_TOKEN or SCREEPS_STATS_TOKEN is set correctly");
+      console.error("   - The token has not expired");
+      console.error("   - The token has proper permissions");
+    } else if (error.status === 400 || error.status === 422) {
+      console.error("\n❌ Invalid request parameters. Please verify:");
+      console.error(`   - Interval value is valid (8, 180, or 1440): current=${interval}`);
+      console.error("   - API endpoint is correct");
+    }
+  } else {
+    console.error(error);
+  }
+
   process.exit(1);
 });
