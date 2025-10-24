@@ -5,6 +5,17 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Added
+
+- **Incremental changelog management for version releases**
+  - Added `releaseVersion()` function to `scripts/lib/changelog.ts` for moving unreleased changes to version sections
+  - Created `scripts/release-changelog.ts` CLI script to update CHANGELOG.md during version releases
+  - Updated `.github/workflows/post-merge-release.yml` to automatically move unreleased changes to new version sections
+  - Each version now contains only changes since the previous version (follows Keep a Changelog principles)
+  - [Unreleased] section is automatically cleared after each version release
+  - Added comprehensive unit tests (5 test cases) for changelog release functionality
+  - Addresses issue: chore: implement incremental changelog management for version releases
+
 ### Fixed
 
 - **TypeScript lint compliance**: Removed unsafe `any` usage in automation scripts and tests

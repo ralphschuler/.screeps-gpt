@@ -23,15 +23,15 @@ describe("Deploy Workflow Version Resolution - Modernized CI/CD", () => {
     expect(workflowContent).not.toContain("workflow_run.head_sha");
   });
 
-  it("should trigger only on tag push events", () => {
+  it("should trigger on release events", () => {
     const workflowContent = readFileSync(join(process.cwd(), ".github/workflows/deploy.yml"), "utf-8");
 
-    // Verify single trigger mechanism (tag push only)
-    expect(workflowContent).toContain('tags:\n      - "v*"');
+    // Verify trigger mechanism (GitHub Release events)
+    expect(workflowContent).toContain("on:");
+    expect(workflowContent).toContain("release:");
 
-    // Should NOT have release trigger (doesn't work with GITHUB_TOKEN)
-    expect(workflowContent).not.toContain("release:");
-    expect(workflowContent).not.toContain("published");
+    // Should NOT have old tag push trigger
+    expect(workflowContent).not.toContain('tags:\n      - "v*"');
   });
 
   it("should use GitHub production environment", () => {
