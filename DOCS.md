@@ -21,6 +21,7 @@ For GitHub Copilot and automation agents, comprehensive operational guidelines a
    bun run test:unit
    bun run test:e2e   # executes against the PTR profile
    bun run test:regression
+   bun run test:docs  # validates documentation build and deployment
    bun run test:coverage
    bun run test:actions
    bun run analyze:system
