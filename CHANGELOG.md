@@ -7,6 +7,11 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Fixed
 
+- **Screeps Spawn Monitor API Failure**: Fixed terrain API method call in autospawn script
+  - Use correct `api.raw.game.roomTerrain(roomName, 1)` instead of invalid `api.raw.game["room-terrain"]({ room, shard })`
+  - Removed unused shard parsing logic that was unnecessary for working API call
+  - Fixes "api.raw.game.room-terrain is not a function" error
+  - Fixes run ID: 18779690172
 - **Screeps Spawn Monitor API Failure**: Fixed incorrect API call for room terrain on sharded servers
   - Fixed screeps-api call to use correct room-terrain endpoint with proper shard parameter
   - Parse shard from room name format (shard3/E45S25) instead of passing invalid parameters
