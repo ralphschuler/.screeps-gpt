@@ -3,6 +3,11 @@ import { resolve } from "node:path";
 import { cp, rm } from "node:fs/promises";
 import { createRequire } from "node:module";
 
+declare global {
+  // The Hexo plugin system expects a global `hexo` reference during initialization.
+  var hexo: Hexo | undefined;
+}
+
 const require = createRequire(import.meta.url);
 
 async function buildHexoSite(): Promise<void> {
@@ -26,8 +31,7 @@ async function buildHexoSite(): Promise<void> {
     console.log("Ensuring renderers are loaded...");
 
     // Set global hexo variable that plugins expect
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-    (global as any).hexo = hexo;
+    globalThis.hexo = hexo;
 
     const plugins = [
       "hexo-renderer-ejs",
@@ -53,8 +57,7 @@ async function buildHexoSite(): Promise<void> {
     }
 
     // Clean up global
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-    delete (global as any).hexo;
+    delete globalThis.hexo;
 
     // Debug info
     console.log("\nConfiguration:");
