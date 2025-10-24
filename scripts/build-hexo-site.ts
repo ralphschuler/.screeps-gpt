@@ -1,6 +1,9 @@
 import Hexo from "hexo";
 import { resolve } from "node:path";
 import { cp, rm } from "node:fs/promises";
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
 
 async function buildHexoSite(): Promise<void> {
   console.log("Building Hexo documentation site...\n");
@@ -15,12 +18,17 @@ async function buildHexoSite(): Promise<void> {
     console.log("Initializing Hexo...");
     await hexo.init();
 
-    // Load plugins and theme
-    console.log("Loading plugins...");
+    // Load plugins and configuration
+    console.log("Loading configuration and plugins...");
     await hexo.load();
 
-    // Manually load renderers after init
-    console.log("Loading renderers...");
+    // Load plugins manually by setting global hexo and requiring them
+    console.log("Ensuring renderers are loaded...");
+
+    // Set global hexo variable that plugins expect
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+    (global as any).hexo = hexo;
+
     const plugins = [
       "hexo-renderer-ejs",
       "hexo-renderer-marked",
@@ -33,25 +41,23 @@ async function buildHexoSite(): Promise<void> {
 
     for (const pluginName of plugins) {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const plugin = await import(pluginName);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        if (typeof plugin.default === "function") {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-          plugin.default(hexo);
-        } else if (typeof plugin === "function") {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-          plugin(hexo);
+        require(pluginName);
+        console.log(`✓ Loaded ${pluginName}`);
+      } catch (err) {
+        if (err instanceof Error && err.stack) {
+          console.warn(`⚠ Failed to load ${pluginName}:\n${err.stack}`);
+        } else {
+          console.warn(`⚠ Failed to load ${pluginName}:`, err);
         }
-      } catch (error) {
-        console.warn(`Failed to load plugin ${pluginName}:`, error);
-      }
     }
+
+    // Clean up global
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+    delete (global as any).hexo;
 
     // Debug info
     console.log("\nConfiguration:");
     console.log("- Theme:", hexo.config.theme);
-    console.log("- Theme dir:", hexo.theme_dir);
     console.log("- Source dir:", hexo.source_dir);
     console.log("- Public dir:", hexo.public_dir);
     console.log("- Renderers:", Object.keys(hexo.extend.renderer.list()));

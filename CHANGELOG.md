@@ -7,12 +7,11 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Fixed
 
-- **ESLint Memory Limit Issue**: Fixed out-of-memory errors in lint:fix workflow step
-  - Added Node.js heap size limit (8192MB) to ESLint npm scripts to prevent memory crashes
-  - Fixed invalid TypeScript target "commonjs" in tsconfig.json (changed to "es2020")
-  - Optimized ESLint configuration to apply expensive type-checking rules only to core source files
-  - Fixes run ID: 18781222099
-
+- **Hexo Documentation Build**: Fixed markdown renderer loading in Hexo build script
+  - Added proper plugin loading mechanism using global hexo variable for hexo-renderer-marked
+  - Ensures markdown files are rendered to HTML instead of staying as .md files
+  - Fixes documentation site deployment generating raw markdown files instead of HTML
+  - Fixes run ID: 18781158449
 - **Screeps Spawn Monitor Shard Parsing**: Fixed shard/room parsing in autospawn script API calls
   - Parse shard name and room name from format "shard3/E45S25" for terrain and spawn placement API calls
   - Pass shard parameter correctly to `roomTerrain()` and `placeSpawn()` API methods
