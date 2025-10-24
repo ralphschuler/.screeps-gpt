@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.7.9] - 2025-10-24
+
 ### Fixed
 
 - **Post Merge Release workflow permission error (run #18794330724)**
