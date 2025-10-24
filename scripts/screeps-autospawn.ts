@@ -134,7 +134,12 @@ async function performRespawn(api: any): Promise<boolean> {
     console.log("  Step 3: Analyzing room terrain...");
 
     // Parse shard and room from roomName format "shard3/E45S25"
-    const [shardName, actualRoomName] = roomName.split("/");
+    const splitRoom = roomName.split("/");
+    if (splitRoom.length !== 2) {
+      console.error(`  ✗ Unexpected roomName format: "${roomName}". Expected "shard/room".`);
+      return false;
+    }
+    const [shardName, actualRoomName] = splitRoom;
     console.log(`  Parsed shard: ${shardName}, room: ${actualRoomName}`);
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
