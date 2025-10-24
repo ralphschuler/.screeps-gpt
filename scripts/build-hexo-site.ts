@@ -44,8 +44,11 @@ async function buildHexoSite(): Promise<void> {
         require(pluginName);
         console.log(`✓ Loaded ${pluginName}`);
       } catch (err) {
-        console.warn(`⚠ Failed to load ${pluginName}:`, err instanceof Error ? err.message : err);
-      }
+        if (err instanceof Error && err.stack) {
+          console.warn(`⚠ Failed to load ${pluginName}:\n${err.stack}`);
+        } else {
+          console.warn(`⚠ Failed to load ${pluginName}:`, err);
+        }
     }
 
     // Clean up global
