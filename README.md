@@ -106,7 +106,8 @@ Multiple specialized Copilot agents collaborate on different aspects of developm
 - **Quality Guards**: Automated linting, formatting, testing, and coverage checks on every PR
 - **Semantic Versioning**: Automatic version bumping based on conventional commits
 - **Automated Releases**: Tagged releases with auto-generated changelogs
-- **Screeps Deployment**: Push to Screeps servers on new releases
+- **Screeps Deployment**: Push to Screeps servers on new releases with automatic spawn status verification
+- **Auto-Respawn Detection**: Post-deployment checks ensure bot is active and ready
 - **CI Autofix**: Agents automatically fix failing workflows
 
 ### 📊 Self-Evaluation & Improvement
@@ -174,7 +175,7 @@ The repository uses 14 GitHub Actions workflows orchestrating the agent swarm:
 
 - **Quality Guards** (`guard-*.yml`) - Linting, formatting, testing, coverage on every PR
 - **Post-Merge Release** - Semantic versioning and automated releases
-- **Deploy** - Automatic deployment to Screeps on version tags
+- **Deploy** - Automatic deployment to Screeps on version tags with post-deployment spawn status checking
 - **Copilot Agents** - Issue triage, Todo automation, code review, CI autofix
 - **PTR Monitor** - Continuous bot performance monitoring
 - **Spec-Kit** - Specification-driven development workflow
