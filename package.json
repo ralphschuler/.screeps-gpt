@@ -12,7 +12,9 @@
   },
   "scripts": {
     "build": "tsx scripts/build.ts",
-    "build:docs-site": "tsx scripts/build-docs-site.ts",
+    "build:docs-site": "tsx scripts/build-hexo-site.ts",
+    "build:docs-site-legacy": "tsx scripts/build-docs-site.ts",
+    "migrate:docs-to-hexo": "tsx scripts/migrate-docs-to-hexo.ts",
     "build:watch": "tsx scripts/build.ts --watch",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -64,13 +66,25 @@
     "eslint": "^9.38.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.29.1",
+    "hexo": "^8.0.0",
+    "hexo-generator-archive": "^2.0.0",
+    "hexo-generator-category": "^2.0.0",
+    "hexo-generator-feed": "^3.0.0",
+    "hexo-generator-index": "^4.0.0",
+    "hexo-generator-search": "^2.4.3",
+    "hexo-generator-tag": "^2.0.0",
+    "hexo-renderer-ejs": "^2.0.0",
+    "hexo-renderer-marked": "^7.0.1",
+    "hexo-renderer-stylus": "^3.0.1",
+    "hexo-server": "^3.0.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.6",
     "marked": "^16.4.1",
     "prettier": "^3.6.2",
     "tsx": "^4.20.6",
     "typescript": "^5.4.3",
-    "vitest": "^4.0.1"
+    "vitest": "^4.0.1",
+    "yaml": "^2.8.1"
   },
   "lint-staged": {
     "*.ts": [

@@ -16,6 +16,10 @@
 # Screeps Config
 screeps.json
 
+# Hexo build artifacts
+/public
+/themes/landscape
+
 # Copilot workflow logs and cache (ephemeral artifacts)
 /reports/copilot/
 /.copilot-cache
