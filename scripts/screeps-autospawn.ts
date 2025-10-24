@@ -38,7 +38,7 @@ interface ApiError extends Error {
 }
 
 function isApiError(error: unknown): error is ApiError {
-  return error instanceof Error;
+  return error instanceof Error && "response" in error;
 }
 
 /**
