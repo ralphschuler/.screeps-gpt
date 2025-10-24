@@ -24,14 +24,13 @@ jobs:
             https://github.com/${{ github.repository }}/actions/runs/${{
             github.run_id }}
           EMAIL_SUBJECT: >-
-            ${{ toJSON(github.event.client_payload.email.subject || '')
-            }}
+            ${{ github.event.client_payload.email.subject }}
           EMAIL_FROM: >-
-            ${{ toJSON(github.event.client_payload.email.from || '') }}
+            ${{ github.event.client_payload.email.from }}
           EMAIL_TO: >-
-            ${{ toJSON(github.event.client_payload.email.to || '') }}
+            ${{ github.event.client_payload.email.to }}
           EMAIL_BODY: >-
-            ${{ toJSON(github.event.client_payload.email.body || '') }}
+            ${{ github.event.client_payload.email.body }}
         with:
           force-response: true
           copilot-token: ${{ secrets.COPILOT_TOKEN }}
