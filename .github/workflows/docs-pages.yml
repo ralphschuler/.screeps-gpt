@@ -39,11 +39,11 @@ jobs:
           cache-dependency-path: docs-build/package-lock.json
       - name: Install main dependencies
         run: bun install
-      - name: Update versions
-        run: bun run versions:update
       - name: Install documentation dependencies
         working-directory: docs-build
         run: npm ci
+      - name: Update versions
+        run: bun run versions:update
       - name: Generate documentation site
         working-directory: docs-build
         run: npm run build
