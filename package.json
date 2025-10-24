@@ -68,9 +68,7 @@
     "eslint-plugin-import": "^2.29.1",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.6",
-    "marked": "^16.4.1",
     "prettier": "^3.6.2",
-    "tsx": "^4.20.6",
     "typescript": "^5.4.3",
     "vitest": "^4.0.1"
   },
