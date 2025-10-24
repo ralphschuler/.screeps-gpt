@@ -49,6 +49,7 @@ jobs:
           EVENT_PATH: "${{ github.event_path }}"
           WORKSPACE: "${{ github.workspace }}"
         with:
+          force-response: true
           copilot-token: ${{ secrets.COPILOT_TOKEN }}
           prompt-path: .github/copilot/prompts/ci-autofix
           output-path: >-
