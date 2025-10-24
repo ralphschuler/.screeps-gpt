@@ -1,6 +1,6 @@
 ---
 title: Push Notification System
-date: 2025-10-24T12:33:51.453Z
+date: 2025-10-24T23:38:43.762Z
 ---
 
 # Push Notification System
@@ -71,7 +71,7 @@ Sends notifications for:
 
 - **Failure:** PR build failed, review required (Priority 4)
 
-### Screeps Stats Monitor Workflow (screeps-stats-monitor.yml)
+### Screeps Monitoring Workflow (screeps-monitoring.yml)
 
 Automatically analyzes PTR stats and sends notifications for:
 

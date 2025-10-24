@@ -1,8 +1,7 @@
 ---
-name: Daily Autonomous Bot Monitor
+name: Screeps Monitoring
 
 on:
-  on:
   schedule:
     - cron: "*/30 * * * *"
   workflow_run:
@@ -16,14 +15,14 @@ permissions:
   pull-requests: read
 
 jobs:
-  autonomous-monitor:
+  monitor:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Run autonomous strategic monitoring
+      - name: Run autonomous strategic monitoring with PTR analysis
         uses: ./.github/actions/copilot-exec
         env:
           REPO_NAME: "${{ github.repository }}"
@@ -36,22 +35,34 @@ jobs:
           SCREEPS_PASSWORD: ${{ secrets.SCREEPS_PASSWORD }}
           SCREEPS_HOST: ${{ secrets.SCREEPS_HOST }}
           SCREEPS_SHARD: ${{ secrets.SCREEPS_SHARD }}
+          SCREEPS_PORT: ${{ secrets.SCREEPS_PORT }}
+          SCREEPS_PROTOCOL: ${{ secrets.SCREEPS_PROTOCOL }}
+          SCREEPS_STATS_TOKEN: ${{ secrets.SCREEPS_STATS_TOKEN }}
           SCREEPS_STATS_HOST: ${{ secrets.SCREEPS_STATS_HOST }}
           SCREEPS_STATS_API: ${{ secrets.SCREEPS_STATS_API }}
         with:
           copilot-token: ${{ secrets.COPILOT_TOKEN }}
-          prompt-path: .github/copilot/prompts/autonomous-monitor
+          prompt-path: .github/copilot/prompts/screeps-monitor
           output-path: >-
-            reports/copilot/autonomous-monitor-${{ github.run_id }}.log
+            reports/copilot/screeps-monitor-${{ github.run_id }}.log
           additional-mcp-config: >-
             @.github/mcp/screeps-mcp.json
           timeout: "40"
           verbose: "true"
 
+      - name: Check for critical PTR alerts
+        if: always()
+        env:
+          PUSH_TOKEN: ${{ secrets.PUSH_TOKEN }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          npx tsx scripts/check-ptr-alerts.ts
+
       - name: Upload monitoring report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: autonomous-monitor-report-${{ github.run_id }}
-          path: reports/copilot/autonomous-monitor-${{ github.run_id }}.log
+          name: screeps-monitor-report-${{ github.run_id }}
+          path: reports/copilot/screeps-monitor-${{ github.run_id }}.log
           retention-days: 30

@@ -167,7 +167,7 @@ The configuration files in `.github/mcp/` define MCP server commands and environ
 6. **copilot-todo-pr.yml** - Automated Todo issue resolution
 7. **copilot-email-triage.yml** - Email-to-issue conversion
 8. **copilot-ci-autofix.yml** - Automated CI failure resolution
-9. **screeps-stats-monitor.yml** - PTR telemetry monitoring (uses `scripts/fetch-screeps-stats.mjs`)
+9. **screeps-monitoring.yml** - Comprehensive monitoring combining strategic analysis with PTR telemetry (uses `scripts/fetch-screeps-stats.mjs`)
 10. **dependabot-automerge.yml** - Auto-merge non-major updates
 11. **label-sync.yml** - Repository label synchronization
 12. **docs-pages.yml** - GitHub Pages documentation site
@@ -239,9 +239,12 @@ Do not edit labels manually in the UI—update the YAML file instead. Legacy lab
 
 ### PTR Monitoring
 
-- Stats fetched every 30 minutes via `screeps-stats-monitor.yml`.
-- Anomalies result in labelled issues with `monitoring`, `copilot`, `type/bug`, `state/pending`, and appropriate priority labels.
+- Stats and strategic analysis performed every 30 minutes via `screeps-monitoring.yml`.
+- Combines autonomous bot performance monitoring with PTR telemetry anomaly detection.
+- PTR anomalies result in labelled issues with `monitoring`, `copilot`, `type/bug`, `state/pending`, and appropriate priority labels (prefixed with `PTR:`).
+- Strategic findings result in issues prefixed with `[Autonomous Monitor]`.
 - Duplicates are avoided by searching existing issues before filing new ones.
+- Uses MCP servers (github, screeps-mcp, screeps-api) for comprehensive analysis.
 - Use `SCREEPS_STATS_TOKEN` or fallback to `SCREEPS_TOKEN`.
 
 ## Required Secrets

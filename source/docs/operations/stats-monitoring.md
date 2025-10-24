@@ -1,6 +1,11 @@
+---
+title: PTR Monitoring Pipeline
+date: 2025-10-24T23:38:43.767Z
+---
+
 # PTR Monitoring Pipeline
 
-The Screeps Stats Monitor workflow (`screeps-stats-monitor.yml`) keeps a pulse on Public Test Realm performance.
+The Screeps Monitoring workflow (`screeps-monitoring.yml`) keeps a pulse on Public Test Realm performance through comprehensive autonomous analysis.
 
 ## Data Collection
 
@@ -16,11 +21,18 @@ The Screeps Stats Monitor workflow (`screeps-stats-monitor.yml`) keeps a pulse o
 
 ## Copilot Analysis
 
-- Prompt: [`.github/copilot/prompts/stats-analysis.md`](../../.github/copilot/prompts/stats-analysis.md).
-- Behaviour: Copilot reads the snapshot, summarises PTR health, and either files labelled issues (`monitoring`, `copilot`, and a
-  severity) or explains why no action is required.
-- Duplicates: Copilot must search existing issues using the GitHub MCP server. If an identical alert exists, it comments instead
-  of creating a duplicate.
+- Prompt: [`.github/copilot/prompts/screeps-monitor`](../../.github/copilot/prompts/screeps-monitor).
+- Behaviour: Copilot performs comprehensive multi-phase analysis:
+  - Fetches PTR telemetry using `scripts/fetch-screeps-stats.mjs`
+  - Analyzes bot performance via Screeps MCP server (console access, memory, room data)
+  - Detects PTR anomalies (CPU >95%, >80%, low energy) with concrete evidence
+  - Evaluates repository health (codebase quality, automation effectiveness, development velocity)
+  - Makes strategic decisions about priorities and improvements
+  - Creates, updates, and closes issues with evidence-based recommendations
+  - Strategic issues prefixed with `[Autonomous Monitor]`, PTR anomalies with `PTR:`
+  - Executes `scripts/check-ptr-alerts.ts` to send push notifications for critical/high severity alerts
+- Duplicates: Copilot searches existing issues using the GitHub MCP server. If an identical alert exists, it comments instead of creating a duplicate.
+- MCP Integration: Uses github, screeps-mcp, and screeps-api MCP servers for comprehensive access
 
 ## Follow-up Expectations
 

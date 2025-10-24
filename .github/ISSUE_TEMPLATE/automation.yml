@@ -145,7 +145,7 @@ body:
         - label: copilot-issue-triage.yml (issue reformulation)
         - label: copilot-todo-pr.yml (Todo automation)
         - label: copilot-ci-autofix.yml (CI failure fixes)
-        - label: screeps-stats-monitor.yml (PTR monitoring)
+        - label: screeps-monitoring.yml (comprehensive monitoring)
         - label: Other workflow
 
   - type: textarea

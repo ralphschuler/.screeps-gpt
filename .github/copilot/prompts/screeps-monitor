@@ -8,20 +8,26 @@ This workflow provides comprehensive access to:
 
 Available environment variables:
 - `SCREEPS_TOKEN` - Screeps API authentication token
+- `SCREEPS_STATS_TOKEN` - Alternative Screeps stats token
 - `SCREEPS_HOST` - Screeps server hostname (default: screeps.com)
 - `SCREEPS_SHARD` - Default shard for operations (default: shard3)
+- `SCREEPS_PORT`, `SCREEPS_PROTOCOL` - Server connection parameters
 - `SCREEPS_STATS_HOST`, `SCREEPS_STATS_API` - PTR monitoring endpoints
 - `REPO_NAME` - Current repository (${REPO_NAME})
 - `RUN_ID` - Workflow run identifier (${RUN_ID})
 - `RUN_URL` - Workflow run URL (${RUN_URL})
 
-## MISSION: DAILY AUTONOMOUS STRATEGIC ANALYSIS
+Available tools:
+- `scripts/fetch-screeps-stats.mjs` - Node.js script to fetch user stats from Screeps API
 
-This is the "strategic brain" of the project. Your role is to:
+## MISSION: COMPREHENSIVE AUTONOMOUS MONITORING
+
+This is the "strategic brain" of the project, combining autonomous strategic analysis with PTR telemetry monitoring. Your role is to:
 1. Evaluate bot performance in the game (efficiency, strategy execution, resource optimization)
 2. Analyze repository health (code quality, automation effectiveness, technical debt)
-3. Make strategic decisions about development priorities and resource allocation
-4. Guide the project toward success through intelligent automation
+3. Monitor PTR stats and detect critical performance anomalies
+4. Make strategic decisions about development priorities and resource allocation
+5. Guide the project toward success through intelligent automation
 
 ## MANDATORY WORKFLOW PHASES
 
@@ -29,8 +35,33 @@ This is the "strategic brain" of the project. Your role is to:
 
 - [ ] **Authenticate GitHub CLI** and verify repository access
 - [ ] **Verify Screeps MCP connection** using `screeps_connection_status` tool
-- [ ] **Fetch bot performance data** using screeps-mcp console commands and API tools
+- [ ] **Fetch PTR telemetry data** using `scripts/fetch-screeps-stats.mjs`
 - [ ] **Log all connection states** for debugging and audit trail
+
+#### PTR Telemetry Collection
+
+Execute the telemetry fetch script:
+```bash
+node scripts/fetch-screeps-stats.mjs
+```
+
+This script will:
+- Use environment variables: `SCREEPS_TOKEN` (or `SCREEPS_STATS_TOKEN`), `SCREEPS_HOST`, `SCREEPS_STATS_API`
+- Fetch user stats from the Screeps API endpoint `/api/user/stats`
+- Store results in `reports/screeps-stats/latest.json`
+- Exit with error code 1 if the API is unavailable
+
+If the fetch succeeds, copy the snapshot to `reports/copilot/ptr-stats.json` for analysis.
+If the fetch fails with authentication or network errors, create an issue documenting the API failure
+with available error details and store a failure snapshot at `reports/copilot/ptr-stats.json` with:
+```json
+{
+  "status": "api_unavailable",
+  "timestamp": "<ISO timestamp>",
+  "error": "<error message>",
+  "attempted_endpoint": "<endpoint URL>"
+}
+```
 
 ### PHASE 2: BOT PERFORMANCE ANALYSIS
 
@@ -64,7 +95,38 @@ Object.values(Game.rooms).map(r => ({ name: r.name, rcl: r.controller?.level, en
 Object.values(Game.creeps).length;
 ```
 
-### PHASE 3: REPOSITORY HEALTH ANALYSIS
+### PHASE 3: PTR STATS ANOMALY DETECTION
+
+Analyze the PTR telemetry snapshot for critical anomalies:
+
+**Anomaly Detection Criteria:**
+
+Create issues for metrics exceeding these thresholds:
+
+**Critical Priority Anomalies** (`priority/critical`):
+- CPU usage > 95% for 3+ consecutive ticks
+- Memory crashes or persistent errors
+- Zero creep spawning for 10+ ticks when resources available
+- Room abandonment without explicit strategy
+
+**High Priority Anomalies** (`priority/high`):
+- CPU usage > 80% for 10+ consecutive ticks  
+- Energy efficiency drop > 20% from baseline
+- Creep population deviation > 30% from target
+- Construction progress stalled for 50+ ticks
+
+**Medium Priority Anomalies** (`priority/medium`):
+- Suboptimal resource allocation patterns
+- Minor performance degradations < 10%
+- Non-critical strategy execution delays
+
+**Requirements:**
+- [ ] All anomaly issues MUST have concrete evidence with exact metric values and thresholds
+- [ ] All issue titles MUST start with `PTR:` to identify monitoring findings
+- [ ] All severity labels MUST be justified with specific impact assessment  
+- [ ] All analysis MUST be reproducible with stored snapshot data
+
+### PHASE 4: REPOSITORY HEALTH ANALYSIS
 
 Using GitHub MCP tools, analyze:
 
@@ -85,9 +147,9 @@ Using GitHub MCP tools, analyze:
 - [ ] Review feature implementation backlog
 - [ ] Identify dependencies or blocked work items
 
-### PHASE 4: STRATEGIC DECISION MAKING
+### PHASE 5: STRATEGIC DECISION MAKING
 
-Based on phases 2-3, make intelligent decisions:
+Based on phases 2-4, make intelligent decisions:
 
 **Decision Criteria:**
 
@@ -114,7 +176,7 @@ Based on phases 2-3, make intelligent decisions:
 - Nice-to-have feature ideas
 - Documentation polish
 
-### PHASE 5: AUTONOMOUS ISSUE MANAGEMENT
+### PHASE 6: AUTONOMOUS ISSUE MANAGEMENT
 
 For each identified action:
 
@@ -128,6 +190,13 @@ For each identified action:
    gh issue create --title "[Autonomous Monitor] <descriptive title>" \
      --body "<evidence-based description with metrics and recommendations>" \
      --label "monitoring,copilot,automation,<type>,<priority>,state/pending"
+   ```
+   
+   For PTR anomalies, use title prefix `PTR:` instead:
+   ```bash
+   gh issue create --title "PTR: <descriptive title>" \
+     --body "<evidence with exact metrics and thresholds>" \
+     --label "monitoring,copilot,<type>,<priority>,state/pending"
    ```
    
    Or update existing issues:
@@ -147,6 +216,7 @@ For each identified action:
 
 ## Evidence
 - **Bot Performance Data**: <specific metrics from Screeps console>
+- **PTR Stats**: <telemetry data from latest.json>
 - **Repository Context**: <relevant code/workflow references>
 - **Trend Analysis**: <historical comparison if available>
 
@@ -162,13 +232,14 @@ For each identified action:
 - Validation method: <how to verify fix>
 
 ---
-*Generated by Autonomous Monitor - Run: ${RUN_URL}*
+*Generated by Screeps Monitoring - Run: ${RUN_URL}*
 ```
 
-### PHASE 6: STRATEGIC RECOMMENDATIONS
+### PHASE 7: STRATEGIC RECOMMENDATIONS
 
 Generate a strategic summary covering:
 - **Overall bot health score** (0-100 scale with justification)
+- **PTR performance status** (operational/degraded/critical)
 - **Top 3 priorities** for improving game performance
 - **Top 3 priorities** for improving development infrastructure
 - **Emerging opportunities** (expansion, optimization, automation)
@@ -181,6 +252,7 @@ Store this analysis in a timestamped report file.
 **ALLOWED ACTIONS:**
 - ✅ Read bot state, memory, and console output
 - ✅ Execute read-only console commands for analysis
+- ✅ Fetch and analyze PTR telemetry data
 - ✅ Create, update, comment on, and close GitHub issues
 - ✅ Search repository code and documentation
 - ✅ Analyze workflow logs and automation health
@@ -199,6 +271,7 @@ Store this analysis in a timestamped report file.
 
 **ERROR HANDLING:**
 - If Screeps API unavailable → Create monitoring issue and continue with repository analysis
+- If PTR telemetry fetch fails → Document failure and continue with strategic monitoring
 - If GitHub API fails → Log error and store analysis locally
 - If MCP tools fail → Fallback to available tools and note limitations
 
@@ -213,13 +286,16 @@ At completion, print minified JSON summary:
   "timestamp": "<ISO timestamp>",
   "bot_health_score": <0-100>,
   "bot_status": "<operational|degraded|critical>",
+  "ptr_status": "<healthy|degraded|critical>",
   "repository_health": "<healthy|needs-attention|critical>",
+  "ptr_snapshot_path": "reports/copilot/ptr-stats.json",
   "issues_created": ["#123", "#124"],
   "issues_updated": ["#100", "#101"],
   "issues_closed": ["#95"],
   "critical_findings": <count>,
   "high_priority_findings": <count>,
   "medium_priority_findings": <count>,
+  "ptr_anomalies_detected": <count>,
   "recommendations": ["priority 1", "priority 2", "priority 3"],
   "next_monitor_focus": "<area needing attention>",
   "notes": "<brief executive summary>"
@@ -232,3 +308,4 @@ Rules:
 - Provide concrete, actionable recommendations
 - Link all analysis to specific evidence
 - Be concise but thorough in issue descriptions
+- Include PTR telemetry evidence in anomaly reports
