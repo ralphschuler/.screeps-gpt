@@ -79,6 +79,9 @@
     ],
     "*.{js,mjs,cjs,json,md,yml,yaml}": [
       "prettier --write"
+    ],
+    ".github/workflows/*.{yml,yaml}": [
+      "yamllint"
     ]
   }
 }
