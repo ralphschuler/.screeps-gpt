@@ -7,6 +7,10 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Fixed
 
+- **Post Merge Release workflow permission error (run #18794121870)**
+  - Added `workflows: write` permission to post-merge-release.yml
+  - Resolves GitHub rejection when pushing commits that include workflow file modifications
+  - Enables automated releases when workflow files are updated in the same push
 - **TypeScript type safety violations in fetch-screeps-stats test (run #18793984308)**
   - Removed unnecessary eslint-disable comments that weren't effective
   - Added proper TypeScript types to vitest mocks using `ReturnType<typeof vi.fn>`
