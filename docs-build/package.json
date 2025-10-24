@@ -1,13 +1,13 @@
 {
   "name": "screeps-gpt-docs",
-  "version": "0.5.26",
   "description": "Documentation site for Screeps GPT",
   "private": true,
   "type": "commonjs",
   "scripts": {
     "clean": "hexo clean",
     "build": "hexo generate",
-    "server": "hexo server"
+    "server": "hexo server",
+    "sync-version": "node ../scripts/sync-version.js"
   },
   "hexo": {
     "version": "8.0.0"
