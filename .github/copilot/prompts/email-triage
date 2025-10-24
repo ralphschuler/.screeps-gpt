@@ -1,6 +1,6 @@
 # Screeps GPT Email Triage
 
-You are assisting the Screeps GPT maintainers by reading an incoming email and turning it into concrete GitHub work.
+You are assisting the Screeps GPT maintainers by reading an incoming email and turning it into concrete GitHub issues.
 
 Structured email metadata:
 
@@ -33,20 +33,6 @@ ${EMAIL_BODY}
 - **IF no actionable items found** → Document decision and exit successfully
 - **IF GitHub API fails** → Log error and retry once, then exit with partial results
 - **IF email context is unclear** → Create issue requesting clarification
-
-## ACTIONABLE ITEM CRITERIA
-
-Create issues only for emails containing:
-- ✅ Specific problems or bug reports with reproduction information
-- ✅ Feature requests with clear requirements and use cases  
-- ✅ Process improvements with concrete suggestions
-- ✅ Documentation gaps with specific missing information
-
-Do NOT create issues for:
-- ❌ General discussions or brainstorming  
-- ❌ Status updates or informational messages
-- ❌ Duplicate reports already covered by existing issues
-- ❌ Spam or irrelevant content
 
 ---
 
