@@ -2,9 +2,12 @@
 name: Daily Autonomous Bot Monitor
 
 on:
+  on:
   schedule:
-    # Run daily at 06:00 UTC (optimal time for daily strategic analysis)
-    - cron: "0 6 * * *"
+    - cron: "*/30 * * * *"
+  workflow_run:
+    workflows:
+      - "Deploy Screeps AI"
   workflow_dispatch:
 
 permissions:
