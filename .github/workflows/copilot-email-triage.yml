@@ -5,19 +5,19 @@ on:
   workflow_dispatch:
     inputs:
       from:
-        description: 'Sender email address'
+        description: "Sender email address"
         required: true
         type: string
       to:
-        description: 'Recipient email address'
+        description: "Recipient email address"
         required: true
         type: string
       subject:
-        description: 'Email subject'
+        description: "Email subject"
         required: true
         type: string
       body:
-        description: 'Email body'
+        description: "Email body"
         required: true
         type: string
 
