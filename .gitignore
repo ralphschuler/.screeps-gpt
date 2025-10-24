@@ -19,6 +19,10 @@ screeps.json
 # Hexo build artifacts
 /public
 /themes/landscape
+/docs-build/node_modules
+/docs-build/package-lock.json
+/docs-build/public
+/docs-build/db.json
 
 # Copilot workflow logs and cache (ephemeral artifacts)
 /reports/copilot/
