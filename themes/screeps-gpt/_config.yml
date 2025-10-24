@@ -1,0 +1,32 @@
+# Theme Configuration
+# Navigation menu
+menu:
+  Home: /
+  Docs: /docs/
+  Blog: /archives/
+  Changelog: /changelog/
+  Versions: /versions/
+
+# Sidebar
+sidebar: right
+
+# Widgets
+widgets:
+  - category
+  - tag
+  - tagcloud
+  - archive
+  - recent_posts
+
+# Social links
+social:
+  GitHub: https://github.com/ralphschuler/.screeps-gpt
+
+# Search
+search: true
+
+# RSS
+rss: /atom.xml
+
+# Footer
+footer_text: Generated from repository documentation and changelog.
