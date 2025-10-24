@@ -244,10 +244,8 @@ async function checkAndRespawn(): Promise<void> {
 
         // Get terrain
         console.log("  Analyzing terrain...");
-        // Parse shard and room from roomName format "shard3/E45S25"
-        const [shard, room] = roomName.includes("/") ? roomName.split("/") : ["shard3", roomName];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-        const terrainResult = (await (api as any).raw.game["room-terrain"]({ room, shard })) as RoomTerrainResponse;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/await-thenable
+        const terrainResult = (await api.raw.game.roomTerrain(roomName, 1)) as RoomTerrainResponse;
 
         if (!terrainResult.ok || !terrainResult.terrain || terrainResult.terrain.length === 0) {
           throw new Error("Failed to get room terrain");
