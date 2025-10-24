@@ -244,7 +244,7 @@ async function checkAndRespawn(): Promise<void> {
 
         // Get terrain
         console.log("  Analyzing terrain...");
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/await-thenable
+        // eslint-disable-next-line @typescript-eslint/await-thenable
         const terrainResult = (await api.raw.game.roomTerrain(roomName, 1)) as RoomTerrainResponse;
 
         if (!terrainResult.ok || !terrainResult.terrain || terrainResult.terrain.length === 0) {
