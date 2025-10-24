@@ -34,7 +34,7 @@ describe("Hexo documentation build (#252)", () => {
     console.log("Building documentation site...");
     execSync("npm run clean", { cwd: DOCS_BUILD_DIR, stdio: "inherit" });
     execSync("npm run build", { cwd: DOCS_BUILD_DIR, stdio: "inherit" });
-  });
+  }, 300000); // 5 minutes timeout for build operations
 
   describe("Build process validation", () => {
     it("should have valid Hexo configuration file", () => {
