@@ -2,8 +2,10 @@
 name: Deploy Screeps AI
 
 on:
-  release:
-    types: [published]
+  workflow_run:
+    workflows: ["Post Merge Release"]
+    types:
+      - completed
   workflow_dispatch:
     inputs:
       version:
@@ -20,10 +22,11 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # Only run for releases or manual dispatch
+    # Only run for successful workflow_run events or manual dispatch
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      github.event_name == 'release'
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success')
     # Use GitHub environment for deployment protection rules
     environment:
       name: production
@@ -42,10 +45,17 @@ jobs:
           if [ -n "${{ inputs.version }}" ]; then
             VERSION="${{ inputs.version }}"
             echo "::notice::Deploying manually specified version $VERSION"
+          elif [ "${{ github.event_name }}" = "workflow_run" ]; then
+            # For workflow_run events, get latest version tag
+            VERSION=$(git describe --tags --abbrev=0)
+            echo "::notice::Deploying version $VERSION from workflow_run event"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # For manual dispatch without version input, use latest tag
+            VERSION=$(git describe --tags --abbrev=0)
+            echo "::notice::Deploying latest version $VERSION via dispatch"
           else
-            # Use github.ref_name (contains the tag name)
-            VERSION="${{ github.ref_name }}"
-            echo "::notice::Deploying version $VERSION from tag"
+            echo "::error::Unknown event type for deployment"
+            exit 1
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 

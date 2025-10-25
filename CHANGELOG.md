@@ -5,6 +5,14 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Fixed
+
+- **Deploy workflow trigger mechanism (run #18800751206)**
+  - Updated deploy workflow to use `workflow_run` events instead of `release` events
+  - Fixed version resolution logic to use `git describe --tags --abbrev=0` for workflow_run triggers
+  - Improved conditional logic to handle both workflow_run and workflow_dispatch events properly
+  - Resolves regression tests expecting modernized CI/CD integration with Post Merge Release workflow
+
 ## [0.7.13] - 2025-10-25
 
 ### Fixed
