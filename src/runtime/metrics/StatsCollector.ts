@@ -5,6 +5,10 @@ interface RoomStats {
   energyCapacityAvailable: number;
   controllerLevel?: number;
   controllerProgress?: number;
+  /**
+   * The total progress required to reach the next controller level (RCL).
+   * Useful for monitoring RCL advancement in this room.
+   */
   controllerProgressTotal?: number;
 }
 
