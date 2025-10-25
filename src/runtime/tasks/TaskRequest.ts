@@ -11,27 +11,27 @@ export type TaskStatus = "PENDING" | "INPROCESS" | "COMPLETE";
  */
 export class TaskRequest {
   /** Unique identifier for this task */
-  id: string;
+  public id: string;
 
   /** The action to be performed */
-  task: TaskAction;
+  public task: TaskAction;
 
   /** Current status of the task */
-  status: TaskStatus;
+  public status: TaskStatus;
 
   /** Priority level (higher = more important) */
-  priority: number;
+  public priority: number;
 
   /** Creep assigned to this task (if any) */
-  assignedCreep?: Id<Creep>;
+  public assignedCreep?: Id<Creep>;
 
   /** Tick when task was created */
-  createdAt: number;
+  public createdAt: number;
 
   /** Optional deadline for task completion */
-  deadline?: number;
+  public deadline?: number;
 
-  constructor(id: string, task: TaskAction, priority: number, deadline?: number) {
+  public constructor(id: string, task: TaskAction, priority: number, deadline?: number) {
     this.id = id;
     this.task = task;
     this.status = "PENDING";
@@ -43,7 +43,7 @@ export class TaskRequest {
   /**
    * Check if this task can be assigned to a creep
    */
-  canAssign(creep: Creep): boolean {
+  public canAssign(creep: Creep): boolean {
     if (this.status !== "PENDING") {
       return false;
     }
@@ -55,7 +55,7 @@ export class TaskRequest {
   /**
    * Assign this task to a creep
    */
-  assign(creep: Creep): boolean {
+  public assign(creep: Creep): boolean {
     if (!this.canAssign(creep)) {
       return false;
     }
@@ -69,7 +69,7 @@ export class TaskRequest {
    * Execute the task action with the assigned creep
    * @returns true if task is complete
    */
-  execute(creep: Creep): boolean {
+  public execute(creep: Creep): boolean {
     if (this.status !== "INPROCESS") {
       return false;
     }
@@ -85,14 +85,14 @@ export class TaskRequest {
   /**
    * Check if task has expired
    */
-  isExpired(): boolean {
+  public isExpired(): boolean {
     return this.deadline !== undefined && Game.time > this.deadline;
   }
 
   /**
    * Get subtasks needed to meet prerequisites
    */
-  getPrerequisiteSubtasks(creep: Creep): TaskAction[] {
+  public getPrerequisiteSubtasks(creep: Creep): TaskAction[] {
     const subtasks: TaskAction[] = [];
 
     for (const prereq of this.task.prereqs) {

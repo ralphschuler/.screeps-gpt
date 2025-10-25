@@ -1,4 +1,10 @@
-import type { TaskPrerequisite } from "./TaskPrerequisite";
+import {
+  TaskPrerequisite,
+  MinionCanWork,
+  MinionCanCarry,
+  MinionHasEnergy,
+  MinionHasFreeCapacity
+} from "./TaskPrerequisite";
 
 /**
  * Represents a specific action to be performed by a creep.
@@ -6,13 +12,13 @@ import type { TaskPrerequisite } from "./TaskPrerequisite";
  */
 export abstract class TaskAction {
   /** Prerequisites that must be met before executing this action */
-  abstract prereqs: TaskPrerequisite[];
+  public abstract prereqs: TaskPrerequisite[];
 
   /**
    * Execute the action with the given creep
    * @returns true if action is complete, false if it should continue
    */
-  abstract action(creep: Creep): boolean;
+  public abstract action(creep: Creep): boolean;
 
   /**
    * Move creep towards the action target if needed
@@ -29,19 +35,20 @@ export abstract class TaskAction {
  * Harvest energy from a source
  */
 export class HarvestAction extends TaskAction {
-  prereqs: TaskPrerequisite[];
+  public prereqs: TaskPrerequisite[];
   private sourceId: Id<Source>;
 
-  constructor(sourceId: Id<Source>) {
+  public constructor(sourceId: Id<Source>) {
     super();
     this.sourceId = sourceId;
-    this.prereqs = [
-      new (require("./TaskPrerequisite").MinionCanWork)(),
-      new (require("./TaskPrerequisite").MinionHasFreeCapacity)()
-    ];
+    this.prereqs = [new MinionCanWork(), new MinionHasFreeCapacity()];
   }
 
-  action(creep: Creep): boolean {
+  public getSourceId(): Id<Source> {
+    return this.sourceId;
+  }
+
+  public action(creep: Creep): boolean {
     const source = Game.getObjectById(this.sourceId);
     if (!source) {
       return true; // Source doesn't exist, task complete
@@ -67,19 +74,20 @@ export class HarvestAction extends TaskAction {
  * Build a construction site
  */
 export class BuildAction extends TaskAction {
-  prereqs: TaskPrerequisite[];
+  public prereqs: TaskPrerequisite[];
   private siteId: Id<ConstructionSite>;
 
-  constructor(siteId: Id<ConstructionSite>) {
+  public constructor(siteId: Id<ConstructionSite>) {
     super();
     this.siteId = siteId;
-    this.prereqs = [
-      new (require("./TaskPrerequisite").MinionCanWork)(),
-      new (require("./TaskPrerequisite").MinionHasEnergy)()
-    ];
+    this.prereqs = [new MinionCanWork(), new MinionHasEnergy()];
   }
 
-  action(creep: Creep): boolean {
+  public getSiteId(): Id<ConstructionSite> {
+    return this.siteId;
+  }
+
+  public action(creep: Creep): boolean {
     const site = Game.getObjectById(this.siteId);
     if (!site) {
       return true; // Site doesn't exist or complete
@@ -105,19 +113,20 @@ export class BuildAction extends TaskAction {
  * Repair a structure
  */
 export class RepairAction extends TaskAction {
-  prereqs: TaskPrerequisite[];
+  public prereqs: TaskPrerequisite[];
   private structureId: Id<Structure>;
 
-  constructor(structureId: Id<Structure>) {
+  public constructor(structureId: Id<Structure>) {
     super();
     this.structureId = structureId;
-    this.prereqs = [
-      new (require("./TaskPrerequisite").MinionCanWork)(),
-      new (require("./TaskPrerequisite").MinionHasEnergy)()
-    ];
+    this.prereqs = [new MinionCanWork(), new MinionHasEnergy()];
   }
 
-  action(creep: Creep): boolean {
+  public getStructureId(): Id<Structure> {
+    return this.structureId;
+  }
+
+  public action(creep: Creep): boolean {
     const structure = Game.getObjectById(this.structureId);
     if (!structure || structure.hits === structure.hitsMax) {
       return true; // Structure doesn't exist or fully repaired
@@ -143,19 +152,16 @@ export class RepairAction extends TaskAction {
  * Upgrade controller
  */
 export class UpgradeAction extends TaskAction {
-  prereqs: TaskPrerequisite[];
+  public prereqs: TaskPrerequisite[];
   private controllerId: Id<StructureController>;
 
-  constructor(controllerId: Id<StructureController>) {
+  public constructor(controllerId: Id<StructureController>) {
     super();
     this.controllerId = controllerId;
-    this.prereqs = [
-      new (require("./TaskPrerequisite").MinionCanWork)(),
-      new (require("./TaskPrerequisite").MinionHasEnergy)()
-    ];
+    this.prereqs = [new MinionCanWork(), new MinionHasEnergy()];
   }
 
-  action(creep: Creep): boolean {
+  public action(creep: Creep): boolean {
     const controller = Game.getObjectById(this.controllerId);
     if (!controller) {
       return true; // Controller doesn't exist
@@ -181,22 +187,22 @@ export class UpgradeAction extends TaskAction {
  * Transfer resource to a structure
  */
 export class TransferAction extends TaskAction {
-  prereqs: TaskPrerequisite[];
+  public prereqs: TaskPrerequisite[];
   private targetId: Id<AnyStoreStructure>;
   private resourceType: ResourceConstant;
 
-  constructor(targetId: Id<AnyStoreStructure>, resourceType: ResourceConstant = RESOURCE_ENERGY) {
+  public constructor(targetId: Id<AnyStoreStructure>, resourceType: ResourceConstant = RESOURCE_ENERGY) {
     super();
     this.targetId = targetId;
     this.resourceType = resourceType;
-    this.prereqs = [new (require("./TaskPrerequisite").MinionCanCarry)()];
+    this.prereqs = [new MinionCanCarry()];
 
     if (resourceType === RESOURCE_ENERGY) {
-      this.prereqs.push(new (require("./TaskPrerequisite").MinionHasEnergy)());
+      this.prereqs.push(new MinionHasEnergy());
     }
   }
 
-  action(creep: Creep): boolean {
+  public action(creep: Creep): boolean {
     const target = Game.getObjectById(this.targetId);
     if (!target || target.store.getFreeCapacity(this.resourceType) === 0) {
       return true; // Target doesn't exist or is full
@@ -222,21 +228,18 @@ export class TransferAction extends TaskAction {
  * Withdraw resource from a structure
  */
 export class WithdrawAction extends TaskAction {
-  prereqs: TaskPrerequisite[];
+  public prereqs: TaskPrerequisite[];
   private targetId: Id<AnyStoreStructure>;
   private resourceType: ResourceConstant;
 
-  constructor(targetId: Id<AnyStoreStructure>, resourceType: ResourceConstant = RESOURCE_ENERGY) {
+  public constructor(targetId: Id<AnyStoreStructure>, resourceType: ResourceConstant = RESOURCE_ENERGY) {
     super();
     this.targetId = targetId;
     this.resourceType = resourceType;
-    this.prereqs = [
-      new (require("./TaskPrerequisite").MinionCanCarry)(),
-      new (require("./TaskPrerequisite").MinionHasFreeCapacity)()
-    ];
+    this.prereqs = [new MinionCanCarry(), new MinionHasFreeCapacity()];
   }
 
-  action(creep: Creep): boolean {
+  public action(creep: Creep): boolean {
     const target = Game.getObjectById(this.targetId);
     if (!target || target.store.getUsedCapacity(this.resourceType) === 0) {
       return true; // Target doesn't exist or is empty
