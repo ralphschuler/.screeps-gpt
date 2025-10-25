@@ -13,6 +13,32 @@ declare global {
       respawnRequested: boolean;
     };
     creepCounter?: number;
+    stats?: {
+      time: number;
+      cpu: {
+        used: number;
+        limit: number;
+        bucket: number;
+      };
+      creeps: {
+        count: number;
+      };
+      rooms: {
+        count: number;
+        [roomName: string]:
+          | number
+          | {
+              energyAvailable: number;
+              energyCapacityAvailable: number;
+              controllerLevel?: number;
+              controllerProgress?: number;
+              controllerProgressTotal?: number;
+            };
+      };
+      spawn?: {
+        orders: number;
+      };
+    };
   }
 
   interface CreepMemory {
