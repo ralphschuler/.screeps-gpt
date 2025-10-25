@@ -14,6 +14,7 @@ export interface KernelConfig {
   respawnManager?: RespawnManager;
   repositorySignalProvider?: () => RepositorySignal | undefined;
   logger?: Pick<Console, "log" | "warn">;
+  cpuEmergencyThreshold?: number;
 }
 
 /**
@@ -28,24 +29,42 @@ export class Kernel {
   private readonly respawnManager: RespawnManager;
   private readonly repositorySignalProvider?: () => RepositorySignal | undefined;
   private readonly logger: Pick<Console, "log" | "warn">;
+  private readonly cpuEmergencyThreshold: number;
 
   public constructor(config: KernelConfig = {}) {
     this.logger = config.logger ?? console;
     this.memoryManager = config.memoryManager ?? new MemoryManager(this.logger);
     this.tracker = config.tracker ?? new PerformanceTracker(this.logger);
-    this.behavior = config.behavior ?? new BehaviorController(this.logger);
+    this.behavior = config.behavior ?? new BehaviorController({}, this.logger);
     this.evaluator = config.evaluator ?? new SystemEvaluator({}, this.logger);
     this.respawnManager = config.respawnManager ?? new RespawnManager(this.logger);
     this.repositorySignalProvider = config.repositorySignalProvider;
+    this.cpuEmergencyThreshold = config.cpuEmergencyThreshold ?? 0.95;
   }
 
   /**
    * Execute one iteration of the Screeps loop using the provided environment.
+   * Implements CPU budget protection to prevent script execution timeouts.
    */
   public run(game: GameContext, memory: Memory): void {
     const repository = this.repositorySignalProvider?.();
 
     this.tracker.begin(game);
+
+    // Emergency CPU check before expensive operations
+    if (game.cpu.getUsed() > game.cpu.limit * this.cpuEmergencyThreshold) {
+      this.logger.warn?.(
+        `Emergency CPU threshold exceeded (${game.cpu.getUsed().toFixed(2)}/${game.cpu.limit}), ` +
+          `aborting tick to prevent timeout`
+      );
+      const snapshot = this.tracker.end(game, {
+        processedCreeps: 0,
+        spawnedCreeps: [],
+        tasksExecuted: {}
+      });
+      this.evaluator.evaluateAndStore(memory, snapshot, repository);
+      return;
+    }
 
     // Check for respawn condition before other operations
     const needsRespawn = this.respawnManager.checkRespawnNeeded(game, memory);

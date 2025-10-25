@@ -8,6 +8,7 @@ import type {
 
 interface SystemEvaluatorOptions {
   cpuUsageWarningRatio?: number;
+  cpuCriticalRatio?: number;
   lowBucketThreshold?: number;
   minimumCoverage?: number;
 }
@@ -25,6 +26,7 @@ export class SystemEvaluator {
   ) {
     this.options = {
       cpuUsageWarningRatio: options.cpuUsageWarningRatio ?? 0.8,
+      cpuCriticalRatio: options.cpuCriticalRatio ?? 0.95,
       lowBucketThreshold: options.lowBucketThreshold ?? 500,
       minimumCoverage: options.minimumCoverage ?? 85
     };
@@ -51,7 +53,14 @@ export class SystemEvaluator {
       });
     }
 
-    if (snapshot.cpuUsed > snapshot.cpuLimit * this.options.cpuUsageWarningRatio) {
+    if (snapshot.cpuUsed > snapshot.cpuLimit * this.options.cpuCriticalRatio) {
+      findings.push({
+        severity: "critical",
+        title: "CPU usage at critical level - timeout risk",
+        detail: `CPU usage ${snapshot.cpuUsed.toFixed(2)} exceeds ${(this.options.cpuCriticalRatio * 100).toFixed(0)}% of the limit ${snapshot.cpuLimit}. Script execution timeout imminent.`,
+        recommendation: "Reduce creep count, simplify behaviors, or increase CPU limit to prevent timeout."
+      });
+    } else if (snapshot.cpuUsed > snapshot.cpuLimit * this.options.cpuUsageWarningRatio) {
       findings.push({
         severity: "warning",
         title: "CPU usage approaching limit",

@@ -99,18 +99,36 @@ const ROLE_DEFINITIONS: Record<RoleName, RoleDefinition> = {
   }
 };
 
+interface BehaviorControllerOptions {
+  cpuSafetyMargin?: number;
+  maxCpuPerCreep?: number;
+}
+
 /**
  * Coordinates spawning and per-tick behaviour execution for every registered role.
  */
 export class BehaviorController {
-  public constructor(private readonly logger: Pick<Console, "log" | "warn"> = console) {}
+  private readonly options: Required<BehaviorControllerOptions>;
+
+  public constructor(
+    options: BehaviorControllerOptions = {},
+    private readonly logger: Pick<Console, "log" | "warn"> = console
+  ) {
+    this.options = {
+      cpuSafetyMargin: options.cpuSafetyMargin ?? 0.9,
+      maxCpuPerCreep: options.maxCpuPerCreep ?? 2.0
+    };
+  }
 
   /**
    * Run a full behaviour tick and return a summary of executed actions.
+   * Implements CPU budget management to prevent script execution timeouts.
    */
   public execute(game: GameContext, memory: Memory, roleCounts: Record<string, number>): BehaviorSummary {
     const tasksExecuted: Record<string, number> = {};
     const spawned: string[] = [];
+    let processedCreeps = 0;
+    let skippedCreeps = 0;
 
     // Initialize creep counter if not present
     if (typeof memory.creepCounter !== "number") {
@@ -119,11 +137,28 @@ export class BehaviorController {
 
     this.ensureRoleMinimums(game, memory, roleCounts, spawned);
 
-    for (const creep of Object.values(game.creeps) as ManagedCreep[]) {
+    const cpuBudget = game.cpu.limit * this.options.cpuSafetyMargin;
+    const creeps = Object.values(game.creeps) as ManagedCreep[];
+
+    for (const creep of creeps) {
+      // Check CPU budget before processing each creep
+      const cpuUsed = game.cpu.getUsed();
+      if (cpuUsed > cpuBudget) {
+        skippedCreeps = creeps.length - processedCreeps;
+        this.logger.warn?.(
+          `CPU budget exceeded (${cpuUsed.toFixed(2)}/${cpuBudget.toFixed(2)}), ` +
+            `skipping ${skippedCreeps} creeps to prevent timeout`
+        );
+        break;
+      }
+
+      const cpuBefore = game.cpu.getUsed();
+
       const role = creep.memory.role;
       const handler = role ? ROLE_DEFINITIONS[role] : undefined;
       if (!handler) {
         this.logger.warn?.(`Unknown role '${role}' for creep ${creep.name}`);
+        processedCreeps++;
         continue;
       }
 
@@ -139,12 +174,19 @@ export class BehaviorController {
 
       const task = handler.run(creep);
       tasksExecuted[task] = (tasksExecuted[task] ?? 0) + 1;
+      processedCreeps++;
+
+      // Log warning if a single creep consumed excessive CPU
+      const cpuConsumed = game.cpu.getUsed() - cpuBefore;
+      if (cpuConsumed > this.options.maxCpuPerCreep) {
+        this.logger.warn?.(`Creep ${creep.name} (${role}) consumed excessive CPU: ${cpuConsumed.toFixed(2)}`);
+      }
     }
 
     memory.roles = roleCounts;
 
     return {
-      processedCreeps: Object.keys(game.creeps).length,
+      processedCreeps,
       spawnedCreeps: spawned,
       tasksExecuted
     };
