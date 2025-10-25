@@ -2,6 +2,36 @@
 
 ## Backlog
 
+### Strategic Planning
+
+- [ ] Create Epic issues for each roadmap phase (Phase 1-5)
+- [ ] Set up PTR monitoring for Phase 1 metrics (energy surplus, controller downgrade, spawn utilization)
+- [ ] Configure evaluation pipeline to track roadmap progression milestones
+
+### Phase 1: Foundation (HIGH Priority)
+
+- [ ] Implement enhanced spawn priority system with energy threshold checks
+- [ ] Add container-based harvesting for improved efficiency
+- [ ] Automate road network planning (source → spawn, source → controller)
+- [ ] Implement dynamic role population based on room state
+- [ ] Optimize CPU usage for early game (<5 CPU/tick target)
+
+### Phase 2: Core Framework (Planned)
+
+- [ ] Design and implement task queue system with priority levels
+- [ ] Create task assignment algorithm (closest idle creep, capability matching)
+- [ ] Implement storage manager for resource distribution
+- [ ] Add link network optimization for energy highways
+- [ ] Create tower automation for defense and repair
+
+### Future Phases
+
+- [ ] Phase 3: Terminal management, lab automation, market integration
+- [ ] Phase 4: Empire coordination, room claiming, multi-room logistics
+- [ ] Phase 5: Military operations, multi-shard expansion
+
+### Technical Improvements
+
 - [ ] Expand creep role library beyond harvester/upgrader to cover builders and remote miners.
 - [ ] Add automated simulation snapshots for regression verification of behaviour changes.
 - [ ] Review Screeps Quorum automation patterns for scalable role orchestration.
