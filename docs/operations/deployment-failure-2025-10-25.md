@@ -14,6 +14,7 @@ The Screeps bot lost all game presence starting October 24, 2025, with no deploy
 ## Root Cause Analysis
 
 ### Timeline
+
 - **October 24, 2025 13:25 UTC**: Last successful deployment (v0.5.24, Run 76)
 - **October 24, 2025 13:25 UTC**: Deployment runs 77-78 immediately cancelled
 - **October 24-25, 2025**: 11 releases created (v0.6.0 to v0.7.15) with NO deployments triggered
@@ -25,7 +26,7 @@ The deployment workflow (`.github/workflows/deploy.yml`) had a **malformed trigg
 
 ```yaml
 on:
-  release:  # INCORRECT - incomplete, no event types specified
+  release: # INCORRECT - incomplete, no event types specified
 ```
 
 According to GitHub Actions specification, `release:` without activity types (e.g., `published`, `created`) will never trigger. The workflow should have been:
@@ -34,7 +35,7 @@ According to GitHub Actions specification, `release:` without activity types (e.
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 ```
 
 ### Why This Happened
@@ -44,6 +45,7 @@ Per `DEPLOY_WORKFLOW_FIX.md`, a previous fix removed the non-functional `release
 ## Impact
 
 **Severity**: CRITICAL
+
 - ✗ Complete loss of game presence (no rooms controlled, no creeps spawned)
 - ✗ Monitoring system compromised (PTR monitoring ineffective without active bot)
 - ✗ Development pipeline blocked (cannot validate bot improvements)
@@ -57,7 +59,6 @@ Per `DEPLOY_WORKFLOW_FIX.md`, a previous fix removed the non-functional `release
    - Changed from: `on: release:` (malformed)
    - Changed to: `on: workflow_run` (triggers after Post Merge Release completes)
    - This ensures deployments run automatically after successful releases
-   
 2. **Added manual deployment capability**:
    - Added `workflow_dispatch` trigger for emergency manual deployments
    - Supports optional version input parameter
@@ -71,12 +72,15 @@ Per `DEPLOY_WORKFLOW_FIX.md`, a previous fix removed the non-functional `release
 ### Deployment Recovery Options
 
 #### Option 1: Automatic (Recommended)
+
 Merge the fix PR to `main`. The post-merge-release workflow will:
+
 1. Bump version to v0.7.17 (or appropriate semantic version)
 2. Create GitHub Release (non-prerelease)
 3. **Trigger deployment automatically** (via workflow_run)
 
 #### Option 2: Manual Deployment via GitHub UI
+
 1. Go to: Actions → Deploy Screeps AI → Run workflow
 2. Select branch: `main` (or the branch with the fix)
 3. Leave version input empty (will use current package.json version)
@@ -94,6 +98,7 @@ After deployment:
 ## Prevention Measures
 
 ### Immediate Actions
+
 - [x] Fix deployment workflow trigger configuration
 - [x] Add manual deployment capability for emergency recovery
 - [x] Document incident for future reference
