@@ -37,13 +37,13 @@ export class Kernel {
   public constructor(config: KernelConfig = {}) {
     this.logger = config.logger ?? console;
     this.memoryManager = config.memoryManager ?? new MemoryManager(this.logger);
-    this.tracker = config.tracker ?? new PerformanceTracker(this.logger);
+    this.tracker = config.tracker ?? new PerformanceTracker({}, this.logger);
     this.statsCollector = config.statsCollector ?? new StatsCollector();
     this.behavior = config.behavior ?? new BehaviorController({}, this.logger);
     this.evaluator = config.evaluator ?? new SystemEvaluator({}, this.logger);
     this.respawnManager = config.respawnManager ?? new RespawnManager(this.logger);
     this.repositorySignalProvider = config.repositorySignalProvider;
-    this.cpuEmergencyThreshold = config.cpuEmergencyThreshold ?? 0.95;
+    this.cpuEmergencyThreshold = config.cpuEmergencyThreshold ?? 0.9;
   }
 
   /**

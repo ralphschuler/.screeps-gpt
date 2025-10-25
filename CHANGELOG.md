@@ -5,6 +5,18 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Changed
+
+- **CPU optimization to maintain below 90% threshold**
+  - Reduced default CPU safety margin in BehaviorController from 90% to 80% for earlier creep processing cutoff
+  - Reduced per-creep CPU threshold from 2.0 to 1.5 CPU to detect expensive operations earlier
+  - Lowered PerformanceTracker warning threshold from 80% to 70% CPU usage
+  - Lowered PerformanceTracker critical threshold from 95% to 90% CPU usage
+  - Reduced Kernel emergency CPU threshold from 95% to 90%
+  - Increased movement reusePath values from 5-20 ticks to 30-50 ticks to reduce pathfinding overhead
+  - Added regression test suite to validate CPU optimization thresholds and prevent future performance degradation
+  - These changes significantly reduce CPU consumption by minimizing expensive pathfinding operations
+
 ## [0.7.19] - 2025-10-25
 
 ### Fixed

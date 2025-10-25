@@ -115,8 +115,8 @@ export class BehaviorController {
     private readonly logger: Pick<Console, "log" | "warn"> = console
   ) {
     this.options = {
-      cpuSafetyMargin: options.cpuSafetyMargin ?? 0.9,
-      maxCpuPerCreep: options.maxCpuPerCreep ?? 2.0
+      cpuSafetyMargin: options.cpuSafetyMargin ?? 0.8,
+      maxCpuPerCreep: options.maxCpuPerCreep ?? 1.5
     };
   }
 
@@ -254,7 +254,7 @@ function runHarvester(creep: ManagedCreep): string {
     if (source) {
       const result = creep.harvest(source);
       if (result === ERR_NOT_IN_RANGE) {
-        creep.moveTo(source, { range: 1, reusePath: 5 });
+        creep.moveTo(source, { range: 1, reusePath: 30 });
       }
     }
     return HARVEST_TASK;
@@ -271,7 +271,7 @@ function runHarvester(creep: ManagedCreep): string {
   if (target) {
     const result = creep.transfer(target, RESOURCE_ENERGY);
     if (result === ERR_NOT_IN_RANGE) {
-      creep.moveTo(target, { range: 1, reusePath: 5 });
+      creep.moveTo(target, { range: 1, reusePath: 30 });
     }
     return DELIVER_TASK;
   }
@@ -281,7 +281,7 @@ function runHarvester(creep: ManagedCreep): string {
   if (controller) {
     const upgrade = creep.upgradeController(controller);
     if (upgrade === ERR_NOT_IN_RANGE) {
-      creep.moveTo(controller, { range: 3, reusePath: 5 });
+      creep.moveTo(controller, { range: 3, reusePath: 30 });
     }
     return UPGRADE_TASK;
   }
@@ -328,7 +328,7 @@ function runUpgrader(creep: ManagedCreep): string {
     if (target) {
       const result = creep.withdraw(target, RESOURCE_ENERGY);
       if (result === ERR_NOT_IN_RANGE) {
-        creep.moveTo(target, { range: 1, reusePath: 5 });
+        creep.moveTo(target, { range: 1, reusePath: 30 });
       }
     }
     return RECHARGE_TASK;
@@ -338,7 +338,7 @@ function runUpgrader(creep: ManagedCreep): string {
   if (controller) {
     const result = creep.upgradeController(controller);
     if (result === ERR_NOT_IN_RANGE) {
-      creep.moveTo(controller, { range: 3, reusePath: 5 });
+      creep.moveTo(controller, { range: 3, reusePath: 30 });
     }
     return UPGRADE_TASK;
   }
@@ -390,7 +390,7 @@ function runBuilder(creep: ManagedCreep): string {
     if (target) {
       const result = creep.withdraw(target, RESOURCE_ENERGY);
       if (result === ERR_NOT_IN_RANGE) {
-        creep.moveTo(target, { range: 1, reusePath: 5 });
+        creep.moveTo(target, { range: 1, reusePath: 30 });
       }
     } else {
       const sources = creep.room.find(FIND_SOURCES_ACTIVE) as Source[];
@@ -398,7 +398,7 @@ function runBuilder(creep: ManagedCreep): string {
       if (source) {
         const harvestResult = creep.harvest(source);
         if (harvestResult === ERR_NOT_IN_RANGE) {
-          creep.moveTo(source, { range: 1, reusePath: 5 });
+          creep.moveTo(source, { range: 1, reusePath: 30 });
         }
       }
     }
@@ -413,7 +413,7 @@ function runBuilder(creep: ManagedCreep): string {
     if (site) {
       const result = creep.build(site);
       if (result === ERR_NOT_IN_RANGE) {
-        creep.moveTo(site, { range: 3, reusePath: 5 });
+        creep.moveTo(site, { range: 3, reusePath: 30 });
       }
       return BUILDER_BUILD_TASK;
     }
@@ -440,7 +440,7 @@ function runBuilder(creep: ManagedCreep): string {
   if (target) {
     const result = creep.repair(target);
     if (result === ERR_NOT_IN_RANGE) {
-      creep.moveTo(target, { range: 3, reusePath: 5 });
+      creep.moveTo(target, { range: 3, reusePath: 30 });
     }
     return BUILDER_MAINTAIN_TASK;
   }
@@ -449,7 +449,7 @@ function runBuilder(creep: ManagedCreep): string {
   if (controller) {
     const upgrade = creep.upgradeController(controller);
     if (upgrade === ERR_NOT_IN_RANGE) {
-      creep.moveTo(controller, { range: 3, reusePath: 5 });
+      creep.moveTo(controller, { range: 3, reusePath: 30 });
     }
   }
 
@@ -502,7 +502,7 @@ function runRemoteMiner(creep: ManagedCreep): string {
     if (memory.targetRoom && creep.room.name !== memory.targetRoom) {
       creep.moveTo(
         { pos: { x: 25, y: 25, roomName: memory.targetRoom } as unknown as RoomPosition },
-        { reusePath: 20 }
+        { reusePath: 50 }
       );
       return REMOTE_TRAVEL_TASK;
     }
@@ -520,7 +520,7 @@ function runRemoteMiner(creep: ManagedCreep): string {
     if (source) {
       const result = creep.harvest(source);
       if (result === ERR_NOT_IN_RANGE) {
-        creep.moveTo(source, { range: 1, reusePath: 10 });
+        creep.moveTo(source, { range: 1, reusePath: 40 });
       }
     }
 
@@ -528,7 +528,7 @@ function runRemoteMiner(creep: ManagedCreep): string {
   }
 
   if (memory.homeRoom && creep.room.name !== memory.homeRoom) {
-    creep.moveTo({ pos: { x: 25, y: 25, roomName: memory.homeRoom } as unknown as RoomPosition }, { reusePath: 20 });
+    creep.moveTo({ pos: { x: 25, y: 25, roomName: memory.homeRoom } as unknown as RoomPosition }, { reusePath: 50 });
     return REMOTE_RETURN_TASK;
   }
 
@@ -546,7 +546,7 @@ function runRemoteMiner(creep: ManagedCreep): string {
   if (depositTarget) {
     const result = creep.transfer(depositTarget, RESOURCE_ENERGY);
     if (result === ERR_NOT_IN_RANGE) {
-      creep.moveTo(depositTarget, { range: 1, reusePath: 10 });
+      creep.moveTo(depositTarget, { range: 1, reusePath: 40 });
     } else if (result === OK && creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
       memory.task = REMOTE_TRAVEL_TASK;
     }
@@ -557,7 +557,7 @@ function runRemoteMiner(creep: ManagedCreep): string {
   if (controller) {
     const result = creep.upgradeController(controller);
     if (result === ERR_NOT_IN_RANGE) {
-      creep.moveTo(controller, { range: 3, reusePath: 10 });
+      creep.moveTo(controller, { range: 3, reusePath: 40 });
     }
   }
 
