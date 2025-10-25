@@ -4,6 +4,25 @@ The Screeps Monitoring workflow (`screeps-monitoring.yml`) keeps a pulse on Publ
 
 ## Data Collection
 
+### Bot-Side Stats Collection
+
+The Screeps bot collects performance statistics every game tick and stores them in `Memory.stats`. This data is then retrieved by external monitoring systems via the Screeps API.
+
+**Implementation:** [`src/runtime/metrics/StatsCollector.ts`](../../src/runtime/metrics/StatsCollector.ts)
+
+Stats collected include:
+
+- CPU usage (used, limit, bucket)
+- Creep count
+- Room count and per-room statistics
+- Energy availability and capacity
+- Controller level and progress
+- Spawn throughput
+
+See [Stats Collection Implementation](./stats-collection.md) for detailed documentation.
+
+### API-Side Stats Retrieval
+
 - Script: [`scripts/fetch-screeps-stats.mjs`](../../scripts/fetch-screeps-stats.mjs).
 - Endpoint: `/api/user/stats?interval=<value>` (default host `https://screeps.com`). Override with `SCREEPS_STATS_HOST` or
   `SCREEPS_STATS_API` if needed.
@@ -57,8 +76,12 @@ If authentication fails (401/403 errors):
 
 ### No Data Available
 
-If the snapshot shows no stats data:
+If the snapshot shows no stats data (`{"ok": 1, "stats": {}}`):
 
-1. Check that your Screeps account has recent activity on the target server
-2. Verify you're targeting the correct server (PTR vs. official)
-3. Confirm the interval parameter matches the expected data range
+1. **Verify bot is collecting stats**: Check bot deployment and ensure it's running with the StatsCollector integration
+2. **Check Memory.stats in console**: Run `JSON.stringify(Memory.stats)` to verify the bot is writing stats
+3. **Verify game activity**: Confirm your Screeps account has recent activity on the target server
+4. **Check server target**: Verify you're targeting the correct server (PTR vs. official)
+5. **Confirm interval parameter**: Ensure the interval parameter matches the expected data range
+
+See [Stats Collection Implementation](./stats-collection.md) for troubleshooting the bot-side stats generation.
