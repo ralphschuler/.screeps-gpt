@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.7.13] - 2025-10-25
+
 ### Fixed
 
 - **Regression test failure for copilot-exec force-response parameter (run #18795077062)**
