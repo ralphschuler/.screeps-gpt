@@ -81,6 +81,283 @@ interface PerformanceSnapshot {
 }
 ```
 
+## CPU Timeout Prevention
+
+### Timeout Protection System (v0.7.11+)
+
+Screeps will forcefully terminate script execution if CPU limit is exceeded, resulting in lost game ticks. The runtime implements multi-layered timeout prevention:
+
+**Protection Layers**:
+
+1. **Emergency Abort (95% threshold)** - Kernel-level
+2. **CPU Budget Management (90% threshold)** - BehaviorController-level
+3. **Critical Warnings (95% threshold)** - PerformanceTracker-level
+4. **Per-Creep Monitoring (2.0 CPU/creep)** - Individual operation tracking
+
+### Emergency CPU Protection (Kernel)
+
+**Implementation**: `src/runtime/bootstrap/kernel.ts`
+
+```typescript
+// Emergency check before expensive operations
+if (game.cpu.getUsed() > game.cpu.limit * 0.95) {
+  logger.warn(
+    `Emergency CPU threshold exceeded, aborting tick to prevent timeout`
+  );
+  // Skip behavior execution, complete evaluation only
+  return;
+}
+```
+
+**Trigger Conditions**:
+
+- CPU usage >95% of limit (configurable)
+- Checked at start of kernel.run() before behavior execution
+
+**Behavior**:
+
+- Aborts tick immediately
+- Skips all creep behavior execution
+- Still completes system evaluation and memory storage
+- Logs emergency warning to console
+
+**Example**:
+
+```
+CPU Limit: 10
+Emergency Threshold: 9.5 CPU (95%)
+Current Usage: 9.7 CPU → ABORT TICK
+```
+
+### CPU Budget Management (BehaviorController)
+
+**Implementation**: `src/runtime/behavior/BehaviorController.ts`
+
+```typescript
+const cpuBudget = game.cpu.limit * 0.9; // Default 90%
+
+for (const creep of creeps) {
+  if (game.cpu.getUsed() > cpuBudget) {
+    // Stop processing remaining creeps
+    logger.warn(`CPU budget exceeded, skipping ${skippedCount} creeps`);
+    break;
+  }
+  // Process creep...
+}
+```
+
+**Configuration Options**:
+
+```typescript
+// Custom safety margin
+new BehaviorController({
+  cpuSafetyMargin: 0.85, // Stop at 85% instead of 90%
+  maxCpuPerCreep: 1.5 // Warn if creep uses >1.5 CPU
+});
+```
+
+**Behavior**:
+
+- Checks CPU before processing each creep
+- Early-exit if budget exceeded
+- Reports number of skipped creeps
+- Continues with evaluation phase
+
+**Performance Impact**: ~0.01 CPU per creep (budget check overhead)
+
+### Per-Creep CPU Monitoring
+
+**Implementation**: Tracks CPU consumption per creep during execution
+
+```typescript
+const cpuBefore = game.cpu.getUsed();
+// Execute creep behavior
+const cpuAfter = game.cpu.getUsed();
+const cpuConsumed = cpuAfter - cpuBefore;
+
+if (cpuConsumed > 2.0) {
+  // Default threshold
+  logger.warn(`Creep ${name} consumed excessive CPU: ${cpuConsumed.toFixed(2)}`);
+}
+```
+
+**Use Cases**:
+
+- Identify pathfinding issues (>2.0 CPU indicates problem)
+- Detect infinite loops in behavior logic
+- Profile individual creep performance
+
+**Example Warning**:
+
+```
+Creep harvester-12345-789 (harvester) consumed excessive CPU: 2.34
+```
+
+### Critical CPU Threshold (PerformanceTracker)
+
+**Implementation**: Enhanced warning system with dual thresholds
+
+```typescript
+// High CPU (80%)
+if (cpuRatio > 0.8) {
+  warnings.push(`High CPU usage ${cpuUsed} / ${cpuLimit}`);
+}
+
+// Critical CPU (95%)
+if (cpuRatio > 0.95) {
+  warnings.push(
+    `CRITICAL: CPU usage ${cpuUsed} exceeds 95% of limit - timeout risk`
+  );
+}
+```
+
+**Warning Levels**:
+
+| Threshold | Severity | Action Required | Timeout Risk |
+| --------- | -------- | --------------- | ------------ |
+| <80%      | Normal   | None            | None         |
+| 80-95%    | Warning  | Monitor         | Low          |
+| >95%      | Critical | Immediate       | High         |
+
+### Timeout Prevention Workflow
+
+**Normal Tick Flow**:
+
+```
+1. Kernel begins → Check emergency threshold (95%)
+   ✓ Pass → Continue
+2. Behavior execution → Check budget before each creep (90%)
+   ✓ Pass → Process all creeps
+3. Performance tracker → Generate warnings if >80% or >95%
+   ✓ Warnings logged
+4. System evaluator → Store findings in Memory
+```
+
+**Emergency Abort Flow**:
+
+```
+1. Kernel begins → Check emergency threshold (95%)
+   ✗ Fail (9.7/10 CPU) → ABORT
+2. Skip behavior execution
+3. Complete evaluation with empty behavior summary
+4. Store emergency warning in Memory
+5. End tick safely
+```
+
+**Budget Exceeded Flow**:
+
+```
+1. Kernel begins → Emergency check passes
+2. Behavior execution → Process 5 creeps successfully
+3. Behavior execution → CPU check fails (9.2/9.0 budget)
+   ✗ Fail → Stop processing, skip remaining 3 creeps
+4. Performance tracker → Generate critical warning (>90%)
+5. System evaluator → Store findings with partial execution data
+```
+
+### Configuration Examples
+
+**Conservative (High Safety)**:
+
+```typescript
+// kernel.ts
+const kernel = createKernel({
+  cpuEmergencyThreshold: 0.9, // Abort at 90%
+  behavior: new BehaviorController({
+    cpuSafetyMargin: 0.8, // Stop creeps at 80%
+    maxCpuPerCreep: 1.0 // Warn if >1.0 CPU/creep
+  })
+});
+```
+
+**Aggressive (Maximum Utilization)**:
+
+```typescript
+// kernel.ts
+const kernel = createKernel({
+  cpuEmergencyThreshold: 0.98, // Abort at 98%
+  behavior: new BehaviorController({
+    cpuSafetyMargin: 0.95, // Stop creeps at 95%
+    maxCpuPerCreep: 3.0 // Warn if >3.0 CPU/creep
+  })
+});
+```
+
+**Default (Balanced)**:
+
+```typescript
+// Uses defaults: 95% emergency, 90% budget, 2.0 CPU/creep
+const kernel = createKernel();
+```
+
+### Timeout Recovery Procedures
+
+**If Emergency Abort Occurs**:
+
+1. Review Memory.systemReport for warnings
+2. Check which creeps were skipped
+3. Reduce creep count or optimize behavior logic
+4. Monitor bucket recovery
+
+**If Frequent Budget Exceeded**:
+
+1. Identify problematic creeps from warnings
+2. Profile CPU costs per role
+3. Optimize pathfinding (increase reusePath)
+4. Reduce upgrader/builder counts
+5. Consider creep role distribution
+
+**Prevention Checklist**:
+
+- ✓ Keep total creeps <20 on free tier (10 CPU limit)
+- ✓ Monitor bucket trend (should stay >5000)
+- ✓ Review new features for CPU impact before deployment
+- ✓ Use regression tests to validate CPU behavior
+- ✓ Set up external monitoring (PTR alerts)
+
+### Testing Timeout Prevention
+
+**Regression Test**: `tests/regression/cpu-timeout-prevention.test.ts`
+
+Validates:
+
+- CPU budget enforcement stops processing creeps
+- Emergency abort prevents timeout
+- Per-creep monitoring detects expensive operations
+- Normal operation when under budget
+
+**Run Tests**:
+
+```bash
+npm run test:regression -- cpu-timeout-prevention
+```
+
+### Monitoring Timeout Prevention
+
+**Console Monitoring**:
+
+```javascript
+// Check if emergency abort occurred
+Memory.systemReport?.report.findings.filter(
+  f => f.title.includes("Emergency CPU")
+);
+
+// Check if budget exceeded
+Memory.systemReport?.report.execution.processedCreeps < Object.keys(Game.creeps).length;
+```
+
+**PTR Monitoring** (GitHub Actions):
+
+- `screeps-monitoring.yml` checks for CPU warnings
+- Sends push notifications for critical findings
+- Tracks timeout occurrences over time
+
+### Related Issues
+
+- [#138](https://github.com/ralphschuler/.screeps-gpt/issues/138) - Script execution timeout on shard3 (this implementation)
+- [#117](https://github.com/ralphschuler/.screeps-gpt/issues/117) - Optimize CPU usage below 90% threshold
+- [#137](https://github.com/ralphschuler/.screeps-gpt/issues/137) - screeps-profiler integration
+
 ## Performance Thresholds
 
 ### Warning Thresholds (Configurable)
