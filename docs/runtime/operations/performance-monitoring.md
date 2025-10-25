@@ -101,9 +101,7 @@ Screeps will forcefully terminate script execution if CPU limit is exceeded, res
 ```typescript
 // Emergency check before expensive operations
 if (game.cpu.getUsed() > game.cpu.limit * 0.95) {
-  logger.warn(
-    `Emergency CPU threshold exceeded, aborting tick to prevent timeout`
-  );
+  logger.warn(`Emergency CPU threshold exceeded, aborting tick to prevent timeout`);
   // Skip behavior execution, complete evaluation only
   return;
 }
@@ -205,9 +203,7 @@ if (cpuRatio > 0.8) {
 
 // Critical CPU (95%)
 if (cpuRatio > 0.95) {
-  warnings.push(
-    `CRITICAL: CPU usage ${cpuUsed} exceeds 95% of limit - timeout risk`
-  );
+  warnings.push(`CRITICAL: CPU usage ${cpuUsed} exceeds 95% of limit - timeout risk`);
 }
 ```
 
@@ -338,9 +334,7 @@ npm run test:regression -- cpu-timeout-prevention
 
 ```javascript
 // Check if emergency abort occurred
-Memory.systemReport?.report.findings.filter(
-  f => f.title.includes("Emergency CPU")
-);
+Memory.systemReport?.report.findings.filter(f => f.title.includes("Emergency CPU"));
 
 // Check if budget exceeded
 Memory.systemReport?.report.execution.processedCreeps < Object.keys(Game.creeps).length;
