@@ -57,6 +57,14 @@ interface GameLike {
  * Collects and stores performance statistics to Memory.stats for external monitoring.
  * The Screeps API endpoint /api/user/stats retrieves data from Memory.stats for
  * PTR telemetry and automated monitoring workflows.
+ *
+ * @example
+ * ```ts
+ * import { StatsCollector } from "./runtime/metrics/StatsCollector";
+ * // Assume `game`, `memory`, and `snapshot` are provided by the runtime
+ * const statsCollector = new StatsCollector();
+ * statsCollector.collect(game, memory, snapshot);
+ * ```
  */
 export class StatsCollector {
   /**
