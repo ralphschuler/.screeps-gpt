@@ -2,7 +2,9 @@
 name: Deploy Screeps AI
 
 on:
-  release:
+  push:
+    tags:
+      - 'v*'
 permissions:
   contents: read
 
