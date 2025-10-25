@@ -5,7 +5,7 @@
 The Screeps bot now collects and stores performance statistics to `Memory.stats` every game tick. This data is consumed by external monitoring systems via the Screeps API endpoint `/api/user/stats?interval=<value>`.
 
 **Implementation Date:** 2025-10-25  
-**Related Issue:** #308 - Restore bot performance telemetry data collection on PTR server
+**Related Issue:** screepers/screeps-bot#308 - Restore bot performance telemetry data collection on PTR server
 
 ## Problem Context
 
