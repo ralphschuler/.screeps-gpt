@@ -54,8 +54,9 @@ Per `DEPLOY_WORKFLOW_FIX.md`, a previous fix removed the non-functional `release
 ### Immediate Fix
 
 1. **Corrected deployment workflow trigger** (`.github/workflows/deploy.yml`):
-   - Changed from: `on: release:`
-   - Changed to: `on: push.tags: v*`
+   - Changed from: `on: release:` (malformed)
+   - Changed to: `on: workflow_run` (triggers after Post Merge Release completes)
+   - This ensures deployments run automatically after successful releases
    
 2. **Added manual deployment capability**:
    - Added `workflow_dispatch` trigger for emergency manual deployments
@@ -63,32 +64,23 @@ Per `DEPLOY_WORKFLOW_FIX.md`, a previous fix removed the non-functional `release
    - Falls back to `package.json` version when no version specified
 
 3. **Enhanced version extraction logic**:
-   - Handles tag push events (primary deployment method)
+   - Handles workflow_run events (extracts latest git tag)
    - Handles manual workflow dispatch with optional version input
-   - Falls back to package.json version for manual triggers
+   - Falls back to package.json version as last resort
 
 ### Deployment Recovery Options
 
 #### Option 1: Automatic (Recommended)
 Merge the fix PR to `main`. The post-merge-release workflow will:
 1. Bump version to v0.7.17 (or appropriate semantic version)
-2. Push new version tag
-3. **Trigger deployment automatically** (via corrected workflow)
+2. Create GitHub Release (non-prerelease)
+3. **Trigger deployment automatically** (via workflow_run)
 
 #### Option 2: Manual Deployment via GitHub UI
 1. Go to: Actions → Deploy Screeps AI → Run workflow
 2. Select branch: `main` (or the branch with the fix)
 3. Leave version input empty (will use current package.json version)
 4. Click "Run workflow"
-
-#### Option 3: Manual Tag Re-push
-```bash
-# Delete and recreate v0.7.15 tag (force push)
-git tag -d v0.7.15
-git push origin :refs/tags/v0.7.15
-git tag v0.7.15
-git push origin v0.7.15
-```
 
 ## Verification Steps
 
