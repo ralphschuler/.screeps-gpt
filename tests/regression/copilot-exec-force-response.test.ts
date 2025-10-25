@@ -89,9 +89,8 @@ describe("Copilot-Exec Backward Compatibility", () => {
     "copilot-email-triage.yml",
     "copilot-issue-triage.yml",
     "copilot-todo-pr.yml",
-    "screeps-stats-monitor.yml",
+    "screeps-monitoring.yml",
     "copilot-todo-daily.yml",
-    "copilot-autonomous-monitor.yml",
     "copilot-speckit.yml",
     "copilot-ci-autofix.yml"
   ];
