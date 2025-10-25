@@ -11,7 +11,7 @@ const behavior: BehaviorSummary = {
 describe("PerformanceTracker", () => {
   it("computes CPU usage deltas", () => {
     let cpu = 0;
-    const tracker = new PerformanceTracker({ log: vi.fn(), warn: vi.fn() });
+    const tracker = new PerformanceTracker({}, { log: vi.fn(), warn: vi.fn() });
     const game = {
       time: 42,
       cpu: {
@@ -33,7 +33,7 @@ describe("PerformanceTracker", () => {
   it("raises warnings when CPU or bucket thresholds are exceeded", () => {
     let cpu = 0;
     const warn = vi.fn();
-    const tracker = new PerformanceTracker({ log: vi.fn(), warn });
+    const tracker = new PerformanceTracker({}, { log: vi.fn(), warn });
     const game = {
       time: 7,
       cpu: {

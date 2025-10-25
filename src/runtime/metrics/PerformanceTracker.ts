@@ -13,13 +13,29 @@ interface GameLike {
   rooms: Record<string, unknown>;
 }
 
+interface PerformanceTrackerOptions {
+  highCpuThreshold?: number;
+  criticalCpuThreshold?: number;
+  lowBucketThreshold?: number;
+}
+
 /**
  * Tracks per-tick CPU usage and basic execution metrics for later evaluation.
  */
 export class PerformanceTracker {
   private context: { tick: number; startCpu: number } | null = null;
+  private readonly options: Required<PerformanceTrackerOptions>;
 
-  public constructor(private readonly logger: Pick<Console, "log" | "warn"> = console) {}
+  public constructor(
+    options: PerformanceTrackerOptions = {},
+    private readonly logger: Pick<Console, "log" | "warn"> = console
+  ) {
+    this.options = {
+      highCpuThreshold: options.highCpuThreshold ?? 0.8,
+      criticalCpuThreshold: options.criticalCpuThreshold ?? 0.95,
+      lowBucketThreshold: options.lowBucketThreshold ?? 500
+    };
+  }
 
   /**
    * Capture the starting CPU reading for the current tick.
@@ -39,11 +55,17 @@ export class PerformanceTracker {
     const cpuUsed = Math.max(0, game.cpu.getUsed() - this.context.startCpu);
     const warnings: string[] = [];
 
-    if (cpuUsed > game.cpu.limit * 0.8) {
+    const cpuRatio = cpuUsed / game.cpu.limit;
+
+    if (cpuRatio > this.options.criticalCpuThreshold) {
+      warnings.push(
+        `CRITICAL: CPU usage ${cpuUsed.toFixed(2)} exceeds ${(this.options.criticalCpuThreshold * 100).toFixed(0)}% of limit ${game.cpu.limit} - timeout risk`
+      );
+    } else if (cpuRatio > this.options.highCpuThreshold) {
       warnings.push(`High CPU usage ${cpuUsed.toFixed(2)} / ${game.cpu.limit}`);
     }
 
-    if (game.cpu.bucket < 500) {
+    if (game.cpu.bucket < this.options.lowBucketThreshold) {
       warnings.push(`CPU bucket critically low (${game.cpu.bucket})`);
     }
 

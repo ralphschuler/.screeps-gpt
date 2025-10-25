@@ -5,6 +5,14 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Fixed
+
+- **Regression test failure for copilot-exec force-response parameter (run #18795077062)**
+  - Updated test to use correct workflow filenames after monitoring workflow consolidation
+  - Changed `screeps-stats-monitor.yml` to `screeps-monitoring.yml` in test expectations
+  - Removed reference to deleted `copilot-autonomous-monitor.yml` workflow
+  - Test now correctly validates backward compatibility for force-response parameter
+
 ## [0.7.11] - 2025-10-24
 
 ### Changed
