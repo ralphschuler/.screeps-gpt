@@ -5,6 +5,12 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to deploy (leave empty for current version)'
+        required: false
+        type: string
 permissions:
   contents: read
 
@@ -29,10 +35,20 @@ jobs:
         id: get_version
         shell: bash
         run: |
-          # Extract version from tag push event
-          VERSION="${{ github.ref_name }}"
+          # Extract version from tag push event or manual input
+          if [ -n "${{ inputs.version }}" ]; then
+            VERSION="${{ inputs.version }}"
+            echo "::notice::Deploying manually specified version $VERSION"
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            VERSION="${{ github.ref_name }}"
+            echo "::notice::Deploying version $VERSION from tag push event"
+          else
+            # Fallback to package.json version for manual dispatch
+            VERSION="v$(grep '"version"' package.json | head -1 | \
+              sed 's/.*: "\(.*\)".*/\1/')"
+            echo "::notice::Deploying package.json version $VERSION"
+          fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "::notice::Deploying version $VERSION from tag push event"
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
