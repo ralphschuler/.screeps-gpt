@@ -44,6 +44,17 @@ For a complete setup guide, see the **[Getting Started Guide](getting-started.md
 - [Task Prioritization](runtime/strategy/task-prioritization.md) - Task switching, efficiency optimization, and load balancing
 - [Scaling Strategies](runtime/strategy/scaling-strategies.md) - RCL progression, multi-room expansion, and CPU budgeting
 
+### Strategic Planning & Roadmap
+
+- [Development Roadmap](strategy/roadmap.md) - Comprehensive bot evolution plan from RCL 1-2 to multi-shard operations
+- [Architecture Alignment](strategy/architecture.md) - Mapping roadmap phases to existing codebase structure
+- **Phase Implementation Guides**:
+  - [Phase 1: RCL 1-2 Foundation](strategy/phases/01-foundation.md) - Stable early-game economy and automation
+  - [Phase 2: Core Task Framework](strategy/phases/02-core-framework.md) - Task-based architecture and resource management
+  - [Phase 3: Economy Expansion](strategy/phases/03-economy-expansion.md) - Terminal, labs, market, and factory automation
+  - [Phase 4: Multi-Room Management](strategy/phases/04-multi-room.md) - Empire coordination and colonization
+  - [Phase 5: Advanced Combat & Multi-Shard](strategy/phases/05-advanced-combat.md) - Military operations and cross-shard presence
+
 ### Operations & Monitoring
 
 - [Memory Management](runtime/operations/memory-management.md) - Memory patterns, cleanup strategies, and corruption recovery
