@@ -46,29 +46,36 @@ Stats collection occurs in all three execution paths:
 The `Memory.stats` object contains the following structure:
 
 ```typescript
-interface Memory.stats {
-  time: number;                    // Game tick number
-  cpu: {
-    used: number;                  // CPU consumed this tick
-    limit: number;                 // Account CPU limit
-    bucket: number;                // Current CPU bucket level
-  };
-  creeps: {
-    count: number;                 // Total living creeps
-  };
-  rooms: {
-    count: number;                 // Number of claimed rooms
-    [roomName: string]: {
-      energyAvailable: number;
-      energyCapacityAvailable: number;
-      controllerLevel?: number;
-      controllerProgress?: number;
-      controllerProgressTotal?: number;
+// In types.d.ts
+declare global {
+  interface Memory {
+    stats?: {
+      time: number; // Game tick number
+      cpu: {
+        used: number; // CPU consumed this tick
+        limit: number; // Account CPU limit
+        bucket: number; // Current CPU bucket level
+      };
+      creeps: {
+        count: number; // Total living creeps
+      };
+      rooms: {
+        count: number; // Number of claimed rooms
+        [roomName: string]:
+          | number
+          | {
+              energyAvailable: number;
+              energyCapacityAvailable: number;
+              controllerLevel?: number;
+              controllerProgress?: number;
+              controllerProgressTotal?: number;
+            };
+      };
+      spawn?: {
+        orders: number; // Creeps spawned this tick (optional)
+      };
     };
-  };
-  spawn?: {
-    orders: number;                // Creeps spawned this tick (optional)
-  };
+  }
 }
 ```
 
@@ -233,6 +240,6 @@ if (game.gcl) {
 
 ## References
 
-- **Implementation PR:** [Restore PTR telemetry collection](https://github.com/ralphschuler/.screeps-gpt/pull/XXX)
 - **Related Issue:** [#308 - PTR stats endpoint returns empty data](https://github.com/ralphschuler/.screeps-gpt/issues/308)
 - **Screeps API Docs:** [User Stats Endpoint](https://docs.screeps.com/api/#Game)
+- **Screeps Community:** [screepers/screeps-stats](https://github.com/screepers/screeps-stats) - Community stats collection patterns
