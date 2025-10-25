@@ -4,31 +4,36 @@ import { readFileSync } from "fs";
 import { join } from "path";
 
 describe("Deploy Workflow Version Resolution - Modernized CI/CD", () => {
-  it("should use simplified version resolution logic", () => {
-    // The modernized deploy workflow uses simplified version resolution:
-    // - Tag push events: extract from github.ref_name only
+  it("should use workflow_run version resolution logic", () => {
+    // The modernized deploy workflow uses workflow_run version resolution:
+    // - workflow_run events: extract from git describe --tags --abbrev=0
+    // - workflow_dispatch events: use inputs.version or package.json fallback
     // - No release event handling (doesn't work with GITHUB_TOKEN)
-    // No more complex fallback logic needed
 
     const workflowContent = readFileSync(join(process.cwd(), ".github/workflows/deploy.yml"), "utf-8");
 
-    // Verify the workflow has the simplified logic
-    expect(workflowContent).toContain("github.ref_name");
+    // Verify the workflow has the git tags logic for workflow_run
+    expect(workflowContent).toContain("git describe --tags --abbrev=0");
+    expect(workflowContent).toContain("github.event_name");
+    expect(workflowContent).toContain("workflow_run");
 
     // Should not have release event handling (doesn't work with GITHUB_TOKEN)
     expect(workflowContent).not.toContain("github.event.release.tag_name");
 
-    // Should not have the old complex fallback logic
-    expect(workflowContent).not.toContain("git tag --points-at");
-    expect(workflowContent).not.toContain("workflow_run.head_sha");
+    // Should not have the old github.ref_name logic (for tag push events)
+    expect(workflowContent).not.toContain("github.ref_name");
   });
 
-  it("should trigger on release events", () => {
+  it("should trigger on workflow_run events", () => {
     const workflowContent = readFileSync(join(process.cwd(), ".github/workflows/deploy.yml"), "utf-8");
 
-    // Verify trigger mechanism (GitHub Release events)
+    // Verify trigger mechanism (workflow_run from Post Merge Release)
     expect(workflowContent).toContain("on:");
-    expect(workflowContent).toContain("release:");
+    expect(workflowContent).toContain("workflow_run:");
+    expect(workflowContent).toContain("Post Merge Release");
+
+    // Should NOT have release trigger (doesn't work with GITHUB_TOKEN)
+    expect(workflowContent).not.toContain("release:");
 
     // Should NOT have old tag push trigger
     expect(workflowContent).not.toContain('tags:\n      - "v*"');

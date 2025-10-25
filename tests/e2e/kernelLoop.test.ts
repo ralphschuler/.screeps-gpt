@@ -81,5 +81,9 @@ describe(`Kernel (${TEST_REALM})`, () => {
 
     expect(spawnCreepMock).toHaveBeenCalled();
     expect(memory.systemReport?.report.summary).toBeDefined();
+    expect(memory.stats).toBeDefined();
+    expect(memory.stats?.time).toBe(123);
+    expect(memory.stats?.cpu).toBeDefined();
+    expect(memory.stats?.creeps.count).toBe(2);
   });
 });

@@ -3,12 +3,14 @@ import { BehaviorController } from "@runtime/behavior/BehaviorController";
 import { SystemEvaluator } from "@runtime/evaluation/SystemEvaluator";
 import { MemoryManager } from "@runtime/memory/MemoryManager";
 import { PerformanceTracker } from "@runtime/metrics/PerformanceTracker";
+import { StatsCollector } from "@runtime/metrics/StatsCollector";
 import { RespawnManager } from "@runtime/respawn/RespawnManager";
 import type { GameContext } from "@runtime/types/GameContext";
 
 export interface KernelConfig {
   memoryManager?: MemoryManager;
   tracker?: PerformanceTracker;
+  statsCollector?: StatsCollector;
   behavior?: BehaviorController;
   evaluator?: SystemEvaluator;
   respawnManager?: RespawnManager;
@@ -24,6 +26,7 @@ export interface KernelConfig {
 export class Kernel {
   private readonly memoryManager: MemoryManager;
   private readonly tracker: PerformanceTracker;
+  private readonly statsCollector: StatsCollector;
   private readonly behavior: BehaviorController;
   private readonly evaluator: SystemEvaluator;
   private readonly respawnManager: RespawnManager;
@@ -35,6 +38,7 @@ export class Kernel {
     this.logger = config.logger ?? console;
     this.memoryManager = config.memoryManager ?? new MemoryManager(this.logger);
     this.tracker = config.tracker ?? new PerformanceTracker(this.logger);
+    this.statsCollector = config.statsCollector ?? new StatsCollector();
     this.behavior = config.behavior ?? new BehaviorController({}, this.logger);
     this.evaluator = config.evaluator ?? new SystemEvaluator({}, this.logger);
     this.respawnManager = config.respawnManager ?? new RespawnManager(this.logger);
@@ -62,6 +66,7 @@ export class Kernel {
         spawnedCreeps: [],
         tasksExecuted: {}
       });
+      this.statsCollector.collect(game, memory, snapshot);
       this.evaluator.evaluateAndStore(memory, snapshot, repository);
       return;
     }
@@ -75,6 +80,7 @@ export class Kernel {
         spawnedCreeps: [],
         tasksExecuted: {}
       });
+      this.statsCollector.collect(game, memory, snapshot);
       this.evaluator.evaluateAndStore(memory, snapshot, repository);
       return;
     }
@@ -84,6 +90,7 @@ export class Kernel {
 
     const behaviorSummary = this.behavior.execute(game, memory, roleCounts);
     const snapshot = this.tracker.end(game, behaviorSummary);
+    this.statsCollector.collect(game, memory, snapshot);
     const result = this.evaluator.evaluateAndStore(memory, snapshot, repository);
 
     if (result.report.findings.length > 0) {

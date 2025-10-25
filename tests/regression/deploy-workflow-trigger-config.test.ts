@@ -67,37 +67,39 @@ describe("Deploy workflow trigger configuration", () => {
     expect(workflow).toBeDefined();
   });
 
-  it("should have release trigger", () => {
-    // Deploy workflow is triggered by GitHub Release events created by post-merge workflow
+  it("should have workflow_run trigger", () => {
+    // Deploy workflow is triggered by workflow_run events from post-merge-release workflow
     expect(workflow.on).toBeDefined();
-    expect(workflow.on.release).toBeDefined();
+    expect(workflow.on.workflow_run).toBeDefined();
+    expect(workflow.on.workflow_run.workflows).toContain("Post Merge Release");
+    expect(workflow.on.workflow_run.types).toContain("completed");
+  });
+
+  it("should NOT have release trigger", () => {
+    // Using workflow_run trigger instead of release for better integration
+    expect(workflow.on.release).toBeUndefined();
   });
 
   it("should NOT have push trigger with tags", () => {
-    // Using release trigger instead of push.tags for better integration with GitHub Releases
+    // Using workflow_run trigger instead of push.tags for better integration
     expect(workflow.on.push).toBeUndefined();
   });
 
-  it("should NOT have workflow_run trigger", () => {
-    // workflow_run events were causing skipped runs
-    expect(workflow.on.workflow_run).toBeUndefined();
-  });
-
-  it("should extract version from github.ref_name", () => {
+  it("should extract version from git tags for workflow_run events", () => {
     const getVersionStep = workflow.jobs.deploy.steps.find(step => step.id === "get_version");
 
     expect(getVersionStep).toBeDefined();
-    expect(getVersionStep?.run).toContain("github.ref_name");
+    expect(getVersionStep?.run).toContain("git describe --tags --abbrev=0");
     expect(getVersionStep?.run).toContain('echo "version=$VERSION"');
   });
 
-  it("should NOT have conditional logic for release events", () => {
+  it("should have conditional logic for different event types", () => {
     const getVersionStep = workflow.jobs.deploy.steps.find(step => step.id === "get_version");
 
-    // Should not check for release event type
-    expect(getVersionStep?.run).not.toContain("github.event_name");
-    expect(getVersionStep?.run).not.toContain("release");
-    expect(getVersionStep?.run).not.toContain("github.event.release.tag_name");
+    // Should check for workflow_run vs manual dispatch event types
+    expect(getVersionStep?.run).toContain("github.event_name");
+    expect(getVersionStep?.run).toContain("workflow_run");
+    expect(getVersionStep?.run).toContain("manual dispatch");
   });
 
   it("should include notice logging", () => {
