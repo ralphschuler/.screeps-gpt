@@ -825,6 +825,7 @@ console.log(`Average CPU over ${ticksElapsed} ticks: ${(endCPU - startCPU) / tic
 - [Stats Collection Implementation](./stats-collection.md)
 - [PTR Monitoring Pipeline](./stats-monitoring.md)
 - [Respawn Handling](./respawn-handling.md)
+- [CPU Timeout Incident Tracking](./cpu-timeout-incidents.md) - Systematic timeout pattern documentation
 
 ### Related Code
 
