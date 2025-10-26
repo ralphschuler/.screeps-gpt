@@ -145,7 +145,7 @@ This document tracks CPU timeout incidents as part of the systematic resolution 
 
 **Shard**: All incidents on shard3 specifically
 **Code Location**: Main execution loop (main:872:22 in incidents #1-4)
-**Incident #5**: No specific location provided
+**Incident #5**: No stack trace provided (notification format differs from previous incidents)
 
 ### Systematic Indicators
 
@@ -270,11 +270,11 @@ This document tracks CPU timeout incidents as part of the systematic resolution 
 
 **Recent Timeout Incidents**:
 
-- #398 - CPU timeout on shard3 (2025-10-26T17:43:15.824Z) - This incident
-- #393 - CPU timeout at main:872:22 (2025-10-26T15:02:43Z)
-- #385 - CPU timeout at main:872:22 (2025-10-26T14:01:46Z)
-- #377 - CPU timeout at main:872:22 (2025-10-26T13:01:30Z)
-- #374 - CPU timeout at main:872:22 (2025-10-26T11:30:21Z)
+- #398 - CPU timeout on shard3 (2025-10-26 17:43 UTC) - No stack trace provided
+- #393 - CPU timeout at main:872:22 (2025-10-26 15:02 UTC)
+- #385 - CPU timeout at main:872:22 (2025-10-26 14:01 UTC)
+- #377 - CPU timeout at main:872:22 (2025-10-26 13:01 UTC)
+- #374 - CPU timeout at main:872:22 (2025-10-26 11:30 UTC)
 
 ## Next Steps
 
