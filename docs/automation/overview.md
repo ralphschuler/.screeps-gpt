@@ -305,13 +305,25 @@ Quality checks are split into separate guard workflows for better granularity an
 - Trigger: Failed runs of any workflow except `Copilot CI AutoFix` itself (to prevent infinite loops).
 - Behaviour: Copilot downloads the failing logs, analyzes the workflow context (PR vs non-PR trigger), clones the affected branch, applies the fix with changelog/docs/tests updates, and pushes the result based on context-aware decision logic.
 - Context Awareness: The workflow passes `TRIGGER_EVENT` and event payload to enable intelligent decision-making about fix application strategy.
+- Timeout & Logging: Configured with 45-minute timeout and verbose logging enabled for comprehensive debugging and performance monitoring.
+- **Enhanced Failure Classification**: Autofix now categorizes failures into specific types (linting, formatting, compilation, dependency, documentation, version sync) with specialized fix strategies for each category.
+- **Improved Error Context Gathering**: Downloads full logs, extracts error indicators with surrounding context, identifies affected files, and checks for related failures across recent workflow runs.
+- **Specialized Fix Strategies**:
+  - **Linting Failures**: Auto-runs `bun run lint:fix` for ESLint/YAML violations
+  - **Formatting Failures**: Auto-runs `bun run format:write` for Prettier inconsistencies
+  - **Version Index Sync**: Auto-runs `bun run versions:update` for changelog misalignment
+  - **Simple Compilation Errors**: Fixes missing imports, typos, and type mismatches
+  - **Documentation Failures**: Fixes broken links and outdated examples
+  - **Dependency Conflicts**: Updates lockfiles and resolves version incompatibilities
+- **Manual Review Escalation**: Complex failures (test logic errors, security issues, performance regressions, workflow config errors) automatically create issues with `help-wanted` and `state/pending` labels instead of attempting risky automatic fixes.
 - Fix Application Strategy:
   - **PR-triggered failures**: Commits directly to the PR branch for fast iteration
   - **Main branch failures**: Creates new PR (`copilot/autofix-{run_id}`) to avoid direct commits to protected branches
   - **Feature branch failures**: Commits directly to the feature branch
   - **Scheduled/manual triggers**: Creates new PR for review and validation
 - Branch Protection: Never pushes directly to `main` or production branches - always creates a PR to maintain audit trail and review process.
-- Action Enforcement: Mandatory root cause analysis, minimal targeted fixes with validation, explicit criteria for fix appropriateness, and comprehensive failure handling for complex issues.
+- **Output Metrics**: JSON output includes failure_type, fix_strategy, validation_commands, and files_changed for performance tracking and improvement analysis.
+- Action Enforcement: Mandatory root cause analysis, failure classification, minimal targeted fixes with validation, explicit criteria for fix appropriateness, and comprehensive failure handling for complex issues.
 
 Keep this file accurate—workflows load these expectations via the Copilot CLI when planning fixes.
 
