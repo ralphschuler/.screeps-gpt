@@ -1,5 +1,6 @@
 import type { BehaviorSummary } from "@shared/contracts";
 import type { CreepLike, GameContext, SpawnLike } from "@runtime/types/GameContext";
+import { profile } from "@profiler";
 
 type RoleName = "harvester" | "upgrader" | "builder" | "remoteMiner";
 
@@ -107,6 +108,7 @@ interface BehaviorControllerOptions {
 /**
  * Coordinates spawning and per-tick behaviour execution for every registered role.
  */
+@profile
 export class BehaviorController {
   private readonly options: Required<BehaviorControllerOptions>;
 

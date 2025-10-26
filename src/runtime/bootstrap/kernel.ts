@@ -7,6 +7,7 @@ import { StatsCollector } from "@runtime/metrics/StatsCollector";
 import { RespawnManager } from "@runtime/respawn/RespawnManager";
 import { ConstructionManager } from "@runtime/planning/ConstructionManager";
 import type { GameContext } from "@runtime/types/GameContext";
+import { profile } from "@profiler";
 
 export interface KernelConfig {
   memoryManager?: MemoryManager;
@@ -25,6 +26,7 @@ export interface KernelConfig {
  * Central coordinator that ties together memory maintenance, behaviour execution,
  * metric collection, and evaluation for every Screeps tick.
  */
+@profile
 export class Kernel {
   private readonly memoryManager: MemoryManager;
   private readonly tracker: PerformanceTracker;

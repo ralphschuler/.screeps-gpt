@@ -70,7 +70,10 @@ async function buildModules(watch: boolean): Promise<void> {
       format: "cjs" as const,
       outfile: outFile,
       logLevel: "warning" as const,
-      external: [] // No external modules - each bundle is self-contained
+      external: [], // No external modules - each bundle is self-contained
+      define: {
+        __PROFILER_ENABLED__: process.env.PROFILER_ENABLED === "true" ? "true" : "false"
+      }
     };
 
     if (watch) {
@@ -90,7 +93,10 @@ async function buildModules(watch: boolean): Promise<void> {
     target: "es2018",
     format: "cjs" as const,
     outfile: resolve(outDir, "main.js"),
-    logLevel: "info" as const
+    logLevel: "info" as const,
+    define: {
+      __PROFILER_ENABLED__: process.env.PROFILER_ENABLED === "true" ? "true" : "false"
+    }
   };
 
   if (watch) {
@@ -121,7 +127,10 @@ export async function buildProject(watch: boolean): Promise<void> {
       target: "es2018",
       format: "cjs" as const,
       outfile: resolve(outDir, "main.js"),
-      logLevel: "info" as const
+      logLevel: "info" as const,
+      define: {
+        __PROFILER_ENABLED__: process.env.PROFILER_ENABLED === "true" ? "true" : "false"
+      }
     };
 
     if (watch) {

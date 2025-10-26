@@ -1,4 +1,5 @@
 import type { PerformanceSnapshot } from "@shared/contracts";
+import { profile } from "@profiler";
 
 interface RoomStats {
   energyAvailable: number;
@@ -66,6 +67,7 @@ interface GameLike {
  * statsCollector.collect(game, memory, snapshot);
  * ```
  */
+@profile
 export class StatsCollector {
   /**
    * Collect performance metrics and store them in Memory.stats for the current tick.

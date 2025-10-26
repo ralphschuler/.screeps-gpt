@@ -21,7 +21,8 @@
     "paths": {
       "@runtime/*": ["src/runtime/*"],
       "@ai/*": ["src/ai/*"],
-      "@shared/*": ["src/shared/*"]
+      "@shared/*": ["src/shared/*"],
+      "@profiler": ["src/profiler"]
     }
   },
   "include": ["src", "scripts", "tests", "types.d.ts"],
