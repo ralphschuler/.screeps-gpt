@@ -23,9 +23,13 @@ if (!globalThis.crypto) {
 
 globals.OK = 0;
 globals.ERR_NOT_IN_RANGE = -9;
+globals.ERR_FULL = -8;
+globals.ERR_RCL_NOT_ENOUGH = -14;
 globals.FIND_SOURCES_ACTIVE = 1;
 globals.FIND_STRUCTURES = 2;
 globals.FIND_CONSTRUCTION_SITES = 3;
+globals.FIND_MY_SPAWNS = 4;
+globals.FIND_MY_CONSTRUCTION_SITES = 5;
 globals.STRUCTURE_SPAWN = "spawn";
 globals.STRUCTURE_EXTENSION = "extension";
 globals.STRUCTURE_CONTAINER = "container";
