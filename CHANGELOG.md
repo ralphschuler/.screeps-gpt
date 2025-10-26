@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.7.25] - 2025-10-26
+
 ### Changed
 
 - **CPU optimization to maintain below 90% threshold**
