@@ -11,7 +11,7 @@ import type { GameContext, CreepLike, RoomLike } from "@runtime/types/GameContex
  * defaults to prevent sustained high CPU usage that could lead to timeouts.
  *
  * Related issues:
- * - CPU optimization issue: perf: optimize CPU usage to maintain below 90% threshold
+ * - CPU optimization issue: perf: optimize CPU usage to maintain below 90% threshold ([#117](https://github.com/your-org/your-repo/issues/117))
  *
  * Key optimizations verified:
  * 1. BehaviorController uses 80% CPU safety margin by default
