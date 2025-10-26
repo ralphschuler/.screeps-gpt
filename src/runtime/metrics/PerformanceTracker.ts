@@ -31,8 +31,8 @@ export class PerformanceTracker {
     private readonly logger: Pick<Console, "log" | "warn"> = console
   ) {
     this.options = {
-      highCpuThreshold: options.highCpuThreshold ?? 0.8,
-      criticalCpuThreshold: options.criticalCpuThreshold ?? 0.95,
+      highCpuThreshold: options.highCpuThreshold ?? 0.7,
+      criticalCpuThreshold: options.criticalCpuThreshold ?? 0.9,
       lowBucketThreshold: options.lowBucketThreshold ?? 500
     };
   }
