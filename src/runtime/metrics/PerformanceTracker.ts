@@ -1,4 +1,5 @@
 import type { BehaviorSummary, PerformanceSnapshot } from "@shared/contracts";
+import { profile } from "@profiler";
 
 interface CpuLike {
   getUsed(): number;
@@ -22,6 +23,7 @@ interface PerformanceTrackerOptions {
 /**
  * Tracks per-tick CPU usage and basic execution metrics for later evaluation.
  */
+@profile
 export class PerformanceTracker {
   private context: { tick: number; startCpu: number } | null = null;
   private readonly options: Required<PerformanceTrackerOptions>;

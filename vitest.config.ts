@@ -26,8 +26,12 @@ export default defineConfig({
     alias: {
       "@runtime": resolve(rootDir, "src/runtime"),
       "@shared": resolve(rootDir, "src/shared"),
-      "@ai": resolve(rootDir, "src/ai")
+      "@ai": resolve(rootDir, "src/ai"),
+      "@profiler": resolve(rootDir, "src/profiler")
     }
+  },
+  define: {
+    __PROFILER_ENABLED__: false
   },
   test: {
     globals: true,

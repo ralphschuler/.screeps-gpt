@@ -1,3 +1,5 @@
+import { profile } from "@profiler";
+
 interface CreepLike {
   readonly name: string;
   readonly memory: CreepMemory;
@@ -7,6 +9,7 @@ interface CreepLike {
  * Handles Memory hygiene between ticks by pruning stale creep entries and
  * keeping aggregate role counts up to date.
  */
+@profile
 export class MemoryManager {
   public constructor(private readonly logger: Pick<Console, "log"> = console) {}
 
