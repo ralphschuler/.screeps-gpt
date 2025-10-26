@@ -5,6 +5,19 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Added
+
+- **CPU timeout incident tracking documentation**
+  - Created centralized incident tracking document in `docs/operations/cpu-timeout-incidents.md`
+  - Documents systematic CPU timeout pattern on shard3 (5 incidents on 2025-10-26)
+  - Integrates with existing systematic resolution framework (#396, #380, #391)
+  - References architectural prevention solutions (#364, #392, #299)
+  - Provides coordination approach for systematic resolution vs individual tactical fixes
+  - Tracks incident patterns, temporal distribution, and location analysis
+  - Documents monitoring integration with PTR telemetry and runtime evaluation
+  - Establishes acceptance criteria for incident documentation and systematic resolution
+  - Addresses issue #398 - CPU timeout on shard3 requiring systematic coordination
+
 ### Changed
 
 - **Enhanced copilot-ci-autofix workflow effectiveness**

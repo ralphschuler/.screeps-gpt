@@ -831,3 +831,5 @@ console.log(JSON.stringify(profile));
 - [Memory Management](./memory-management.md) - Memory access optimization
 - [Creep Roles](../strategy/creep-roles.md) - Per-role CPU costs
 - [Stats Monitoring](./stats-monitoring.md) - External monitoring setup
+- [Performance Optimization](../../operations/performance-optimization.md) - CPU and memory optimization strategies
+- [CPU Timeout Incident Tracking](../../operations/cpu-timeout-incidents.md) - Systematic timeout pattern documentation

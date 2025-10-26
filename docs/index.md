@@ -59,6 +59,8 @@ For a complete setup guide, see the **[Getting Started Guide](getting-started.md
 
 - [Memory Management](runtime/operations/memory-management.md) - Memory patterns, cleanup strategies, and corruption recovery
 - [Performance Monitoring](runtime/operations/performance-monitoring.md) - CPU tracking, optimization techniques, and alerting
+- [Performance Optimization](operations/performance-optimization.md) - CPU and memory optimization strategies, pathfinding, and profiling
+- [CPU Timeout Incident Tracking](operations/cpu-timeout-incidents.md) - Systematic CPU timeout pattern documentation and coordination
 - [PTR Monitoring Pipeline](operations/stats-monitoring.md)
 - [Respawn Handling](operations/respawn-handling.md)
 - [Deployment Troubleshooting](operations/deployment-troubleshooting.md) - Common deployment issues and solutions
