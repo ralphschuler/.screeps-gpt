@@ -5,6 +5,18 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Added
+
+- **Performance optimization documentation**
+  - Created comprehensive performance optimization guide in `docs/operations/performance-optimization.md`
+  - Documented CPU optimization strategies including budget management, early termination, and caching patterns
+  - Added memory management best practices covering cleanup, efficient data structures, and memory hygiene
+  - Included pathfinding optimization techniques with reusePath values and cached pathfinding patterns
+  - Documented profiling and monitoring approaches using existing PerformanceTracker, StatsCollector, and SystemEvaluator
+  - Provided performance patterns and anti-patterns with code examples
+  - Referenced integration with PTR monitoring infrastructure (#117, #299, #287)
+  - Added links to existing regression tests for performance validation
+
 ## [0.7.25] - 2025-10-26
 
 ### Changed
