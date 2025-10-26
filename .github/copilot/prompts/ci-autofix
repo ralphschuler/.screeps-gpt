@@ -183,8 +183,13 @@ Follow this step-by-step process:
 
 3. **Download Failure Logs**
    ```bash
-   gh run download ${RUN_ID} --dir /tmp/workflow-logs || \
-   gh api repos/${REPO_NAME}/actions/runs/${RUN_ID}/logs > /tmp/workflow-logs.zip
+   # Download logs to a consistent directory structure
+   mkdir -p /tmp/workflow-logs
+   gh run download ${RUN_ID} --dir /tmp/workflow-logs || {
+     # Fallback: download as zip and extract
+     gh api repos/${REPO_NAME}/actions/runs/${RUN_ID}/logs > /tmp/workflow-logs.zip
+     cd /tmp && unzip -q workflow-logs.zip -d workflow-logs
+   }
    ```
 
 4. **Determine Fix Strategy** using WORKFLOW CONTEXT & BRANCH STRATEGY decision matrix

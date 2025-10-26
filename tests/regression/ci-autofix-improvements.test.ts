@@ -219,17 +219,21 @@ describe("CI Autofix Workflow Improvements", () => {
     it("should include failure_type in JSON output", () => {
       const promptContent = readFileSync(promptPath, "utf-8");
 
-      // Should have failure_type field
+      // Should have failure_type field with enumeration of types
       expect(promptContent).toMatch(/"failure_type":/);
-      expect(promptContent).toMatch(/linting\|formatting\|build\|test\|dependency\|documentation\|version-sync/);
+      expect(promptContent).toContain("linting");
+      expect(promptContent).toContain("formatting");
+      expect(promptContent).toContain("dependency");
+      expect(promptContent).toContain("documentation");
     });
 
     it("should include fix_strategy in JSON output", () => {
       const promptContent = readFileSync(promptPath, "utf-8");
 
-      // Should have fix_strategy field
+      // Should have fix_strategy field with options
       expect(promptContent).toMatch(/"fix_strategy":/);
-      expect(promptContent).toMatch(/direct_push\|create_pr/);
+      expect(promptContent).toContain("direct_push");
+      expect(promptContent).toContain("create_pr");
     });
 
     it("should include validation_commands in JSON output", () => {
