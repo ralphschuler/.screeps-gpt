@@ -23,20 +23,22 @@ export class ConstructionManager {
   public constructor(
     private readonly logger: Pick<Console, "log" | "warn"> = console,
     maxSitesPerTick: number = 1,
-    findMySpawns: FindConstant = FIND_MY_SPAWNS,
-    findStructures: FindConstant = FIND_STRUCTURES,
-    findConstructionSites: FindConstant = FIND_MY_CONSTRUCTION_SITES,
-    okCode: number = OK,
-    errFull: number = ERR_FULL,
-    errRclNotEnough: number = ERR_RCL_NOT_ENOUGH
+    findMySpawns?: FindConstant,
+    findStructures?: FindConstant,
+    findConstructionSites?: FindConstant,
+    okCode?: number,
+    errFull?: number,
+    errRclNotEnough?: number
   ) {
     this.maxSitesPerTick = maxSitesPerTick;
-    this.findMySpawns = findMySpawns;
-    this.findStructures = findStructures;
-    this.findConstructionSites = findConstructionSites;
-    this.okCode = okCode;
-    this.errFull = errFull;
-    this.errRclNotEnough = errRclNotEnough;
+    // Use lazy evaluation - only access global constants if not provided
+    this.findMySpawns = findMySpawns ?? (typeof FIND_MY_SPAWNS !== "undefined" ? FIND_MY_SPAWNS : 104);
+    this.findStructures = findStructures ?? (typeof FIND_STRUCTURES !== "undefined" ? FIND_STRUCTURES : 107);
+    this.findConstructionSites =
+      findConstructionSites ?? (typeof FIND_MY_CONSTRUCTION_SITES !== "undefined" ? FIND_MY_CONSTRUCTION_SITES : 114);
+    this.okCode = okCode ?? (typeof OK !== "undefined" ? OK : 0);
+    this.errFull = errFull ?? (typeof ERR_FULL !== "undefined" ? ERR_FULL : -8);
+    this.errRclNotEnough = errRclNotEnough ?? (typeof ERR_RCL_NOT_ENOUGH !== "undefined" ? ERR_RCL_NOT_ENOUGH : -14);
   }
 
   /**
