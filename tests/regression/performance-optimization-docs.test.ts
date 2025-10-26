@@ -18,15 +18,14 @@ describe("Performance optimization documentation", () => {
   });
 
   describe("Guide content validation", () => {
-    let content: string;
+    // Read file once for all tests in this suite
+    const content = readFileSync(docsPath, "utf-8");
 
     it("should load the documentation file", () => {
-      content = readFileSync(docsPath, "utf-8");
       expect(content.length).toBeGreaterThan(1000);
     });
 
     it("should contain CPU optimization strategies section", () => {
-      content = readFileSync(docsPath, "utf-8");
       expect(content).toMatch(/##\s+CPU Optimization/i);
       expect(content).toContain("CPU Budget Management");
       expect(content).toContain("BehaviorController Safety Margin");
@@ -35,7 +34,6 @@ describe("Performance optimization documentation", () => {
     });
 
     it("should document CPU optimization thresholds", () => {
-      content = readFileSync(docsPath, "utf-8");
       expect(content).toContain("0.8"); // 80% safety margin
       expect(content).toContain("0.7"); // 70% warning threshold
       expect(content).toContain("0.9"); // 90% critical threshold
@@ -43,7 +41,6 @@ describe("Performance optimization documentation", () => {
     });
 
     it("should contain memory management best practices section", () => {
-      content = readFileSync(docsPath, "utf-8");
       expect(content).toMatch(/##\s+Memory Management/i);
       expect(content).toContain("Memory Best Practices");
       expect(content).toContain("Clean Up Dead Creep Memory");
@@ -52,7 +49,6 @@ describe("Performance optimization documentation", () => {
     });
 
     it("should contain pathfinding optimization section", () => {
-      content = readFileSync(docsPath, "utf-8");
       expect(content).toMatch(/##\s+Pathfinding Optimization/i);
       expect(content).toContain("Movement Optimization Strategies");
       expect(content).toContain("reusePath");
@@ -60,14 +56,12 @@ describe("Performance optimization documentation", () => {
     });
 
     it("should document optimal reusePath values", () => {
-      content = readFileSync(docsPath, "utf-8");
       expect(content).toContain("reusePath: 30"); // Standard movement
       expect(content).toContain("reusePath: 40"); // Remote mining
       expect(content).toContain("reusePath: 50"); // Long distance
     });
 
     it("should contain profiling and monitoring section", () => {
-      content = readFileSync(docsPath, "utf-8");
       expect(content).toMatch(/##\s+Profiling and Monitoring/i);
       expect(content).toContain("PerformanceTracker");
       expect(content).toContain("StatsCollector");
@@ -75,7 +69,6 @@ describe("Performance optimization documentation", () => {
     });
 
     it("should reference existing performance utilities", () => {
-      content = readFileSync(docsPath, "utf-8");
       expect(content).toContain("src/runtime/metrics/PerformanceTracker.ts");
       expect(content).toContain("src/runtime/metrics/StatsCollector.ts");
       expect(content).toContain("src/runtime/behavior/BehaviorController.ts");
@@ -84,7 +77,6 @@ describe("Performance optimization documentation", () => {
     });
 
     it("should contain performance patterns section", () => {
-      content = readFileSync(docsPath, "utf-8");
       expect(content).toMatch(/##\s+Performance Patterns/i);
       expect(content).toContain("Early Exit Pattern");
       expect(content).toContain("Batching Pattern");
@@ -92,7 +84,6 @@ describe("Performance optimization documentation", () => {
     });
 
     it("should contain anti-patterns section", () => {
-      content = readFileSync(docsPath, "utf-8");
       expect(content).toMatch(/##\s+Anti-Patterns to Avoid/i);
       expect(content).toContain("Per-Tick Room Scans");
       expect(content).toContain("Unnecessary Object Creation");
@@ -100,13 +91,11 @@ describe("Performance optimization documentation", () => {
     });
 
     it("should reference official Screeps documentation", () => {
-      content = readFileSync(docsPath, "utf-8");
       expect(content).toContain("https://docs.screeps.com/game-loop.html");
       expect(content).toContain("https://docs.screeps.com/cpu-limit.html");
     });
 
     it("should reference related issues and monitoring infrastructure", () => {
-      content = readFileSync(docsPath, "utf-8");
       expect(content).toContain("#117"); // PTR CPU monitoring alerts
       expect(content).toContain("#299"); // Proactive CPU monitoring system
       expect(content).toContain("#287"); // CPU timeout regression
@@ -114,19 +103,16 @@ describe("Performance optimization documentation", () => {
     });
 
     it("should reference existing regression tests", () => {
-      content = readFileSync(docsPath, "utf-8");
       expect(content).toContain("cpu-timeout-prevention.test.ts");
       expect(content).toContain("cpu-optimization-90-percent.test.ts");
     });
 
     it("should link to related documentation", () => {
-      content = readFileSync(docsPath, "utf-8");
       expect(content).toContain("stats-monitoring.md");
       expect(content).toContain("stats-collection.md");
     });
 
     it("should contain code examples", () => {
-      content = readFileSync(docsPath, "utf-8");
       // Should have TypeScript code blocks
       expect(content).toMatch(/```typescript/);
       // Should have JavaScript code blocks for console examples

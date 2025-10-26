@@ -129,13 +129,16 @@ Implement CPU checks in expensive loops:
 
 ```typescript
 // Process creeps with CPU budget checks
+let processedCount = 0;
 for (const creep of creeps) {
   if (Game.cpu.getUsed() > cpuBudget) {
+    const remainingCreeps = creeps.length - processedCount;
     console.log(`CPU budget exceeded, skipping ${remainingCreeps} creeps`);
     break;
   }
 
   // Process creep behavior...
+  processedCount++;
 }
 ```
 
@@ -542,7 +545,7 @@ profiler.registerFN(myFunction, "myFunction");
 
 Use in-game console for quick profiling:
 
-```javascript
+```typescript
 // Measure CPU for a specific operation
 const startCPU = Game.cpu.getUsed();
 // ... your code ...
@@ -795,13 +798,15 @@ When optimizing, always benchmark before and after:
 ```typescript
 // Baseline measurement
 const startCPU = Game.cpu.getUsed();
-const startTime = Game.time;
+const startTick = Game.time;
 
 // Run for 100 ticks, record average CPU
-// Then apply optimization and compare
+// Track metrics over time...
 
+// After 100 ticks
 const endCPU = Game.cpu.getUsed();
-console.log(`Average CPU: ${(endCPU - startCPU) / 100}`);
+const ticksElapsed = Game.time - startTick;
+console.log(`Average CPU over ${ticksElapsed} ticks: ${(endCPU - startCPU) / ticksElapsed}`);
 ```
 
 ---
