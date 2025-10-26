@@ -5,6 +5,7 @@ import { MemoryManager } from "@runtime/memory/MemoryManager";
 import { PerformanceTracker } from "@runtime/metrics/PerformanceTracker";
 import { StatsCollector } from "@runtime/metrics/StatsCollector";
 import { RespawnManager } from "@runtime/respawn/RespawnManager";
+import { ConstructionManager } from "@runtime/planning/ConstructionManager";
 import type { GameContext } from "@runtime/types/GameContext";
 
 export interface KernelConfig {
@@ -14,6 +15,7 @@ export interface KernelConfig {
   behavior?: BehaviorController;
   evaluator?: SystemEvaluator;
   respawnManager?: RespawnManager;
+  constructionManager?: ConstructionManager;
   repositorySignalProvider?: () => RepositorySignal | undefined;
   logger?: Pick<Console, "log" | "warn">;
   cpuEmergencyThreshold?: number;
@@ -30,6 +32,7 @@ export class Kernel {
   private readonly behavior: BehaviorController;
   private readonly evaluator: SystemEvaluator;
   private readonly respawnManager: RespawnManager;
+  private readonly constructionManager: ConstructionManager;
   private readonly repositorySignalProvider?: () => RepositorySignal | undefined;
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly cpuEmergencyThreshold: number;
@@ -42,6 +45,7 @@ export class Kernel {
     this.behavior = config.behavior ?? new BehaviorController({}, this.logger);
     this.evaluator = config.evaluator ?? new SystemEvaluator({}, this.logger);
     this.respawnManager = config.respawnManager ?? new RespawnManager(this.logger);
+    this.constructionManager = config.constructionManager ?? new ConstructionManager(this.logger);
     this.repositorySignalProvider = config.repositorySignalProvider;
     this.cpuEmergencyThreshold = config.cpuEmergencyThreshold ?? 0.9;
   }
@@ -87,6 +91,9 @@ export class Kernel {
 
     this.memoryManager.pruneMissingCreeps(memory, game.creeps);
     const roleCounts = this.memoryManager.updateRoleBookkeeping(memory, game.creeps);
+
+    // Plan construction sites before executing behavior
+    this.constructionManager.planConstructionSites(game);
 
     const behaviorSummary = this.behavior.execute(game, memory, roleCounts);
     const snapshot = this.tracker.end(game, behaviorSummary);
