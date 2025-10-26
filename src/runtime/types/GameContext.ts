@@ -17,6 +17,8 @@ export interface RoomLike {
   name: string;
   controller: StructureController | null;
   find(type: FindConstant, opts?: { filter?: (object: unknown) => boolean }): unknown[];
+  createConstructionSite(x: number, y: number, structureType: BuildableStructureConstant): ScreepsReturnCode;
+  getTerrain(): RoomTerrain;
 }
 
 export interface CreepLike {
