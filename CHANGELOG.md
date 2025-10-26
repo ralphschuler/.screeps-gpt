@@ -5,6 +5,19 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Changed
+
+- **Enhanced copilot-ci-autofix workflow effectiveness**
+  - Added comprehensive failure classification system with 6 automatic fix categories and 5 manual review categories
+  - Improved error context gathering with full log downloads, error indicator extraction, and related failure analysis
+  - Implemented specialized fix strategies for each failure type (linting, formatting, version sync, dependencies, documentation, compilation)
+  - Enhanced workflow configuration with 45-minute timeout and verbose logging for better debugging
+  - Expanded JSON output format with failure_type, fix_strategy, validation_commands, and files_changed fields for metrics tracking
+  - Added explicit escalation criteria for complex failures requiring manual review (test logic errors, security issues, performance regressions)
+  - Updated documentation in `docs/automation/overview.md` with detailed autofix workflow improvements
+  - Created comprehensive regression test suite (`tests/regression/ci-autofix-improvements.test.ts`) validating all enhancements
+  - Addresses issue #132 - Review and improve copilot-ci-autofix workflow effectiveness
+
 ## [0.7.27] - 2025-10-26
 
 ### Added

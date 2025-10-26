@@ -65,3 +65,5 @@ jobs:
           prompt-path: .github/copilot/prompts/ci-autofix
           output-path: >-
             reports/copilot/ci-autofix-${{ github.run_id }}.log
+          timeout: "45"
+          verbose: "true"

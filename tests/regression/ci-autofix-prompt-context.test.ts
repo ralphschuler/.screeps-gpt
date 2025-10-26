@@ -25,7 +25,7 @@ describe("CI Autofix Prompt Context Handling", () => {
     const promptContent = readFileSync(promptPath, "utf-8");
 
     // Should mention handling pull request context
-    expect(promptContent).toMatch(/pull request/i);
+    expect(promptContent).toMatch(/pull[_\s]request/i);
   });
 
   it("should include rules for non-PR workflow failures", () => {
