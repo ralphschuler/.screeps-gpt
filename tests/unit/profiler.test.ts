@@ -17,7 +17,16 @@ describe("Profiler", () => {
   beforeEach(() => {
     // Initialize global Memory if not present
     if (!global.Memory) {
-      global.Memory = {} as Memory;
+      global.Memory = {
+        creeps: {},
+        spawns: {},
+        flags: {},
+        rooms: {},
+        profiler: {
+          data: {},
+          total: 0
+        }
+      } as Memory;
     }
 
     // Reset Memory.profiler before each test
@@ -28,7 +37,9 @@ describe("Profiler", () => {
 
     // Initialize Game global for time tracking
     if (!global.Game) {
-      global.Game = {} as Game;
+      global.Game = {
+        time: 0
+      } as Game;
     }
   });
 
@@ -150,18 +161,21 @@ describe("Profiler", () => {
   });
 
   describe("decorator integration", () => {
+    // Define test class outside to avoid memory leaks
+    class TestClass {
+      public testMethod(): string {
+        return "test";
+      }
+    }
+
     it("should have profile decorator function available", () => {
       expect(Profiler.profile).toBeDefined();
       expect(Profiler.profile).toBeInstanceOf(Function);
     });
 
     it("should not throw when applying decorator with profiler disabled", () => {
-      @Profiler.profile
-      class TestClass {
-        public testMethod(): string {
-          return "test";
-        }
-      }
+      // Apply decorator to the test class
+      Profiler.profile(TestClass);
 
       const instance = new TestClass();
       expect(instance.testMethod()).toBe("test");
