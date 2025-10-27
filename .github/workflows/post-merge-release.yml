@@ -68,7 +68,7 @@ jobs:
       # Commit version bump and changelog directly to main
       - name: Commit version bump to main
         id: commit
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: >-
             chore(release): bump version to ${{
