@@ -42,7 +42,7 @@ This document tracks CPU timeout incidents as part of the systematic resolution 
       at loop (main:872:22)
       at __mainLoop:1:52
   ```
-- **Issue**: This issue (systematic coordination tracking)
+- **Issue**: Issue #TODO - Systematic coordination tracking (replace #TODO with actual issue number when available)
 
 **Pattern Recognition**:
 
