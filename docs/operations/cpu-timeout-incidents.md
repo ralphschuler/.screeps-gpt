@@ -47,7 +47,8 @@ This document tracks CPU timeout incidents as part of the systematic resolution 
 **Pattern Recognition**:
 
 - Identical to multiple recent incidents at same failure location (main:872:22)
-- Part of ongoing systematic timeout pattern: #393, #385, #377, #374, #340, #329
+- Recent pattern (Oct 26, 2025): #393, #385, #377, #374
+- Historical incidents (same location): #340, #329
 - Continues pattern from October 26, 2025 with incident occurring ~10 hours after previous timeout
 - Same stack trace and execution context as incidents #1-4
 - Confirms systematic performance degradation rather than isolated occurrence
