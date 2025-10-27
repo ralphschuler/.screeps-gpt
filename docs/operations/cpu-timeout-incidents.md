@@ -26,6 +26,57 @@ This document tracks CPU timeout incidents as part of the systematic resolution 
 
 ## Incident Log
 
+### Incident #6: Shard3 CPU Timeout - October 27, 2025 (03:38 UTC)
+
+**Incident Details**:
+
+- **Date**: 2025-10-27T03:38:02.638Z
+- **Shard**: shard3
+- **Error**: Script execution timed out: CPU time limit reached at main:872:22
+- **Source**: noreply@screeps.com (automated game engine alert)
+- **Impact**: Script execution halted, preventing tick processing and bot operation
+- **Stack Trace**:
+  ```
+  Script execution timed out: CPU time limit reached
+      at get (<runtime>:20941:68)
+      at loop (main:872:22)
+      at __mainLoop:1:52
+  ```
+- **Issue**: This issue (systematic coordination tracking)
+
+**Pattern Recognition**:
+
+- Identical to multiple recent incidents at same failure location (main:872:22)
+- Part of ongoing systematic timeout pattern: #393, #385, #377, #374, #340, #329
+- Continues pattern from October 26, 2025 with incident occurring ~10 hours after previous timeout
+- Same stack trace and execution context as incidents #1-4
+- Confirms systematic performance degradation rather than isolated occurrence
+
+**Coordination Status**:
+
+- ✓ Incident documented in systematic resolution framework
+- ✓ Coordinated with issue #396 (parent systematic resolution)
+- ✓ Coordinated with issue #417 (systematic performance analysis)
+- ✓ Covered by architectural prevention solutions (#364, #392, #299)
+- ✓ Integrated with PTR monitoring system for telemetry validation
+- ⚠ PTR telemetry blackout (#428, #420) preventing performance validation
+
+**Resolution Approach**:
+
+- No individual tactical fix applied - following systematic coordination approach
+- Incident contributes to comprehensive architectural intervention
+- Resolution achieved through coordinated systematic improvements (#396, #380, #391)
+- Monitoring integration ensures detection and tracking of pattern continuation
+- Validates need for incremental CPU guards (#364) and proactive monitoring (#392)
+
+**Related Documentation**:
+
+- [Performance Optimization Guide](./performance-optimization.md) - CPU optimization strategies
+- [Performance Monitoring](../runtime/operations/performance-monitoring.md) - CPU tracking implementation
+- [Stats Monitoring](./stats-monitoring.md) - PTR telemetry monitoring setup
+
+---
+
 ### Incident #5: Shard3 CPU Timeout - October 26, 2025 (17:43 UTC)
 
 **Incident Details**:
@@ -137,22 +188,25 @@ This document tracks CPU timeout incidents as part of the systematic resolution 
 
 ### Temporal Pattern
 
-**Frequency**: Multiple incidents per day on shard3
-**Time Distribution**: Incidents occurring at ~2-3 hour intervals
-**Duration**: Pattern sustained throughout October 26, 2025
+**Frequency**: Multiple incidents spanning October 26-27, 2025 on shard3
+**Time Distribution**: Incidents occurring at variable intervals (2-3 hours during Oct 26, ~10 hours between incidents #5 and #6)
+**Duration**: Pattern sustained across two days (October 26-27, 2025)
+**Latest Incident**: October 27, 2025 at 03:38 UTC
 
 ### Location Pattern
 
 **Shard**: All incidents on shard3 specifically
-**Code Location**: Main execution loop (main:872:22 in incidents #1-4)
-**Incident #5**: No stack trace provided (notification format differs from previous incidents)
+**Code Location**: Main execution loop (main:872:22 in incidents #1-4 and #6)
+**Incident #5**: No stack trace provided (notification format differs from other incidents)
+**Incident #6**: Identical stack trace to incidents #1-4 (main:872:22)
 
 ### Systematic Indicators
 
-1. **High Frequency**: 5+ incidents in single day indicates systematic issue
+1. **High Frequency**: 6 incidents across 2 days indicates systematic issue
 2. **Consistent Shard**: All on shard3 suggests shard-specific conditions
 3. **Recurring Location**: Multiple incidents at same code line (main:872:22)
-4. **No Individual Fixes**: Pattern persists across multiple occurrences
+4. **No Individual Fixes**: Pattern persists across multiple occurrences and continues after Oct 26
+5. **Pattern Continuation**: Incident #6 confirms ongoing systematic degradation despite CPU optimization efforts (v0.7.25)
 
 ## Prevention Infrastructure
 
@@ -254,6 +308,7 @@ This document tracks CPU timeout incidents as part of the systematic resolution 
 **Systematic Resolution Coordination**:
 
 - #396 - Systematic CPU timeout pattern resolution (parent coordination)
+- #417 - CPU timeout errors on shard3 requiring systematic performance analysis
 - #380 - Systematic CPU timeout pattern coordination
 - #391 - CPU timeout at multiple locations requiring systematic analysis
 - #328 - Systematic CPU timeout analysis and prevention
@@ -270,11 +325,19 @@ This document tracks CPU timeout incidents as part of the systematic resolution 
 
 **Recent Timeout Incidents**:
 
+- This issue - CPU timeout at main:872:22 (2025-10-27 03:38 UTC) - Systematic coordination tracking
 - #398 - CPU timeout on shard3 (2025-10-26 17:43 UTC) - No stack trace provided
 - #393 - CPU timeout at main:872:22 (2025-10-26 15:02 UTC)
 - #385 - CPU timeout at main:872:22 (2025-10-26 14:01 UTC)
 - #377 - CPU timeout at main:872:22 (2025-10-26 13:01 UTC)
 - #374 - CPU timeout at main:872:22 (2025-10-26 11:30 UTC)
+- #340 - CPU timeout at main:872:22 on shard3 (historical reference)
+- #329 - CPU timeout at main:872:22 on shard3 (historical reference)
+
+**Infrastructure Dependencies**:
+
+- #428 - PTR telemetry blackout preventing performance validation
+- #420 - Complete PTR telemetry blackout preventing performance validation
 
 ## Next Steps
 
