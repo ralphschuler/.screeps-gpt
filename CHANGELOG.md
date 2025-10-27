@@ -20,7 +20,7 @@ All notable changes to this project are documented here. This changelog now main
   - Tracks incident patterns, temporal distribution, and location analysis
   - Documents monitoring integration with PTR telemetry and runtime evaluation
   - Establishes acceptance criteria for incident documentation and systematic resolution
-  - Addresses this issue - CPU timeout at main:872:22 on shard3 requiring systematic coordination
+  - Addresses Incident #6 - CPU timeout at main:872:22 on shard3 requiring systematic coordination
 
 ### Changed
 
