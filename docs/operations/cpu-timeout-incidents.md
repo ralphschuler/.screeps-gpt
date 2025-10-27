@@ -326,7 +326,7 @@ This document tracks CPU timeout incidents as part of the systematic resolution 
 
 **Recent Timeout Incidents**:
 
-- This issue - CPU timeout at main:872:22 (2025-10-27 03:38 UTC) - Systematic coordination tracking
+- #432 - CPU timeout at main:872:22 (2025-10-27 03:38 UTC) - Systematic coordination tracking
 - #398 - CPU timeout on shard3 (2025-10-26 17:43 UTC) - No stack trace provided
 - #393 - CPU timeout at main:872:22 (2025-10-26 15:02 UTC)
 - #385 - CPU timeout at main:872:22 (2025-10-26 14:01 UTC)
