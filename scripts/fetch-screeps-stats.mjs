@@ -103,7 +103,12 @@ main().catch(error => {
   console.error("Unexpected error fetching Screeps stats");
   console.error(`Endpoint: ${endpoint}`);
 
+  // Determine failure type for proper categorization
+  let failureType = "unknown_error";
+  let failureDetails = error.message || String(error);
+
   if (error.status) {
+    failureType = `http_error_${error.status}`;
     console.error(`HTTP Status: ${error.status} ${error.statusText || ""}`);
     console.error(`Response: ${error.responseBody || error.message}`);
 
@@ -119,7 +124,37 @@ main().catch(error => {
       console.error("   - API endpoint is correct");
     }
   } else {
-    console.error(error);
+    // Network errors don't have status codes
+    failureType = "network_error";
+    console.error("\n❌ Network error - API endpoint unreachable. Possible causes:");
+    console.error("   - Screeps API infrastructure is down");
+    console.error("   - Network connectivity issues");
+    console.error("   - DNS resolution failure");
+    console.error("   - Firewall or proxy blocking the connection");
+    console.error(`\nError details: ${error.message || error}`);
+  }
+
+  // Create failure snapshot for monitoring system
+  try {
+    const outputDir = resolve("reports", "screeps-stats");
+    mkdirSync(outputDir, { recursive: true });
+    const filePath = resolve(outputDir, "latest.json");
+
+    const failureSnapshot = {
+      status: "api_unavailable",
+      failureType,
+      timestamp: new Date().toISOString(),
+      error: failureDetails,
+      attempted_endpoint: endpoint,
+      httpStatus: error.status || null,
+      httpStatusText: error.statusText || null
+    };
+
+    writeFileSync(filePath, JSON.stringify(failureSnapshot, null, 2));
+    console.error(`\n⚠ Failure snapshot saved to: ${filePath}`);
+    console.error("This snapshot will be used by the monitoring system to detect infrastructure failures.");
+  } catch (snapshotError) {
+    console.error("\n⚠ Failed to create failure snapshot:", snapshotError);
   }
 
   process.exit(1);

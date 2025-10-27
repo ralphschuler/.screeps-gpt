@@ -56,6 +56,25 @@ See [Stats Collection Implementation](./stats-collection.md) for detailed docume
 
 ## Troubleshooting
 
+### Network Failures vs Empty Responses
+
+The monitoring system distinguishes between two types of PTR telemetry failures:
+
+**Network Failures (Critical Infrastructure):**
+
+- API endpoint completely unreachable
+- No HTTP response received
+- Creates failure snapshot with `failureType: "network_error"`
+- Severity: Critical - requires immediate attention
+
+**Empty Response Pattern:**
+
+- HTTP 200 OK received with empty stats: `{"ok": 1, "stats": {}}`
+- Bot not collecting stats or no recent activity
+- Severity: Medium - verify bot deployment
+
+See [PTR Infrastructure Failures Guide](./ptr-infrastructure-failures.md) for comprehensive troubleshooting procedures.
+
 ### "invalid params" Error
 
 If the workflow fails with an "invalid params" error from the Screeps API:
@@ -85,3 +104,21 @@ If the snapshot shows no stats data (`{"ok": 1, "stats": {}}`):
 5. **Confirm interval parameter**: Ensure the interval parameter matches the expected data range
 
 See [Stats Collection Implementation](./stats-collection.md) for troubleshooting the bot-side stats generation.
+
+### Network Errors and API Unavailability
+
+If the workflow fails with network errors or API unavailability:
+
+1. **Check infrastructure status**: Verify Screeps API is operational
+2. **Review failure snapshot**: Check `reports/screeps-stats/latest.json` for error details
+3. **Monitor for recovery**: Script includes automatic retry with exponential backoff
+4. **Create issue if persistent**: Network failures lasting > 2 hours require investigation
+
+The script automatically creates a failure snapshot when the API is unavailable, including:
+
+- Failure type classification (network error, HTTP error, etc.)
+- Timestamp and endpoint information
+- Error details for diagnostics
+- Alert severity determination
+
+See [PTR Infrastructure Failures Guide](./ptr-infrastructure-failures.md) for detailed troubleshooting and escalation procedures.
