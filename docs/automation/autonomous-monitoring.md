@@ -366,6 +366,17 @@ Every 30 Minutes (Cron + Deploy Completion)
 - Check `SCREEPS_HOST` if using private server
 - Review MCP config in `.github/mcp/screeps-mcp.json`
 
+### PTR Telemetry Failures
+
+The monitoring system distinguishes between critical infrastructure failures and application-level issues:
+
+- **Network Failures** (Critical): API endpoint completely unreachable
+- **Server Errors** (Critical): HTTP 5xx responses from Screeps API
+- **Authentication Failures** (High): HTTP 401/403 token issues
+- **Empty Response Pattern** (Medium): HTTP 200 with no stats data
+
+See [PTR Infrastructure Failures Guide](../operations/ptr-infrastructure-failures.md) for comprehensive troubleshooting procedures and escalation criteria.
+
 ### No Issues Created
 
 - Review strategic decision-making logs for criteria matching
@@ -398,6 +409,8 @@ Potential improvements to consider:
 ## Related Documentation
 
 - [Automation Overview](overview.md) - Complete workflow documentation
+- [PTR Infrastructure Failures](../operations/ptr-infrastructure-failures.md) - Network failure troubleshooting
+- [Stats Monitoring Pipeline](../operations/stats-monitoring.md) - PTR telemetry collection
 - [Push Notifications](push-notifications.md) - PTR alert notification setup
 - [Copilot Repository Review](overview.md#copilot-repository-review-copilot-reviewyml) - Code quality audits
 - [Issue Triage Workflow](overview.md#copilot-issue-triage-copilot-issue-triageyml) - Issue processing
