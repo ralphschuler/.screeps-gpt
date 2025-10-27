@@ -14,12 +14,20 @@ interface TickStats {
 }
 
 interface PTRStatsSnapshot {
-  fetchedAt: string;
-  endpoint: string;
-  payload: {
+  fetchedAt?: string;
+  endpoint?: string;
+  payload?: {
     stats?: Record<string, TickStats>;
     ok?: number;
   };
+  // Failure snapshot fields
+  status?: string;
+  failureType?: string;
+  timestamp?: string;
+  error?: string;
+  attempted_endpoint?: string;
+  httpStatus?: number | null;
+  httpStatusText?: string | null;
 }
 
 interface AlertCondition {
@@ -35,6 +43,51 @@ interface AlertCondition {
  */
 function analyzePTRStats(snapshot: PTRStatsSnapshot): AlertCondition[] {
   const alerts: AlertCondition[] = [];
+
+  // Check for API unavailability (network failure or infrastructure issue)
+  if (snapshot.status === "api_unavailable") {
+    const failureType = snapshot.failureType || "unknown";
+
+    // Network errors represent complete infrastructure failure
+    if (failureType === "network_error") {
+      alerts.push({
+        type: "api_endpoint_unreachable",
+        severity: "critical",
+        message: `Critical infrastructure failure - API endpoint completely unreachable. Error: ${snapshot.error || "Unknown error"}`
+      });
+    } else if (failureType.startsWith("http_error_")) {
+      const statusCode = snapshot.httpStatus || 0;
+
+      // Determine severity based on HTTP status
+      if (statusCode >= 500) {
+        alerts.push({
+          type: "api_server_error",
+          severity: "critical",
+          message: `Screeps API server error (${statusCode}): ${snapshot.error || "Server-side failure"}`
+        });
+      } else if (statusCode === 401 || statusCode === 403) {
+        alerts.push({
+          type: "api_authentication_failed",
+          severity: "high",
+          message: `API authentication failure (${statusCode}): Token may be expired or invalid`
+        });
+      } else {
+        alerts.push({
+          type: "api_request_failed",
+          severity: "high",
+          message: `API request failed (${statusCode}): ${snapshot.error || "Request error"}`
+        });
+      }
+    } else {
+      alerts.push({
+        type: "api_unavailable",
+        severity: "critical",
+        message: `PTR API unavailable - ${snapshot.error || "Unknown failure"}`
+      });
+    }
+
+    return alerts;
+  }
 
   if (!snapshot.payload || !snapshot.payload.stats) {
     alerts.push({
@@ -57,7 +110,7 @@ function analyzePTRStats(snapshot: PTRStatsSnapshot): AlertCondition[] {
     alerts.push({
       type: "no_data",
       severity: "medium",
-      message: "No recent PTR stats available for analysis"
+      message: "No recent PTR stats available for analysis (empty stats response)"
     });
     return alerts;
   }
