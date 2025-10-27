@@ -106,24 +106,39 @@ describe("CPU optimization regression - 90% threshold", () => {
         expensiveCreep: createMockCreep("expensiveCreep", "harvester")
       };
 
+      const mockRoom: RoomLike = {
+        name: "W0N0",
+        controller: null,
+        find: vi.fn(() => [])
+      };
+
       const game: GameContext = {
         time: 100,
         cpu: {
           getUsed: vi
             .fn()
-            .mockReturnValueOnce(0) // Initial
-            .mockReturnValueOnce(0) // Before creep
-            .mockReturnValueOnce(1.6), // After creep - exceeds 1.5 threshold
+            .mockReturnValueOnce(0) // CPU check before spawn
+            .mockReturnValueOnce(0) // CPU check before creep
+            .mockReturnValueOnce(0) // cpuBefore
+            .mockReturnValueOnce(1.6), // cpuAfter - exceeds 1.5 threshold
           limit: 20,
           bucket: 5000
         },
         creeps,
-        spawns: {},
-        rooms: {}
+        spawns: {
+          spawn1: {
+            name: "spawn1",
+            spawning: null,
+            spawnCreep: vi.fn().mockReturnValue(OK),
+            store: { getFreeCapacity: () => 300, getUsedCapacity: () => 0 },
+            room: mockRoom
+          }
+        },
+        rooms: { W0N0: mockRoom }
       };
 
       const memory = { creepCounter: 0 } as Memory;
-      const roleCounts = { harvester: 1 };
+      const roleCounts = { harvester: 2, upgrader: 1, builder: 1 }; // Meet minimums
 
       controller.execute(game, memory, roleCounts);
 

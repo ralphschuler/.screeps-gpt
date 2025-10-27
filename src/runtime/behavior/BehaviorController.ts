@@ -200,6 +200,16 @@ export class BehaviorController {
     roleCounts: Record<string, number>,
     spawned: string[]
   ): void {
+    // Check CPU budget before spawn operations
+    const cpuBudget = game.cpu.limit * this.options.cpuSafetyMargin;
+    if (game.cpu.getUsed() > cpuBudget) {
+      this.logger.warn?.(
+        `CPU budget exceeded before spawn operations (${game.cpu.getUsed().toFixed(2)}/${cpuBudget.toFixed(2)}), ` +
+          `skipping spawn checks to prevent timeout`
+      );
+      return;
+    }
+
     for (const [role, definition] of Object.entries(ROLE_DEFINITIONS)) {
       const current = roleCounts[role] ?? 0;
       if (current >= definition.minimum) {

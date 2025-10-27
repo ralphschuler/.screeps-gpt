@@ -91,11 +91,59 @@ export class Kernel {
       return;
     }
 
+    // CPU guard after respawn check
+    if (game.cpu.getUsed() > game.cpu.limit * this.cpuEmergencyThreshold) {
+      this.logger.warn?.(
+        `CPU threshold exceeded after respawn check (${game.cpu.getUsed().toFixed(2)}/${game.cpu.limit}), ` +
+          `aborting remaining operations`
+      );
+      const snapshot = this.tracker.end(game, {
+        processedCreeps: 0,
+        spawnedCreeps: [],
+        tasksExecuted: {}
+      });
+      this.statsCollector.collect(game, memory, snapshot);
+      this.evaluator.evaluateAndStore(memory, snapshot, repository);
+      return;
+    }
+
     this.memoryManager.pruneMissingCreeps(memory, game.creeps);
     const roleCounts = this.memoryManager.updateRoleBookkeeping(memory, game.creeps);
 
+    // CPU guard after memory operations
+    if (game.cpu.getUsed() > game.cpu.limit * this.cpuEmergencyThreshold) {
+      this.logger.warn?.(
+        `CPU threshold exceeded after memory operations (${game.cpu.getUsed().toFixed(2)}/${game.cpu.limit}), ` +
+          `aborting remaining operations`
+      );
+      const snapshot = this.tracker.end(game, {
+        processedCreeps: 0,
+        spawnedCreeps: [],
+        tasksExecuted: {}
+      });
+      this.statsCollector.collect(game, memory, snapshot);
+      this.evaluator.evaluateAndStore(memory, snapshot, repository);
+      return;
+    }
+
     // Plan construction sites before executing behavior
     this.constructionManager.planConstructionSites(game);
+
+    // CPU guard after construction planning
+    if (game.cpu.getUsed() > game.cpu.limit * this.cpuEmergencyThreshold) {
+      this.logger.warn?.(
+        `CPU threshold exceeded after construction planning (${game.cpu.getUsed().toFixed(2)}/${game.cpu.limit}), ` +
+          `aborting behavior execution`
+      );
+      const snapshot = this.tracker.end(game, {
+        processedCreeps: 0,
+        spawnedCreeps: [],
+        tasksExecuted: {}
+      });
+      this.statsCollector.collect(game, memory, snapshot);
+      this.evaluator.evaluateAndStore(memory, snapshot, repository);
+      return;
+    }
 
     const behaviorSummary = this.behavior.execute(game, memory, roleCounts);
     const snapshot = this.tracker.end(game, behaviorSummary);
