@@ -7,6 +7,11 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Added
 
+- **Codex composite action for automation workflows**
+  - Added `.github/actions/codex-exec` as a drop-in replacement for `copilot-exec`
+  - Wraps the official `openai/codex-action@v1` with repository-specific caching and prompt rendering
+  - Maintains existing inputs/outputs while renaming the token parameter to `codex-token` for clarity
+
 - **CPU timeout incident tracking documentation**
   - Created centralized incident tracking document in `docs/operations/cpu-timeout-incidents.md`
   - Documents systematic CPU timeout pattern on shard3 (6 incidents spanning 2025-10-26 to 2025-10-27)
