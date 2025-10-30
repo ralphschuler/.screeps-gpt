@@ -113,6 +113,12 @@ describe("CPU timeout prevention regression", () => {
         expensiveCreep: createMockCreep("expensiveCreep", "harvester")
       };
 
+      const mockRoom: RoomLike = {
+        name: "W0N0",
+        controller: null,
+        find: vi.fn(() => [])
+      };
+
       const game: GameContext = {
         time: 100,
         cpu: {
@@ -121,20 +127,33 @@ describe("CPU timeout prevention regression", () => {
           bucket: 1000
         },
         creeps,
-        spawns: {},
-        rooms: {}
+        spawns: {
+          spawn1: {
+            name: "spawn1",
+            spawning: null,
+            spawnCreep: vi.fn().mockReturnValue(OK),
+            store: { getFreeCapacity: () => 300, getUsedCapacity: () => 0 },
+            room: mockRoom
+          }
+        },
+        rooms: { W0N0: mockRoom }
       };
 
       const memory = { creepCounter: 0 } as Memory;
-      const roleCounts = { harvester: 1 };
+      const roleCounts = { harvester: 2, upgrader: 1, builder: 1 }; // Meet minimums to avoid spawning
 
       // Track CPU usage - simulate expensive creep
       let callCount = 0;
       game.cpu.getUsed = () => {
         callCount++;
-        if (callCount === 1) return 0; // Before creep processing
-        if (callCount === 2) return 0; // Start of creep processing
-        return 1.5; // After creep processing - exceeds maxCpuPerCreep
+        // Call 1: ensureRoleMinimums CPU check
+        if (callCount === 1) return 0;
+        // Call 2: cpuUsed check before first creep (line 147)
+        if (callCount === 2) return 0;
+        // Call 3: cpuBefore = game.cpu.getUsed() (line 157)
+        if (callCount === 3) return 0;
+        // Call 4+: cpuAfter = game.cpu.getUsed() (line 182) - after handler.run()
+        return 1.5; // Consumed 1.5 CPU - exceeds maxCpuPerCreep of 1.0
       };
 
       controller.execute(game, memory, roleCounts);
