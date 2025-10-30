@@ -20,7 +20,7 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Run autonomous strategic monitoring with PTR analysis
         uses: ./.github/actions/copilot-exec
