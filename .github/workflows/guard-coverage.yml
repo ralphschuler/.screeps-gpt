@@ -30,7 +30,7 @@ jobs:
           tar -czf reports.tar.gz reports || echo "no reports directory"
       - name: Upload report
         if: success()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: system-evaluation
           path: reports.tar.gz
