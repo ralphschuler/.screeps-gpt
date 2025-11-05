@@ -2,7 +2,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import process from "node:process";
 import { ScreepsAPI } from "screeps-api";
-import type { ProfilerMemory, ProfilerSnapshot } from "../src/shared/profiler-types";
+import { type ProfilerMemory, type ProfilerSnapshot, calculateProfilerSummary } from "../src/shared/profiler-types";
 
 interface ConsoleResponse {
   ok: number;
@@ -67,60 +67,6 @@ async function fetchProfilerFromConsole(): Promise<ProfilerMemory | null> {
     }
     throw error;
   }
-}
-
-/**
- * Calculate profiler summary metrics
- */
-function calculateProfilerSummary(profilerMemory: ProfilerMemory, currentTick?: number): ProfilerSnapshot["summary"] {
-  let totalTicks = profilerMemory.total;
-
-  // If profiler is currently running and we have current tick, use it
-  if (profilerMemory.start && currentTick) {
-    totalTicks += currentTick - profilerMemory.start;
-  }
-
-  // Calculate average CPU per tick
-  let totalCpu = 0;
-  const functions: Array<{
-    name: string;
-    calls: number;
-    cpuPerCall: number;
-    callsPerTick: number;
-    cpuPerTick: number;
-  }> = [];
-
-  for (const [name, data] of Object.entries(profilerMemory.data)) {
-    const cpuPerCall = data.time / data.calls;
-    const callsPerTick = data.calls / totalTicks;
-    const cpuPerTick = data.time / totalTicks;
-
-    totalCpu += cpuPerTick;
-
-    functions.push({
-      name,
-      calls: data.calls,
-      cpuPerCall,
-      callsPerTick,
-      cpuPerTick
-    });
-  }
-
-  // Sort by CPU per tick (descending)
-  functions.sort((a, b) => b.cpuPerTick - a.cpuPerTick);
-
-  // Take top 20 CPU consumers and add percentage
-  const topCpuConsumers = functions.slice(0, 20).map(func => ({
-    ...func,
-    percentOfTotal: totalCpu > 0 ? (func.cpuPerTick / totalCpu) * 100 : 0
-  }));
-
-  return {
-    totalTicks,
-    totalFunctions: functions.length,
-    averageCpuPerTick: totalCpu,
-    topCpuConsumers
-  };
 }
 
 /**
@@ -223,5 +169,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   });
 }
 
-export { fetchProfilerFromConsole, createProfilerSnapshot, calculateProfilerSummary };
-export type { ProfilerSnapshot, ProfilerMemory };
+export { fetchProfilerFromConsole, createProfilerSnapshot };

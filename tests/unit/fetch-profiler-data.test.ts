@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { createProfilerSnapshot, calculateProfilerSummary } from "../../scripts/fetch-profiler-data";
-import type { ProfilerMemory } from "../../src/shared/profiler-types";
+import { createProfilerSnapshot } from "../../scripts/fetch-profiler-data";
+import { calculateProfilerSummary, type ProfilerMemory } from "../../src/shared/profiler-types";
 
 describe("fetch-profiler-data", () => {
   describe("createProfilerSnapshot", () => {

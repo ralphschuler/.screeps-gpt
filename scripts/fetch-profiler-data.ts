@@ -1,7 +1,7 @@
 import { writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import process from "node:process";
-import type { ProfilerMemory, ProfilerSnapshot } from "../src/shared/profiler-types";
+import { type ProfilerMemory, type ProfilerSnapshot, calculateProfilerSummary } from "../src/shared/profiler-types";
 
 /**
  * Fetch profiler data from Screeps Memory.profiler via console execution.
@@ -23,66 +23,6 @@ function fetchProfilerDataFromConsole(): ProfilerMemory | null {
 
   // Return null to indicate no data available without console access
   return null;
-}
-
-/**
- * Calculate profiler summary metrics
- * @param profilerMemory - The profiler memory data
- * @param currentTick - Optional current game tick for accurate calculation when profiler is running
- * @returns Summary metrics including top CPU consumers
- */
-function calculateProfilerSummary(profilerMemory: ProfilerMemory, currentTick?: number): ProfilerSnapshot["summary"] {
-  let totalTicks = profilerMemory.total;
-  if (profilerMemory.start && currentTick) {
-    // Profiler is currently running - calculate actual ticks
-    totalTicks += currentTick - profilerMemory.start;
-  } else if (profilerMemory.start) {
-    // Profiler is running but we don't have current tick
-    // Note: This is a limitation when data is fetched without Game.time context
-    // The summary will be based on profilerMemory.total only
-  }
-
-  // Calculate average CPU per tick
-  let totalCpu = 0;
-  const functions: Array<{
-    name: string;
-    calls: number;
-    cpuPerCall: number;
-    callsPerTick: number;
-    cpuPerTick: number;
-  }> = [];
-
-  for (const [name, data] of Object.entries(profilerMemory.data)) {
-    const cpuPerCall = data.time / data.calls;
-    const callsPerTick = data.calls / totalTicks;
-    const cpuPerTick = data.time / totalTicks;
-
-    totalCpu += cpuPerTick;
-
-    functions.push({
-      name,
-      calls: data.calls,
-      cpuPerCall,
-      callsPerTick,
-      cpuPerTick
-    });
-  }
-
-  // Sort by CPU per tick (descending)
-  functions.sort((a, b) => b.cpuPerTick - a.cpuPerTick);
-
-  // Take top 20 CPU consumers and add percentage
-  const topCpuConsumers = functions.slice(0, 20).map(func => ({
-    ...func,
-    percentOfTotal: totalCpu > 0 ? (func.cpuPerTick / totalCpu) * 100 : 0
-  }));
-
-  return {
-    totalTicks,
-    totalFunctions: functions.length,
-    averageCpuPerTick: totalCpu,
-    topCpuConsumers
-  };
 }
 
 /**
@@ -173,4 +113,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   }
 }
 
-export { fetchProfilerDataFromConsole, createProfilerSnapshot, calculateProfilerSummary };
+export { fetchProfilerDataFromConsole, createProfilerSnapshot };
