@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "tsx scripts/build.ts",
-    "build:profiler": "PROFILER_ENABLED=true tsx scripts/build.ts",
+    "build:no-profiler": "PROFILER_ENABLED=false tsx scripts/build.ts",
     "build:docs-site": "tsx scripts/build-hexo-site.ts",
     "build:docs-site-legacy": "tsx scripts/build-docs-site.ts",
     "migrate:docs-to-hexo": "tsx scripts/migrate-docs-to-hexo.ts",
@@ -31,7 +31,7 @@
     "test:docs": "vitest run tests/unit/build-hexo-site.test.ts tests/regression/hexo-documentation-build.test.ts tests/regression/documentation-workflow.test.ts",
     "test:coverage": "vitest run --coverage",
     "deploy": "tsx scripts/deploy.ts",
-    "deploy:profiler": "PROFILER_ENABLED=true tsx scripts/deploy.ts",
+    "deploy:no-profiler": "PROFILER_ENABLED=false tsx scripts/deploy.ts",
     "version:bump": "tsx scripts/bump-version.ts",
     "version:bump-semantic": "tsx scripts/bump-version-semantic.ts",
     "version:release": "tsx scripts/release-changelog.ts",

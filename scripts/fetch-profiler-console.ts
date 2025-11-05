@@ -126,9 +126,8 @@ async function main(): Promise<void> {
       });
     } else if (snapshot.error) {
       console.log(`\n⚠ ${snapshot.error}`);
-      console.log("  To enable profiler:");
-      console.log("  1. Deploy with: PROFILER_ENABLED=true bun run deploy");
-      console.log("  2. Run in console: Profiler.start()");
+      console.log("  Note: Profiler is enabled by default in builds");
+      console.log("  To start data collection, run in console: Profiler.start()");
     } else {
       console.log("\n⚠ Profiler is initialized but has no data");
       console.log("  Run Profiler.start() in console to begin collecting data");

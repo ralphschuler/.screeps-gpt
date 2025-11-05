@@ -14,26 +14,28 @@ The screeps-typescript-profiler provides detailed performance profiling capabili
 
 ## Quick Start
 
-### Enable Profiler
+### Profiler Status
 
-The profiler is controlled via the `PROFILER_ENABLED` environment variable during build:
+The profiler is **enabled by default** in all builds. This allows for continuous performance monitoring and analysis without requiring manual activation.
+
+To disable the profiler (e.g., for minimal production overhead):
 
 ```bash
-# Build with profiler enabled
-bun run build:profiler
+# Build without profiler
+bun run build:no-profiler
 
 # Or set environment variable directly
-PROFILER_ENABLED=true bun run build
+PROFILER_ENABLED=false bun run build
 
-# Deploy with profiler enabled
-bun run deploy:profiler
+# Deploy without profiler
+bun run deploy:no-profiler
 ```
 
-By default, the profiler is **disabled** to minimize production overhead.
+The profiler can be controlled via the `PROFILER_ENABLED` environment variable during build (defaults to `true`).
 
 ### Console Commands
 
-Once deployed with profiler enabled, access these commands in the Screeps console:
+Access these commands in the Screeps console (profiler is enabled by default):
 
 ```javascript
 // Start profiling
@@ -237,8 +239,8 @@ The profiler complements the existing `SystemEvaluator`:
 # 1. Check system evaluation for high CPU warnings
 bun run analyze:system
 
-# 2. If CPU usage is high, deploy with profiler
-bun run deploy:profiler
+# 2. Deploy (profiler is enabled by default)
+bun run deploy
 
 # 3. Run profiling session in Screeps console
 Profiler.start()
@@ -248,16 +250,16 @@ Profiler.output()
 
 # 4. Analyze output and optimize bottlenecks
 
-# 5. Rebuild without profiler for production
-bun run build
-bun run deploy
+# 5. (Optional) Rebuild without profiler for minimal overhead
+bun run build:no-profiler
+bun run deploy:no-profiler
 ```
 
 **Automated Workflow:**
 
 ```bash
-# 1. Deploy with profiler enabled
-PROFILER_ENABLED=true bun run deploy
+# 1. Deploy (profiler is enabled by default)
+bun run deploy
 
 # 2. Start profiler in console
 Profiler.start()
@@ -285,9 +287,10 @@ The profiler introduces minimal overhead when enabled:
 
 **Recommendations:**
 
-- Use profiler **only** during performance analysis periods
-- Disable profiler in production builds for maximum efficiency
-- Clear profiling data periodically to prevent Memory bloat
+- The profiler is **enabled by default** for continuous monitoring
+- Data collection only occurs when `Profiler.start()` is called in console
+- Clear profiling data periodically to prevent Memory bloat: `Profiler.clear()`
+- For minimal overhead deployments, use `bun run build:no-profiler` to disable
 
 ## Troubleshooting
 
@@ -297,13 +300,14 @@ The profiler introduces minimal overhead when enabled:
 
 **Solutions**:
 
-1. Verify build was done with `PROFILER_ENABLED=true`
+1. Verify build was done with profiler enabled (default behavior)
 2. Check deployed code includes profiler initialization in `main.ts`
 3. Ensure `__PROFILER_ENABLED__` flag was injected during build
+4. If you explicitly disabled the profiler with `PROFILER_ENABLED=false`, rebuild without that flag
 
 ```bash
-# Rebuild and redeploy with profiler enabled
-PROFILER_ENABLED=true bun run build
+# Rebuild and redeploy (profiler enabled by default)
+bun run build
 bun run deploy
 ```
 
@@ -333,16 +337,17 @@ bun run deploy
 
 ### Build-Time Configuration
 
-The profiler is controlled via environment variable:
+The profiler is controlled via environment variable (enabled by default):
 
 ```bash
-# Enable profiler in build
-export PROFILER_ENABLED=true
+# Build with profiler (default)
 bun run build
 
-# Disable profiler (default)
+# Disable profiler explicitly
 export PROFILER_ENABLED=false
 bun run build
+# Or use the convenience script
+bun run build:no-profiler
 ```
 
 ### Runtime Configuration
@@ -562,8 +567,9 @@ The screeps-typescript-profiler is a powerful tool for identifying and resolving
 
 **Key Takeaways:**
 
-- Enable profiler only during diagnostic periods
+- Profiler is enabled by default for continuous monitoring capability
+- Start data collection with `Profiler.start()` during diagnostic periods
 - Profile for 100-200 ticks for meaningful data
 - Focus optimization on high CPU/Tick functions
-- Clear profiling data after analysis
+- Clear profiling data after analysis with `Profiler.clear()`
 - Integrate profiling with existing monitoring workflows

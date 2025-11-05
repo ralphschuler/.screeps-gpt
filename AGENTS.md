@@ -87,6 +87,14 @@ Agents working on runtime code should understand:
 - Keep runtime code deterministic; guard use of `Math.random()` behind helper utilities if predictable output matters for tests.
 - Node.js 18.x–22.x is the supported runtime window (see `.nvmrc` for the default Node 20 toolchain).
 
+**Feature Enablement Policy:**
+
+- **All new features and capabilities must be enabled by default** from the point of implementation.
+- Features should be opt-out rather than opt-in (e.g., `FEATURE_ENABLED=false` to disable, not `FEATURE_ENABLED=true` to enable).
+- This ensures continuous monitoring, testing, and immediate value delivery without manual activation.
+- Only disable features when there is a documented performance or compatibility concern.
+- Example: The profiler is enabled by default (`__PROFILER_ENABLED__` defaults to `true`). Use `PROFILER_ENABLED=false` or `bun run build:no-profiler` to explicitly disable.
+
 ### 3. Documentation Discipline
 
 **Update triggers:**
