@@ -331,10 +331,13 @@ export class PlaceConstructionSiteAction extends TaskAction {
   public action(_creep: Creep): boolean {
     const room = Game.rooms[this.pos.roomName];
     if (!room) {
-      return true; // Room not visible
+      // Room not visible - cannot place construction site
+      // Keep task pending until room becomes visible
+      return false;
     }
 
     const result = room.createConstructionSite(this.pos.x, this.pos.y, this.structureType);
-    return result === OK || result === ERR_INVALID_TARGET; // Complete if placed or already exists
+    // Complete if placed successfully or already exists
+    return result === OK || result === ERR_INVALID_TARGET;
   }
 }

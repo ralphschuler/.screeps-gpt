@@ -115,11 +115,10 @@ interface BehaviorControllerOptions {
 export class BehaviorController {
   private readonly options: Required<BehaviorControllerOptions>;
   private readonly taskManager: TaskManager;
+  private readonly logger: Pick<Console, "log" | "warn">;
 
-  public constructor(
-    options: BehaviorControllerOptions = {},
-    private readonly logger: Pick<Console, "log" | "warn"> = console
-  ) {
+  public constructor(options: BehaviorControllerOptions = {}, logger: Pick<Console, "log" | "warn"> = console) {
+    this.logger = logger;
     this.options = {
       cpuSafetyMargin: options.cpuSafetyMargin ?? 0.8,
       maxCpuPerCreep: options.maxCpuPerCreep ?? 1.5,

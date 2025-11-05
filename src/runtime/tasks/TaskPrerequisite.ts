@@ -137,8 +137,9 @@ export class SpawnHasEnergy extends TaskPrerequisite {
   }
 
   public toMeet(_creep: Creep): TaskAction[] {
-    // Would need to generate energy gathering tasks
+    // TODO: Generate energy gathering tasks to fill spawn and extensions
     // For now, return empty - higher level logic should handle this
+    // Future implementation should create harvest/transfer tasks
     return [];
   }
 }
@@ -166,6 +167,8 @@ export class StructureHasCapacity extends TaskPrerequisite {
   }
 
   public toMeet(_creep: Creep): TaskAction[] {
+    // Capacity requirements cannot be met through subtasks
+    // Structure capacity is a property that cannot be changed at runtime
     return [];
   }
 }
