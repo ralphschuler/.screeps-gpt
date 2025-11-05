@@ -112,3 +112,63 @@ export class MinionIsNear extends TaskPrerequisite {
     return [];
   }
 }
+
+/**
+ * Prerequisite: Spawn has sufficient energy to spawn a creep
+ */
+export class SpawnHasEnergy extends TaskPrerequisite {
+  private readonly spawnId: Id<StructureSpawn>;
+  private readonly requiredEnergy: number;
+
+  public constructor(spawnId: Id<StructureSpawn>, requiredEnergy: number) {
+    super();
+    this.spawnId = spawnId;
+    this.requiredEnergy = requiredEnergy;
+  }
+
+  public meets(_creep: Creep): boolean {
+    const spawn = Game.getObjectById(this.spawnId);
+    if (!spawn) return false;
+
+    // Check if spawn and its extensions have enough energy
+    const room = spawn.room;
+    const availableEnergy = room.energyAvailable;
+    return availableEnergy >= this.requiredEnergy;
+  }
+
+  public toMeet(_creep: Creep): TaskAction[] {
+    // TODO: Generate energy gathering tasks to fill spawn and extensions
+    // For now, return empty - higher level logic should handle this
+    // Future implementation should create harvest/transfer tasks
+    return [];
+  }
+}
+
+/**
+ * Prerequisite: Structure has required capacity
+ */
+export class StructureHasCapacity extends TaskPrerequisite {
+  private readonly structureId: Id<AnyStoreStructure>;
+  private readonly resourceType: ResourceConstant;
+  private readonly minCapacity: number;
+
+  public constructor(structureId: Id<AnyStoreStructure>, resourceType: ResourceConstant, minCapacity: number) {
+    super();
+    this.structureId = structureId;
+    this.resourceType = resourceType;
+    this.minCapacity = minCapacity;
+  }
+
+  public meets(_creep: Creep): boolean {
+    const structure = Game.getObjectById(this.structureId);
+    if (!structure) return false;
+
+    return structure.store.getFreeCapacity(this.resourceType) >= this.minCapacity;
+  }
+
+  public toMeet(_creep: Creep): TaskAction[] {
+    // Capacity requirements cannot be met through subtasks
+    // Structure capacity is a property that cannot be changed at runtime
+    return [];
+  }
+}

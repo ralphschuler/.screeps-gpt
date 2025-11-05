@@ -4,7 +4,9 @@ export {
   MinionCanCarry,
   MinionHasEnergy,
   MinionHasFreeCapacity,
-  MinionIsNear
+  MinionIsNear,
+  SpawnHasEnergy,
+  StructureHasCapacity
 } from "./TaskPrerequisite";
 export {
   TaskAction,
@@ -13,7 +15,10 @@ export {
   RepairAction,
   UpgradeAction,
   TransferAction,
-  WithdrawAction
+  WithdrawAction,
+  MoveAction,
+  SpawnAction,
+  PlaceConstructionSiteAction
 } from "./TaskAction";
 export { TaskRequest, TaskPriority, type TaskStatus } from "./TaskRequest";
-export { TaskManager } from "./TaskManager";
+export { TaskManager, type TaskManagerConfig } from "./TaskManager";

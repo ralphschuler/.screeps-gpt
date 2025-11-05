@@ -260,3 +260,84 @@ export class WithdrawAction extends TaskAction {
     return true;
   }
 }
+
+/**
+ * Move to a specific position
+ */
+export class MoveAction extends TaskAction {
+  public prereqs: TaskPrerequisite[] = [];
+  private targetPos: RoomPosition;
+  private range: number;
+
+  public constructor(targetPos: RoomPosition, range = 1) {
+    super();
+    this.targetPos = targetPos;
+    this.range = range;
+  }
+
+  public action(creep: Creep): boolean {
+    if (creep.pos.getRangeTo(this.targetPos) <= this.range) {
+      return true; // Already at destination
+    }
+
+    this.moveToTarget(creep, this.targetPos, this.range);
+    return false;
+  }
+}
+
+/**
+ * Spawn a new creep
+ */
+export class SpawnAction extends TaskAction {
+  public prereqs: TaskPrerequisite[] = [];
+  private spawnId: Id<StructureSpawn>;
+  private body: BodyPartConstant[];
+  private name: string;
+  private memory: CreepMemory;
+
+  public constructor(spawnId: Id<StructureSpawn>, body: BodyPartConstant[], name: string, memory: CreepMemory) {
+    super();
+    this.spawnId = spawnId;
+    this.body = body;
+    this.name = name;
+    this.memory = memory;
+  }
+
+  public action(_creep: Creep): boolean {
+    const spawn = Game.getObjectById(this.spawnId);
+    if (!spawn || spawn.spawning) {
+      return false; // Spawn not available
+    }
+
+    const result = spawn.spawnCreep(this.body, this.name, { memory: this.memory });
+    return result === OK || result === ERR_NAME_EXISTS;
+  }
+}
+
+/**
+ * Place a construction site
+ */
+export class PlaceConstructionSiteAction extends TaskAction {
+  public prereqs: TaskPrerequisite[] = [];
+  private pos: RoomPosition;
+  private structureType: BuildableStructureConstant;
+
+  public constructor(pos: RoomPosition, structureType: BuildableStructureConstant) {
+    super();
+    this.pos = pos;
+    this.structureType = structureType;
+  }
+
+  public action(_creep: Creep): boolean {
+    const room = Game.rooms[this.pos.roomName];
+    if (!room) {
+      // Room not visible - cannot place construction site
+      // Keep task pending until room becomes visible
+      return false;
+    }
+
+    const result = room.createConstructionSite(this.pos.x, this.pos.y, this.structureType);
+    // Complete if placed successfully or already exists
+    return result === OK || result === ERR_INVALID_TARGET;
+  }
+}
