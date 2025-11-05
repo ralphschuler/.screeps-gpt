@@ -184,14 +184,54 @@ Profiling data is particularly valuable in conjunction with PTR monitoring:
 3. **Optimization Phase**: Target high CPU/Tick functions for refactoring
 4. **Validation Phase**: Re-profile to confirm performance improvements
 
+### Automated Monitoring Integration
+
+The **Screeps Monitoring** workflow (`screeps-monitoring.yml`) now automatically collects profiler data:
+
+**Automatic Collection:**
+
+- Workflow fetches `Memory.profiler` data via console every 30 minutes
+- Profiler snapshot saved to `reports/profiler/latest.json`
+- Data included in monitoring artifacts for historical analysis
+- Monitoring agent analyzes profiler data and creates performance issues
+
+**Workflow Trigger:**
+
+```yaml
+schedule:
+  - cron: "*/30 * * * *" # Every 30 minutes
+workflow_run:
+  workflows:
+    - "Deploy Screeps AI" # After each deployment
+```
+
+**What Gets Collected:**
+
+- Profiler status (enabled/disabled/no-data)
+- Total ticks profiled
+- Top 20 CPU consumers with detailed metrics
+- Function-level performance breakdowns
+- CPU percentage distribution
+
+**Monitoring Agent Actions:**
+
+When profiler data is available, the monitoring agent will:
+
+1. Identify functions consuming > 20% of total profiled CPU
+2. Flag expensive operations (> 1.0ms per call)
+3. Detect excessive function calls (> 5x per tick)
+4. Create GitHub issues for significant bottlenecks
+5. Correlate profiler hotspots with PTR CPU alerts
+
 ### Performance Evaluation
 
 The profiler complements the existing `SystemEvaluator`:
 
 - **SystemEvaluator**: Aggregate CPU warnings and performance snapshots
 - **Profiler**: Function-level execution breakdowns
+- **Monitoring Agent**: Automated analysis and issue creation
 
-**Workflow:**
+**Manual Workflow:**
 
 ```bash
 # 1. Check system evaluation for high CPU warnings
@@ -210,6 +250,28 @@ Profiler.output()
 
 # 5. Rebuild without profiler for production
 bun run build
+bun run deploy
+```
+
+**Automated Workflow:**
+
+```bash
+# 1. Deploy with profiler enabled
+PROFILER_ENABLED=true bun run deploy
+
+# 2. Start profiler in console
+Profiler.start()
+
+# 3. Wait for monitoring workflow to run (every 30 min)
+# Monitoring agent will automatically:
+# - Fetch profiler data from Memory.profiler
+# - Analyze performance bottlenecks
+# - Create issues for CPU-intensive functions
+# - Provide optimization recommendations
+
+# 4. Review generated issues with label "monitoring,performance"
+
+# 5. After optimizations, redeploy and verify
 bun run deploy
 ```
 
@@ -311,11 +373,71 @@ Memory.profiler.start;
 JSON.stringify(Memory.profiler.data);
 ```
 
+## Accessing Profiler Reports
+
+### Via GitHub Actions Artifacts
+
+Profiler data is automatically collected and uploaded as workflow artifacts:
+
+1. Navigate to [Actions > Screeps Monitoring](https://github.com/ralphschuler/.screeps-gpt/actions/workflows/screeps-monitoring.yml)
+2. Select a workflow run
+3. Download the `screeps-monitor-report-XXXXX` artifact
+4. Extract and review `reports/profiler/latest.json`
+
+**Snapshot Structure:**
+
+```json
+{
+  "fetchedAt": "2025-11-05T23:00:00.000Z",
+  "source": "console",
+  "isEnabled": true,
+  "hasData": true,
+  "profilerMemory": { ... },
+  "summary": {
+    "totalTicks": 150,
+    "totalFunctions": 12,
+    "averageCpuPerTick": 8.45,
+    "topCpuConsumers": [
+      {
+        "name": "BehaviorController:execute",
+        "calls": 300,
+        "cpuPerCall": 1.45,
+        "callsPerTick": 2.0,
+        "cpuPerTick": 2.9,
+        "percentOfTotal": 34.3
+      }
+    ]
+  }
+}
+```
+
+### Via Console Commands
+
+For real-time analysis, use console commands:
+
+```javascript
+// View profiler status
+Profiler.status();
+
+// Get formatted report
+Profiler.output();
+
+// Access raw data programmatically
+JSON.stringify(Memory.profiler.data);
+
+// Calculate custom metrics
+Object.entries(Memory.profiler.data)
+  .sort((a, b) => b[1].time - a[1].time)
+  .slice(0, 5)
+  .map(([name, data]) => ({ name, totalCpu: data.time }));
+```
+
 ## Related Documentation
 
 - [Performance Optimization Guide](./performance-optimization.md) - Overall performance strategies
 - [CPU Monitoring](./stats-monitoring.md) - PTR-based CPU monitoring
 - [Stats Collection](./stats-collection.md) - Memory.stats telemetry
+- [Screeps Monitoring Workflow](../../.github/workflows/screeps-monitoring.yml) - Automated monitoring configuration
 
 ## Advanced Usage
 

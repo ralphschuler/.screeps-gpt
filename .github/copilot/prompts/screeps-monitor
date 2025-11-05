@@ -145,6 +145,53 @@ Create issues for metrics exceeding these thresholds:
 - [ ] All severity labels MUST be justified with specific impact assessment  
 - [ ] All analysis MUST be reproducible with stored snapshot data
 
+### PHASE 3.5: PROFILER DATA ANALYSIS (IF AVAILABLE)
+
+If profiler data exists at `reports/profiler/latest.json`, perform detailed performance analysis:
+
+**Profiler Data Evaluation:**
+
+1. **Check Profiler Status**:
+   - [ ] Verify profiler is enabled and has collected data
+   - [ ] Check if profiler is currently running or stopped
+   - [ ] Note the number of ticks profiled for statistical significance
+
+2. **CPU Bottleneck Identification**:
+   - [ ] Identify functions consuming > 20% of total profiled CPU
+   - [ ] Flag functions with high CPU/call (> 1.0ms) as optimization targets
+   - [ ] Detect functions called excessively (> 5x per tick) for batching opportunities
+
+3. **Performance Correlation**:
+   - [ ] Cross-reference profiler hotspots with PTR CPU alerts
+   - [ ] Correlate high-CPU functions with specific bot behaviors
+   - [ ] Identify which modules contribute most to CPU usage
+
+4. **Create Performance Issues**:
+
+For functions consuming > 30% of profiled CPU:
+```bash
+gh issue create --title "Performance: <FunctionName> consuming XX% of CPU per tick" \
+  --body "Profiler analysis shows <FunctionName> using XX.XXms/tick (XX% of total).\n\n**Evidence**: ...\n\n**Recommendation**: ..." \
+  --label "monitoring,performance,type/enhancement,priority/high,state/pending"
+```
+
+For functions with very high CPU/call (> 2.0ms):
+```bash
+gh issue create --title "Performance: Optimize expensive operation <FunctionName>" \
+  --body "Function <FunctionName> averages XX.XXms per call.\n\n**Evidence**: ...\n\n**Recommendation**: ..." \
+  --label "monitoring,performance,type/enhancement,priority/medium,state/pending"
+```
+
+**Profiler Guidance**:
+
+If profiler data is unavailable:
+- Note in monitoring report that profiler is not enabled
+- Recommend enabling profiler if CPU alerts persist:
+  ```bash
+  PROFILER_ENABLED=true bun run deploy
+  # Then run in console: Profiler.start()
+  ```
+
 ### PHASE 4: REPOSITORY HEALTH ANALYSIS
 
 Using GitHub MCP tools, analyze:
@@ -308,6 +355,9 @@ At completion, print minified JSON summary:
   "ptr_status": "<healthy|degraded|critical>",
   "repository_health": "<healthy|needs-attention|critical>",
   "ptr_snapshot_path": "reports/copilot/ptr-stats.json",
+  "profiler_status": "<enabled|disabled|no-data|unavailable>",
+  "profiler_snapshot_path": "reports/profiler/latest.json",
+  "profiler_top_consumer": "<function:name or null>",
   "issues_created": ["#123", "#124"],
   "issues_updated": ["#100", "#101"],
   "issues_closed": ["#95"],
@@ -315,6 +365,7 @@ At completion, print minified JSON summary:
   "high_priority_findings": <count>,
   "medium_priority_findings": <count>,
   "ptr_anomalies_detected": <count>,
+  "performance_bottlenecks_identified": <count>,
   "recommendations": ["priority 1", "priority 2", "priority 3"],
   "next_monitor_focus": "<area needing attention>",
   "notes": "<brief executive summary>"
