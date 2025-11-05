@@ -1,45 +1,13 @@
 import { writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import process from "node:process";
+import type { ProfilerMemory, ProfilerSnapshot } from "../src/shared/profiler-types";
 
 /**
  * Fetch profiler data from Screeps Memory.profiler via console execution.
  * This script simulates console access to retrieve profiling metrics when
  * the profiler is enabled and has collected data.
  */
-
-interface ProfilerData {
-  calls: number;
-  time: number;
-}
-
-interface ProfilerMemory {
-  data: { [name: string]: ProfilerData };
-  start?: number;
-  total: number;
-}
-
-interface ProfilerSnapshot {
-  fetchedAt: string;
-  source: string;
-  isEnabled: boolean;
-  hasData: boolean;
-  profilerMemory?: ProfilerMemory;
-  summary?: {
-    totalTicks: number;
-    totalFunctions: number;
-    averageCpuPerTick: number;
-    topCpuConsumers: Array<{
-      name: string;
-      calls: number;
-      cpuPerCall: number;
-      callsPerTick: number;
-      cpuPerTick: number;
-      percentOfTotal: number;
-    }>;
-  };
-  error?: string;
-}
 
 /**
  * Simulate fetching Memory.profiler data
@@ -59,13 +27,19 @@ function fetchProfilerDataFromConsole(): ProfilerMemory | null {
 
 /**
  * Calculate profiler summary metrics
+ * @param profilerMemory - The profiler memory data
+ * @param currentTick - Optional current game tick for accurate calculation when profiler is running
+ * @returns Summary metrics including top CPU consumers
  */
-function calculateProfilerSummary(profilerMemory: ProfilerMemory): ProfilerSnapshot["summary"] {
+function calculateProfilerSummary(profilerMemory: ProfilerMemory, currentTick?: number): ProfilerSnapshot["summary"] {
   let totalTicks = profilerMemory.total;
-  if (profilerMemory.start) {
-    // Profiler is currently running - estimate current tick
-    // In real scenario, this would be: Game.time - Memory.profiler.start
-    totalTicks += 100; // Placeholder assumption
+  if (profilerMemory.start && currentTick) {
+    // Profiler is currently running - calculate actual ticks
+    totalTicks += currentTick - profilerMemory.start;
+  } else if (profilerMemory.start) {
+    // Profiler is running but we don't have current tick
+    // Note: This is a limitation when data is fetched without Game.time context
+    // The summary will be based on profilerMemory.total only
   }
 
   // Calculate average CPU per tick
@@ -200,4 +174,3 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 }
 
 export { fetchProfilerDataFromConsole, createProfilerSnapshot, calculateProfilerSummary };
-export type { ProfilerSnapshot, ProfilerMemory, ProfilerData };

@@ -2,43 +2,11 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import process from "node:process";
 import { ScreepsAPI } from "screeps-api";
-
-interface ProfilerData {
-  calls: number;
-  time: number;
-}
-
-interface ProfilerMemory {
-  data: { [name: string]: ProfilerData };
-  start?: number;
-  total: number;
-}
+import type { ProfilerMemory, ProfilerSnapshot } from "../src/shared/profiler-types";
 
 interface ConsoleResponse {
   ok: number;
   data: string;
-  error?: string;
-}
-
-interface ProfilerSnapshot {
-  fetchedAt: string;
-  source: string;
-  isEnabled: boolean;
-  hasData: boolean;
-  profilerMemory?: ProfilerMemory;
-  summary?: {
-    totalTicks: number;
-    totalFunctions: number;
-    averageCpuPerTick: number;
-    topCpuConsumers: Array<{
-      name: string;
-      calls: number;
-      cpuPerCall: number;
-      callsPerTick: number;
-      cpuPerTick: number;
-      percentOfTotal: number;
-    }>;
-  };
   error?: string;
 }
 
@@ -72,6 +40,7 @@ async function fetchProfilerFromConsole(): Promise<ProfilerMemory | null> {
   console.log(`Fetching profiler data from ${hostname} shard ${shard}...`);
 
   try {
+    // Note: ScreepsAPI.console() returns a Promise despite typing issues in older versions
     // eslint-disable-next-line @typescript-eslint/await-thenable
     const response = (await api.console(profilerCommand, shard)) as ConsoleResponse;
 

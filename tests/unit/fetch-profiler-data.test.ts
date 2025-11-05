@@ -1,9 +1,6 @@
 import { describe, it, expect } from "vitest";
-import {
-  createProfilerSnapshot,
-  calculateProfilerSummary,
-  type ProfilerMemory
-} from "../../scripts/fetch-profiler-data";
+import { createProfilerSnapshot, calculateProfilerSummary } from "../../scripts/fetch-profiler-data";
+import type { ProfilerMemory } from "../../src/shared/profiler-types";
 
 describe("fetch-profiler-data", () => {
   describe("createProfilerSnapshot", () => {
@@ -156,10 +153,26 @@ describe("fetch-profiler-data", () => {
         total: 100
       };
 
+      const currentTick = 12445; // 100 ticks after start
+      const summary = calculateProfilerSummary(profilerMemory, currentTick);
+
+      // Total ticks should be 100 (total) + 100 (12445 - 12345)
+      expect(summary.totalTicks).toBe(200);
+    });
+
+    it("should use only total ticks when profiler is running but no current tick provided", () => {
+      const profilerMemory: ProfilerMemory = {
+        data: {
+          TestMethod: { calls: 100, time: 200 }
+        },
+        start: 12345, // Profiler is running
+        total: 100
+      };
+
       const summary = calculateProfilerSummary(profilerMemory);
 
-      // Total ticks should be 100 + estimated 100 (from running profiler)
-      expect(summary.totalTicks).toBe(200);
+      // Should use only total since we can't calculate running ticks without Game.time
+      expect(summary.totalTicks).toBe(100);
     });
   });
 });
