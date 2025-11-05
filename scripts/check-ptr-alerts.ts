@@ -16,18 +16,24 @@ interface TickStats {
 interface PTRStatsSnapshot {
   fetchedAt?: string;
   endpoint?: string;
+  source?: string;
   payload?: {
     stats?: Record<string, TickStats>;
     ok?: number;
   };
+  // Resilience metadata
+  fallback_activated?: boolean;
+  primary_source_failed?: boolean;
   // Failure snapshot fields
   status?: string;
   failureType?: string;
   timestamp?: string;
   error?: string;
   attempted_endpoint?: string;
+  attempted_sources?: string[];
   httpStatus?: number | null;
   httpStatusText?: string | null;
+  resilience_status?: string;
 }
 
 interface AlertCondition {
@@ -43,6 +49,27 @@ interface AlertCondition {
  */
 function analyzePTRStats(snapshot: PTRStatsSnapshot): AlertCondition[] {
   const alerts: AlertCondition[] = [];
+
+  // Check for complete infrastructure failure (all sources unavailable)
+  if (snapshot.status === "all_sources_unavailable") {
+    alerts.push({
+      type: "infrastructure_failure",
+      severity: "critical",
+      message: `Critical: All telemetry sources failed (Stats API + Console). ${snapshot.error || "Complete monitoring blackout"}`
+    });
+    return alerts;
+  }
+
+  // Check for fallback activation (resilience feature working)
+  if (snapshot.fallback_activated && snapshot.primary_source_failed) {
+    // This is informational - the system is working as designed
+    // But we want to track that the primary source is having issues
+    alerts.push({
+      type: "fallback_activated",
+      severity: "medium",
+      message: `Telemetry fallback activated: Primary Stats API failed, using Console telemetry. Source: ${snapshot.source || "console"}`
+    });
+  }
 
   // Check for API unavailability (network failure or infrastructure issue)
   if (snapshot.status === "api_unavailable") {

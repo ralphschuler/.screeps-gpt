@@ -112,9 +112,7 @@ describe("CPU timeout prevention for shard3 systematic analysis (issue #417)", (
       kernel.run(game, memory);
 
       // Should have warned about CPU threshold after respawn check
-      expect(warn).toHaveBeenCalledWith(
-        expect.stringMatching(/CPU threshold exceeded after respawn check/)
-      );
+      expect(warn).toHaveBeenCalledWith(expect.stringMatching(/CPU threshold exceeded after respawn check/));
 
       // Should still have stored system report
       expect(memory.systemReport).toBeDefined();
@@ -182,9 +180,7 @@ describe("CPU timeout prevention for shard3 systematic analysis (issue #417)", (
       kernel.run(game, memory);
 
       // Should have warned about CPU threshold after memory operations
-      expect(warn).toHaveBeenCalledWith(
-        expect.stringMatching(/CPU threshold exceeded after memory operations/)
-      );
+      expect(warn).toHaveBeenCalledWith(expect.stringMatching(/CPU threshold exceeded after memory operations/));
 
       expect(memory.systemReport).toBeDefined();
     });
@@ -247,9 +243,7 @@ describe("CPU timeout prevention for shard3 systematic analysis (issue #417)", (
       kernel.run(game, memory);
 
       // Should have warned about CPU threshold after construction planning
-      expect(warn).toHaveBeenCalledWith(
-        expect.stringMatching(/CPU threshold exceeded after construction planning/)
-      );
+      expect(warn).toHaveBeenCalledWith(expect.stringMatching(/CPU threshold exceeded after construction planning/));
 
       expect(memory.systemReport).toBeDefined();
     });
@@ -339,9 +333,7 @@ describe("CPU timeout prevention for shard3 systematic analysis (issue #417)", (
       const result = controller.execute(game, memory, roleCounts);
 
       // Should NOT have warned about CPU budget
-      expect(warn).not.toHaveBeenCalledWith(
-        expect.stringMatching(/CPU budget exceeded before spawn operations/)
-      );
+      expect(warn).not.toHaveBeenCalledWith(expect.stringMatching(/CPU budget exceeded before spawn operations/));
 
       // Should have spawned minimum creeps
       expect(result.spawnedCreeps.length).toBeGreaterThan(0);
