@@ -29,6 +29,8 @@ Defines requirements that a creep must meet to execute a task. Built-in prerequi
 - `MinionHasEnergy`: Creep has minimum energy amount
 - `MinionHasFreeCapacity`: Creep has free capacity
 - `MinionIsNear`: Creep is within range of target
+- `SpawnHasEnergy`: Spawn has sufficient energy for spawning
+- `StructureHasCapacity`: Structure has required storage capacity
 
 ```typescript
 import { MinionCanWork, MinionHasEnergy } from "@runtime/tasks";
@@ -60,12 +62,15 @@ const task = new TaskRequest(
 
 ### TaskManager
 
-Coordinates task generation, assignment, and execution for a room:
+Coordinates task generation, assignment, and execution for a room with CPU threshold management:
 
 ```typescript
 import { TaskManager } from "@runtime/tasks";
 
-const taskManager = new TaskManager();
+const taskManager = new TaskManager({
+  cpuThreshold: 0.8, // Stop executing tasks at 80% CPU usage
+  logger: console
+});
 
 // Generate tasks based on room state
 taskManager.generateTasks(room);
@@ -74,9 +79,11 @@ taskManager.generateTasks(room);
 const creeps = room.find(FIND_MY_CREEPS);
 taskManager.assignTasks(creeps);
 
-// Execute tasks
-const taskCounts = taskManager.executeTasks(creeps);
+// Execute tasks with CPU limit
+const taskCounts = taskManager.executeTasks(creeps, Game.cpu.limit);
 ```
+
+**CPU Threshold Management**: The TaskManager automatically stops executing tasks when CPU usage reaches the configured threshold (default 80%). This ensures the tick completes without timing out, even under heavy load.
 
 ## Available Task Types
 
@@ -170,6 +177,46 @@ Withdraw resources from a structure until full or source empty.
 const task = new WithdrawAction(storage.id, RESOURCE_ENERGY);
 ```
 
+### MoveAction
+
+Move creep to a specific position.
+
+**Prerequisites**: None
+
+**Usage**:
+
+```typescript
+const targetPos = new RoomPosition(25, 25, "W1N1");
+const task = new MoveAction(targetPos, 1); // range of 1
+```
+
+### SpawnAction
+
+Spawn a new creep with specified body and memory.
+
+**Prerequisites**: None (but spawn must be available and have energy)
+
+**Usage**:
+
+```typescript
+const body = [WORK, CARRY, MOVE];
+const memory = { role: "harvester" };
+const task = new SpawnAction(spawn.id, body, "harvester-1", memory);
+```
+
+### PlaceConstructionSiteAction
+
+Place a construction site at a specific position.
+
+**Prerequisites**: None
+
+**Usage**:
+
+```typescript
+const pos = new RoomPosition(10, 10, "W1N1");
+const task = new PlaceConstructionSiteAction(pos, STRUCTURE_EXTENSION);
+```
+
 ## Integration Example
 
 ```typescript
@@ -245,12 +292,34 @@ export const TaskPriority = {
 - Task generation runs once per room per tick
 - Task assignment only for idle creeps
 - Task execution is O(1) per creep
+- **CPU Threshold Protection**: Execution stops at 80% CPU usage by default
+- Tasks sorted by priority ensure critical work completes first
 
 ### Memory Usage
 
 - Tasks stored in `TaskManager` instance (not Memory)
 - Only task IDs stored in creep memory
 - Automatic cleanup of completed/expired tasks
+
+### CPU Budget Management
+
+The TaskManager implements automatic CPU budget management:
+
+```typescript
+const taskManager = new TaskManager({
+  cpuThreshold: 0.8 // Use 80% of available CPU
+});
+
+// Execution automatically stops when threshold is reached
+taskManager.executeTasks(creeps, Game.cpu.limit);
+```
+
+This prevents script timeout by:
+
+1. Checking CPU usage before processing each creep
+2. Stopping task execution when threshold is exceeded
+3. Logging warnings when tasks are skipped
+4. Prioritizing high-priority tasks to ensure critical work completes
 
 ## Extension Points
 
