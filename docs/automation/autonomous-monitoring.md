@@ -21,19 +21,31 @@ The workflow executes in seven mandatory phases:
 
 - Authenticates GitHub CLI with repository access
 - Verifies Screeps MCP server connection
-- Fetches PTR telemetry data using `scripts/fetch-screeps-stats.mjs`
+- Fetches PTR telemetry data using **resilient multi-source strategy**
 - Fetches bot performance data from game console
 - Logs all connection states for debugging
 
-**PTR Telemetry Collection:**
+**PTR Telemetry Collection - Resilient Architecture (Deployed 2025-11-05):**
 
-The workflow executes the telemetry fetch script which:
+The workflow executes the resilient telemetry fetch script (`scripts/fetch-resilient-telemetry.ts`) which:
 
-- Uses environment variables: `SCREEPS_TOKEN` (or `SCREEPS_STATS_TOKEN`), `SCREEPS_HOST`, `SCREEPS_STATS_API`
-- Fetches user stats from the Screeps API endpoint `/api/user/stats`
-- Stores results in `reports/screeps-stats/latest.json`
-- Copies snapshot to `reports/copilot/ptr-stats.json` for analysis
-- Creates failure snapshot with error details if API is unavailable
+- **Primary Source**: Stats API via `scripts/fetch-screeps-stats.mjs`
+  - Historical time-series data from `/api/user/stats` endpoint
+  - Uses `SCREEPS_STATS_TOKEN` or `SCREEPS_TOKEN`
+  - Provides comprehensive performance metrics
+- **Fallback Source**: Console Telemetry via `scripts/fetch-console-telemetry.ts`
+  - Real-time bot operational data via console commands
+  - Activates automatically when Stats API fails
+  - Uses `SCREEPS_TOKEN` for console access
+  - **Eliminates monitoring blackouts**
+
+- **Resilience Features**:
+  - Automatic fallback if primary source fails
+  - Graceful degradation maintains monitoring continuity
+  - Stores results in `reports/screeps-stats/latest.json`
+  - Copies snapshot to `reports/copilot/ptr-stats.json` for analysis
+  - Creates comprehensive failure snapshot only if all sources fail
+  - Tracks telemetry source and fallback status in metadata
 
 #### Phase 2: Bot Performance Analysis
 

@@ -2,6 +2,59 @@
 
 This guide documents the systematic PTR telemetry blackout patterns and provides troubleshooting procedures for distinguishing network failures from empty response patterns.
 
+## Resilient Monitoring Architecture
+
+**Deployed:** 2025-11-05  
+**Purpose:** Eliminate single-point-of-failure dependency on Screeps Stats API
+
+### Multi-Source Telemetry Strategy
+
+The monitoring infrastructure now implements a resilient fallback strategy using multiple telemetry sources:
+
+1. **Primary Source: Stats API** (`scripts/fetch-screeps-stats.mjs`)
+   - Historical time-series data from `/api/user/stats` endpoint
+   - Rich performance metrics over configurable intervals (1hr, 1day, 1week)
+   - Preferred source when available
+
+2. **Fallback Source: Console Telemetry** (`scripts/fetch-console-telemetry.ts`)
+   - Direct bot telemetry via console commands
+   - Real-time operational data (CPU, GCL, rooms, creeps, energy)
+   - Activates automatically when Stats API fails
+   - **Eliminates monitoring blackouts** during API unavailability
+
+3. **Resilient Coordinator** (`scripts/fetch-resilient-telemetry.ts`)
+   - Orchestrates multi-source collection strategy
+   - Tries Stats API first, falls back to Console if needed
+   - Creates comprehensive failure snapshot only if both sources fail
+
+### Fallback Activation
+
+**Alert Type:** `fallback_activated`  
+**Severity:** `medium` (informational)  
+**Meaning:** System working as designed - resilience deployed successfully
+
+When you see this alert:
+
+- ✅ Monitoring is **operational** (using Console telemetry)
+- ⚠️ Primary Stats API is experiencing issues
+- 📊 Performance data is still being collected
+- 🔄 System will automatically return to Stats API when available
+
+**Action Required:** None immediately. Create issue only if Stats API failure persists >2 hours.
+
+### Complete Infrastructure Failure
+
+**Alert Type:** `infrastructure_failure`  
+**Severity:** `critical`  
+**Meaning:** All telemetry sources failed - complete monitoring blackout
+
+This should be extremely rare with the resilient architecture. If this occurs:
+
+1. Verify `SCREEPS_TOKEN` is valid and has proper permissions
+2. Check Screeps infrastructure status
+3. Review network connectivity
+4. Escalate immediately per [Escalation Patterns](#escalation-patterns)
+
 ## Failure Classification
 
 ### Network Failure (Complete Infrastructure Failure)
@@ -204,51 +257,91 @@ This guide documents the systematic PTR telemetry blackout patterns and provides
 
 ## Monitoring Resilience
 
-### Retry Logic
+### Multi-Source Architecture (Deployed 2025-11-05)
 
-The fetch script implements exponential backoff retry logic:
+The monitoring system now uses a resilient multi-source strategy:
 
-- **Max retries:** 3 attempts
-- **Base delay:** 1000ms
-- **Backoff:** Exponential (1s, 2s, 4s)
-- **Skip retry for:** 401, 403, 400, 422 (client errors)
+**Primary Collection: Stats API**
+
+- Retry logic: 3 attempts with exponential backoff (1s, 2s, 4s)
+- Skip retry for client errors (401, 403, 400, 422)
+- Historical time-series data for trend analysis
+
+**Fallback Collection: Console Telemetry**
+
+- Activates automatically when Stats API fails
+- Direct bot operational data via console commands
+- Real-time metrics: CPU, GCL, rooms, creeps, energy
+- **Eliminates monitoring blackouts**
+
+**Orchestration Script:** `scripts/fetch-resilient-telemetry.ts`
+
+- Coordinates multi-source collection
+- Transparent fallback activation
+- Comprehensive failure tracking
 
 ### Failure Snapshot Creation
 
-When API is unavailable, the script automatically:
+When telemetry sources are unavailable:
 
-1. Determines failure type (network vs HTTP error)
-2. Creates failure snapshot at `reports/screeps-stats/latest.json`
-3. Includes diagnostic information for monitoring system
-4. Preserves error details for issue creation
+**Stats API Failure:**
+
+1. Creates failure snapshot with network/HTTP error details
+2. Triggers automatic fallback to Console telemetry
+3. Marks snapshot with `fallback_activated: true`
+4. **Monitoring continues** with Console data
+
+**Complete Infrastructure Failure:**
+
+1. Both Stats API and Console fail
+2. Creates comprehensive failure snapshot
+3. Includes attempted sources and diagnostic information
+4. Alerts with `critical` severity
 
 ### Alert Notification
 
 The `check-ptr-alerts.ts` script:
 
-- Analyzes failure snapshots in addition to successful responses
+- Analyzes snapshots from any telemetry source
+- Detects fallback activation as `medium` priority (informational)
+- Escalates complete infrastructure failure as `critical`
 - Sends push notifications for critical/high severity failures
-- Distinguishes network failures from empty responses
-- Provides contextual error information
+- Supports both Stats API and Console data formats
+
+### Snapshot Metadata
+
+All snapshots now include resilience tracking:
+
+```json
+{
+  "source": "stats_api" | "console",
+  "fallback_activated": true | false,
+  "primary_source_failed": true | false,
+  "payload": { /* telemetry data */ }
+}
+```
 
 ## Prevention Measures
 
-### Monitoring System Improvements
+### Monitoring System Improvements (Implemented)
 
-1. **Enhanced Error Detection**
-   - Classify failure types (network, HTTP, empty)
+1. **✅ Enhanced Error Detection**
+   - Classify failure types (network, HTTP, empty, infrastructure_failure)
    - Track failure patterns over time
    - Detect systematic blackout sequences
+   - Distinguish fallback activation from critical failures
 
-2. **Graceful Degradation**
-   - Continue repository analysis when PTR unavailable
+2. **✅ Graceful Degradation**
+   - Continue repository analysis when primary source unavailable
+   - Automatic fallback to secondary telemetry source
    - Store failure snapshots for post-recovery analysis
-   - Maintain monitoring continuity during outages
+   - Maintain monitoring continuity during Stats API outages
 
-3. **Alternative Monitoring Channels** (Future Enhancement)
-   - Direct console access via Screeps MCP
-   - In-game memory inspection
-   - Alternative API endpoints if available
+3. **✅ Redundant Monitoring Channels** (Deployed 2025-11-05)
+   - ✅ Direct console access via Screeps API
+   - ✅ Real-time bot telemetry collection
+   - ✅ Multi-source resilient architecture
+   - ✅ **Eliminates single-point-of-failure dependency**
 
 ### Validation Framework
 
