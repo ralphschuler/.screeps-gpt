@@ -79,11 +79,11 @@ async function fetchConsoleTelemetry(): Promise<ConsoleTelemetry> {
           })),
         creeps: {
           total: Object.keys(Game.creeps).length,
-          byRole: Object.values(Game.creeps).reduce((acc, c) => {
+          byRole: Object.values(Game.creeps).reduce((acc: Record<string, number>, c) => {
             const role = c.memory.role || 'unknown';
             acc[role] = (acc[role] || 0) + 1;
             return acc;
-          }, {})
+          }, {} as Record<string, number>)
         },
         resources: {
           energy: Object.values(Game.rooms)
