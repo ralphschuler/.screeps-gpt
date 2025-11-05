@@ -1,5 +1,6 @@
 import type { BehaviorSummary } from "@shared/contracts";
 import type { CreepLike, GameContext, SpawnLike } from "@runtime/types/GameContext";
+import { TaskManager } from "@runtime/tasks";
 import { profile } from "@profiler";
 
 type RoleName = "harvester" | "upgrader" | "builder" | "remoteMiner";
@@ -103,14 +104,17 @@ const ROLE_DEFINITIONS: Record<RoleName, RoleDefinition> = {
 interface BehaviorControllerOptions {
   cpuSafetyMargin?: number;
   maxCpuPerCreep?: number;
+  useTaskSystem?: boolean;
 }
 
 /**
  * Coordinates spawning and per-tick behaviour execution for every registered role.
+ * Enhanced with optional task management system for priority-based execution.
  */
 @profile
 export class BehaviorController {
   private readonly options: Required<BehaviorControllerOptions>;
+  private readonly taskManager: TaskManager;
 
   public constructor(
     options: BehaviorControllerOptions = {},
@@ -118,8 +122,13 @@ export class BehaviorController {
   ) {
     this.options = {
       cpuSafetyMargin: options.cpuSafetyMargin ?? 0.8,
-      maxCpuPerCreep: options.maxCpuPerCreep ?? 1.5
+      maxCpuPerCreep: options.maxCpuPerCreep ?? 1.5,
+      useTaskSystem: options.useTaskSystem ?? false
     };
+    this.taskManager = new TaskManager({
+      cpuThreshold: this.options.cpuSafetyMargin,
+      logger: this.logger
+    });
   }
 
   /**
@@ -127,17 +136,67 @@ export class BehaviorController {
    * Implements CPU budget management to prevent script execution timeouts.
    */
   public execute(game: GameContext, memory: Memory, roleCounts: Record<string, number>): BehaviorSummary {
-    const tasksExecuted: Record<string, number> = {};
-    const spawned: string[] = [];
-    let processedCreeps = 0;
-    let skippedCreeps = 0;
-
     // Initialize creep counter if not present
     if (typeof memory.creepCounter !== "number") {
       memory.creepCounter = 0;
     }
 
+    const spawned: string[] = [];
     this.ensureRoleMinimums(game, memory, roleCounts, spawned);
+
+    // Use task system if enabled, otherwise use legacy role-based system
+    const result = this.options.useTaskSystem
+      ? this.executeWithTaskSystem(game, memory)
+      : this.executeWithRoleSystem(game, memory);
+
+    memory.roles = roleCounts;
+
+    return {
+      processedCreeps: result.processedCreeps,
+      spawnedCreeps: spawned,
+      tasksExecuted: result.tasksExecuted
+    };
+  }
+
+  /**
+   * Execute using the task management system with priority-based task execution.
+   */
+  private executeWithTaskSystem(
+    game: GameContext,
+    _memory: Memory
+  ): { processedCreeps: number; tasksExecuted: Record<string, number> } {
+    const creeps = Object.values(game.creeps) as Creep[];
+
+    // Generate tasks for each room
+    const rooms = Object.values(game.rooms);
+    for (const room of rooms) {
+      if (room.controller?.my) {
+        this.taskManager.generateTasks(room);
+      }
+    }
+
+    // Assign tasks to idle creeps
+    this.taskManager.assignTasks(creeps);
+
+    // Execute tasks with CPU threshold management
+    const tasksExecuted = this.taskManager.executeTasks(creeps, game.cpu.limit);
+
+    return {
+      processedCreeps: creeps.length,
+      tasksExecuted
+    };
+  }
+
+  /**
+   * Execute using the legacy role-based system.
+   */
+  private executeWithRoleSystem(
+    game: GameContext,
+    _memory: Memory
+  ): { processedCreeps: number; tasksExecuted: Record<string, number> } {
+    const tasksExecuted: Record<string, number> = {};
+    let processedCreeps = 0;
+    let skippedCreeps = 0;
 
     const cpuBudget = game.cpu.limit * this.options.cpuSafetyMargin;
     const creeps = Object.values(game.creeps) as ManagedCreep[];
@@ -185,11 +244,8 @@ export class BehaviorController {
       }
     }
 
-    memory.roles = roleCounts;
-
     return {
       processedCreeps,
-      spawnedCreeps: spawned,
       tasksExecuted
     };
   }

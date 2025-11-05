@@ -1,13 +1,26 @@
 import { TaskRequest, TaskPriority } from "./TaskRequest";
 import { BuildAction, HarvestAction, RepairAction, TransferAction, UpgradeAction, WithdrawAction } from "./TaskAction";
 
+export interface TaskManagerConfig {
+  cpuThreshold?: number;
+  logger?: Pick<Console, "log" | "warn">;
+}
+
 /**
  * Manages task creation, assignment, and execution for a room.
  * Based on Jon Winsley's task management architecture.
+ * Enhanced with CPU threshold management for tick budget control.
  */
 export class TaskManager {
   private tasks: Map<string, TaskRequest> = new Map();
   private nextTaskId = 0;
+  private readonly cpuThreshold: number;
+  private readonly logger: Pick<Console, "log" | "warn">;
+
+  public constructor(config: TaskManagerConfig = {}) {
+    this.cpuThreshold = config.cpuThreshold ?? 0.8;
+    this.logger = config.logger ?? console;
+  }
 
   /**
    * Generate tasks based on room state
@@ -48,18 +61,38 @@ export class TaskManager {
   }
 
   /**
-   * Execute tasks for all creeps
+   * Execute tasks for all creeps with CPU threshold management.
+   * Stops execution when CPU usage exceeds the configured threshold.
    */
-  public executeTasks(creeps: Creep[]): Record<string, number> {
+  public executeTasks(creeps: Creep[], cpuLimit: number): Record<string, number> {
     const taskCounts: Record<string, number> = {};
+    const cpuBudget = cpuLimit * this.cpuThreshold;
+    let skippedCreeps = 0;
+    let processedCreeps = 0;
 
     for (const creep of creeps) {
+      // Check CPU budget before processing each creep
+      if (Game.cpu.getUsed() > cpuBudget) {
+        skippedCreeps = creeps.length - processedCreeps;
+        if (skippedCreeps > 0) {
+          this.logger.warn?.(
+            `[TaskManager] CPU threshold reached (${Game.cpu.getUsed().toFixed(2)}/${cpuBudget.toFixed(2)}), ` +
+              `skipping ${skippedCreeps} creep tasks`
+          );
+        }
+        break;
+      }
+
       const taskId = creep.memory.taskId as string | undefined;
-      if (!taskId) continue;
+      if (!taskId) {
+        processedCreeps++;
+        continue;
+      }
 
       const task = this.tasks.get(taskId);
       if (!task) {
         delete creep.memory.taskId;
+        processedCreeps++;
         continue;
       }
 
@@ -74,6 +107,8 @@ export class TaskManager {
         delete creep.memory.taskId;
         this.tasks.delete(taskId);
       }
+
+      processedCreeps++;
     }
 
     return taskCounts;
