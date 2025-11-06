@@ -7,6 +7,23 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Added
 
+- **Enhanced pre-commit hook with regression and coverage tests**
+  - Added `test:regression` to pre-commit hook to enforce regression test execution before commits
+  - Added `test:coverage` to pre-commit hook to enforce coverage checks before commits
+  - Ensures all quality gates are enforced for agent commits, preventing regressions and coverage drops
+  - Addresses issue #469 - Make sure to include the regression and coverage tests into the pre-commit hook
+
+### Fixed
+
+- **Regression test alignment with workflow versions**
+  - Updated `tests/regression/post-merge-workflow-git-race-condition.test.ts` to expect `git-auto-commit-action@v7` instead of `v5`
+  - Aligns test expectations with actual workflow configuration in `.github/workflows/post-merge-release.yml`
+
+- **Test isolation for build-dependent regression tests**
+  - Made `modular-build.test.ts` and `es2018-target.test.ts` run sequentially to prevent race conditions
+  - Added file-based locking mechanism to prevent parallel execution across test files
+  - Prevents parallel test execution from interfering with shared dist directory during builds
+  - Uses exponential backoff for lock acquisition to handle race conditions gracefully
 - **Phase 1 Foundation Features**
   - Added `PixelGenerator` class for automatic pixel generation when CPU bucket is full (default: 10000)
   - Implemented `Logger` utility with structured logging, timestamps, and log levels (debug, info, warn, error)
