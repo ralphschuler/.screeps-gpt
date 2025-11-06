@@ -46,7 +46,7 @@ describe("Node.js Globals Bundle Regression (#488)", () => {
 
     // Search for require() calls (excluding webpack/esbuild runtime code)
     // Look for require as a function call, not as part of __require or similar
-    const requireMatches = bundleContent.match(/[^_]require\(/g);
+    const requireMatches = bundleContent.match(/\brequire\(/g);
 
     expect(requireMatches).toBeNull();
   });
