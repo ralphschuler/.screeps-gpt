@@ -42,21 +42,30 @@
   - Documentation in docs/runtime/operations/spawn-management.md
 - [ ] Create task assignment algorithm (closest idle creep, capability matching)
 - [ ] Implement storage manager for resource distribution
-- [ ] Add link network optimization for energy highways
-- [ ] Create tower automation for defense and repair
+- [x] Add link network optimization for energy highways _(Partial: RCL 5 link placement added)_
+- [x] Create tower automation for defense and repair _(2025-11-06)_
+  - TowerManager with threat-based targeting
+  - Prioritized attack/heal/repair actions
+  - Regression tests for defense prioritization
 - [ ] Add centralized memory segments for persistent data
 - [ ] Implement path caching with TTL management
 - [ ] Create RoomManager abstraction with manager registry
 
 ### Future Phases
 
+- [x] Phase 3: Remote harvesting, improved base planning, road automation, defense _(2025-11-06)_
+  - ScoutManager for remote room mapping
+  - Enhanced BasePlanner with RCL 2-5 layouts
+  - RoadPlanner for automated road placement
+  - TowerManager for intelligent defense
 - [ ] Phase 3: Terminal management, lab automation, market integration
 - [ ] Phase 4: Empire coordination, room claiming, multi-room logistics
 - [ ] Phase 5: Military operations, multi-shard expansion
 
 ### Technical Improvements
 
-- [ ] Expand creep role library beyond harvester/upgrader to cover builders and remote miners.
+- [x] Expand creep role library beyond harvester/upgrader to cover builders and remote miners _(Already implemented)_
+- [x] Add remote harvesting and room scouting system _(2025-11-06)_
 - [ ] Add automated simulation snapshots for regression verification of behaviour changes.
 - [ ] Review Screeps Quorum automation patterns for scalable role orchestration.
 - [ ] Design PTR stat baselines so the monitor can score trends automatically.

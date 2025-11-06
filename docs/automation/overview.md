@@ -521,3 +521,95 @@ See `AGENTS.md` for detailed MCP server capabilities and best practices.
 ### Local workflow validation
 
 Run `bun run test:actions` to execute linting, formatting checks, and dry-run the key workflows (`quality-gate`, `post-merge-release`, `deploy`, `docs-pages`, `copilot-email-triage`) using the `act` CLI. Populate placeholder secrets in `tests/actions/secrets.env` before invoking the command.
+
+## Phase 3: Economy Expansion Automation
+
+The repository includes comprehensive automation for Phase 3 economy expansion features (RCL 3-5), supporting remote harvesting, improved base planning, road automation, and intelligent defense.
+
+### Remote Harvesting and Mapping
+
+**ScoutManager** (`src/runtime/scouting/ScoutManager.ts`) discovers and maps remote rooms for resource extraction:
+
+- **Room Intelligence**: Collects data on sources, minerals, ownership, hostiles, and Source Keepers
+- **Memory Persistence**: Stores room data in `Memory.scout` with configurable lifetime (default: 10,000 ticks)
+- **Target Selection**: Ranks rooms by path distance, source count, and safety for optimal remote mining
+- **Data Cleanup**: Automatically removes stale data to prevent memory bloat
+- **Corruption Recovery**: Handles memory loss/corruption gracefully without crashes
+
+**Key Features**:
+
+- Discovers source locations, mineral types, and hostile presence
+- Filters out owned, Source Keeper, and hostile rooms automatically
+- Updates path distances for route optimization
+- Supports re-scouting for data freshness
+
+**Documentation**: [Remote Harvesting Guide](../runtime/strategy/remote-harvesting.md)
+
+### Construction and Base Planning
+
+**BasePlanner** (`src/runtime/planning/BasePlanner.ts`) manages automatic structure placement with bunker/stamp layouts:
+
+- **RCL Progression**: Supports RCL 2-5 with extension, tower, storage, and link placement
+- **Bunker Layout**: Compact radial pattern centered on spawn for efficient energy distribution
+- **Smart Placement**: Avoids walls using distance transform algorithm
+- **RCL-Based Queuing**: Automatically unlocks new structures as controller levels up
+
+**Layout Coverage (RCL 2-5)**:
+
+- RCL 2: 5 extensions, 1 container
+- RCL 3: 10 extensions, 1 tower
+- RCL 4: 20 extensions, 1 storage
+- RCL 5: 30 extensions, 2 towers, 2 links
+
+**ConstructionManager** (`src/runtime/planning/ConstructionManager.ts`) creates construction sites automatically based on planner output.
+
+### Road and Building Automation
+
+**RoadPlanner** (`src/runtime/infrastructure/RoadPlanner.ts`) automates road placement using pathfinding results:
+
+- **Path-Based Planning**: Uses room.findPath() to determine optimal road positions
+- **Auto-Placement**: Connects sources to spawns and controllers automatically
+- **Deduplication**: Prevents duplicate roads on overlapping paths
+- **Terrain Awareness**: Skips wall tiles automatically
+- **Throttling**: Limits construction sites per tick to manage CPU (default: 1 per tick)
+
+**Road Types**:
+
+- Source roads: Connect energy sources to spawns
+- Controller roads: Connect sources to controller for upgrading efficiency
+- Auto-mode: Combines both types with deduplication
+
+**Usage**:
+
+```typescript
+const roadPlanner = new RoadPlanner();
+const result = roadPlanner.autoPlaceRoads(room, Game);
+console.log(`Created ${result.created} road sites`);
+```
+
+### Improved Defense
+
+**TowerManager** (`src/runtime/defense/TowerManager.ts`) implements threat-based targeting with intelligent prioritization:
+
+- **Threat Assessment**: Evaluates hostiles based on attack/heal parts, distance, and health
+- **Priority System**:
+  1. Attack hostiles (healers prioritized first)
+  2. Heal damaged friendlies
+  3. Repair critical structures (<30% health)
+- **Smart Targeting**: Focuses fire on wounded enemies for faster kills
+- **Multi-Tower Coordination**: All towers target highest-threat hostile
+
+**Threat Scoring**:
+
+- +100 per attack part (ATTACK, RANGED_ATTACK, WORK)
+- +150 per heal part (high priority - can sustain other hostiles)
+- +50 for proximity (closer = more dangerous)
+- +50 for wounded enemies (<50% health, easier to kill)
+
+**Actions Tracked**:
+
+- `attack`: Hostile creeps attacked
+- `heal`: Friendly creeps healed
+- `repair`: Structures repaired
+
+**Documentation**: All Phase 3 features include comprehensive test coverage (unit + regression tests) and are documented in the appropriate guides.
