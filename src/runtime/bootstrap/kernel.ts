@@ -34,6 +34,7 @@ export interface KernelConfig {
   cpuEmergencyThreshold?: number;
   memorySchemaVersion?: number;
   enableGarbageCollection?: boolean;
+  garbageCollectionInterval?: number;
 }
 
 /**
@@ -58,6 +59,7 @@ export class Kernel {
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly cpuEmergencyThreshold: number;
   private readonly enableGarbageCollection: boolean;
+  private readonly garbageCollectionInterval: number;
 
   public constructor(config: KernelConfig = {}) {
     this.logger = config.logger ?? console;
@@ -74,6 +76,7 @@ export class Kernel {
     this.respawnManager = config.respawnManager ?? new RespawnManager(this.logger);
     this.constructionManager = config.constructionManager ?? new ConstructionManager(this.logger);
     this.enableGarbageCollection = config.enableGarbageCollection ?? true;
+    this.garbageCollectionInterval = config.garbageCollectionInterval ?? 10;
     this.visualManager =
       config.visualManager ??
       new RoomVisualManager({
@@ -156,7 +159,7 @@ export class Kernel {
     const roleCounts = this.memoryManager.updateRoleBookkeeping(memory, game.creeps);
 
     // Run garbage collection if enabled
-    if (this.enableGarbageCollection && game.time % 10 === 0) {
+    if (this.enableGarbageCollection && game.time % this.garbageCollectionInterval === 0) {
       this.garbageCollector.collect(game, memory);
     }
 
