@@ -5,6 +5,16 @@ import { build, context as createContext, type BuildOptions } from "esbuild";
 const outDir = resolve("dist");
 const srcDir = resolve("src");
 
+/**
+ * Common runtime defines for all build configurations
+ * Replaces Node.js environment variables with literals at build time
+ */
+const RUNTIME_DEFINES = {
+  __PROFILER_ENABLED__: process.env.PROFILER_ENABLED === "false" ? "false" : "true",
+  "process.env.TASK_SYSTEM_ENABLED": JSON.stringify(process.env.TASK_SYSTEM_ENABLED ?? "false"),
+  "process.env.ROOM_VISUALS_ENABLED": JSON.stringify(process.env.ROOM_VISUALS_ENABLED ?? "false")
+} as const;
+
 async function prepare() {
   await rm(outDir, { recursive: true, force: true });
   await mkdir(outDir, { recursive: true });
@@ -71,11 +81,7 @@ async function buildModules(watch: boolean): Promise<void> {
       outfile: outFile,
       logLevel: "warning" as const,
       external: [], // No external modules - each bundle is self-contained
-      define: {
-        __PROFILER_ENABLED__: process.env.PROFILER_ENABLED === "false" ? "false" : "true",
-        "process.env.TASK_SYSTEM_ENABLED": JSON.stringify(process.env.TASK_SYSTEM_ENABLED ?? "false"),
-        "process.env.ROOM_VISUALS_ENABLED": JSON.stringify(process.env.ROOM_VISUALS_ENABLED ?? "false")
-      }
+      define: RUNTIME_DEFINES
     };
 
     if (watch) {
@@ -96,11 +102,7 @@ async function buildModules(watch: boolean): Promise<void> {
     format: "cjs" as const,
     outfile: resolve(outDir, "main.js"),
     logLevel: "info" as const,
-    define: {
-      __PROFILER_ENABLED__: process.env.PROFILER_ENABLED === "false" ? "false" : "true",
-      "process.env.TASK_SYSTEM_ENABLED": JSON.stringify(process.env.TASK_SYSTEM_ENABLED ?? "false"),
-      "process.env.ROOM_VISUALS_ENABLED": JSON.stringify(process.env.ROOM_VISUALS_ENABLED ?? "false")
-    }
+    define: RUNTIME_DEFINES
   };
 
   if (watch) {
@@ -132,11 +134,7 @@ export async function buildProject(watch: boolean): Promise<void> {
       format: "cjs" as const,
       outfile: resolve(outDir, "main.js"),
       logLevel: "info" as const,
-      define: {
-        __PROFILER_ENABLED__: process.env.PROFILER_ENABLED === "false" ? "false" : "true",
-        "process.env.TASK_SYSTEM_ENABLED": JSON.stringify(process.env.TASK_SYSTEM_ENABLED ?? "false"),
-        "process.env.ROOM_VISUALS_ENABLED": JSON.stringify(process.env.ROOM_VISUALS_ENABLED ?? "false")
-      }
+      define: RUNTIME_DEFINES
     };
 
     if (watch) {
