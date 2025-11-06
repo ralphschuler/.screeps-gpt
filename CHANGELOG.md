@@ -7,6 +7,19 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Added
 
+- **Workflow concurrency controls for race condition prevention**
+  - Added concurrency controls to 20 GitHub Actions workflows that previously lacked them
+  - Guard workflows (10 files): Use per-workflow-ref grouping with `cancel-in-progress: true` to optimize PR validation
+  - Copilot workflows (7 files): Use workflow-specific concurrency groups with `cancel-in-progress: false` to prevent agent conflicts
+  - Monitoring workflows (2 files): Use workflow-level concurrency with `cancel-in-progress: false` to prevent overlapping runs
+  - Singleton workflows (2 files): Use workflow-level concurrency with `cancel-in-progress: true` for safety
+  - Created comprehensive regression test `tests/regression/workflow-concurrency.test.ts` to validate all workflows have proper concurrency controls
+  - Prevents race conditions in guard workflow runs when multiple commits are pushed rapidly
+  - Eliminates resource waste from stale workflow runs continuing after force-push
+  - Prevents multiple Copilot agents from working on the same issue simultaneously
+  - Prevents monitoring workflow overlaps that could cause API rate limit issues
+  - Addresses ralphschuler/.screeps-gpt#50 and provides detailed implementation for concurrency control requirements
+
 - **Enhanced pre-commit hook with regression and coverage tests**
   - Added `test:regression` to pre-commit hook to enforce regression test execution before commits
   - Added `test:coverage` to pre-commit hook to enforce coverage checks before commits
