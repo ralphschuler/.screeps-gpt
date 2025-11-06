@@ -1,15 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import * as Profiler from "@profiler";
 
 // Setup global Memory and Game for tests
 declare global {
-  // eslint-disable-next-line no-var
   var Memory: Memory;
-  // eslint-disable-next-line no-var
   var Game: Game;
 }
 

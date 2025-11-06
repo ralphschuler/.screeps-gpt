@@ -99,7 +99,6 @@ async function fetchConsoleTelemetry(): Promise<ConsoleTelemetry> {
 
   try {
     // Execute console command
-    // eslint-disable-next-line @typescript-eslint/await-thenable
     const response = (await api.console(telemetryCommand, shard)) as ConsoleResponse;
 
     if (!response.ok) {

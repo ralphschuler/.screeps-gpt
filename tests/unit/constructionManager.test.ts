@@ -3,10 +3,6 @@ import { ConstructionManager } from "@runtime/planning/ConstructionManager";
 import type { GameContext } from "@runtime/types/GameContext";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 
 // Mock constants for tests
 const FIND_MY_SPAWNS = 104 as FindConstant;

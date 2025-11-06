@@ -5,6 +5,21 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Changed
+
+- **Migrated pre-commit hook to use ESLint flat config and removed 34 unused eslint-disable directives**
+  - Updated `.husky/pre-commit` to use ESLint flat config (`eslint.config.mjs`) instead of deprecated `.eslintrc.cjs`
+  - Removed `export ESLINT_USE_FLAT_CONFIG=false` from pre-commit hook to enable flat config usage
+  - Removed 34 unused `eslint-disable` directives across 7 files (3 scripts, 4 test files)
+  - Scripts: `fetch-console-telemetry.ts`, `fetch-profiler-console.ts`, `fetch-resilient-telemetry.ts`
+  - Test files: `resilient-monitoring.test.ts`, `basePlanner.test.ts`, `constructionManager.test.ts`, `profiler.test.ts`
+  - Directives were marked as unused by flat config which doesn't apply strict type-checking rules to tests/scripts
+  - Old `.eslintrc.cjs` config applied strict rules everywhere, making directives appear necessary
+  - Flat config (`.eslintrc.mjs`) applies type-checking rules only to `src/**/*.ts` for better performance
+  - Improves code readability and maintainability by removing unnecessary ESLint pragmas
+  - All tests pass after cleanup, confirming no functional impact
+  - Addresses consistency between lint configuration and pre-commit validation
+
 ### Added
 
 - **Workflow concurrency controls for race condition prevention**
