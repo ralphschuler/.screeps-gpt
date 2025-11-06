@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.8.0] - 2025-11-06
+
 ### Changed
 
 - **Migrated pre-commit hook to use ESLint flat config and removed 34 unused eslint-disable directives**
