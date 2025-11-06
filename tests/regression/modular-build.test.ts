@@ -12,7 +12,7 @@ import { readdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { buildProject } from "../../scripts/buildProject";
 
-describe("Modular Build System Regression", () => {
+describe.sequential("Modular Build System Regression", () => {
   it("should produce single bundle by default", async () => {
     // Clear MODULAR_BUILD env var
     const originalEnv = process.env.MODULAR_BUILD;

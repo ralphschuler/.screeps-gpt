@@ -12,7 +12,7 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { buildProject } from "../../scripts/buildProject";
 
-describe("ES2018 Target Compliance", () => {
+describe.sequential("ES2018 Target Compliance", () => {
   it("should not contain ES2021 logical assignment operators", async () => {
     await buildProject(false);
 

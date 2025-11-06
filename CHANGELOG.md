@@ -19,6 +19,10 @@ All notable changes to this project are documented here. This changelog now main
   - Updated `tests/regression/post-merge-workflow-git-race-condition.test.ts` to expect `git-auto-commit-action@v7` instead of `v5`
   - Aligns test expectations with actual workflow configuration in `.github/workflows/post-merge-release.yml`
 
+- **Test isolation for build-dependent regression tests**
+  - Made `modular-build.test.ts` and `es2018-target.test.ts` run sequentially to prevent race conditions
+  - Prevents parallel test execution from interfering with shared dist directory during builds
+
 - **Codex composite action for automation workflows**
   - Added `.github/actions/codex-exec` as a drop-in replacement for `copilot-exec`
   - Wraps the official `openai/codex-action@v1` with repository-specific caching and prompt rendering
