@@ -9,6 +9,7 @@ The priority-based task management system has been **fully evaluated and validat
 ## Key Metrics
 
 ### Performance 🚀
+
 - **Small Room (5 creeps):** -58.8% CPU usage
 - **Medium Room (15 creeps):** -63.8% CPU usage
 - **Per Creep:** -64.5% CPU usage
@@ -16,12 +17,14 @@ The priority-based task management system has been **fully evaluated and validat
 **Result:** Task system is **MORE efficient** than legacy role-based system.
 
 ### Test Coverage ✅
+
 - **Unit Tests:** 20 passing
 - **Integration Tests:** 12 passing (NEW)
 - **Benchmark Tests:** 10 passing
 - **Total:** 42 tests, 100% passing
 
 ### Feature Completeness ✅
+
 - ✅ Harvest, Build, Upgrade, Repair - Fully implemented
 - ✅ Energy distribution (Transfer/Withdraw) - Fully implemented
 - ✅ CPU threshold management - Superior to legacy
@@ -33,18 +36,21 @@ The priority-based task management system has been **fully evaluated and validat
 ## How to Enable
 
 ### Option 1: Build-Time (Environment Variable)
+
 ```bash
 TASK_SYSTEM_ENABLED=true npm run build
 TASK_SYSTEM_ENABLED=true npm run deploy
 ```
 
 ### Option 2: Runtime (Memory Flag)
+
 ```javascript
 // In-game console
 Memory.experimentalFeatures = { taskSystem: true };
 ```
 
 ### Option 3: Hybrid (Per-Room)
+
 ```javascript
 // Enable only for specific rooms
 Memory.experimentalFeatures = {
@@ -58,18 +64,21 @@ Memory.experimentalFeatures = {
 ## Recommended Deployment Path
 
 ### Week 1: PTR Validation
+
 ```bash
 # Deploy to PTR
 TASK_SYSTEM_ENABLED=true npm run deploy
 ```
 
 **Monitor:**
+
 - CPU usage per tick
 - Room RCL progression
 - Task execution counts
 - Stability (24+ hours)
 
 ### Week 2-3: Production Single Room
+
 ```javascript
 Memory.experimentalFeatures = {
   taskSystem: true,
@@ -78,12 +87,14 @@ Memory.experimentalFeatures = {
 ```
 
 ### Week 4-6: Gradual Expansion
+
 ```javascript
 // Expand to all rooms if stable
 Memory.experimentalFeatures = { taskSystem: true };
 ```
 
 ### Week 8+: Set as Default
+
 Update `src/main.ts` to default to task system.
 
 ---
@@ -101,6 +112,7 @@ Update `src/main.ts` to default to task system.
 ## Known Limitations
 
 ### ⚠️ Remote Mining Not Implemented
+
 - Legacy system has `remoteMiner` role (minimum: 0)
 - Task system lacks `RemoteMiningAction`
 - **Impact:** Low (not used by default)
@@ -132,11 +144,13 @@ Update `src/main.ts` to default to task system.
 If issues arise during deployment:
 
 ### Instant Rollback (Memory Flag)
+
 ```javascript
 Memory.experimentalFeatures = { taskSystem: false };
 ```
 
 ### Per-Room Rollback
+
 ```javascript
 Memory.experimentalFeatures = {
   taskSystem: true,
@@ -145,6 +159,7 @@ Memory.experimentalFeatures = {
 ```
 
 ### Build-Time Rollback
+
 ```bash
 # Rebuild without task system
 npm run build
