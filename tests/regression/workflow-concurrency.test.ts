@@ -21,6 +21,7 @@ describe("Workflow concurrency controls", () => {
     "guard-version.yml",
     "guard-yaml-lint.yml",
     // Copilot automation workflows
+    "copilot-changelog-to-blog.yml",
     "copilot-ci-autofix.yml",
     "copilot-email-triage.yml",
     "copilot-issue-triage.yml",

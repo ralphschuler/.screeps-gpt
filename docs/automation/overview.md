@@ -262,6 +262,27 @@ Quality checks are split into separate guard workflows for better granularity an
 - Behaviour: Executes `bun run versions:update` and `bun run build:docs-site`, then publishes `build/docs-site` to GitHub Pages.
 - Permissions: Requires `pages: write` and `id-token: write`.
 
+## Changelog to Blog Automation (`copilot-changelog-to-blog.yml`)
+
+- Trigger: Version tags matching `v*` pattern (e.g., `v0.12.0`) + manual dispatch with version input.
+- Behaviour: Automatically converts CHANGELOG.md entries into comprehensive blog posts by:
+  - Extracting the changelog section for the specified version
+  - Using Copilot to generate a detailed blog post with design rationale and implementation context
+  - Creating proper front matter (title, date, categories, tags) based on release content
+  - Writing blog post to `source/_posts/release-{version-slug}.md`
+  - Including technical deep-dives that explain WHY decisions were made, not just WHAT changed
+  - Referencing specific files, functions, and modules with architectural context
+  - Connecting features to broader project goals (autonomous development, workflow automation)
+- Integration: Works seamlessly with the release process - `post-merge-release.yml` creates version tags which automatically trigger blog post generation.
+- Output: Blog posts are committed directly to the repository, triggering `docs-pages.yml` to rebuild and deploy the documentation site.
+- Manual Execution: Use workflow_dispatch with version parameter (e.g., "0.12.0") to generate blog posts for existing releases.
+- Validation: Checks if blog post already exists before generation to avoid duplicates.
+- Content Style: Technical but accessible, targeting developers interested in Screeps automation and AI-driven development.
+- Target Length: 800-1500 words depending on release complexity.
+- Permissions: Uses the default `GITHUB_TOKEN` with `contents: write` for committing blog posts.
+- Concurrency: Single execution per tag via `${{ github.workflow }}-${{ github.ref }}` concurrency group.
+- Action Enforcement: Mandatory changelog extraction validation, comprehensive blog post structure with introduction/features/technical details/impact/future sections, design rationale for all major features, and proper markdown formatting.
+
 ## Copilot Issue Triage (`copilot-issue-triage.yml`)
 
 - Trigger: Issues opened or reopened.

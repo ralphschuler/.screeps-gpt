@@ -1,0 +1,111 @@
+---
+name: Changelog to Blog Automation
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to generate blog post for (e.g., 0.12.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: >-
+    ${{ github.workflow }}-${{ github.ref }}-${{
+    github.event.inputs.version || 'tag' }}
+  cancel-in-progress: false
+
+jobs:
+  generate-blog-post:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract version from tag
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            # Extract version from tag (remove 'v' prefix)
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "📦 Processing version: $VERSION"
+
+      - name: Check if blog post already exists
+        id: check
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          VERSION_SLUG="${VERSION//./-}"
+          BLOG_POST_PATH="source/_posts/release-${VERSION_SLUG}.md"
+
+          if [ -f "$BLOG_POST_PATH" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "⚠️  Blog post already exists: $BLOG_POST_PATH"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "✅ Blog post does not exist, will generate"
+          fi
+
+      - name: Generate blog post with Copilot
+        if: steps.check.outputs.exists == 'false'
+        uses: ./.github/actions/copilot-exec
+        env:
+          REPO_NAME: ${{ github.repository }}
+          VERSION: ${{ steps.version.outputs.version }}
+          CURRENT_DATE: ${{ github.event.created_at || github.run_started_at }}
+        with:
+          copilot-token: ${{ secrets.GITHUB_TOKEN }}
+          prompt-path: .github/copilot/prompts/changelog-to-blog
+          output-path: >-
+            reports/copilot/changelog-to-blog-${{
+            steps.version.outputs.version }}.log
+          force-response: true
+          verbose: "true"
+
+      - name: Verify blog post was created
+        if: steps.check.outputs.exists == 'false'
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          VERSION_SLUG="${VERSION//./-}"
+          BLOG_POST_PATH="source/_posts/release-${VERSION_SLUG}.md"
+
+          if [ ! -f "$BLOG_POST_PATH" ]; then
+            echo "❌ Blog post was not created at $BLOG_POST_PATH"
+            echo "Check the Copilot execution log for errors"
+            exit 1
+          fi
+
+          echo "✅ Blog post created successfully"
+          echo "📄 File: $BLOG_POST_PATH"
+          echo "📊 Size: $(wc -c < "$BLOG_POST_PATH") bytes"
+          echo "📝 Lines: $(wc -l < "$BLOG_POST_PATH") lines"
+
+      - name: Display blog post summary
+        if: steps.check.outputs.exists == 'false'
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          VERSION_SLUG="${VERSION//./-}"
+          BLOG_POST_PATH="source/_posts/release-${VERSION_SLUG}.md"
+
+          echo "📋 Blog Post Front Matter:"
+          sed -n '/^---$/,/^---$/p' "$BLOG_POST_PATH"
+          echo ""
+          echo "📝 First 10 lines of content:"
+          sed -n '/^---$/,/^---$/!p' "$BLOG_POST_PATH" | head -n 10
