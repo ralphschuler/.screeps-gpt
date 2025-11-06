@@ -104,6 +104,28 @@ Memory.experimentalFeatures = { taskSystem: true };
 
 See [Task System Architecture](docs/runtime/task-system.md) for details.
 
+### Room Visuals
+
+The runtime includes an in-game visualization system for debugging and monitoring bot activities. Enable room visuals via:
+
+```bash
+# Environment variable (build-time)
+ROOM_VISUALS_ENABLED=true npm run build
+
+# Or in-game console (runtime)
+Memory.experimentalFeatures = { roomVisuals: true };
+```
+
+Room visuals display:
+
+- Creep positions and roles with color-coded markers
+- Energy harvesting operations (lines from harvesters to sources)
+- Construction and repair targets with progress indicators
+- Spawn queue status and production progress
+- CPU usage and tick counter per room
+
+Visuals are disabled by default to minimize CPU usage. See [Logging and Room Visuals](docs/runtime/logging-and-visuals.md) for configuration options and usage guide.
+
 **📚 [Complete Getting Started Guide →](docs/getting-started.md)**
 
 ## Key Features

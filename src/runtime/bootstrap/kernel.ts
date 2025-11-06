@@ -7,6 +7,7 @@ import { StatsCollector } from "@runtime/metrics/StatsCollector";
 import { PixelGenerator } from "@runtime/metrics/PixelGenerator";
 import { RespawnManager } from "@runtime/respawn/RespawnManager";
 import { ConstructionManager } from "@runtime/planning/ConstructionManager";
+import { RoomVisualManager } from "@runtime/visuals/RoomVisualManager";
 import type { GameContext } from "@runtime/types/GameContext";
 import { profile } from "@profiler";
 
@@ -19,6 +20,7 @@ export interface KernelConfig {
   evaluator?: SystemEvaluator;
   respawnManager?: RespawnManager;
   constructionManager?: ConstructionManager;
+  visualManager?: RoomVisualManager;
   repositorySignalProvider?: () => RepositorySignal | undefined;
   logger?: Pick<Console, "log" | "warn">;
   cpuEmergencyThreshold?: number;
@@ -38,6 +40,7 @@ export class Kernel {
   private readonly evaluator: SystemEvaluator;
   private readonly respawnManager: RespawnManager;
   private readonly constructionManager: ConstructionManager;
+  private readonly visualManager: RoomVisualManager;
   private readonly repositorySignalProvider?: () => RepositorySignal | undefined;
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly cpuEmergencyThreshold: number;
@@ -52,6 +55,13 @@ export class Kernel {
     this.evaluator = config.evaluator ?? new SystemEvaluator({}, this.logger);
     this.respawnManager = config.respawnManager ?? new RespawnManager(this.logger);
     this.constructionManager = config.constructionManager ?? new ConstructionManager(this.logger);
+    this.visualManager =
+      config.visualManager ??
+      new RoomVisualManager({
+        enabled:
+          process.env.ROOM_VISUALS_ENABLED === "true" ||
+          (typeof Memory !== "undefined" && Memory.experimentalFeatures?.roomVisuals === true)
+      });
     this.repositorySignalProvider = config.repositorySignalProvider;
     this.cpuEmergencyThreshold = config.cpuEmergencyThreshold ?? 0.9;
   }
@@ -156,6 +166,9 @@ export class Kernel {
 
     // Generate pixel if bucket is full
     this.pixelGenerator.tryGeneratePixel(game.cpu.bucket);
+
+    // Render room visuals for operational visibility
+    this.visualManager.render(game);
 
     if (result.report.findings.length > 0) {
       this.logger.warn?.(`[evaluation] ${result.report.summary}`);
