@@ -50,6 +50,18 @@ jobs:
           timeout: "40"
           verbose: "true"
 
+      - name: Fetch profiler data from console
+        if: always()
+        env:
+          SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
+          SCREEPS_HOST: ${{ secrets.SCREEPS_HOST }}
+          SCREEPS_SHARD: ${{ secrets.SCREEPS_SHARD }}
+          SCREEPS_PORT: ${{ secrets.SCREEPS_PORT }}
+          SCREEPS_PROTOCOL: ${{ secrets.SCREEPS_PROTOCOL }}
+        run: |
+          npx tsx scripts/fetch-profiler-console.ts || \
+            echo "Profiler data fetch failed (may not be enabled)"
+
       - name: Check for critical PTR alerts
         if: always()
         env:
@@ -64,5 +76,8 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: screeps-monitor-report-${{ github.run_id }}
-          path: reports/copilot/screeps-monitor-${{ github.run_id }}.log
+          path: |
+            reports/copilot/screeps-monitor-${{ github.run_id }}.log
+            reports/profiler/latest.json
+            reports/screeps-stats/latest.json
           retention-days: 30

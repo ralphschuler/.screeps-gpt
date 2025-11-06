@@ -14,26 +14,28 @@ The screeps-typescript-profiler provides detailed performance profiling capabili
 
 ## Quick Start
 
-### Enable Profiler
+### Profiler Status
 
-The profiler is controlled via the `PROFILER_ENABLED` environment variable during build:
+The profiler is **enabled by default** in all builds. This allows for continuous performance monitoring and analysis without requiring manual activation.
+
+To disable the profiler (e.g., for minimal production overhead):
 
 ```bash
-# Build with profiler enabled
-bun run build:profiler
+# Build without profiler
+bun run build:no-profiler
 
 # Or set environment variable directly
-PROFILER_ENABLED=true bun run build
+PROFILER_ENABLED=false bun run build
 
-# Deploy with profiler enabled
-bun run deploy:profiler
+# Deploy without profiler
+bun run deploy:no-profiler
 ```
 
-By default, the profiler is **disabled** to minimize production overhead.
+The profiler can be controlled via the `PROFILER_ENABLED` environment variable during build (defaults to `true`).
 
 ### Console Commands
 
-Once deployed with profiler enabled, access these commands in the Screeps console:
+Access these commands in the Screeps console (profiler is enabled by default):
 
 ```javascript
 // Start profiling
@@ -184,21 +186,61 @@ Profiling data is particularly valuable in conjunction with PTR monitoring:
 3. **Optimization Phase**: Target high CPU/Tick functions for refactoring
 4. **Validation Phase**: Re-profile to confirm performance improvements
 
+### Automated Monitoring Integration
+
+The **Screeps Monitoring** workflow (`screeps-monitoring.yml`) now automatically collects profiler data:
+
+**Automatic Collection:**
+
+- Workflow fetches `Memory.profiler` data via console every 30 minutes
+- Profiler snapshot saved to `reports/profiler/latest.json`
+- Data included in monitoring artifacts for historical analysis
+- Monitoring agent analyzes profiler data and creates performance issues
+
+**Workflow Trigger:**
+
+```yaml
+schedule:
+  - cron: "*/30 * * * *" # Every 30 minutes
+workflow_run:
+  workflows:
+    - "Deploy Screeps AI" # After each deployment
+```
+
+**What Gets Collected:**
+
+- Profiler status (enabled/disabled/no-data)
+- Total ticks profiled
+- Top 20 CPU consumers with detailed metrics
+- Function-level performance breakdowns
+- CPU percentage distribution
+
+**Monitoring Agent Actions:**
+
+When profiler data is available, the monitoring agent will:
+
+1. Identify functions consuming > 20% of total profiled CPU
+2. Flag expensive operations (> 1.0ms per call)
+3. Detect excessive function calls (> 5x per tick)
+4. Create GitHub issues for significant bottlenecks
+5. Correlate profiler hotspots with PTR CPU alerts
+
 ### Performance Evaluation
 
 The profiler complements the existing `SystemEvaluator`:
 
 - **SystemEvaluator**: Aggregate CPU warnings and performance snapshots
 - **Profiler**: Function-level execution breakdowns
+- **Monitoring Agent**: Automated analysis and issue creation
 
-**Workflow:**
+**Manual Workflow:**
 
 ```bash
 # 1. Check system evaluation for high CPU warnings
 bun run analyze:system
 
-# 2. If CPU usage is high, deploy with profiler
-bun run deploy:profiler
+# 2. Deploy (profiler is enabled by default)
+bun run deploy
 
 # 3. Run profiling session in Screeps console
 Profiler.start()
@@ -208,8 +250,30 @@ Profiler.output()
 
 # 4. Analyze output and optimize bottlenecks
 
-# 5. Rebuild without profiler for production
-bun run build
+# 5. (Optional) Rebuild without profiler for minimal overhead
+bun run build:no-profiler
+bun run deploy:no-profiler
+```
+
+**Automated Workflow:**
+
+```bash
+# 1. Deploy (profiler is enabled by default)
+bun run deploy
+
+# 2. Start profiler in console
+Profiler.start()
+
+# 3. Wait for monitoring workflow to run (every 30 min)
+# Monitoring agent will automatically:
+# - Fetch profiler data from Memory.profiler
+# - Analyze performance bottlenecks
+# - Create issues for CPU-intensive functions
+# - Provide optimization recommendations
+
+# 4. Review generated issues with label "monitoring,performance"
+
+# 5. After optimizations, redeploy and verify
 bun run deploy
 ```
 
@@ -223,9 +287,10 @@ The profiler introduces minimal overhead when enabled:
 
 **Recommendations:**
 
-- Use profiler **only** during performance analysis periods
-- Disable profiler in production builds for maximum efficiency
-- Clear profiling data periodically to prevent Memory bloat
+- The profiler is **enabled by default** for continuous monitoring
+- Data collection only occurs when `Profiler.start()` is called in console
+- Clear profiling data periodically to prevent Memory bloat: `Profiler.clear()`
+- For minimal overhead deployments, use `bun run build:no-profiler` to disable
 
 ## Troubleshooting
 
@@ -235,13 +300,14 @@ The profiler introduces minimal overhead when enabled:
 
 **Solutions**:
 
-1. Verify build was done with `PROFILER_ENABLED=true`
+1. Verify build was done with profiler enabled (default behavior)
 2. Check deployed code includes profiler initialization in `main.ts`
 3. Ensure `__PROFILER_ENABLED__` flag was injected during build
+4. If you explicitly disabled the profiler with `PROFILER_ENABLED=false`, rebuild without that flag
 
 ```bash
-# Rebuild and redeploy with profiler enabled
-PROFILER_ENABLED=true bun run build
+# Rebuild and redeploy (profiler enabled by default)
+bun run build
 bun run deploy
 ```
 
@@ -271,16 +337,17 @@ bun run deploy
 
 ### Build-Time Configuration
 
-The profiler is controlled via environment variable:
+The profiler is controlled via environment variable (enabled by default):
 
 ```bash
-# Enable profiler in build
-export PROFILER_ENABLED=true
+# Build with profiler (default)
 bun run build
 
-# Disable profiler (default)
+# Disable profiler explicitly
 export PROFILER_ENABLED=false
 bun run build
+# Or use the convenience script
+bun run build:no-profiler
 ```
 
 ### Runtime Configuration
@@ -311,11 +378,71 @@ Memory.profiler.start;
 JSON.stringify(Memory.profiler.data);
 ```
 
+## Accessing Profiler Reports
+
+### Via GitHub Actions Artifacts
+
+Profiler data is automatically collected and uploaded as workflow artifacts:
+
+1. Navigate to [Actions > Screeps Monitoring](https://github.com/ralphschuler/.screeps-gpt/actions/workflows/screeps-monitoring.yml)
+2. Select a workflow run
+3. Download the `screeps-monitor-report-XXXXX` artifact
+4. Extract and review `reports/profiler/latest.json`
+
+**Snapshot Structure:**
+
+```json
+{
+  "fetchedAt": "2025-11-05T23:00:00.000Z",
+  "source": "console",
+  "isEnabled": true,
+  "hasData": true,
+  "profilerMemory": { ... },
+  "summary": {
+    "totalTicks": 150,
+    "totalFunctions": 12,
+    "averageCpuPerTick": 8.45,
+    "topCpuConsumers": [
+      {
+        "name": "BehaviorController:execute",
+        "calls": 300,
+        "cpuPerCall": 1.45,
+        "callsPerTick": 2.0,
+        "cpuPerTick": 2.9,
+        "percentOfTotal": 34.3
+      }
+    ]
+  }
+}
+```
+
+### Via Console Commands
+
+For real-time analysis, use console commands:
+
+```javascript
+// View profiler status
+Profiler.status();
+
+// Get formatted report
+Profiler.output();
+
+// Access raw data programmatically
+JSON.stringify(Memory.profiler.data);
+
+// Calculate custom metrics
+Object.entries(Memory.profiler.data)
+  .sort((a, b) => b[1].time - a[1].time)
+  .slice(0, 5)
+  .map(([name, data]) => ({ name, totalCpu: data.time }));
+```
+
 ## Related Documentation
 
 - [Performance Optimization Guide](./performance-optimization.md) - Overall performance strategies
 - [CPU Monitoring](./stats-monitoring.md) - PTR-based CPU monitoring
 - [Stats Collection](./stats-collection.md) - Memory.stats telemetry
+- [Screeps Monitoring Workflow](../../.github/workflows/screeps-monitoring.yml) - Automated monitoring configuration
 
 ## Advanced Usage
 
@@ -440,8 +567,9 @@ The screeps-typescript-profiler is a powerful tool for identifying and resolving
 
 **Key Takeaways:**
 
-- Enable profiler only during diagnostic periods
+- Profiler is enabled by default for continuous monitoring capability
+- Start data collection with `Profiler.start()` during diagnostic periods
 - Profile for 100-200 ticks for meaningful data
 - Focus optimization on high CPU/Tick functions
-- Clear profiling data after analysis
+- Clear profiling data after analysis with `Profiler.clear()`
 - Integrate profiling with existing monitoring workflows

@@ -72,7 +72,7 @@ async function buildModules(watch: boolean): Promise<void> {
       logLevel: "warning" as const,
       external: [], // No external modules - each bundle is self-contained
       define: {
-        __PROFILER_ENABLED__: process.env.PROFILER_ENABLED === "true" ? "true" : "false"
+        __PROFILER_ENABLED__: process.env.PROFILER_ENABLED === "false" ? "false" : "true"
       }
     };
 
@@ -95,7 +95,7 @@ async function buildModules(watch: boolean): Promise<void> {
     outfile: resolve(outDir, "main.js"),
     logLevel: "info" as const,
     define: {
-      __PROFILER_ENABLED__: process.env.PROFILER_ENABLED === "true" ? "true" : "false"
+      __PROFILER_ENABLED__: process.env.PROFILER_ENABLED === "false" ? "false" : "true"
     }
   };
 
@@ -129,7 +129,7 @@ export async function buildProject(watch: boolean): Promise<void> {
       outfile: resolve(outDir, "main.js"),
       logLevel: "info" as const,
       define: {
-        __PROFILER_ENABLED__: process.env.PROFILER_ENABLED === "true" ? "true" : "false"
+        __PROFILER_ENABLED__: process.env.PROFILER_ENABLED === "false" ? "false" : "true"
       }
     };
 
