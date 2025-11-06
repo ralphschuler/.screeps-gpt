@@ -34,11 +34,16 @@
   - TaskManager enhanced with improved generation and assignment
   - Regression test added for task assignment scenarios
   - Documentation updated in docs/automation/overview.md
+- [x] Implement spawn queue system with dynamic part generation _(2025-11-06)_
+  - SpawnManager class with priority-based spawn queue
+  - Dynamic body part generation based on available energy
+  - Cold boot recovery logic for empty room scenarios
+  - 17 regression tests covering all spawn scenarios
+  - Documentation in docs/runtime/operations/spawn-management.md
 - [ ] Create task assignment algorithm (closest idle creep, capability matching)
 - [ ] Implement storage manager for resource distribution
 - [ ] Add link network optimization for energy highways
 - [ ] Create tower automation for defense and repair
-- [ ] Implement spawn queue system with dynamic part generation
 - [ ] Add centralized memory segments for persistent data
 - [ ] Implement path caching with TTL management
 - [ ] Create RoomManager abstraction with manager registry
