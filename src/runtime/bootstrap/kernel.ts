@@ -1,7 +1,12 @@
 import type { RepositorySignal } from "@shared/contracts";
 import { BehaviorController } from "@runtime/behavior/BehaviorController";
 import { SystemEvaluator } from "@runtime/evaluation/SystemEvaluator";
-import { MemoryManager } from "@runtime/memory/MemoryManager";
+import {
+  MemoryManager,
+  MemoryGarbageCollector,
+  MemoryMigrationManager,
+  MemoryUtilizationMonitor
+} from "@runtime/memory";
 import { PerformanceTracker } from "@runtime/metrics/PerformanceTracker";
 import { StatsCollector } from "@runtime/metrics/StatsCollector";
 import { PixelGenerator } from "@runtime/metrics/PixelGenerator";
@@ -13,6 +18,9 @@ import { profile } from "@profiler";
 
 export interface KernelConfig {
   memoryManager?: MemoryManager;
+  garbageCollector?: MemoryGarbageCollector;
+  migrationManager?: MemoryMigrationManager;
+  utilizationMonitor?: MemoryUtilizationMonitor;
   tracker?: PerformanceTracker;
   statsCollector?: StatsCollector;
   pixelGenerator?: PixelGenerator;
@@ -24,6 +32,8 @@ export interface KernelConfig {
   repositorySignalProvider?: () => RepositorySignal | undefined;
   logger?: Pick<Console, "log" | "warn">;
   cpuEmergencyThreshold?: number;
+  memorySchemaVersion?: number;
+  enableGarbageCollection?: boolean;
 }
 
 /**
@@ -33,6 +43,9 @@ export interface KernelConfig {
 @profile
 export class Kernel {
   private readonly memoryManager: MemoryManager;
+  private readonly garbageCollector: MemoryGarbageCollector;
+  private readonly migrationManager: MemoryMigrationManager;
+  private readonly utilizationMonitor: MemoryUtilizationMonitor;
   private readonly tracker: PerformanceTracker;
   private readonly statsCollector: StatsCollector;
   private readonly pixelGenerator: PixelGenerator;
@@ -44,10 +57,15 @@ export class Kernel {
   private readonly repositorySignalProvider?: () => RepositorySignal | undefined;
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly cpuEmergencyThreshold: number;
+  private readonly enableGarbageCollection: boolean;
 
   public constructor(config: KernelConfig = {}) {
     this.logger = config.logger ?? console;
     this.memoryManager = config.memoryManager ?? new MemoryManager(this.logger);
+    this.garbageCollector = config.garbageCollector ?? new MemoryGarbageCollector({}, this.logger);
+    this.migrationManager =
+      config.migrationManager ?? new MemoryMigrationManager(config.memorySchemaVersion ?? 1, this.logger);
+    this.utilizationMonitor = config.utilizationMonitor ?? new MemoryUtilizationMonitor({}, this.logger);
     this.tracker = config.tracker ?? new PerformanceTracker({}, this.logger);
     this.statsCollector = config.statsCollector ?? new StatsCollector();
     this.pixelGenerator = config.pixelGenerator ?? new PixelGenerator({}, this.logger);
@@ -55,6 +73,7 @@ export class Kernel {
     this.evaluator = config.evaluator ?? new SystemEvaluator({}, this.logger);
     this.respawnManager = config.respawnManager ?? new RespawnManager(this.logger);
     this.constructionManager = config.constructionManager ?? new ConstructionManager(this.logger);
+    this.enableGarbageCollection = config.enableGarbageCollection ?? true;
     this.visualManager =
       config.visualManager ??
       new RoomVisualManager({
@@ -74,6 +93,18 @@ export class Kernel {
     const repository = this.repositorySignalProvider?.();
 
     this.tracker.begin(game);
+
+    // Run memory migrations on first tick or version change
+    const migrationResult = this.migrationManager.migrate(memory);
+    if (migrationResult.migrationsApplied > 0) {
+      this.logger.log?.(
+        `[Kernel] Applied ${migrationResult.migrationsApplied} memory migration(s) to v${migrationResult.toVersion}`
+      );
+      // Validate memory after migration
+      if (!this.migrationManager.validateMemory(memory)) {
+        this.logger.warn?.("[Kernel] Memory validation failed after migration");
+      }
+    }
 
     // Emergency CPU check before expensive operations
     if (game.cpu.getUsed() > game.cpu.limit * this.cpuEmergencyThreshold) {
@@ -124,6 +155,14 @@ export class Kernel {
     this.memoryManager.pruneMissingCreeps(memory, game.creeps);
     const roleCounts = this.memoryManager.updateRoleBookkeeping(memory, game.creeps);
 
+    // Run garbage collection if enabled
+    if (this.enableGarbageCollection && game.time % 10 === 0) {
+      this.garbageCollector.collect(game, memory);
+    }
+
+    // Measure memory utilization
+    const memoryUtilization = this.utilizationMonitor.measure(memory);
+
     // CPU guard after memory operations
     if (game.cpu.getUsed() > game.cpu.limit * this.cpuEmergencyThreshold) {
       this.logger.warn?.(
@@ -136,7 +175,7 @@ export class Kernel {
         tasksExecuted: {}
       });
       this.statsCollector.collect(game, memory, snapshot);
-      this.evaluator.evaluateAndStore(memory, snapshot, repository);
+      this.evaluator.evaluateAndStore(memory, snapshot, repository, memoryUtilization);
       return;
     }
 
@@ -155,14 +194,14 @@ export class Kernel {
         tasksExecuted: {}
       });
       this.statsCollector.collect(game, memory, snapshot);
-      this.evaluator.evaluateAndStore(memory, snapshot, repository);
+      this.evaluator.evaluateAndStore(memory, snapshot, repository, memoryUtilization);
       return;
     }
 
     const behaviorSummary = this.behavior.execute(game, memory, roleCounts);
     const snapshot = this.tracker.end(game, behaviorSummary);
     this.statsCollector.collect(game, memory, snapshot);
-    const result = this.evaluator.evaluateAndStore(memory, snapshot, repository);
+    const result = this.evaluator.evaluateAndStore(memory, snapshot, repository, memoryUtilization);
 
     // Generate pixel if bucket is full
     this.pixelGenerator.tryGeneratePixel(game.cpu.bucket);

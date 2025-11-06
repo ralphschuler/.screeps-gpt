@@ -2,6 +2,7 @@ import type { SystemReport } from "./src/shared/contracts";
 
 declare global {
   interface Memory {
+    version?: number;
     systemReport?: {
       lastGenerated: number;
       report: SystemReport;
