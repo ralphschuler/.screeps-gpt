@@ -115,25 +115,24 @@ describe("Task System Performance Benchmark", () => {
         cpuSafetyMargin: 0.8
       });
 
-      // Reset CPU
-      let cpuUsage = 0;
-      mockGame.cpu.getUsed = vi.fn(() => {
-        cpuUsage += 0.1;
-        return cpuUsage;
-      });
+      // Helper to create a fresh CPU mock
+      const createCpuMock = () => {
+        let cpuUsage = 0;
+        return vi.fn(() => {
+          cpuUsage += 0.1;
+          return cpuUsage;
+        });
+      };
 
+      // Measure legacy system
+      mockGame.cpu.getUsed = createCpuMock();
       const legacyCpuBefore = mockGame.cpu.getUsed();
       legacyController.execute(mockGame, mockMemory, mockRoleCounts);
       const legacyCpuAfter = mockGame.cpu.getUsed();
       const legacyCpuUsed = legacyCpuAfter - legacyCpuBefore;
 
-      // Reset CPU for task system
-      cpuUsage = 0;
-      mockGame.cpu.getUsed = vi.fn(() => {
-        cpuUsage += 0.1;
-        return cpuUsage;
-      });
-
+      // Measure task system
+      mockGame.cpu.getUsed = createCpuMock();
       const taskCpuBefore = mockGame.cpu.getUsed();
       taskController.execute(mockGame, mockMemory, mockRoleCounts);
       const taskCpuAfter = mockGame.cpu.getUsed();

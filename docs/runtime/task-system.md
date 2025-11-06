@@ -262,7 +262,7 @@ const kernel = createKernel({
 
 ```bash
 # Set in deployment environment
-TASK_SYSTEM_ENABLED=true npm run deploy
+TASK_SYSTEM_ENABLED=true bun run deploy
 ```
 
 ### Migration Strategy

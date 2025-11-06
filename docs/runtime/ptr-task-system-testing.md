@@ -34,10 +34,10 @@ Memory.experimentalFeatures = {
 
 ```bash
 # Deploy with task system enabled
-TASK_SYSTEM_ENABLED=true SCREEPS_HOST=https://screeps.com/ptr npm run deploy
+TASK_SYSTEM_ENABLED=true SCREEPS_HOST=https://screeps.com/ptr bun run deploy
 
 # Or use the deploy script with PTR host
-npm run deploy
+bun run deploy
 ```
 
 **Verify Deployment:**
@@ -221,7 +221,7 @@ Memory.experimentalFeatures = {
 **Option B: Redeploy**
 
 ```bash
-TASK_SYSTEM_ENABLED=false SCREEPS_HOST=https://screeps.com/ptr npm run deploy
+TASK_SYSTEM_ENABLED=false SCREEPS_HOST=https://screeps.com/ptr bun run deploy
 ```
 
 **Clean Up:**
