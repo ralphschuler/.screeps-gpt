@@ -17,6 +17,7 @@ export interface RoomLike {
   name: string;
   controller: StructureController | null;
   find(type: FindConstant, opts?: { filter?: (object: unknown) => boolean }): unknown[];
+  findPath(from: RoomPosition, to: RoomPosition, opts?: FindPathOpts): PathStep[];
   createConstructionSite(x: number, y: number, structureType: BuildableStructureConstant): ScreepsReturnCode;
   getTerrain(): RoomTerrain;
 }

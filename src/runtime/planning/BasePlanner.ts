@@ -20,8 +20,9 @@ export class BasePlanner {
   private anchor: RoomPosition | null = null;
 
   /**
-   * Simple bunker layout centered around spawn
+   * Comprehensive bunker layout centered around spawn
    * Offsets are relative to the anchor point (spawn position)
+   * Covers RCL 1-5 for Phase 3 requirements
    */
   private readonly bunkerLayout: Array<{
     type: BuildableStructureConstant;
@@ -62,7 +63,26 @@ export class BasePlanner {
     { type: "extension" as BuildableStructureConstant, dx: -3, dy: 1, rcl: 4 },
     { type: "extension" as BuildableStructureConstant, dx: -3, dy: -1, rcl: 4 },
     { type: "extension" as BuildableStructureConstant, dx: 0, dy: 3, rcl: 4 },
-    { type: "extension" as BuildableStructureConstant, dx: 0, dy: -3, rcl: 4 }
+    { type: "extension" as BuildableStructureConstant, dx: 0, dy: -3, rcl: 4 },
+
+    // RCL 5: Links (2 allowed)
+    { type: "link" as BuildableStructureConstant, dx: 0, dy: -2, rcl: 5 },
+    { type: "link" as BuildableStructureConstant, dx: -2, dy: 2, rcl: 5 },
+
+    // RCL 5: More extensions (30 total, 10 more)
+    { type: "extension" as BuildableStructureConstant, dx: 2, dy: 2, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: -2, dy: -2, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: 4, dy: 0, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: -4, dy: 0, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: 0, dy: 4, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: 0, dy: -4, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: 3, dy: 2, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: 3, dy: -2, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: -3, dy: 2, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: -3, dy: -2, rcl: 5 },
+
+    // RCL 5: Second tower
+    { type: "tower" as BuildableStructureConstant, dx: 2, dy: -2, rcl: 5 }
   ];
 
   public constructor(roomName: string) {
