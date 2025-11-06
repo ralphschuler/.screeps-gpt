@@ -30,6 +30,7 @@ globals.FIND_STRUCTURES = 107;
 globals.FIND_CONSTRUCTION_SITES = 3;
 globals.FIND_MY_SPAWNS = 104;
 globals.FIND_MY_CONSTRUCTION_SITES = 114;
+globals.FIND_MY_STRUCTURES = 112;
 globals.STRUCTURE_SPAWN = "spawn";
 globals.STRUCTURE_EXTENSION = "extension";
 globals.STRUCTURE_CONTAINER = "container";
