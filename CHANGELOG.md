@@ -21,7 +21,9 @@ All notable changes to this project are documented here. This changelog now main
 
 - **Test isolation for build-dependent regression tests**
   - Made `modular-build.test.ts` and `es2018-target.test.ts` run sequentially to prevent race conditions
+  - Added file-based locking mechanism to prevent parallel execution across test files
   - Prevents parallel test execution from interfering with shared dist directory during builds
+  - Uses exponential backoff for lock acquisition to handle race conditions gracefully
 
 - **Codex composite action for automation workflows**
   - Added `.github/actions/codex-exec` as a drop-in replacement for `copilot-exec`
