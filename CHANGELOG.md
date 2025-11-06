@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.11.3] - 2025-11-06
+
 ### Fixed
 
 - **Resolved ReferenceError: process is not defined in Screeps runtime (#488)**
