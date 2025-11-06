@@ -36,6 +36,10 @@ permissions:
   issues: write
   pull-requests: write
 
+concurrency:
+  group: ci-autofix-${{ github.event.workflow_run.id }}
+  cancel-in-progress: false
+
 jobs:
   autofix:
     if: >-
