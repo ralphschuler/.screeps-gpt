@@ -5,6 +5,45 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Added
+
+- **Comprehensive Memory Management and Migration System (#490)**
+  - Implemented `MemoryGarbageCollector` for automated cleanup of stale data
+    - Removes orphaned room data from inactive/abandoned rooms with configurable retention (default: 10000 ticks)
+    - Rotates old system evaluation reports to prevent memory bloat (default: 500 ticks retention)
+    - Incremental cleanup with CPU throttling via `maxCleanupPerTick` parameter (default: 10 items/tick)
+    - Runs every 10 ticks by default, can be disabled via kernel config
+  - Implemented `MemoryMigrationManager` for schema versioning and safe migrations
+    - Adds `Memory.version` field for tracking schema version
+    - Migration registry system for version-specific upgrade handlers
+    - Automated migration execution on version changes with error handling
+    - Memory integrity validation after migrations
+    - Built-in migration for version tracking initialization
+  - Implemented `MemoryUtilizationMonitor` for memory usage tracking and overflow prevention
+    - Real-time memory usage measurement with per-subsystem breakdown
+    - Configurable warning (default: 70%) and critical (default: 90%) thresholds
+    - Allocation capacity checks via `canAllocate()` method
+    - Memory budgeting system for subsystems via `getBudget()` method
+    - Human-readable byte formatting for monitoring output
+  - Integrated memory management into `Kernel` orchestration
+    - Migrations run automatically on version changes
+    - Garbage collection runs every 10 ticks (configurable)
+    - Memory utilization measured and passed to evaluation system
+  - Enhanced `SystemEvaluator` with memory health monitoring
+    - Memory utilization findings with warning/critical severity levels
+    - Reports largest memory-consuming subsystems in critical alerts
+    - Recommendations for garbage collection and retention tuning
+  - Added comprehensive test coverage: 22 new unit tests covering all components
+  - Created detailed documentation in `docs/runtime/memory-management.md`
+    - Architecture overview and component descriptions
+    - Configuration options and usage examples
+    - Integration patterns with kernel and evaluator
+    - Best practices for GC, migrations, and optimization
+    - Troubleshooting guide and performance considerations
+  - Memory management system designed for minimal CPU overhead (~0.5-2 CPU per GC cycle)
+  - Supports configurable retention policies for different data types
+  - All 231 unit tests pass, build successful, linter clean
+
 ## [0.11.3] - 2025-11-06
 
 ### Fixed

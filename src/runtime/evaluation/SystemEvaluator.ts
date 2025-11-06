@@ -5,12 +5,15 @@ import type {
   RepositorySignal,
   SystemReport
 } from "@shared/contracts";
+import type { MemoryUtilization } from "@runtime/memory";
 
 interface SystemEvaluatorOptions {
   cpuUsageWarningRatio?: number;
   cpuCriticalRatio?: number;
   lowBucketThreshold?: number;
   minimumCoverage?: number;
+  memoryWarningThreshold?: number;
+  memoryCriticalThreshold?: number;
 }
 
 /**
@@ -28,15 +31,27 @@ export class SystemEvaluator {
       cpuUsageWarningRatio: options.cpuUsageWarningRatio ?? 0.8,
       cpuCriticalRatio: options.cpuCriticalRatio ?? 0.95,
       lowBucketThreshold: options.lowBucketThreshold ?? 500,
-      minimumCoverage: options.minimumCoverage ?? 85
+      minimumCoverage: options.minimumCoverage ?? 85,
+      memoryWarningThreshold: options.memoryWarningThreshold ?? 0.7,
+      memoryCriticalThreshold: options.memoryCriticalThreshold ?? 0.9
     };
   }
 
   /**
    * Evaluate a single tick snapshot (and optional repository telemetry) into a report.
    */
-  public evaluate(snapshot: PerformanceSnapshot, repository?: RepositorySignal, memory?: Memory): SystemReport {
+  public evaluate(
+    snapshot: PerformanceSnapshot,
+    repository?: RepositorySignal,
+    memory?: Memory,
+    memoryUtilization?: MemoryUtilization
+  ): SystemReport {
     const findings: EvaluationFinding[] = [];
+
+    // Check memory health if utilization data provided
+    if (memoryUtilization) {
+      findings.push(...this.evaluateMemoryHealth(memoryUtilization));
+    }
 
     // Check for respawn condition first (most critical)
     if (memory?.respawn?.needsRespawn) {
@@ -140,6 +155,47 @@ export class SystemEvaluator {
   }
 
   /**
+   * Evaluate memory health based on utilization metrics
+   */
+  private evaluateMemoryHealth(utilization: MemoryUtilization): EvaluationFinding[] {
+    const findings: EvaluationFinding[] = [];
+
+    if (utilization.isCritical) {
+      const largestSubsystems = Object.entries(utilization.subsystems)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([name, size]) => `${name} (${this.formatBytes(size)})`)
+        .join(", ");
+
+      findings.push({
+        severity: "critical",
+        title: "Memory usage at critical level",
+        detail: `Memory usage at ${(utilization.usagePercent * 100).toFixed(1)}% (${this.formatBytes(utilization.currentBytes)}/${this.formatBytes(utilization.maxBytes)}). Largest consumers: ${largestSubsystems}`,
+        recommendation:
+          "Enable garbage collection, reduce retention periods, or clear historical data to prevent overflow."
+      });
+    } else if (utilization.isWarning) {
+      findings.push({
+        severity: "warning",
+        title: "Memory usage approaching limit",
+        detail: `Memory usage at ${(utilization.usagePercent * 100).toFixed(1)}% (${this.formatBytes(utilization.currentBytes)}/${this.formatBytes(utilization.maxBytes)})`,
+        recommendation: "Review memory retention policies and enable garbage collection to prevent overflow."
+      });
+    }
+
+    return findings;
+  }
+
+  /**
+   * Format bytes into human-readable string
+   */
+  private formatBytes(bytes: number): string {
+    if (bytes < 1024) return `${bytes}B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(2)}MB`;
+  }
+
+  /**
    * Persist the provided report into Memory if it is newer than the stored entry.
    */
   public persist(memory: Memory, report: SystemReport): EvaluationResult {
@@ -163,9 +219,10 @@ export class SystemEvaluator {
   public evaluateAndStore(
     memory: Memory,
     snapshot: PerformanceSnapshot,
-    repository?: RepositorySignal
+    repository?: RepositorySignal,
+    memoryUtilization?: MemoryUtilization
   ): EvaluationResult {
-    const report = this.evaluate(snapshot, repository, memory);
+    const report = this.evaluate(snapshot, repository, memory, memoryUtilization);
     return this.persist(memory, report);
   }
 }

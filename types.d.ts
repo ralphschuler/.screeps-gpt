@@ -2,6 +2,12 @@ import type { SystemReport } from "./src/shared/contracts";
 
 declare global {
   interface Memory {
+    /**
+     * Memory schema version for migration tracking.
+     * Used by MemoryMigrationManager to safely upgrade memory structure across version updates.
+     * @see src/runtime/memory/MemoryMigrationManager.ts
+     */
+    version?: number;
     systemReport?: {
       lastGenerated: number;
       report: SystemReport;
