@@ -17,17 +17,19 @@ const LOCK_FILE = resolve("dist", ".test-lock");
 async function acquireLock(): Promise<void> {
   // Wait for lock to be released with exponential backoff
   let attempts = 0;
-  const maxAttempts = 50;
+  const maxAttempts = 100;
   
   while (attempts < maxAttempts) {
     try {
       await mkdir(resolve("dist"), { recursive: true });
       // Try to create lock file exclusively
       await writeFile(LOCK_FILE, String(process.pid), { flag: "wx" });
+      // Add a small delay after acquiring to ensure file system is stable
+      await new Promise(r => setTimeout(r, 50));
       return;
     } catch {
       // Lock exists, wait and retry
-      await new Promise(r => setTimeout(r, Math.min(100 * Math.pow(1.5, attempts), 1000)));
+      await new Promise(r => setTimeout(r, Math.min(100 * Math.pow(1.2, attempts), 2000)));
       attempts++;
     }
   }
