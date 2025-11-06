@@ -45,7 +45,7 @@ export class PixelGenerator {
         this.logger.log(`Generated pixel (bucket: ${cpuBucket})`);
         return true;
       } else {
-        this.logger.warn?.(`Failed to generate pixel: ${result}`);
+        this.logger.warn(`Failed to generate pixel: ${result}`);
         return false;
       }
     }
