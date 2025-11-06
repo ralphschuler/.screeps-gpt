@@ -100,6 +100,69 @@ This will output:
 - The final selected model
 - Cache key information
 
+## Task Management System
+
+The runtime includes a priority-based task management system for coordinating creep work assignments:
+
+### Task Flow
+
+1. **Task Generation** - Each tick, the `TaskManager` scans rooms to generate tasks based on:
+   - Active sources (harvest tasks)
+   - Construction sites (build tasks)
+   - Damaged structures (repair tasks)
+   - Controllers (upgrade tasks)
+   - Energy distribution needs (transfer/withdraw tasks)
+
+2. **Task Assignment** - Idle creeps (no current task) are matched with pending tasks:
+   - Tasks are sorted by priority (CRITICAL > HIGH > NORMAL > LOW > IDLE)
+   - Prerequisites are checked (body parts, energy, capacity, proximity)
+   - Highest priority compatible task is assigned to each creep
+
+3. **Task Execution** - Assigned creeps execute their tasks:
+   - CPU budget is monitored to prevent timeouts
+   - Task actions return completion status
+   - Completed tasks are removed from the queue
+   - Failed/expired tasks are cleaned up
+
+4. **Cleanup** - Each tick removes:
+   - Completed tasks
+   - Expired tasks (past deadline)
+   - Tasks with invalid targets (deleted objects)
+
+### Task Interface
+
+Tasks implement the `Task` interface defined in `src/shared/contracts.ts`:
+
+- **id**: Unique identifier
+- **type**: Human-readable type (e.g., "harvest", "build")
+- **status**: PENDING, INPROCESS, COMPLETE, or FAILED
+- **priority**: TaskPriority enum value
+- **targetId**: Game object ID being targeted
+- **targetRoom**: Room name for cross-room tasks
+- **canAssign(creep)**: Check if task can be assigned
+- **assign(creep)**: Assign task to a creep
+- **execute(creep)**: Execute the task action
+- **isExpired()**: Check if task has exceeded deadline
+
+### CPU Threshold Management
+
+The `TaskManager` respects CPU budgets to prevent script timeouts:
+
+- Configurable threshold (default 80% of limit)
+- Stops processing creeps when threshold is reached
+- Logs warnings when creeps are skipped
+- Ensures critical operations complete before timeout
+
+### Testing
+
+Task system behavior is validated by regression tests in `tests/regression/task-assignment.test.ts` covering:
+
+- Task generation for different room states
+- Priority-based assignment logic
+- CPU threshold enforcement
+- Task cleanup and expiration
+- Error handling for invalid targets
+
 ## Quality Guards
 
 Quality checks are split into separate guard workflows for better granularity and parallel execution:

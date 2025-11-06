@@ -18,7 +18,7 @@ async function acquireLock(): Promise<void> {
   // Wait for lock to be released with exponential backoff
   let attempts = 0;
   const maxAttempts = 100;
-  
+
   while (attempts < maxAttempts) {
     try {
       await mkdir(resolve("dist"), { recursive: true });
