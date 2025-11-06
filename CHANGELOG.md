@@ -7,6 +7,12 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Added
 
+- **Enhanced pre-commit hook with regression and coverage tests**
+  - Added `test:regression` to pre-commit hook to enforce regression test execution before commits
+  - Added `test:coverage` to pre-commit hook to enforce coverage checks before commits
+  - Ensures all quality gates are enforced for agent commits, preventing regressions and coverage drops
+  - Addresses issue #469 - Make sure to include the regression and coverage tests into the pre-commit hook
+
 - **Codex composite action for automation workflows**
   - Added `.github/actions/codex-exec` as a drop-in replacement for `copilot-exec`
   - Wraps the official `openai/codex-action@v1` with repository-specific caching and prompt rendering
