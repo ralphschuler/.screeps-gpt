@@ -43,6 +43,7 @@ For a complete setup guide, see the **[Getting Started Guide](getting-started.md
 - [Creep Roles](runtime/strategy/creep-roles.md) - Role definitions, decision trees, and performance characteristics
 - [Task Prioritization](runtime/strategy/task-prioritization.md) - Task switching, efficiency optimization, and load balancing
 - [Scaling Strategies](runtime/strategy/scaling-strategies.md) - RCL progression, multi-room expansion, and CPU budgeting
+- [Remote Harvesting](runtime/strategy/remote-harvesting.md) - Remote room scouting, mapping, and resource extraction
 
 ### Strategic Planning & Roadmap
 
