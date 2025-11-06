@@ -13,6 +13,12 @@ All notable changes to this project are documented here. This changelog now main
   - Ensures all quality gates are enforced for agent commits, preventing regressions and coverage drops
   - Addresses issue #469 - Make sure to include the regression and coverage tests into the pre-commit hook
 
+### Fixed
+
+- **Regression test alignment with workflow versions**
+  - Updated `tests/regression/post-merge-workflow-git-race-condition.test.ts` to expect `git-auto-commit-action@v7` instead of `v5`
+  - Aligns test expectations with actual workflow configuration in `.github/workflows/post-merge-release.yml`
+
 - **Codex composite action for automation workflows**
   - Added `.github/actions/codex-exec` as a drop-in replacement for `copilot-exec`
   - Wraps the official `openai/codex-action@v1` with repository-specific caching and prompt rendering
