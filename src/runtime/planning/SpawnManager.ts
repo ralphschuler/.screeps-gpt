@@ -149,9 +149,6 @@ export class SpawnManager {
       }
 
       // If we spawned something, increment counter
-      if (spawnedRequest) {
-        // Counter will be incremented by caller
-      }
     }
 
     return spawned;
