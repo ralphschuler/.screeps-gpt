@@ -41,7 +41,6 @@ async function fetchProfilerFromConsole(): Promise<ProfilerMemory | null> {
 
   try {
     // Note: ScreepsAPI.console() returns a Promise despite typing issues in older versions
-    // eslint-disable-next-line @typescript-eslint/await-thenable
     const response = (await api.console(profilerCommand, shard)) as ConsoleResponse;
 
     if (!response.ok) {

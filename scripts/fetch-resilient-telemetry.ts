@@ -84,11 +84,8 @@ async function fetchResilientTelemetry(): Promise<TelemetryResult> {
       const filePath = resolve(outputDir, "latest.json");
       const fs = await import("node:fs/promises");
       const content = await fs.readFile(filePath, "utf-8");
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const snapshot = JSON.parse(content);
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       snapshot.fallback_activated = true;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       snapshot.primary_source_failed = true;
       await fs.writeFile(filePath, JSON.stringify(snapshot, null, 2));
 

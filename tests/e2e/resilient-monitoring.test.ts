@@ -47,15 +47,12 @@ describe("Resilient Monitoring Infrastructure E2E", () => {
 
     // Verify structure
     const content = readFileSync(snapshotPath, "utf-8");
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const parsed = JSON.parse(content);
 
     expect(parsed).toHaveProperty("fetchedAt");
     expect(parsed).toHaveProperty("endpoint");
     expect(parsed).toHaveProperty("source");
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(parsed.source).toBe("stats_api");
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(parsed.payload).toHaveProperty("stats");
   });
 
@@ -84,21 +81,16 @@ describe("Resilient Monitoring Infrastructure E2E", () => {
 
     // Verify structure
     const content = readFileSync(snapshotPath, "utf-8");
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const parsed = JSON.parse(content);
 
     expect(parsed).toHaveProperty("fetchedAt");
     expect(parsed).toHaveProperty("endpoint");
     expect(parsed).toHaveProperty("source");
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(parsed.source).toBe("console");
     expect(parsed).toHaveProperty("fallback_activated");
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(parsed.fallback_activated).toBe(true);
     expect(parsed).toHaveProperty("primary_source_failed");
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(parsed.primary_source_failed).toBe(true);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(parsed.payload).toHaveProperty("stats");
   });
 
@@ -119,20 +111,15 @@ describe("Resilient Monitoring Infrastructure E2E", () => {
 
     // Verify structure
     const content = readFileSync(snapshotPath, "utf-8");
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const parsed = JSON.parse(content);
 
     expect(parsed).toHaveProperty("status");
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(parsed.status).toBe("all_sources_unavailable");
     expect(parsed).toHaveProperty("failureType");
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(parsed.failureType).toBe("infrastructure_failure");
     expect(parsed).toHaveProperty("attempted_sources");
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(parsed.attempted_sources).toEqual(["stats_api", "console"]);
     expect(parsed).toHaveProperty("resilience_status");
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(parsed.resilience_status).toBe("critical");
   });
 
@@ -155,14 +142,12 @@ describe("Resilient Monitoring Infrastructure E2E", () => {
 
     // Verify it can be read and processed
     const content = readFileSync(snapshotPath, "utf-8");
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const parsed = JSON.parse(content);
 
     expect(parsed).toHaveProperty("fetchedAt");
     expect(parsed).toHaveProperty("endpoint");
     expect(parsed).not.toHaveProperty("source"); // Old format doesn't have this
     expect(parsed).not.toHaveProperty("fallback_activated");
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(parsed.payload).toHaveProperty("stats");
   });
 
