@@ -16,7 +16,9 @@ permissions:
   contents: write
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: >-
+    ${{ github.workflow }}-${{ github.ref }}-${{
+    github.event.inputs.version || 'tag' }}
   cancel-in-progress: false
 
 jobs:
@@ -65,9 +67,7 @@ jobs:
         env:
           REPO_NAME: ${{ github.repository }}
           VERSION: ${{ steps.version.outputs.version }}
-          CURRENT_DATE: >-
-            ${{ github.event.head_commit.timestamp ||
-            github.event.repository.updated_at }}
+          CURRENT_DATE: ${{ github.event.created_at || github.run_started_at }}
         with:
           copilot-token: ${{ secrets.GITHUB_TOKEN }}
           prompt-path: .github/copilot/prompts/changelog-to-blog
@@ -105,9 +105,7 @@ jobs:
           BLOG_POST_PATH="source/_posts/release-${VERSION_SLUG}.md"
 
           echo "📋 Blog Post Front Matter:"
-          echo "---"
-          head -n 20 "$BLOG_POST_PATH" | grep -A 10 "^---$" | head -n 11
-          echo "---"
+          sed -n '/^---$/,/^---$/p' "$BLOG_POST_PATH"
           echo ""
           echo "📝 First 10 lines of content:"
-          tail -n +12 "$BLOG_POST_PATH" | head -n 10
+          sed -n '/^---$/,/^---$/!p' "$BLOG_POST_PATH" | head -n 10

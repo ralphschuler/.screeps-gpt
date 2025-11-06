@@ -5,7 +5,7 @@ Your task is to convert the latest CHANGELOG.md entry for version ${VERSION} int
 ## Input
 - Repository: ${REPO_NAME}
 - Version: ${VERSION}
-- CHANGELOG.md path: /home/runner/work/.screeps-gpt/.screeps-gpt/CHANGELOG.md
+- CHANGELOG.md path: CHANGELOG.md (in repository root)
 
 ## Required Tasks
 
@@ -43,8 +43,8 @@ Your task is to convert the latest CHANGELOG.md entry for version ${VERSION} int
    - **What's Next**: Brief mention of future work (if relevant)
 
 3. **Write to File**
+   - Transform VERSION to VERSION_SLUG by replacing dots with hyphens (e.g., "0.12.0" becomes "0-12-0")
    - Create file at: `source/_posts/release-${VERSION_SLUG}.md`
-   - Where VERSION_SLUG is the version with dots replaced by hyphens (e.g., "0-12-0")
    - Ensure proper UTF-8 encoding
 
 4. **Commit Changes**
