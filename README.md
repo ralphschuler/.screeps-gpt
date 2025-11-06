@@ -92,7 +92,9 @@ TASK_SYSTEM_ENABLED=true bun run deploy
 
 **Experimental Features:**
 
-The bot includes a priority-based task management system that can replace the legacy role-based behavior system. Enable it via:
+The bot includes a priority-based task management system that can replace the legacy role-based behavior system. **Benchmark testing shows 58.8% lower CPU usage** compared to the legacy system.
+
+Enable it via:
 
 ```bash
 # Environment variable (build-time)
@@ -102,7 +104,7 @@ TASK_SYSTEM_ENABLED=true npm run build
 Memory.experimentalFeatures = { taskSystem: true };
 ```
 
-See [Task System Architecture](docs/runtime/task-system.md) for details.
+See [Task System Architecture](docs/runtime/task-system.md) and [Evaluation Report](docs/runtime/task-system-evaluation.md) for details.
 
 ### Room Visuals
 
