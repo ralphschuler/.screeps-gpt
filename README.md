@@ -85,7 +85,24 @@ bun run docker:test:unit
 ```bash
 # Configure secrets: SCREEPS_TOKEN, SCREEPS_HOST (optional)
 bun run deploy
+
+# Enable experimental task system (optional)
+TASK_SYSTEM_ENABLED=true bun run deploy
 ```
+
+**Experimental Features:**
+
+The bot includes a priority-based task management system that can replace the legacy role-based behavior system. Enable it via:
+
+```bash
+# Environment variable (build-time)
+TASK_SYSTEM_ENABLED=true npm run build
+
+# Or in-game console (runtime)
+Memory.experimentalFeatures = { taskSystem: true };
+```
+
+See [Task System Architecture](docs/runtime/task-system.md) for details.
 
 **📚 [Complete Getting Started Guide →](docs/getting-started.md)**
 
@@ -151,6 +168,7 @@ Multiple specialized Copilot agents collaborate on different aspects of developm
 - **[Development Roadmap](docs/strategy/roadmap.md)** - Comprehensive evolution plan from RCL 1-2 to multi-shard operations
 - **[Architecture Alignment](docs/strategy/architecture.md)** - Roadmap integration with existing codebase
 - **[Creep Roles](docs/runtime/strategy/creep-roles.md)** - Bot behavior documentation
+- **[Task System Architecture](docs/runtime/task-system.md)** - Priority-based task management system (experimental)
 - **[Task Prioritization](docs/runtime/strategy/task-prioritization.md)** - Decision-making logic
 - **[Scaling Strategies](docs/runtime/strategy/scaling-strategies.md)** - Room expansion plans
 

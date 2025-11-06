@@ -1,9 +1,19 @@
 import { createKernel } from "@runtime/bootstrap";
 import type { GameContext } from "@runtime/types/GameContext";
+import { BehaviorController } from "@runtime/behavior/BehaviorController";
 import * as Profiler from "@profiler";
 
+// Read task system enablement from environment variable or Memory flag
+const taskSystemEnabled =
+  process.env.TASK_SYSTEM_ENABLED === "true" || Memory.experimentalFeatures?.taskSystem === true;
+
 const kernel = createKernel({
-  repositorySignalProvider: () => Memory.systemReport?.report.repository
+  repositorySignalProvider: () => Memory.systemReport?.report.repository,
+  behavior: new BehaviorController({
+    useTaskSystem: taskSystemEnabled,
+    cpuSafetyMargin: 0.8,
+    maxCpuPerCreep: 1.5
+  })
 });
 
 // Initialize profiler and expose it globally for console access
