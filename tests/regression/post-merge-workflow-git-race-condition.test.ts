@@ -81,7 +81,7 @@ describe("Post Merge Release Workflow - Modernized CI/CD", () => {
     const workflowContent = fs.readFileSync(workflowPath, "utf8");
 
     // Verify the workflow uses git-auto-commit-action properly
-    expect(workflowContent).toContain("stefanzweifel/git-auto-commit-action@v5");
+    expect(workflowContent).toContain("stefanzweifel/git-auto-commit-action@v7");
     expect(workflowContent).toContain("skip_fetch: false");
 
     // Verify it commits to main with skip ci
