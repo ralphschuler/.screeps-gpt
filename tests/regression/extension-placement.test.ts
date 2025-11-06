@@ -91,7 +91,7 @@ describe("Extension Placement Regression", () => {
 
       // All extensions should be within distance 2 of anchor (spawn)
       for (const ext of extensions) {
-        const distance = Math.max(Math.abs(ext.pos.x - (anchor?.x ?? 0)), Math.abs(ext.pos.y - (anchor?.y ?? 0)));
+        const distance = Math.max(Math.abs(ext.pos.x - anchor.x), Math.abs(ext.pos.y - anchor.y));
         expect(distance).toBeLessThanOrEqual(2);
       }
     });
