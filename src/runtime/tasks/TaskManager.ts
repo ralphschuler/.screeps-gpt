@@ -50,7 +50,7 @@ export class TaskManager {
    */
   public assignTasks(creeps: Creep[]): void {
     // Get idle creeps (no current task)
-    const idleCreeps = creeps.filter(c => !c.memory.taskId || !this.tasks.get(c.memory.taskId as string));
+    const idleCreeps = creeps.filter(c => !c.memory.taskId || !this.tasks.get(c.memory.taskId));
 
     for (const creep of idleCreeps) {
       const task = this.findBestTask(creep);
@@ -83,7 +83,7 @@ export class TaskManager {
         break;
       }
 
-      const taskId = creep.memory.taskId as string | undefined;
+      const taskId = creep.memory.taskId;
       if (!taskId) {
         processedCreeps++;
         continue;

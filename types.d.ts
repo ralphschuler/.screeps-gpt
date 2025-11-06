@@ -13,6 +13,9 @@ declare global {
       respawnRequested: boolean;
     };
     creepCounter?: number;
+    experimentalFeatures?: {
+      taskSystem?: boolean;
+    };
     stats?: {
       time: number;
       cpu: {
@@ -48,6 +51,7 @@ declare global {
     homeRoom?: string;
     targetRoom?: string;
     sourceId?: Id<Source>;
+    taskId?: string;
   }
 }
 
