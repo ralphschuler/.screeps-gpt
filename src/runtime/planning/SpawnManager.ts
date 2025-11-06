@@ -106,8 +106,6 @@ export class SpawnManager {
 
     for (const spawn of availableSpawns) {
       // Find highest priority request that can be spawned
-      let spawnedRequest: SpawnRequest | null = null;
-
       for (const request of sortedRequests) {
         // Skip if already processed
         if (spawned.some(name => name.includes(request.role))) {
@@ -140,7 +138,6 @@ export class SpawnManager {
         if (result === OK) {
           spawned.push(name);
           this.queue.delete(request.id);
-          spawnedRequest = request;
           this.logger.log?.(`[SpawnManager] Spawned ${name} with ${body.length} parts (${cost} energy)`);
           break; // Move to next spawn
         } else {
