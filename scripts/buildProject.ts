@@ -72,7 +72,9 @@ async function buildModules(watch: boolean): Promise<void> {
       logLevel: "warning" as const,
       external: [], // No external modules - each bundle is self-contained
       define: {
-        __PROFILER_ENABLED__: process.env.PROFILER_ENABLED === "false" ? "false" : "true"
+        __PROFILER_ENABLED__: process.env.PROFILER_ENABLED === "false" ? "false" : "true",
+        "process.env.TASK_SYSTEM_ENABLED": JSON.stringify(process.env.TASK_SYSTEM_ENABLED ?? "false"),
+        "process.env.ROOM_VISUALS_ENABLED": JSON.stringify(process.env.ROOM_VISUALS_ENABLED ?? "false")
       }
     };
 
@@ -95,7 +97,9 @@ async function buildModules(watch: boolean): Promise<void> {
     outfile: resolve(outDir, "main.js"),
     logLevel: "info" as const,
     define: {
-      __PROFILER_ENABLED__: process.env.PROFILER_ENABLED === "false" ? "false" : "true"
+      __PROFILER_ENABLED__: process.env.PROFILER_ENABLED === "false" ? "false" : "true",
+      "process.env.TASK_SYSTEM_ENABLED": JSON.stringify(process.env.TASK_SYSTEM_ENABLED ?? "false"),
+      "process.env.ROOM_VISUALS_ENABLED": JSON.stringify(process.env.ROOM_VISUALS_ENABLED ?? "false")
     }
   };
 
@@ -129,7 +133,9 @@ export async function buildProject(watch: boolean): Promise<void> {
       outfile: resolve(outDir, "main.js"),
       logLevel: "info" as const,
       define: {
-        __PROFILER_ENABLED__: process.env.PROFILER_ENABLED === "false" ? "false" : "true"
+        __PROFILER_ENABLED__: process.env.PROFILER_ENABLED === "false" ? "false" : "true",
+        "process.env.TASK_SYSTEM_ENABLED": JSON.stringify(process.env.TASK_SYSTEM_ENABLED ?? "false"),
+        "process.env.ROOM_VISUALS_ENABLED": JSON.stringify(process.env.ROOM_VISUALS_ENABLED ?? "false")
       }
     };
 
