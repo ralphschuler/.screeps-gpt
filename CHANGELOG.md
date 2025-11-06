@@ -24,6 +24,17 @@ All notable changes to this project are documented here. This changelog now main
   - Added file-based locking mechanism to prevent parallel execution across test files
   - Prevents parallel test execution from interfering with shared dist directory during builds
   - Uses exponential backoff for lock acquisition to handle race conditions gracefully
+- **Phase 1 Foundation Features**
+  - Added `PixelGenerator` class for automatic pixel generation when CPU bucket is full (default: 10000)
+  - Implemented `Logger` utility with structured logging, timestamps, and log levels (debug, info, warn, error)
+  - Added child logger support for contextual logging
+  - Created unit tests for `PixelGenerator` validating deterministic output and bucket threshold logic
+  - Created unit tests for `Logger` validating log levels, timestamps, context, and child logger functionality
+  - Created unit tests for memory bootstrapping validating memory initialization and reset behavior
+  - Created regression test for extension placement at RCL 1-2 validating bunker layout pattern
+  - Integrated `PixelGenerator` into Kernel for automatic pixel generation on each tick
+  - All new features include TSDoc comments for exported functions and classes
+  - Addresses Phase 1 requirements: pixel generation, structured logging, memory tests, extension placement tests
 
 - **Codex composite action for automation workflows**
   - Added `.github/actions/codex-exec` as a drop-in replacement for `copilot-exec`
