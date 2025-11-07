@@ -98,9 +98,9 @@ async function collectBotSnapshot(): Promise<void> {
         // Extract CPU data
         if (latestStats.cpu !== undefined) {
           snapshot.cpu = {
-            used: latestStats.cpu || 0,
-            limit: latestStats.cpuLimit || 100,
-            bucket: latestStats.bucket || 10000
+            used: Number(latestStats.cpu) || 0,
+            limit: Number(latestStats.cpuLimit) || 0,
+            bucket: Number(latestStats.bucket) || 0
           };
         }
 
@@ -115,12 +115,34 @@ async function collectBotSnapshot(): Promise<void> {
           for (const [roomName, roomData] of Object.entries(
             latestStats.rooms as Record<string, Record<string, unknown>>
           )) {
+            // Prefer more specific field names, fall back to alternatives
+            const rcl =
+              roomData.rcl !== undefined
+                ? Number(roomData.rcl)
+                : roomData.controllerLevel !== undefined
+                  ? Number(roomData.controllerLevel)
+                  : 0;
+            const energy =
+              roomData.energy !== undefined
+                ? Number(roomData.energy)
+                : roomData.energyAvailable !== undefined
+                  ? Number(roomData.energyAvailable)
+                  : 0;
+            const energyCapacity =
+              roomData.energyCapacity !== undefined
+                ? Number(roomData.energyCapacity)
+                : roomData.energyCapacityAvailable !== undefined
+                  ? Number(roomData.energyCapacityAvailable)
+                  : 0;
+
             snapshot.rooms[roomName] = {
-              rcl: roomData.rcl || roomData.controllerLevel || 0,
-              energy: roomData.energy || roomData.energyAvailable || 0,
-              energyCapacity: roomData.energyCapacity || roomData.energyCapacityAvailable || 0,
-              controllerProgress: roomData.controllerProgress,
+              rcl,
+              energy,
+              energyCapacity,
+              controllerProgress: roomData.controllerProgress ? Number(roomData.controllerProgress) : undefined,
               controllerProgressTotal: roomData.controllerProgressTotal
+                ? Number(roomData.controllerProgressTotal)
+                : undefined
             };
           }
         }
