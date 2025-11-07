@@ -106,15 +106,16 @@ async function collectBotSnapshot(): Promise<void> {
         // Extract CPU data
         if (latestStats.cpu !== undefined) {
           snapshot.cpu = {
-            used: Number(latestStats.cpu) ?? 0,
-            limit: Number(latestStats.cpuLimit) ?? 0,
-            bucket: Number(latestStats.bucket) ?? 0
+            used: Number(latestStats.cpu) || 0,
+            limit: Number(latestStats.cpuLimit) || 0,
+            bucket: Number(latestStats.bucket) || 0
           };
         }
 
         // Extract tick
         if (latestStats.tick !== undefined) {
-          snapshot.tick = Number(latestStats.tick);
+          const tick = Number(latestStats.tick);
+          snapshot.tick = Number.isFinite(tick) ? tick : undefined;
         }
 
         // Extract room data
@@ -128,14 +129,23 @@ async function collectBotSnapshot(): Promise<void> {
             const energy = extractNumericField(roomData, "energy", "energyAvailable", 0);
             const energyCapacity = extractNumericField(roomData, "energyCapacity", "energyCapacityAvailable", 0);
 
+            const controllerProgress = roomData.controllerProgress ? Number(roomData.controllerProgress) : undefined;
+            const controllerProgressTotal = roomData.controllerProgressTotal
+              ? Number(roomData.controllerProgressTotal)
+              : undefined;
+
             snapshot.rooms[roomName] = {
               rcl,
               energy,
               energyCapacity,
-              controllerProgress: roomData.controllerProgress ? Number(roomData.controllerProgress) : undefined,
-              controllerProgressTotal: roomData.controllerProgressTotal
-                ? Number(roomData.controllerProgressTotal)
-                : undefined
+              controllerProgress:
+                controllerProgress !== undefined && Number.isFinite(controllerProgress)
+                  ? controllerProgress
+                  : undefined,
+              controllerProgressTotal:
+                controllerProgressTotal !== undefined && Number.isFinite(controllerProgressTotal)
+                  ? controllerProgressTotal
+                  : undefined
             };
           }
         }
@@ -143,7 +153,7 @@ async function collectBotSnapshot(): Promise<void> {
         // Extract creep data
         if (latestStats.creeps !== undefined) {
           snapshot.creeps = {
-            total: Number(latestStats.creeps) ?? 0,
+            total: Number(latestStats.creeps) || 0,
             byRole: latestStats.creepsByRole as Record<string, number> | undefined
           };
         }
@@ -151,8 +161,8 @@ async function collectBotSnapshot(): Promise<void> {
         // Extract spawn data
         if (latestStats.spawns !== undefined) {
           snapshot.spawns = {
-            total: Number(latestStats.spawns) ?? 0,
-            active: Number(latestStats.activeSpawns) ?? 0
+            total: Number(latestStats.spawns) || 0,
+            active: Number(latestStats.activeSpawns) || 0
           };
         }
       }

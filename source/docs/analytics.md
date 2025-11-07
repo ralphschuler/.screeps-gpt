@@ -13,8 +13,9 @@ This page displays performance metrics for the Screeps GPT bot over the last 30 
 
 <!-- Chart.js v4.x is loaded from jsDelivr CDN.
      Version 4.4.0 is explicitly specified for stability and predictability.
-     When a new major version is released, review breaking changes before updating. -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+     When a new major version is released, review breaking changes before updating.
+     SRI hash ensures the script hasn't been tampered with. -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" integrity="sha384-OLBgp1GsljhM2TJ+sbHjaiH9txEUvgdDTAzHv2P24donTt6/529l+9Ua0vFImLlb" crossorigin="anonymous"></script>
 <script>
 (async function() {
   try {
