@@ -379,6 +379,161 @@ Quality checks are split into separate guard workflows for better granularity an
 - Documentation: See [Screeps Monitoring Guide](./autonomous-monitoring.md) for detailed usage, configuration, and best practices.
 - Consolidation: This workflow replaces the former `copilot-autonomous-monitor.yml` and `screeps-stats-monitor.yml` workflows, combining strategic monitoring with high-frequency PTR analysis.
 
+## Report Storage and Historical Trend Analysis
+
+The monitoring and evaluation workflows implement persistent report storage for historical comparison and trend analysis. This enables data-driven insights into bot performance evolution and system health trends over time.
+
+### Report Types
+
+The system tracks and persists several types of reports:
+
+1. **PTR Stats Reports** (`reports/ptr-stats/`)
+   - Telemetry snapshots from Screeps Stats API or console fallback
+   - CPU usage, energy levels, and resource metrics
+   - Saved with timestamps for historical tracking
+   - Managed by `scripts/check-ptr-alerts.ts`
+
+2. **System Evaluation Reports** (`reports/evaluations/`)
+   - Runtime health assessments from `SystemEvaluator`
+   - Test results, lint errors, coverage metrics
+   - Findings and recommendations for improvements
+   - Managed by `scripts/evaluate-system.ts`
+
+3. **Profiler Snapshots** (`reports/profiler/`)
+   - CPU profiling data from Memory.profiler
+   - Function-level performance metrics
+   - Managed by `scripts/fetch-profiler-console.ts`
+
+4. **Copilot Workflow Logs** (`reports/copilot/`)
+   - Monitoring and analysis reports
+   - Excluded from git via `.gitignore`
+   - Stored as workflow artifacts with 30-day retention
+
+### Storage Infrastructure
+
+The report storage system is implemented in `scripts/lib/report-storage.ts` and provides:
+
+- **Timestamped Storage**: Reports saved with ISO 8601 timestamps in filenames
+- **Type-based Organization**: Reports grouped by type in subdirectories
+- **Retention Policies**: Automatic cleanup of old reports (30 days default, minimum 10 reports retained)
+- **Efficient Loading**: Helper functions to load latest reports or specific historical snapshots
+
+**Report Filename Format**: `{type}-YYYY-MM-DDTHH-MM-SS-SSSZ.json`
+
+**Example**: `ptr-stats-2025-11-07T00-30-15-123Z.json`
+
+### Historical Comparison
+
+The comparison system is implemented in `scripts/lib/report-comparison.ts` and provides:
+
+**PTR Stats Comparison**:
+
+- CPU usage trend analysis (percentage change)
+- Energy reserve trend analysis (percentage change)
+- Automatic alerting on significant changes (>10% CPU, >20% energy)
+- Formatted trend reports for workflow logs
+
+**System Evaluation Comparison**:
+
+- Finding count changes (added/removed/resolved)
+- Summary change detection
+- Quality trend analysis over time
+- Formatted trend reports with actionable insights
+
+### Integration with Workflows
+
+**Screeps Monitoring** (`screeps-monitoring.yml`):
+
+- Saves PTR stats snapshots on each run
+- Compares current stats with previous run
+- Logs trend analysis in workflow output
+- Applies 30-day retention policy automatically
+
+**System Evaluation** (`analyze:system` script):
+
+- Saves evaluation reports with timestamps
+- Compares current evaluation with previous
+- Tracks finding resolution and new issues
+- Applies retention policy after each run
+
+### Retention Policy
+
+Default configuration (configurable per report type):
+
+- **Maximum Age**: 30 days
+- **Minimum Reports**: 10 (always kept regardless of age)
+- **Cleanup Frequency**: On each monitoring/evaluation run
+- **Manual Cleanup**: `npx tsx scripts/cleanup-old-reports.ts`
+
+The retention policy ensures historical data availability while managing repository size by removing old reports that exceed both the age threshold and minimum count requirement.
+
+### Repository Size Management
+
+**Storage Strategy**:
+
+- Only timestamped JSON reports committed to git
+- Copilot logs excluded via `.gitignore` (ephemeral, stored as artifacts)
+- Compact JSON format for efficiency
+- Automatic cleanup prevents unbounded growth
+
+**Expected Storage Impact**:
+
+- PTR stats: ~2-3 KB per report, 10-30 reports = 30-90 KB
+- Evaluations: ~1-2 KB per report, 10-30 reports = 10-60 KB
+- Profiler: ~5-10 KB per report, 10-30 reports = 50-300 KB
+- **Total Maximum**: ~400-500 KB for all report types combined
+
+### Usage Examples
+
+**Load and compare PTR stats**:
+
+```typescript
+import { loadLatestReport } from "./scripts/lib/report-storage";
+import { comparePTRStats, formatPTRTrendReport } from "./scripts/lib/report-comparison";
+
+const current = await loadLatestReport<PTRStatsSnapshot>("ptr-stats");
+const previous = await loadLatestReport<PTRStatsSnapshot>("ptr-stats");
+const comparison = comparePTRStats(current, previous);
+console.log(formatPTRTrendReport(comparison));
+```
+
+**Save a report**:
+
+```typescript
+import { saveReport } from "./scripts/lib/report-storage";
+
+const report = {
+  tick: 1000,
+  data: {
+    /* ... */
+  }
+};
+const path = await saveReport("ptr-stats", report);
+console.log(`Report saved to: ${path}`);
+```
+
+**Apply retention policy**:
+
+```typescript
+import { applyRetentionPolicy } from "./scripts/lib/report-storage";
+
+const deleted = await applyRetentionPolicy("ptr-stats", {
+  maxAgeDays: 30,
+  minReportsToKeep: 10
+});
+console.log(`Cleaned up ${deleted} old reports`);
+```
+
+### Future Enhancements
+
+Potential improvements for report storage infrastructure:
+
+- **External Storage**: Consider GitHub Artifacts API or external storage for long-term archives
+- **Aggregated Reports**: Weekly/monthly summary reports with trend statistics
+- **Visualization**: Generate charts and graphs from historical data
+- **Alerting Thresholds**: Configurable alert rules based on historical baselines
+- **Performance Dashboards**: Real-time dashboards showing key metrics over time
+
 ## Screeps Spawn Monitor (`screeps-spawn-monitor.yml`)
 
 - Trigger: Manual dispatch or pushes to `main`.

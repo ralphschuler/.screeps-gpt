@@ -2,6 +2,8 @@ import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import process from "node:process";
 import { sendPushNotification } from "./send-push-notification.js";
+import { saveReport, loadLatestReport, applyRetentionPolicy } from "./lib/report-storage.js";
+import { comparePTRStats, formatPTRTrendReport } from "./lib/report-comparison.js";
 
 interface TickStats {
   cpu?: {
@@ -201,6 +203,24 @@ async function main(): Promise<void> {
     return;
   }
 
+  // Save current snapshot with timestamp for historical tracking
+  try {
+    const savedPath = await saveReport("ptr-stats", snapshot);
+    console.log(`✓ PTR stats snapshot saved to: ${savedPath}`);
+  } catch (error) {
+    console.error("Failed to save PTR stats snapshot:", error);
+    // Continue with alerting even if save fails
+  }
+
+  // Load previous snapshot for trend analysis
+  const previousSnapshot = await loadLatestReport<PTRStatsSnapshot>("ptr-stats");
+
+  // Compare with historical data
+  const comparison = comparePTRStats(snapshot, previousSnapshot);
+  const trendReport = formatPTRTrendReport(comparison);
+
+  console.log("\n" + trendReport);
+
   // Analyze for alert conditions
   const alerts = analyzePTRStats(snapshot);
 
@@ -226,6 +246,19 @@ async function main(): Promise<void> {
   console.log(
     `Processed ${alerts.length} alert conditions, sent notifications for ${alerts.filter(a => a.severity === "critical" || a.severity === "high").length} critical/high alerts`
   );
+
+  // Apply retention policy to clean up old reports
+  try {
+    const deletedCount = await applyRetentionPolicy("ptr-stats", {
+      maxAgeDays: 30,
+      minReportsToKeep: 10
+    });
+    if (deletedCount > 0) {
+      console.log(`✓ Cleaned up ${deletedCount} old PTR stats report(s)`);
+    }
+  } catch (error) {
+    console.error("Failed to apply retention policy:", error);
+  }
 }
 
 // Run if executed directly

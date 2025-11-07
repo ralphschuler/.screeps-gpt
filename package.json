@@ -37,6 +37,7 @@
     "version:release": "tsx scripts/release-changelog.ts",
     "versions:update": "tsx scripts/update-version-index.ts",
     "analyze:system": "tsx scripts/evaluate-system.ts",
+    "reports:cleanup": "tsx scripts/cleanup-old-reports.ts",
     "prepare": "husky",
     "docker:build": "docker compose build",
     "docker:test": "docker compose run --rm test",
