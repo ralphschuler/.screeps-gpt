@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.19.3] - 2025-11-07
+
 ### Security
 
 - **Resolved 3 high-severity vulnerabilities in axios dependency (#282)**
