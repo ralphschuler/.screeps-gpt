@@ -488,11 +488,14 @@ The retention policy ensures historical data availability while managing reposit
 **Load and compare PTR stats**:
 
 ```typescript
-import { loadLatestReport } from "./scripts/lib/report-storage";
+import { listReports, loadReport } from "./scripts/lib/report-storage";
 import { comparePTRStats, formatPTRTrendReport } from "./scripts/lib/report-comparison";
 
-const current = await loadLatestReport<PTRStatsSnapshot>("ptr-stats");
-const previous = await loadLatestReport<PTRStatsSnapshot>("ptr-stats");
+// Load the two most recent reports
+const reports = await listReports("ptr-stats");
+const current = reports.length > 0 ? await loadReport<PTRStatsSnapshot>("ptr-stats", reports[0].filename) : null;
+const previous = reports.length > 1 ? await loadReport<PTRStatsSnapshot>("ptr-stats", reports[1].filename) : null;
+
 const comparison = comparePTRStats(current, previous);
 console.log(formatPTRTrendReport(comparison));
 ```
