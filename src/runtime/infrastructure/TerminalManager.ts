@@ -13,6 +13,13 @@ export interface ResourceRequest {
 }
 
 /**
+ * Serialized terminal manager state for Memory persistence
+ */
+export interface TerminalManagerMemory {
+  resourceRequests: Record<string, ResourceRequest[]>;
+}
+
+/**
  * Terminal manager configuration
  */
 export interface TerminalManagerConfig {
@@ -22,11 +29,16 @@ export interface TerminalManagerConfig {
   minTransferAmount?: number;
   /** Logger for debugging */
   logger?: Pick<Console, "log" | "warn">;
+  /** Optional Memory reference for persistence */
+  memory?: TerminalManagerMemory;
 }
 
 /**
  * Manages terminal operations for inter-room resource logistics.
  * Handles energy balancing and resource transfer coordination.
+ *
+ * State persistence: Resource requests can be persisted to Memory
+ * by providing a memory reference in the config and calling saveToMemory().
  */
 @profile
 export class TerminalManager {
@@ -34,11 +46,45 @@ export class TerminalManager {
   private readonly minTransferAmount: number;
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly resourceRequests: Map<string, ResourceRequest[]> = new Map();
+  private readonly memoryRef?: TerminalManagerMemory;
 
   public constructor(config: TerminalManagerConfig = {}) {
     this.energyReserve = config.energyReserve ?? 20000;
     this.minTransferAmount = config.minTransferAmount ?? 1000;
     this.logger = config.logger ?? console;
+    this.memoryRef = config.memory;
+
+    // Load state from Memory if provided
+    if (this.memoryRef) {
+      this.loadFromMemory();
+    }
+  }
+
+  /**
+   * Load state from Memory
+   */
+  private loadFromMemory(): void {
+    if (!this.memoryRef) return;
+
+    // Load resource requests
+    if (this.memoryRef.resourceRequests) {
+      for (const [roomName, requests] of Object.entries(this.memoryRef.resourceRequests)) {
+        this.resourceRequests.set(roomName, requests);
+      }
+    }
+  }
+
+  /**
+   * Save state to Memory (call periodically to persist state)
+   */
+  public saveToMemory(): void {
+    if (!this.memoryRef) return;
+
+    // Save resource requests
+    this.memoryRef.resourceRequests = {};
+    for (const [roomName, requests] of this.resourceRequests.entries()) {
+      this.memoryRef.resourceRequests[roomName] = requests;
+    }
   }
 
   /**

@@ -28,16 +28,29 @@ export interface BoostRequest {
 }
 
 /**
+ * Serialized lab manager state for Memory persistence
+ */
+export interface LabManagerMemory {
+  productionQueue: Record<string, CompoundOrder[]>;
+  boostQueue: Record<string, BoostRequest[]>;
+}
+
+/**
  * Lab configuration
  */
 export interface LabManagerConfig {
   /** Logger for debugging */
   logger?: Pick<Console, "log" | "warn">;
+  /** Optional Memory reference for persistence */
+  memory?: LabManagerMemory;
 }
 
 /**
  * Manages lab operations including compound production and creep boosting.
  * Coordinates multiple labs for efficient resource processing.
+ *
+ * State persistence: Production and boost queues can be persisted to Memory
+ * by providing a memory reference in the config and calling saveToMemory().
  */
 @profile
 export class LabManager {
@@ -45,9 +58,56 @@ export class LabManager {
   private readonly labStates: Map<string, Map<Id<StructureLab>, LabState>> = new Map();
   private readonly productionQueue: Map<string, CompoundOrder[]> = new Map();
   private readonly boostQueue: Map<string, BoostRequest[]> = new Map();
+  private readonly memoryRef?: LabManagerMemory;
 
   public constructor(config: LabManagerConfig = {}) {
     this.logger = config.logger ?? console;
+    this.memoryRef = config.memory;
+
+    // Load state from Memory if provided
+    if (this.memoryRef) {
+      this.loadFromMemory();
+    }
+  }
+
+  /**
+   * Load state from Memory
+   */
+  private loadFromMemory(): void {
+    if (!this.memoryRef) return;
+
+    // Load production queue
+    if (this.memoryRef.productionQueue) {
+      for (const [roomName, orders] of Object.entries(this.memoryRef.productionQueue)) {
+        this.productionQueue.set(roomName, orders);
+      }
+    }
+
+    // Load boost queue
+    if (this.memoryRef.boostQueue) {
+      for (const [roomName, requests] of Object.entries(this.memoryRef.boostQueue)) {
+        this.boostQueue.set(roomName, requests);
+      }
+    }
+  }
+
+  /**
+   * Save state to Memory (call periodically to persist state)
+   */
+  public saveToMemory(): void {
+    if (!this.memoryRef) return;
+
+    // Save production queue
+    this.memoryRef.productionQueue = {};
+    for (const [roomName, orders] of this.productionQueue.entries()) {
+      this.memoryRef.productionQueue[roomName] = orders;
+    }
+
+    // Save boost queue
+    this.memoryRef.boostQueue = {};
+    for (const [roomName, requests] of this.boostQueue.entries()) {
+      this.memoryRef.boostQueue[roomName] = requests;
+    }
   }
 
   /**

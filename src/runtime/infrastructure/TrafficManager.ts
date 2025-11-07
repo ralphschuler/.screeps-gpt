@@ -11,25 +11,72 @@ export interface MovementRequest {
 }
 
 /**
+ * Serialized traffic manager state for Memory persistence
+ */
+export interface TrafficManagerMemory {
+  movementRequests: Record<string, MovementRequest>;
+}
+
+/**
  * Traffic manager configuration
  */
 export interface TrafficManagerConfig {
   /** Logger for debugging */
   logger?: Pick<Console, "log" | "warn">;
+  /** Optional Memory reference for persistence */
+  memory?: TrafficManagerMemory;
 }
 
 /**
  * Manages creep movement with collision avoidance and priority-based pathing.
  * Coordinates high-priority creeps through congested areas.
+ *
+ * State persistence: Movement requests can be persisted to Memory
+ * by providing a memory reference in the config and calling saveToMemory().
+ * Note: Position reservations are transient and not persisted.
  */
 @profile
 export class TrafficManager {
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly movementRequests: Map<string, MovementRequest> = new Map();
   private readonly positionReservations: Map<string, string> = new Map(); // pos key -> creep name
+  private readonly memoryRef?: TrafficManagerMemory;
 
   public constructor(config: TrafficManagerConfig = {}) {
     this.logger = config.logger ?? console;
+    this.memoryRef = config.memory;
+
+    // Load state from Memory if provided
+    if (this.memoryRef) {
+      this.loadFromMemory();
+    }
+  }
+
+  /**
+   * Load state from Memory
+   */
+  private loadFromMemory(): void {
+    if (!this.memoryRef) return;
+
+    // Load movement requests
+    if (this.memoryRef.movementRequests) {
+      for (const [creepName, request] of Object.entries(this.memoryRef.movementRequests)) {
+        this.movementRequests.set(creepName, request);
+      }
+    }
+  }
+
+  /**
+   * Save state to Memory (call periodically to persist state)
+   */
+  public saveToMemory(): void {
+    if (!this.memoryRef) return;
+
+    // Save movement requests
+    this.memoryRef.movementRequests = {};
+    for (const [creepName, request] of this.movementRequests.entries()) {
+      this.memoryRef.movementRequests[creepName] = request;
+    }
   }
 
   /**

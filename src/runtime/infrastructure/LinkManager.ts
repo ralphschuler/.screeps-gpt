@@ -17,17 +17,71 @@ export interface LinkMetadata {
 }
 
 /**
+ * Serialized link manager state for Memory persistence
+ */
+export interface LinkManagerMemory {
+  linkNetworks: Record<string, LinkMetadata[]>;
+}
+
+/**
+ * Link manager configuration
+ */
+export interface LinkManagerConfig {
+  /** Logger for debugging */
+  logger?: Pick<Console, "log" | "warn">;
+  /** Optional Memory reference for persistence */
+  memory?: LinkManagerMemory;
+}
+
+/**
  * Manages link network for automated energy distribution.
  * Handles transfers from source links to storage/controller links.
+ *
+ * State persistence: Link network classifications can be persisted to Memory
+ * by providing a memory reference in the config and calling saveToMemory().
  */
 @profile
 export class LinkManager {
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly linkNetworks: Map<string, LinkMetadata[]> = new Map();
   private readonly sourceCache: Map<string, Source[]> = new Map();
+  private readonly memoryRef?: LinkManagerMemory;
 
-  public constructor(logger: Pick<Console, "log" | "warn"> = console) {
-    this.logger = logger;
+  public constructor(config: LinkManagerConfig = {}) {
+    this.logger = config.logger ?? console;
+    this.memoryRef = config.memory;
+
+    // Load state from Memory if provided
+    if (this.memoryRef) {
+      this.loadFromMemory();
+    }
+  }
+
+  /**
+   * Load state from Memory
+   */
+  private loadFromMemory(): void {
+    if (!this.memoryRef) return;
+
+    // Load link networks
+    if (this.memoryRef.linkNetworks) {
+      for (const [roomName, network] of Object.entries(this.memoryRef.linkNetworks)) {
+        this.linkNetworks.set(roomName, network);
+      }
+    }
+  }
+
+  /**
+   * Save state to Memory (call periodically to persist state)
+   */
+  public saveToMemory(): void {
+    if (!this.memoryRef) return;
+
+    // Save link networks
+    this.memoryRef.linkNetworks = {};
+    for (const [roomName, network] of this.linkNetworks.entries()) {
+      this.memoryRef.linkNetworks[roomName] = network;
+    }
   }
 
   /**

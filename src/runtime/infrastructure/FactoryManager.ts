@@ -12,24 +12,70 @@ export interface CommodityOrder {
 }
 
 /**
+ * Serialized factory manager state for Memory persistence
+ */
+export interface FactoryManagerMemory {
+  productionQueue: Record<string, CommodityOrder[]>;
+}
+
+/**
  * Factory manager configuration
  */
 export interface FactoryManagerConfig {
   /** Logger for debugging */
   logger?: Pick<Console, "log" | "warn">;
+  /** Optional Memory reference for persistence */
+  memory?: FactoryManagerMemory;
 }
 
 /**
  * Manages factory operations for commodity production.
  * Handles automated production queue and resource management.
+ *
+ * State persistence: Production queue can be persisted to Memory
+ * by providing a memory reference in the config and calling saveToMemory().
  */
 @profile
 export class FactoryManager {
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly productionQueue: Map<string, CommodityOrder[]> = new Map();
+  private readonly memoryRef?: FactoryManagerMemory;
 
   public constructor(config: FactoryManagerConfig = {}) {
     this.logger = config.logger ?? console;
+    this.memoryRef = config.memory;
+
+    // Load state from Memory if provided
+    if (this.memoryRef) {
+      this.loadFromMemory();
+    }
+  }
+
+  /**
+   * Load state from Memory
+   */
+  private loadFromMemory(): void {
+    if (!this.memoryRef) return;
+
+    // Load production queue
+    if (this.memoryRef.productionQueue) {
+      for (const [roomName, orders] of Object.entries(this.memoryRef.productionQueue)) {
+        this.productionQueue.set(roomName, orders);
+      }
+    }
+  }
+
+  /**
+   * Save state to Memory (call periodically to persist state)
+   */
+  public saveToMemory(): void {
+    if (!this.memoryRef) return;
+
+    // Save production queue
+    this.memoryRef.productionQueue = {};
+    for (const [roomName, orders] of this.productionQueue.entries()) {
+      this.memoryRef.productionQueue[roomName] = orders;
+    }
   }
 
   /**

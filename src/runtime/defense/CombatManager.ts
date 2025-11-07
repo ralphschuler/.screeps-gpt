@@ -24,25 +24,71 @@ export interface CombatTarget {
 }
 
 /**
+ * Serialized combat manager state for Memory persistence
+ */
+export interface CombatManagerMemory {
+  squads: Record<string, Squad>;
+}
+
+/**
  * Combat manager configuration
  */
 export interface CombatManagerConfig {
   /** Logger for debugging */
   logger?: Pick<Console, "log" | "warn">;
+  /** Optional Memory reference for persistence */
+  memory?: CombatManagerMemory;
 }
 
 /**
  * Manages combat operations including squad formation and coordination.
  * Handles offensive and defensive military operations.
+ *
+ * State persistence: Squad formations can be persisted to Memory
+ * by providing a memory reference in the config and calling saveToMemory().
  */
 @profile
 export class CombatManager {
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly squads: Map<string, Squad> = new Map();
   private readonly combatTargets: Map<string, CombatTarget[]> = new Map();
+  private readonly memoryRef?: CombatManagerMemory;
 
   public constructor(config: CombatManagerConfig = {}) {
     this.logger = config.logger ?? console;
+    this.memoryRef = config.memory;
+
+    // Load state from Memory if provided
+    if (this.memoryRef) {
+      this.loadFromMemory();
+    }
+  }
+
+  /**
+   * Load state from Memory
+   */
+  private loadFromMemory(): void {
+    if (!this.memoryRef) return;
+
+    // Load squads
+    if (this.memoryRef.squads) {
+      for (const [squadId, squad] of Object.entries(this.memoryRef.squads)) {
+        this.squads.set(squadId, squad);
+      }
+    }
+  }
+
+  /**
+   * Save state to Memory (call periodically to persist state)
+   */
+  public saveToMemory(): void {
+    if (!this.memoryRef) return;
+
+    // Save squads
+    this.memoryRef.squads = {};
+    for (const [squadId, squad] of this.squads.entries()) {
+      this.memoryRef.squads[squadId] = squad;
+    }
   }
 
   /**
