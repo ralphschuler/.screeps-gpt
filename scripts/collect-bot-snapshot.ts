@@ -1,33 +1,6 @@
 import { mkdirSync, readdirSync, statSync, unlinkSync, writeFileSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-
-interface BotSnapshot {
-  timestamp: string;
-  tick?: number;
-  cpu?: {
-    used: number;
-    limit: number;
-    bucket: number;
-  };
-  rooms?: Record<
-    string,
-    {
-      rcl: number;
-      energy: number;
-      energyCapacity: number;
-      controllerProgress?: number;
-      controllerProgressTotal?: number;
-    }
-  >;
-  creeps?: {
-    total: number;
-    byRole?: Record<string, number>;
-  };
-  spawns?: {
-    total: number;
-    active: number;
-  };
-}
+import type { BotSnapshot } from "./types/bot-snapshot";
 
 const SNAPSHOTS_DIR = resolve("reports", "bot-snapshots");
 const MAX_SNAPSHOTS = 30; // Keep last 30 days of snapshots
@@ -74,10 +47,23 @@ function extractNumericField(
   defaultValue: number
 ): number {
   if (data[primaryKey] !== undefined) {
-    return Number(data[primaryKey]);
+    const value = Number(data[primaryKey]);
+    if (isNaN(value)) {
+      console.warn(`extractNumericField: Value for key '${primaryKey}' is not a valid number:`, data[primaryKey]);
+      return defaultValue;
+    }
+    return value;
   }
   if (data[fallbackKey] !== undefined) {
-    return Number(data[fallbackKey]);
+    const value = Number(data[fallbackKey]);
+    if (isNaN(value)) {
+      console.warn(
+        `extractNumericField: Value for fallback key '${fallbackKey}' is not a valid number:`,
+        data[fallbackKey]
+      );
+      return defaultValue;
+    }
+    return value;
   }
   return defaultValue;
 }
@@ -120,9 +106,9 @@ async function collectBotSnapshot(): Promise<void> {
         // Extract CPU data
         if (latestStats.cpu !== undefined) {
           snapshot.cpu = {
-            used: Number(latestStats.cpu) || 0,
-            limit: Number(latestStats.cpuLimit) || 0,
-            bucket: Number(latestStats.bucket) || 0
+            used: Number(latestStats.cpu) ?? 0,
+            limit: Number(latestStats.cpuLimit) ?? 0,
+            bucket: Number(latestStats.bucket) ?? 0
           };
         }
 
@@ -157,7 +143,7 @@ async function collectBotSnapshot(): Promise<void> {
         // Extract creep data
         if (latestStats.creeps !== undefined) {
           snapshot.creeps = {
-            total: Number(latestStats.creeps) || 0,
+            total: Number(latestStats.creeps) ?? 0,
             byRole: latestStats.creepsByRole as Record<string, number> | undefined
           };
         }
@@ -165,17 +151,23 @@ async function collectBotSnapshot(): Promise<void> {
         // Extract spawn data
         if (latestStats.spawns !== undefined) {
           snapshot.spawns = {
-            total: Number(latestStats.spawns) || 0,
-            active: Number(latestStats.activeSpawns) || 0
+            total: Number(latestStats.spawns) ?? 0,
+            active: Number(latestStats.activeSpawns) ?? 0
           };
         }
       }
     }
   }
 
-  // Write snapshot with date-based filename
-  const date = new Date();
-  const filename = `snapshot-${date.toISOString().split("T")[0]}.json`;
+  // Write snapshot with date-based filename using snapshot timestamp
+  let filenameDate: string;
+  try {
+    filenameDate = new Date(snapshot.timestamp).toISOString().split("T")[0];
+  } catch {
+    // Fallback to current date if snapshot timestamp is invalid
+    filenameDate = new Date().toISOString().split("T")[0];
+  }
+  const filename = `snapshot-${filenameDate}.json`;
   const snapshotPath = resolve(SNAPSHOTS_DIR, filename);
 
   writeFileSync(snapshotPath, JSON.stringify(snapshot, null, 2));

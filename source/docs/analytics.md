@@ -11,11 +11,14 @@ This page displays performance metrics for the Screeps GPT bot over the last 30 
   <p class="loading-message">Loading analytics data...</p>
 </div>
 
+<!-- Chart.js v4.x is loaded from jsDelivr CDN.
+     Version 4.4.0 is explicitly specified for stability and predictability.
+     When a new major version is released, review breaking changes before updating. -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 (async function() {
   try {
-    const response = await fetch('/analytics/data.json');
+    const response = await fetch('./analytics/data.json');
     const data = await response.json();
     
     const container = document.getElementById('analytics-container');

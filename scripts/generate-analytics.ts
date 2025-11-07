@@ -1,33 +1,6 @@
 import { readdirSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
-
-interface BotSnapshot {
-  timestamp: string;
-  tick?: number;
-  cpu?: {
-    used: number;
-    limit: number;
-    bucket: number;
-  };
-  rooms?: Record<
-    string,
-    {
-      rcl: number;
-      energy: number;
-      energyCapacity: number;
-      controllerProgress?: number;
-      controllerProgressTotal?: number;
-    }
-  >;
-  creeps?: {
-    total: number;
-    byRole?: Record<string, number>;
-  };
-  spawns?: {
-    total: number;
-    active: number;
-  };
-}
+import type { BotSnapshot } from "./types/bot-snapshot";
 
 interface AnalyticsDataPoint {
   date: string;
@@ -76,6 +49,7 @@ function generateAnalytics(): void {
   }
 
   const dataPoints: AnalyticsDataPoint[] = [];
+  let failedSnapshots = 0;
 
   // Process each snapshot
   for (const file of files) {
@@ -112,8 +86,13 @@ function generateAnalytics(): void {
 
       dataPoints.push(dataPoint);
     } catch (error) {
+      failedSnapshots++;
       console.warn(`Failed to process snapshot ${file}:`, error);
     }
+  }
+
+  if (failedSnapshots > 0) {
+    console.warn(`⚠ ${failedSnapshots} snapshot(s) failed to process`);
   }
 
   const analytics: AnalyticsData = {

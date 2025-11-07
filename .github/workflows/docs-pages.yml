@@ -47,7 +47,7 @@ jobs:
       - name: Generate analytics data
         run: >-
           npx tsx scripts/generate-analytics.ts ||
-          echo "Analytics generation failed (no snapshots yet)"
+          echo "::warning::Analytics generation failed (no snapshots yet)"
       - name: Generate documentation site
         working-directory: docs-build
         run: npm run build
