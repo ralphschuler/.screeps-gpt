@@ -103,6 +103,7 @@ jobs:
       - name: Fail if vulnerabilities found
         if: steps.audit.outputs.total != '0'
         run: |
-          echo "::error::Security audit found \
-          ${{ steps.audit.outputs.total }} vulnerabilities"
+          VULN_COUNT="${{ steps.audit.outputs.total }}"
+          echo "::error::Security audit found ${VULN_COUNT} \
+          vulnerabilities"
           exit 1
