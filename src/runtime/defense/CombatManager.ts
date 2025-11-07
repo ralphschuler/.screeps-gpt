@@ -215,23 +215,18 @@ export class CombatManager {
           const hasAttack = creep.body.some(part => part.type === ATTACK);
           const hasRangedAttack = creep.body.some(part => part.type === RANGED_ATTACK);
 
-          let engagedThisTick = false;
-
+          // Execute attack actions and count each action separately
           if (hasAttack && creep.pos.getRangeTo(targetObj) === 1) {
             if ("hits" in targetObj) {
               creep.attack(targetObj);
-              engagedThisTick = true;
+              engagements++;
             }
           }
           if (hasRangedAttack && creep.pos.getRangeTo(targetObj) <= 3) {
             if ("hits" in targetObj) {
               creep.rangedAttack(targetObj);
-              engagedThisTick = true;
+              engagements++;
             }
-          }
-
-          if (engagedThisTick) {
-            engagements++;
           }
         }
       }

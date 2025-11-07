@@ -170,7 +170,6 @@ export class TrafficManager {
     priority: number
   ): { moved: boolean; collisionAvoided: boolean } {
     // Get next position in path
-    // TODO: Cache this path and reuse when destination unchanged
     const path = creep.pos.findPathTo(destination, {
       ignoreCreeps: true,
       maxRooms: 1

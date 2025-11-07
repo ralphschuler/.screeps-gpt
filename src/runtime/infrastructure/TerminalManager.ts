@@ -161,7 +161,7 @@ export class TerminalManager {
       if (terminal.cooldown > 0) break;
 
       const available = terminal.store.getUsedCapacity(request.resource);
-      if (available >= Math.max(request.amount, this.minTransferAmount ?? 0)) {
+      if (available >= Math.max(request.amount, this.minTransferAmount)) {
         const result = terminal.send(
           request.resource,
           request.amount,

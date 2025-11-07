@@ -236,12 +236,7 @@ export class LabManager {
 
       // Remove boosted resources from request
       if (boostedResources.length > 0) {
-        for (const boostedResource of boostedResources) {
-          const index = request.boosts.indexOf(boostedResource);
-          if (index !== -1) {
-            request.boosts.splice(index, 1);
-          }
-        }
+        request.boosts = request.boosts.filter(b => !boostedResources.includes(b));
 
         // Remove request if all boosts complete
         if (request.boosts.length === 0) {

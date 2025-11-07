@@ -181,13 +181,23 @@ export class FactoryManager {
 
   /**
    * Get production amount for a commodity
+   * Note: Production amounts are simplified for now - all supported commodities produce 1 unit per run.
+   * If new commodities with different production amounts are added, update this mapping accordingly.
    */
   private getProductionAmount(
-    _commodity: CommodityConstant | MineralConstant | RESOURCE_ENERGY | RESOURCE_GHODIUM
+    commodity: CommodityConstant | MineralConstant | RESOURCE_ENERGY | RESOURCE_GHODIUM
   ): number {
-    // Most commodities produce 1 unit
-    // Battery produces 1, wire produces 1, etc.
-    return 1;
+    // Production amounts per commodity (Screeps default recipes)
+    // All currently supported commodities produce 1 unit per run
+    const productionAmounts: Record<string, number> = {
+      [RESOURCE_BATTERY]: 1,
+      [RESOURCE_WIRE]: 1,
+      [RESOURCE_CELL]: 1,
+      [RESOURCE_ALLOY]: 1,
+      [RESOURCE_CONDENSATE]: 1
+    };
+    // Default to 1 if commodity is not in the mapping
+    return productionAmounts[commodity] ?? 1;
   }
 
   /**
