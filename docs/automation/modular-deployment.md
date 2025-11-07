@@ -64,16 +64,23 @@ bun run deploy
 
 When building in modular mode, the following modules are generated:
 
-| Module          | Source                    | Description                        |
-| --------------- | ------------------------- | ---------------------------------- |
-| `main.js`       | `src/main.ts`             | Entry point with loop() function   |
-| `behavior.js`   | `src/runtime/behavior/`   | Creep roles and spawn logic        |
-| `bootstrap.js`  | `src/runtime/bootstrap/`  | Kernel orchestration               |
-| `evaluation.js` | `src/runtime/evaluation/` | Health reports and recommendations |
-| `memory.js`     | `src/runtime/memory/`     | Memory consistency helpers         |
-| `metrics.js`    | `src/runtime/metrics/`    | CPU tracking and performance       |
-| `respawn.js`    | `src/runtime/respawn/`    | Automatic respawn detection        |
-| `types.js`      | `src/runtime/types/`      | Type definitions                   |
+| Module              | Source                        | Description                        |
+| ------------------- | ----------------------------- | ---------------------------------- |
+| `main.js`           | `src/main.ts`                 | Entry point with loop() function   |
+| `behavior.js`       | `src/runtime/behavior/`       | Creep roles and spawn logic        |
+| `bootstrap.js`      | `src/runtime/bootstrap/`      | Kernel orchestration               |
+| `defense.js`        | `src/runtime/defense/`        | Tower management and defense       |
+| `evaluation.js`     | `src/runtime/evaluation/`     | Health reports and recommendations |
+| `infrastructure.js` | `src/runtime/infrastructure/` | Extension and road placement       |
+| `memory.js`         | `src/runtime/memory/`         | Memory consistency helpers         |
+| `metrics.js`        | `src/runtime/metrics/`        | CPU tracking and performance       |
+| `planning.js`       | `src/runtime/planning/`       | Room planning and layout           |
+| `respawn.js`        | `src/runtime/respawn/`        | Automatic respawn detection        |
+| `scouting.js`       | `src/runtime/scouting/`       | Remote room exploration            |
+| `tasks.js`          | `src/runtime/tasks/`          | Task management system             |
+| `types.js`          | `src/runtime/types/`          | Type definitions                   |
+| `utils.js`          | `src/runtime/utils/`          | Utility functions                  |
+| `visuals.js`        | `src/runtime/visuals/`        | Room visual rendering              |
 
 Each module is self-contained and includes all its dependencies bundled.
 
@@ -92,7 +99,7 @@ The build system automatically discovers modules in `src/runtime/`:
 Both modes use esbuild with these settings:
 
 - **Platform**: Browser (Screeps environment)
-- **Target**: ES2021
+- **Target**: ES2018
 - **Format**: CommonJS (required by Screeps)
 - **Sourcemaps**: Generated for all modules
 
@@ -113,25 +120,24 @@ Example output:
 
 ```
 Reading compiled bot code from /path/to/dist...
-  ✓ Loaded behavior (7396 bytes)
-  ✓ Loaded bootstrap (19715 bytes)
-  ✓ Loaded evaluation (6179 bytes)
-  ✓ Loaded main (20026 bytes)
-  ✓ Loaded memory (2114 bytes)
-  ✓ Loaded metrics (2710 bytes)
-  ✓ Loaded respawn (3549 bytes)
-  ✓ Loaded types (824 bytes)
-✓ Build output loaded: 8 module(s), 62513 bytes total
+  ✓ Loaded behavior (39KB)
+  ✓ Loaded bootstrap (91KB)
+  ✓ Loaded defense (12KB)
+  ✓ Loaded evaluation (9KB)
+  ✓ Loaded infrastructure (11KB)
+  ✓ Loaded main (95KB)
+  ✓ Loaded memory (20KB)
+  ✓ Loaded metrics (12KB)
+  ✓ Loaded planning (22KB)
+  ✓ Loaded respawn (4KB)
+  ✓ Loaded scouting (13KB)
+  ✓ Loaded tasks (21KB)
+  ✓ Loaded types (1KB)
+  ✓ Loaded utils (4KB)
+  ✓ Loaded visuals (12KB)
+✓ Build output loaded: 15 module(s)
 Uploading code to screeps.com:443/ on branch "main"...
 ✓ Successfully deployed to branch main
-  • behavior: 7396 bytes
-  • bootstrap: 19715 bytes
-  • evaluation: 6179 bytes
-  • main: 20026 bytes
-  • memory: 2114 bytes
-  • metrics: 2710 bytes
-  • respawn: 3549 bytes
-  • types: 824 bytes
 ```
 
 ### API Format
@@ -142,8 +148,19 @@ Modules are uploaded using the Screeps API format:
 api.code.set(branch, {
   main: "...",
   behavior: "...",
-  memory: "..."
-  // ... other modules
+  bootstrap: "...",
+  defense: "...",
+  evaluation: "...",
+  infrastructure: "...",
+  memory: "...",
+  metrics: "...",
+  planning: "...",
+  respawn: "...",
+  scouting: "...",
+  tasks: "...",
+  types: "...",
+  utils: "...",
+  visuals: "..."
 });
 ```
 
@@ -234,10 +251,10 @@ The modular build is slightly slower but still very fast for typical development
 
 Modular deployment sends more data but offers better debugging:
 
-- Single bundle: ~20KB total
-- Modular deployment: ~62KB total (includes redundant dependencies)
+- Single bundle: ~95KB total
+- Modular deployment: ~384KB total (includes redundant dependencies in each module)
 
-The Screeps platform handles both efficiently.
+The Screeps platform handles both efficiently. The modular build creates self-contained modules with bundled dependencies, which increases total size but improves module isolation and debugging.
 
 ### Runtime Performance
 
