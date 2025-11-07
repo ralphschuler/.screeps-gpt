@@ -856,11 +856,20 @@ The TrafficManager coordinates creep movement with collision avoidance:
 All runtime managers use the `@profile` decorator for automated CPU profiling:
 
 - **Automatic Profiling**: The profiler tracks CPU usage for all decorated methods
+- **Auto-Start Collection**: Profiler automatically begins data collection on first tick after deployment
 - **Performance Monitoring**: Detailed breakdown of CPU costs per manager and method
+- **Health Validation**: Automated health checks in monitoring workflow (`check-profiler-health.ts`)
 - **Zero-Cost in Production**: Profiling can be disabled via `PROFILER_ENABLED=false`
 - **Build Integration**: Profiler is conditionally included based on environment variable
 
 **Implementation:** [`src/profiler/Profiler.ts`](../../src/profiler/Profiler.ts)
+
+**Monitoring:**
+
+- Profiler data fetched automatically every 30 minutes via `fetch-profiler-console.ts`
+- Health checks validate data availability and freshness
+- Reports saved to `reports/profiler/latest.json`
+- See [Profiler Usage Guide](../operations/profiler-usage.md) for detailed documentation
 
 ### Memory Efficiency
 

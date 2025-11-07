@@ -33,43 +33,72 @@ bun run deploy:no-profiler
 
 The profiler can be controlled via the `PROFILER_ENABLED` environment variable during build (defaults to `true`).
 
+### Automatic Data Collection
+
+**✨ NEW:** The profiler now **automatically starts** data collection on the first tick after deployment when enabled. No manual start command required!
+
+**How it works:**
+
+1. On first tick after deployment, profiler checks its status
+2. If stopped, automatically calls `Profiler.start()`
+3. Data collection begins immediately
+4. Monitoring workflow fetches data every 30 minutes
+
+This ensures profiler data is always available for performance analysis without manual intervention.
+
 ### Console Commands
 
-Access these commands in the Screeps console (profiler is enabled by default):
+Access these commands in the Screeps console for manual control:
 
 ```javascript
-// Start profiling
-Profiler.start();
+// Check profiler status (should show "Profiler is running" after deployment)
+Profiler.status();
+// => "Profiler is running"
 
 // Stop profiling (pauses data collection)
 Profiler.stop();
 
-// Check profiler status
-Profiler.status();
+// Restart profiling after stopping
+Profiler.start();
 
-// Output profiling report
+// Output profiling report to console
 Profiler.output();
 
-// Clear profiling data
+// Clear profiling data and restart
 Profiler.clear();
 ```
 
 ### Example Profiling Session
 
+**Automatic Mode (Default):**
+
 ```javascript
-// 1. Start profiling
-Profiler.start();
-// => "Profiler started"
-
-// 2. Wait several ticks (e.g., 100-200 ticks) for meaningful data
-
-// 3. Stop profiling
-Profiler.stop();
-// => "Profiler stopped"
-
-// 4. View the report
+// 1. Deploy code (profiler starts automatically)
+// 2. Wait 100+ ticks for data collection
+// 3. View the report anytime
 Profiler.output();
-// => Detailed performance breakdown (see below)
+// => Detailed performance breakdown
+
+// 4. Data is automatically collected by monitoring workflow
+// Check reports/profiler/latest.json
+```
+
+**Manual Control:**
+
+```javascript
+// 1. Stop automatic collection
+Profiler.stop();
+
+// 2. Clear existing data
+Profiler.clear();
+
+// 3. Start fresh profiling session
+Profiler.start();
+
+// 4. Wait several ticks (e.g., 100-200 ticks)
+
+// 5. View the report
+Profiler.output();
 ```
 
 ## Understanding Profiler Output
@@ -224,6 +253,76 @@ When profiler data is available, the monitoring agent will:
 3. Detect excessive function calls (> 5x per tick)
 4. Create GitHub issues for significant bottlenecks
 5. Correlate profiler hotspots with PTR CPU alerts
+
+### Profiler Health Checks
+
+**✨ NEW:** The monitoring workflow now includes automated profiler health validation:
+
+**Health Check Script:** `scripts/check-profiler-health.ts`
+
+**What it validates:**
+
+- ✅ Profiler report exists at `reports/profiler/latest.json`
+- ✅ Report is parseable and not corrupted
+- ✅ Profiler is enabled and collecting data
+- ✅ Data is fresh (< 60 minutes old)
+- ✅ Summary statistics are available
+
+**Health Status Levels:**
+
+1. **Healthy** 🟢: Profiler is operational with valid data
+   - All checks passing
+   - Summary statistics reported
+   - Top CPU consumers identified
+
+2. **Warning** 🟡: Profiler has non-critical issues
+   - Profiler not running (auto-start should fix on next tick)
+   - No data collected yet (wait for 100+ ticks)
+   - Stale data (> 60 minutes old, check workflow schedule)
+
+3. **Error** 🔴: Profiler data unavailable
+   - Report file missing
+   - Fetch failed (check credentials)
+   - Data corrupted or unparseable
+
+**Manual Health Check:**
+
+```bash
+# Run health check locally
+npx tsx scripts/check-profiler-health.ts
+
+# Expected output when healthy:
+# Status: HEALTHY
+# Profiler is operational
+#
+# Details:
+#   - Total ticks: 1000
+#   - Functions profiled: 15
+#   - Avg CPU/tick: 8.50ms
+#   - Top consumer: BehaviorController:execute (4.25ms/tick)
+```
+
+**Troubleshooting:**
+
+If profiler health check fails:
+
+1. **"Profiler report not found"**
+   - Run: `npx tsx scripts/fetch-profiler-console.ts`
+   - Check `SCREEPS_TOKEN` environment variable
+   - Verify monitoring workflow is running
+
+2. **"Profiler is not running"**
+   - Wait one tick after deployment (auto-start)
+   - Or manually: `Profiler.start()` in console
+
+3. **"Profiler has no data yet"**
+   - Wait 100+ ticks for meaningful data
+   - Check next monitoring cycle (every 30 minutes)
+
+4. **"Data is stale"**
+   - Check monitoring workflow schedule
+   - Verify workflow is not failing
+   - Review GitHub Actions logs
 
 ### Performance Evaluation
 
