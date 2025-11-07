@@ -221,6 +221,7 @@ export class LabManager {
       }
 
       // Check if creep is in range of labs
+      const boostedResources: ResourceConstant[] = [];
       for (const boostResource of request.boosts) {
         const lab = labs.find(l => l.store.getUsedCapacity(boostResource) >= 30 && l.pos.getRangeTo(creep) <= 1);
 
@@ -228,18 +229,23 @@ export class LabManager {
           const result = lab.boostCreep(creep);
           if (result === OK) {
             boosts++;
-
-            // Remove this boost from request
-            const index = request.boosts.indexOf(boostResource);
-            if (index !== -1) {
-              request.boosts.splice(index, 1);
-            }
-
-            // Remove request if all boosts complete
-            if (request.boosts.length === 0) {
-              this.removeBoostRequest(room.name, request);
-            }
+            boostedResources.push(boostResource);
           }
+        }
+      }
+
+      // Remove boosted resources from request
+      if (boostedResources.length > 0) {
+        for (const boostedResource of boostedResources) {
+          const index = request.boosts.indexOf(boostedResource);
+          if (index !== -1) {
+            request.boosts.splice(index, 1);
+          }
+        }
+
+        // Remove request if all boosts complete
+        if (request.boosts.length === 0) {
+          this.removeBoostRequest(room.name, request);
         }
       }
     }
@@ -382,20 +388,21 @@ export class LabManager {
 
   /**
    * Get compound recipe (simplified - only basic compounds)
+   * @returns Recipe inputs or null if compound is not supported
    */
   private getRecipe(compound: ResourceConstant): { input1: ResourceConstant; input2: ResourceConstant } | null {
-    // Basic compounds (Tier 1)
-    const recipes: Record<string, { input1: ResourceConstant; input2: ResourceConstant }> = {
-      UH: { input1: RESOURCE_UTRIUM, input2: RESOURCE_HYDROGEN },
-      UO: { input1: RESOURCE_UTRIUM, input2: RESOURCE_OXYGEN },
-      KH: { input1: RESOURCE_KEANIUM, input2: RESOURCE_HYDROGEN },
-      KO: { input1: RESOURCE_KEANIUM, input2: RESOURCE_OXYGEN },
-      LH: { input1: RESOURCE_LEMERGIUM, input2: RESOURCE_HYDROGEN },
-      LO: { input1: RESOURCE_LEMERGIUM, input2: RESOURCE_OXYGEN },
-      ZH: { input1: RESOURCE_ZYNTHIUM, input2: RESOURCE_HYDROGEN },
-      ZO: { input1: RESOURCE_ZYNTHIUM, input2: RESOURCE_OXYGEN },
-      GH: { input1: RESOURCE_GHODIUM, input2: RESOURCE_HYDROGEN },
-      GO: { input1: RESOURCE_GHODIUM, input2: RESOURCE_OXYGEN }
+    // Basic compounds (Tier 1) - using Screeps constants as keys
+    const recipes: Record<ResourceConstant, { input1: ResourceConstant; input2: ResourceConstant }> = {
+      [RESOURCE_UTRIUM_HYDRIDE]: { input1: RESOURCE_UTRIUM, input2: RESOURCE_HYDROGEN },
+      [RESOURCE_UTRIUM_OXIDE]: { input1: RESOURCE_UTRIUM, input2: RESOURCE_OXYGEN },
+      [RESOURCE_KEANIUM_HYDRIDE]: { input1: RESOURCE_KEANIUM, input2: RESOURCE_HYDROGEN },
+      [RESOURCE_KEANIUM_OXIDE]: { input1: RESOURCE_KEANIUM, input2: RESOURCE_OXYGEN },
+      [RESOURCE_LEMERGIUM_HYDRIDE]: { input1: RESOURCE_LEMERGIUM, input2: RESOURCE_HYDROGEN },
+      [RESOURCE_LEMERGIUM_OXIDE]: { input1: RESOURCE_LEMERGIUM, input2: RESOURCE_OXYGEN },
+      [RESOURCE_ZYNTHIUM_HYDRIDE]: { input1: RESOURCE_ZYNTHIUM, input2: RESOURCE_HYDROGEN },
+      [RESOURCE_ZYNTHIUM_OXIDE]: { input1: RESOURCE_ZYNTHIUM, input2: RESOURCE_OXYGEN },
+      [RESOURCE_GHODIUM_HYDRIDE]: { input1: RESOURCE_GHODIUM, input2: RESOURCE_HYDROGEN },
+      [RESOURCE_GHODIUM_OXIDE]: { input1: RESOURCE_GHODIUM, input2: RESOURCE_OXYGEN }
     };
 
     return recipes[compound] ?? null;

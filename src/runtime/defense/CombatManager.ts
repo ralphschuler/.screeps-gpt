@@ -199,13 +199,13 @@ export class CombatManager {
       const target = targets[0]; // Highest priority target
       if (!target) break;
 
+      const targetObj = Game.getObjectById(target.id);
+      if (!targetObj) continue;
+
       // Command squad members to engage
       for (const memberName of squad.members) {
         const creep = Game.creeps[memberName];
         if (!creep) continue;
-
-        const targetObj = Game.getObjectById(target.id);
-        if (!targetObj) continue;
 
         // Simple engagement logic
         if (creep.pos.getRangeTo(targetObj) > 3) {
@@ -215,17 +215,23 @@ export class CombatManager {
           const hasAttack = creep.body.some(part => part.type === ATTACK);
           const hasRangedAttack = creep.body.some(part => part.type === RANGED_ATTACK);
 
+          let engagedThisTick = false;
+
           if (hasAttack && creep.pos.getRangeTo(targetObj) === 1) {
             if ("hits" in targetObj) {
               creep.attack(targetObj);
-              engagements++;
+              engagedThisTick = true;
             }
           }
           if (hasRangedAttack && creep.pos.getRangeTo(targetObj) <= 3) {
             if ("hits" in targetObj) {
               creep.rangedAttack(targetObj);
-              engagements++;
+              engagedThisTick = true;
             }
+          }
+
+          if (engagedThisTick) {
+            engagements++;
           }
         }
       }
@@ -265,10 +271,14 @@ export class CombatManager {
   }
 
   /**
-   * Create a new squad
+   * Create a new squad with a unique ID
    */
   public createSquad(members: string[], role: "offense" | "defense" | "raid", targetRoom?: string): string {
-    const squadId = `squad_${Game.time}_${members.length > 0 ? members[0] : "default"}`;
+    // Generate unique squad ID using timestamp and member composition
+    // For empty squads, use "empty" prefix with timestamp as uniqueness
+    const memberHash = members.length > 0 ? members.sort().join("_") : `empty`;
+    const squadId = `squad_${Game.time}_${memberHash}`;
+
     this.squads.set(squadId, {
       id: squadId,
       members,

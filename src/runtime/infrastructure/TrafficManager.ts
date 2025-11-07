@@ -11,10 +11,20 @@ export interface MovementRequest {
 }
 
 /**
+ * Serializable movement request for Memory (RoomPosition replaced with coordinates)
+ */
+export interface SerializedMovementRequest {
+  creepName: string;
+  destination: { x: number; y: number; roomName: string };
+  priority: number;
+  requestedAt: number;
+}
+
+/**
  * Serialized traffic manager state for Memory persistence
  */
 export interface TrafficManagerMemory {
-  movementRequests: Record<string, MovementRequest>;
+  movementRequests: Record<string, SerializedMovementRequest>;
 }
 
 /**
@@ -58,9 +68,17 @@ export class TrafficManager {
   private loadFromMemory(): void {
     if (!this.memoryRef) return;
 
-    // Load movement requests
+    // Load movement requests and reconstruct RoomPosition objects
     if (this.memoryRef.movementRequests) {
-      for (const [creepName, request] of Object.entries(this.memoryRef.movementRequests)) {
+      for (const [creepName, serializedRequest] of Object.entries(this.memoryRef.movementRequests)) {
+        const request: MovementRequest = {
+          ...serializedRequest,
+          destination: new RoomPosition(
+            serializedRequest.destination.x,
+            serializedRequest.destination.y,
+            serializedRequest.destination.roomName
+          )
+        };
         this.movementRequests.set(creepName, request);
       }
     }
@@ -72,10 +90,17 @@ export class TrafficManager {
   public saveToMemory(): void {
     if (!this.memoryRef) return;
 
-    // Save movement requests
+    // Save movement requests with serialized destinations
     this.memoryRef.movementRequests = {};
     for (const [creepName, request] of this.movementRequests.entries()) {
-      this.memoryRef.movementRequests[creepName] = request;
+      this.memoryRef.movementRequests[creepName] = {
+        ...request,
+        destination: {
+          x: request.destination.x,
+          y: request.destination.y,
+          roomName: request.destination.roomName
+        }
+      };
     }
   }
 

@@ -17,10 +17,20 @@ export interface LinkMetadata {
 }
 
 /**
+ * Serializable link metadata for Memory (RoomPosition replaced with coordinates)
+ */
+export interface SerializedLinkMetadata {
+  id: Id<StructureLink>;
+  role: LinkRole;
+  pos: { x: number; y: number; roomName: string };
+  lastTransferTick: number;
+}
+
+/**
  * Serialized link manager state for Memory persistence
  */
 export interface LinkManagerMemory {
-  linkNetworks: Record<string, LinkMetadata[]>;
+  linkNetworks: Record<string, SerializedLinkMetadata[]>;
 }
 
 /**
@@ -63,9 +73,13 @@ export class LinkManager {
   private loadFromMemory(): void {
     if (!this.memoryRef) return;
 
-    // Load link networks
+    // Load link networks and reconstruct RoomPosition objects
     if (this.memoryRef.linkNetworks) {
-      for (const [roomName, network] of Object.entries(this.memoryRef.linkNetworks)) {
+      for (const [roomName, serializedNetwork] of Object.entries(this.memoryRef.linkNetworks)) {
+        const network: LinkMetadata[] = serializedNetwork.map(meta => ({
+          ...meta,
+          pos: new RoomPosition(meta.pos.x, meta.pos.y, meta.pos.roomName)
+        }));
         this.linkNetworks.set(roomName, network);
       }
     }
@@ -77,11 +91,21 @@ export class LinkManager {
   public saveToMemory(): void {
     if (!this.memoryRef) return;
 
-    // Save link networks
+    // Save link networks with serialized positions
     this.memoryRef.linkNetworks = {};
     for (const [roomName, network] of this.linkNetworks.entries()) {
-      this.memoryRef.linkNetworks[roomName] = network;
+      this.memoryRef.linkNetworks[roomName] = network.map(meta => ({
+        ...meta,
+        pos: { x: meta.pos.x, y: meta.pos.y, roomName: meta.pos.roomName }
+      }));
     }
+  }
+
+  /**
+   * Clear cached sources. Call periodically to ensure fresh data.
+   */
+  public clearSourceCache(): void {
+    this.sourceCache.clear();
   }
 
   /**

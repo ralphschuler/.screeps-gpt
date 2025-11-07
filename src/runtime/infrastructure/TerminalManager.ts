@@ -108,11 +108,11 @@ export class TerminalManager {
     let resourcesSent = 0;
 
     // Balance energy first
-    const energyBalanced = this.balanceEnergy(room);
+    const energyBalanced = this.balanceEnergy(room, terminal);
 
     // Process resource requests if not on cooldown
     if (terminal.cooldown === 0) {
-      const processed = this.processResourceRequests(room);
+      const processed = this.processResourceRequests(room, terminal);
       transfers += processed.transfers;
       resourcesSent += processed.resourcesSent;
     }
@@ -128,14 +128,7 @@ export class TerminalManager {
   /**
    * Balance terminal energy levels
    */
-  private balanceEnergy(room: RoomLike): boolean {
-    const terminals = room.find(FIND_MY_STRUCTURES, {
-      filter: (s: Structure) => s.structureType === STRUCTURE_TERMINAL
-    }) as StructureTerminal[];
-
-    if (terminals.length === 0) return false;
-    const terminal = terminals[0];
-
+  private balanceEnergy(room: RoomLike, terminal: StructureTerminal): boolean {
     const energy = terminal.store.getUsedCapacity(RESOURCE_ENERGY);
 
     if (energy < this.energyReserve) {
@@ -149,14 +142,10 @@ export class TerminalManager {
   /**
    * Process pending resource transfer requests
    */
-  private processResourceRequests(room: RoomLike): { transfers: number; resourcesSent: number } {
-    const terminals = room.find(FIND_MY_STRUCTURES, {
-      filter: (s: Structure) => s.structureType === STRUCTURE_TERMINAL
-    }) as StructureTerminal[];
-
-    if (terminals.length === 0) return { transfers: 0, resourcesSent: 0 };
-    const terminal = terminals[0];
-
+  private processResourceRequests(
+    room: RoomLike,
+    terminal: StructureTerminal
+  ): { transfers: number; resourcesSent: number } {
     const requests = this.getResourceRequests(room.name);
     if (requests.length === 0) {
       return { transfers: 0, resourcesSent: 0 };
