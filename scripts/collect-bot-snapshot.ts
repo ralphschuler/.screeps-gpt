@@ -60,6 +60,29 @@ function cleanupOldSnapshots(): void {
 }
 
 /**
+ * Extract a numeric field from room data, trying primary key first, then fallback key
+ * @param data - Room data object
+ * @param primaryKey - Primary field name to try first
+ * @param fallbackKey - Fallback field name if primary is undefined
+ * @param defaultValue - Default value if both keys are undefined
+ * @returns Numeric value or default
+ */
+function extractNumericField(
+  data: Record<string, unknown>,
+  primaryKey: string,
+  fallbackKey: string,
+  defaultValue: number
+): number {
+  if (data[primaryKey] !== undefined) {
+    return Number(data[primaryKey]);
+  }
+  if (data[fallbackKey] !== undefined) {
+    return Number(data[fallbackKey]);
+  }
+  return defaultValue;
+}
+
+/**
  * Collect bot state snapshot from Screeps stats
  */
 async function collectBotSnapshot(): Promise<void> {
@@ -115,24 +138,9 @@ async function collectBotSnapshot(): Promise<void> {
             latestStats.rooms as Record<string, Record<string, unknown>>
           )) {
             // Prefer more specific field names, fall back to alternatives
-            const rcl =
-              roomData.rcl !== undefined
-                ? Number(roomData.rcl)
-                : roomData.controllerLevel !== undefined
-                  ? Number(roomData.controllerLevel)
-                  : 0;
-            const energy =
-              roomData.energy !== undefined
-                ? Number(roomData.energy)
-                : roomData.energyAvailable !== undefined
-                  ? Number(roomData.energyAvailable)
-                  : 0;
-            const energyCapacity =
-              roomData.energyCapacity !== undefined
-                ? Number(roomData.energyCapacity)
-                : roomData.energyCapacityAvailable !== undefined
-                  ? Number(roomData.energyCapacityAvailable)
-                  : 0;
+            const rcl = extractNumericField(roomData, "rcl", "controllerLevel", 0);
+            const energy = extractNumericField(roomData, "energy", "energyAvailable", 0);
+            const energyCapacity = extractNumericField(roomData, "energyCapacity", "energyCapacityAvailable", 0);
 
             snapshot.rooms[roomName] = {
               rcl,

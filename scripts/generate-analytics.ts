@@ -46,6 +46,15 @@ interface AnalyticsData {
 }
 
 /**
+ * Extract date (YYYY-MM-DD) from ISO timestamp
+ * @param timestamp - ISO 8601 timestamp string
+ * @returns Date string in YYYY-MM-DD format
+ */
+function extractDate(timestamp: string): string {
+  return timestamp.split("T")[0];
+}
+
+/**
  * Generate analytics data from bot snapshots for visualization
  */
 function generateAnalytics(): void {
@@ -76,7 +85,7 @@ function generateAnalytics(): void {
       const snapshot: BotSnapshot = JSON.parse(content);
 
       const dataPoint: AnalyticsDataPoint = {
-        date: snapshot.timestamp.split("T")[0] // Extract date only
+        date: extractDate(snapshot.timestamp)
       };
 
       // Extract CPU metrics

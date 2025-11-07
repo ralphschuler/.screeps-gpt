@@ -111,7 +111,7 @@ jobs:
           else
             git commit -m "chore: update bot state snapshots [skip ci]"
             git pull --rebase origin "${GITHUB_REF##*/}" || \
-              echo "Failed to rebase before push (may be merge conflict)"
+              { echo "Failed to rebase before push (may be merge conflict)"; exit 1; }
             git push || \
               echo "Failed to push snapshots (may be permissions issue)"
           fi
