@@ -124,7 +124,11 @@ async function collectBotSnapshot(): Promise<void> {
           for (const [roomName, roomData] of Object.entries(
             latestStats.rooms as Record<string, Record<string, unknown>>
           )) {
-            // Prefer more specific field names, fall back to alternatives
+            // Some stats sources use different field names for the same value due to API changes or legacy formats.
+            // We prefer the modern field name, but fall back to the legacy/alternative if needed.
+            // - "rcl" (preferred) or "controllerLevel" (legacy)
+            // - "energy" (preferred) or "energyAvailable" (legacy)
+            // - "energyCapacity" (preferred) or "energyCapacityAvailable" (legacy)
             const rcl = extractNumericField(roomData, "rcl", "controllerLevel", 0);
             const energy = extractNumericField(roomData, "energy", "energyAvailable", 0);
             const energyCapacity = extractNumericField(roomData, "energyCapacity", "energyCapacityAvailable", 0);
