@@ -71,3 +71,36 @@ jobs:
             reports/copilot/ci-autofix-${{ github.run_id }}.log
           timeout: "45"
           verbose: "true"
+
+      - name: Notify CI failure via email
+        if: always()
+        uses: ./.github/actions/send-email-notification
+        with:
+          smtp-host: ${{ secrets.SMTP_HOST }}
+          smtp-port: ${{ secrets.SMTP_PORT || '587' }}
+          smtp-user: ${{ secrets.SMTP_USER }}
+          smtp-password: ${{ secrets.SMTP_PASSWORD }}
+          smtp-from: ${{ secrets.SMTP_FROM || secrets.SMTP_USER }}
+          to: ${{ vars.EMAIL_NOTIFY_TO }}
+          subject: >-
+            [CI FAILURE] ${{ github.event.workflow_run.name }} -
+            ${{ github.repository }}
+          body: |
+            CI/CD Workflow Failure Detected
+            ================================
+
+            Workflow: ${{ github.event.workflow_run.name }}
+            Repository: ${{ github.repository }}
+            Run ID: ${{ github.event.workflow_run.id }}
+            Trigger Event: ${{ github.event.workflow_run.event }}
+
+            The CI/CD workflow has failed and the auto-fix process
+            has been triggered.
+
+            View Details: ${{ github.event.workflow_run.html_url }}
+
+            Timestamp: ${{ github.event.workflow_run.updated_at }}
+
+            This is an automated alert from the Screeps CI/CD
+            monitoring system.
+          priority: "high"

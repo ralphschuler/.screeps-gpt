@@ -228,6 +228,44 @@ The repository uses 14 GitHub Actions workflows orchestrating the agent swarm:
 
 **[Complete Workflow Documentation →](docs/automation/overview.md)**
 
+## Configuration
+
+### Required Secrets
+
+Configure these GitHub secrets for full automation functionality:
+
+**Screeps API Access:**
+
+- `SCREEPS_TOKEN` - Screeps API authentication token
+- `SCREEPS_EMAIL` - (Optional) Screeps account email
+- `SCREEPS_PASSWORD` - (Optional) Screeps account password
+- `SCREEPS_STATS_TOKEN` - (Optional) Screeps Stats API token
+
+**Notifications:**
+
+- `PUSH_TOKEN` - Push by Techulus API token for push notifications (optional)
+- `SMTP_HOST` - SMTP server hostname for email notifications (optional)
+- `SMTP_PORT` - SMTP server port (default: 587, optional)
+- `SMTP_USER` - SMTP username for email authentication (optional)
+- `SMTP_PASSWORD` - SMTP password for email authentication (optional)
+- `SMTP_FROM` - From email address (defaults to SMTP_USER if not specified, optional)
+
+**CI/CD:**
+
+- `COPILOT_TOKEN` - GitHub Copilot CLI token for autonomous agent operations
+- `PUSH_TOKEN` - GitHub token with push access for automated commits
+
+### Repository Variables
+
+Configure these GitHub repository variables:
+
+- `EMAIL_NOTIFY_TO` - Email address for critical notifications (e.g., `screeps-gpt+notify@nyphon.de`)
+- `SCREEPS_HOST` - Screeps server host (default: screeps.com)
+- `SCREEPS_SHARD` - Target shard (default: shard3)
+- `SCREEPS_BRANCH` - Deployment branch (default: default)
+
+See [Push Notification Documentation](docs/automation/push-notifications.md) for details on notification setup.
+
 ## Project Status
 
 - ✅ **Active Development**: Bot runs autonomously on Screeps PTR

@@ -100,6 +100,43 @@ jobs:
               body: body
             });
 
+      - name: Send email notification for security vulnerabilities
+        if: steps.audit.outputs.total != '0'
+        uses: ./.github/actions/send-email-notification
+        with:
+          smtp-host: ${{ secrets.SMTP_HOST }}
+          smtp-port: ${{ secrets.SMTP_PORT || '587' }}
+          smtp-user: ${{ secrets.SMTP_USER }}
+          smtp-password: ${{ secrets.SMTP_PASSWORD }}
+          smtp-from: ${{ secrets.SMTP_FROM || secrets.SMTP_USER }}
+          to: ${{ vars.EMAIL_NOTIFY_TO }}
+          subject: >-
+            [SECURITY] Vulnerabilities Detected -
+            ${{ github.repository }}
+          body: |
+            Security Vulnerabilities Detected
+            ==================================
+
+            Total Vulnerabilities: ${{ steps.audit.outputs.total }}
+            Details: ${{ steps.audit.outputs.vulnerabilities }}
+
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref }}
+            Run ID: ${{ github.run_id }}
+
+            Please review and update dependencies to resolve
+            security issues.
+
+            View Details:
+            https://github.com/${{ github.repository }}/actions/runs/${{
+            github.run_id }}
+
+            Run 'npm audit' locally for detailed information.
+
+            This is an automated security alert from the Screeps
+            dependency monitoring system.
+          priority: "high"
+
       - name: Fail if vulnerabilities found
         if: steps.audit.outputs.total != '0'
         run: |

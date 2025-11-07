@@ -33,6 +33,8 @@ describe("Workflow concurrency controls", () => {
     // Monitoring workflows
     "screeps-monitoring.yml",
     "screeps-spawn-monitor.yml",
+    // Notification workflows
+    "email-notification.yml",
     // Singleton workflows
     "dependabot-automerge.yml",
     "label-sync.yml",
