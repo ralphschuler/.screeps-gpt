@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.18.0] - 2025-11-07
+
 ### Added
 
 - **Phase 3 Advanced Economy**: Complete implementation of RCL 6-8 economy features
