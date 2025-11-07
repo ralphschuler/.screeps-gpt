@@ -1,4 +1,5 @@
 import type { SystemReport } from "./src/shared/contracts";
+import type { ColonyManagerMemory } from "./src/runtime/planning/ColonyManager";
 
 declare global {
   interface Memory {
@@ -22,6 +23,7 @@ declare global {
     experimentalFeatures?: {
       taskSystem?: boolean;
     };
+    colony?: ColonyManagerMemory;
     stats?: {
       time: number;
       cpu: {
