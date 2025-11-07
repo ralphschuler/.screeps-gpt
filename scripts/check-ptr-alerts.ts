@@ -203,6 +203,15 @@ async function main(): Promise<void> {
     return;
   }
 
+  // Load previous snapshot for trend analysis (before saving current one)
+  const previousSnapshot = await loadLatestReport<PTRStatsSnapshot>("ptr-stats");
+
+  // Compare with historical data
+  const comparison = comparePTRStats(snapshot, previousSnapshot);
+  const trendReport = formatPTRTrendReport(comparison);
+
+  console.log("\n" + trendReport);
+
   // Save current snapshot with timestamp for historical tracking
   try {
     const savedPath = await saveReport("ptr-stats", snapshot);
@@ -211,15 +220,6 @@ async function main(): Promise<void> {
     console.error("Failed to save PTR stats snapshot:", error);
     // Continue with alerting even if save fails
   }
-
-  // Load previous snapshot for trend analysis
-  const previousSnapshot = await loadLatestReport<PTRStatsSnapshot>("ptr-stats");
-
-  // Compare with historical data
-  const comparison = comparePTRStats(snapshot, previousSnapshot);
-  const trendReport = formatPTRTrendReport(comparison);
-
-  console.log("\n" + trendReport);
 
   // Analyze for alert conditions
   const alerts = analyzePTRStats(snapshot);

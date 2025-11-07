@@ -71,6 +71,13 @@ async function run(): Promise<void> {
   const snapshot = createSnapshot();
   const report = evaluator.evaluate(snapshot, repository);
 
+  // Load previous evaluation for trend analysis (before saving current one)
+  const previousReport = await loadLatestReport<SystemEvaluationReport>("evaluations");
+
+  // Compare with historical data
+  const comparison = compareEvaluations(report as SystemEvaluationReport, previousReport);
+  const trendReport = formatEvaluationTrendReport(comparison);
+
   // Save to standard location for compatibility
   const outputPath = resolve("reports/system-evaluation.json");
   await mkdir(resolve("reports"), { recursive: true });
@@ -83,13 +90,6 @@ async function run(): Promise<void> {
   } catch (error) {
     console.error("Failed to save timestamped evaluation report:", error);
   }
-
-  // Load previous evaluation for trend analysis
-  const previousReport = await loadLatestReport<SystemEvaluationReport>("evaluations");
-
-  // Compare with historical data
-  const comparison = compareEvaluations(report as SystemEvaluationReport, previousReport);
-  const trendReport = formatEvaluationTrendReport(comparison);
 
   console.log("\n" + trendReport);
   console.log(`\nEvaluation summary: ${report.summary}`);
