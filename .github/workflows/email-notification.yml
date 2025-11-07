@@ -1,0 +1,92 @@
+---
+name: Send Email Notification
+
+on:
+  workflow_call:
+    inputs:
+      to:
+        description: 'Recipient email address'
+        required: true
+        type: string
+      subject:
+        description: 'Email subject'
+        required: true
+        type: string
+      body:
+        description: 'Email body'
+        required: true
+        type: string
+      html:
+        description: 'HTML email body (optional)'
+        required: false
+        type: string
+        default: ""
+      priority:
+        description: 'Email priority (high, normal, low)'
+        required: false
+        type: string
+        default: "normal"
+    secrets:
+      SMTP_HOST:
+        required: true
+      SMTP_PORT:
+        required: false
+      SMTP_USER:
+        required: true
+      SMTP_PASSWORD:
+        required: true
+      SMTP_FROM:
+        required: false
+
+  workflow_dispatch:
+    inputs:
+      to:
+        description: 'Recipient email address'
+        required: true
+        type: string
+      subject:
+        description: 'Email subject'
+        required: true
+        type: string
+      body:
+        description: 'Email body'
+        required: true
+        type: string
+      html:
+        description: 'HTML email body (optional)'
+        required: false
+        type: string
+        default: ""
+      priority:
+        description: 'Email priority (high, normal, low)'
+        required: false
+        type: string
+        default: "normal"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  send-email:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Send email notification
+        uses: ./.github/actions/send-email-notification
+        with:
+          smtp-host: ${{ secrets.SMTP_HOST }}
+          smtp-port: ${{ secrets.SMTP_PORT || '587' }}
+          smtp-user: ${{ secrets.SMTP_USER }}
+          smtp-password: ${{ secrets.SMTP_PASSWORD }}
+          smtp-from: ${{ secrets.SMTP_FROM || secrets.SMTP_USER }}
+          to: ${{ inputs.to }}
+          subject: ${{ inputs.subject }}
+          body: ${{ inputs.body }}
+          html: ${{ inputs.html }}
+          priority: ${{ inputs.priority }}

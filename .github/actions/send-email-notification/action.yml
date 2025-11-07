@@ -1,0 +1,60 @@
+name: "Send Email Notification"
+description: "Send email notification via SMTP with rate limiting and error handling"
+inputs:
+  smtp-host:
+    description: "SMTP server hostname"
+    required: true
+  smtp-port:
+    description: "SMTP server port (default: 587)"
+    required: false
+    default: "587"
+  smtp-user:
+    description: "SMTP username"
+    required: true
+  smtp-password:
+    description: "SMTP password"
+    required: true
+  smtp-from:
+    description: "From email address (defaults to smtp-user if not specified)"
+    required: false
+    default: ""
+  to:
+    description: "Recipient email address"
+    required: true
+  subject:
+    description: "Email subject"
+    required: true
+  body:
+    description: "Email body text"
+    required: true
+  html:
+    description: "Optional HTML email body (falls back to plain text if not provided)"
+    required: false
+    default: ""
+  priority:
+    description: "Email priority (high, normal, low - default: normal)"
+    required: false
+    default: "normal"
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: "20"
+    - name: Send email notification
+      shell: bash
+      env:
+        SMTP_HOST: ${{ inputs.smtp-host }}
+        SMTP_PORT: ${{ inputs.smtp-port }}
+        SMTP_USER: ${{ inputs.smtp-user }}
+        SMTP_PASSWORD: ${{ inputs.smtp-password }}
+        SMTP_FROM: ${{ inputs.smtp-from }}
+        EMAIL_TO: ${{ inputs.to }}
+        EMAIL_SUBJECT: ${{ inputs.subject }}
+        EMAIL_BODY: ${{ inputs.body }}
+        EMAIL_HTML: ${{ inputs.html }}
+        EMAIL_PRIORITY: ${{ inputs.priority }}
+      run: |
+        cd ${{ github.action_path }}/../../..
+        npx tsx scripts/send-email-notification.ts

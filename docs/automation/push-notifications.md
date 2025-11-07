@@ -191,9 +191,14 @@ The system uses the `/api/v1/notify` endpoint with:
 - **Headers:** `Content-Type: application/json`, `x-api-key: <token>`
 - **Body:** `{ title, body, link?, priority? }`
 
+## Related Documentation
+
+- [Email Notification System](./email-notifications.md) - Complementary SMTP email notifications
+- [Autonomous Monitoring](./autonomous-monitoring.md) - PTR and deployment monitoring integration
+
 ## Related Issues
 
-- #134 - Email notification system (complementary notification channel)
+- #134 - Email notification system (now implemented - see email-notifications.md)
 - #152 - PTR monitoring API authentication
 - #117 - PTR CPU monitoring alerts
 

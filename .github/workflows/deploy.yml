@@ -124,3 +124,38 @@ jobs:
             https://github.com/${{ github.repository }}/actions/runs/${{
             github.run_id }}
           priority: "5"
+
+      - name: Send email notification for deployment failure
+        if: failure()
+        uses: ./.github/actions/send-email-notification
+        with:
+          smtp-host: ${{ secrets.SMTP_HOST }}
+          smtp-port: ${{ secrets.SMTP_PORT || '587' }}
+          smtp-user: ${{ secrets.SMTP_USER }}
+          smtp-password: ${{ secrets.SMTP_PASSWORD }}
+          smtp-from: ${{ secrets.SMTP_FROM || secrets.SMTP_USER }}
+          to: ${{ vars.EMAIL_NOTIFY_TO }}
+          subject: >-
+            [DEPLOYMENT FAILED] Screeps AI Deployment -
+            ${{ github.repository }}
+          body: |
+            Screeps AI Deployment Failed
+            ============================
+
+            Version: ${{ steps.get_version.outputs.version }}
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref }}
+            Run ID: ${{ github.run_id }}
+
+            The deployment has failed and requires immediate
+            attention.
+
+            View Details:
+            https://github.com/${{ github.repository }}/actions/runs/${{
+            github.run_id }}
+
+            Timestamp: ${{ github.event.head_commit.timestamp }}
+
+            This is a critical automated alert from the Screeps
+            deployment system.
+          priority: "high"

@@ -2,6 +2,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import process from "node:process";
 import { sendPushNotification } from "./send-push-notification.js";
+import { sendEmailNotification } from "./send-email-notification.js";
 import { saveReport, loadLatestReport, applyRetentionPolicy } from "./lib/report-storage.js";
 import { comparePTRStats, formatPTRTrendReport } from "./lib/report-comparison.js";
 
@@ -224,19 +225,95 @@ async function main(): Promise<void> {
   // Analyze for alert conditions
   const alerts = analyzePTRStats(snapshot);
 
-  // Send push notifications for critical and high severity alerts
+  // Send push notifications and email notifications for critical and high severity alerts
   for (const alert of alerts) {
     if (alert.severity === "critical" || alert.severity === "high") {
       const priority = alert.severity === "critical" ? 5 : 4;
       const runId = process.env.GITHUB_RUN_ID || "unknown";
       const repo = process.env.GITHUB_REPOSITORY || "ralphschuler/.screeps-gpt";
+      const actionUrl = `https://github.com/${repo}/actions/runs/${runId}`;
 
+      // Send push notification
       await sendPushNotification({
         title: `PTR Alert: ${alert.type}`,
         body: alert.message,
-        link: `https://github.com/${repo}/actions/runs/${runId}`,
+        link: actionUrl,
         priority: priority as 1 | 2 | 3 | 4 | 5
       });
+
+      // Send email notification for critical and high severity alerts
+      const emailTo = process.env.EMAIL_NOTIFY_TO;
+      if (emailTo) {
+        const emailSubject = `[${alert.severity.toUpperCase()}] Screeps PTR Alert: ${alert.type}`;
+        const emailBody = `
+Screeps PTR Alert Detected
+========================
+
+Severity: ${alert.severity.toUpperCase()}
+Type: ${alert.type}
+Message: ${alert.message}
+
+View Details: ${actionUrl}
+
+Timestamp: ${new Date().toISOString()}
+Repository: ${repo}
+Run ID: ${runId}
+
+This is an automated alert from the Screeps monitoring system.
+`.trim();
+
+        const emailHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .header { background-color: ${alert.severity === "critical" ? "#dc3545" : "#ffc107"}; color: white; padding: 20px; text-align: center; }
+    .content { padding: 20px; }
+    .alert-box { background-color: #f8f9fa; border-left: 4px solid ${alert.severity === "critical" ? "#dc3545" : "#ffc107"}; padding: 15px; margin: 20px 0; }
+    .footer { background-color: #f8f9fa; padding: 15px; text-align: center; font-size: 12px; color: #6c757d; }
+    .btn { display: inline-block; background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin: 10px 0; }
+    table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    td { padding: 8px; border-bottom: 1px solid #dee2e6; }
+    td:first-child { font-weight: bold; width: 150px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🚨 Screeps PTR Alert</h1>
+  </div>
+  <div class="content">
+    <div class="alert-box">
+      <h2>${alert.type}</h2>
+      <p>${alert.message}</p>
+    </div>
+    <table>
+      <tr><td>Severity</td><td>${alert.severity.toUpperCase()}</td></tr>
+      <tr><td>Type</td><td>${alert.type}</td></tr>
+      <tr><td>Timestamp</td><td>${new Date().toISOString()}</td></tr>
+      <tr><td>Repository</td><td>${repo}</td></tr>
+      <tr><td>Run ID</td><td>${runId}</td></tr>
+    </table>
+    <p style="text-align: center;">
+      <a href="${actionUrl}" class="btn">View Full Details →</a>
+    </p>
+  </div>
+  <div class="footer">
+    <p>This is an automated alert from the Screeps monitoring system.</p>
+    <p>Repository: <a href="https://github.com/${repo}">${repo}</a></p>
+  </div>
+</body>
+</html>
+`.trim();
+
+        await sendEmailNotification({
+          to: emailTo,
+          subject: emailSubject,
+          body: emailBody,
+          html: emailHtml,
+          priority: alert.severity === "critical" ? "high" : "normal"
+        });
+      }
 
       // Add delay between notifications to respect rate limits
       await new Promise(resolve => setTimeout(resolve, 6000));
