@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.14.0] - 2025-11-07
+
 ### Fixed
 
 - **Modular Build Documentation and Validation (#506)**
