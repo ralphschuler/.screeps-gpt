@@ -91,6 +91,9 @@
     "vitest": "^4.0.1",
     "yaml": "^2.8.1"
   },
+  "overrides": {
+    "axios": "^1.13.2"
+  },
   "lint-staged": {
     "*.ts": [
       "eslint --fix",

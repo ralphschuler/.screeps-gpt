@@ -14,6 +14,7 @@ describe("Workflow concurrency controls", () => {
     "guard-coverage.yml",
     "guard-format.yml",
     "guard-lint.yml",
+    "guard-security-audit.yml",
     "guard-test-docs.yml",
     "guard-test-e2e.yml",
     "guard-test-regression.yml",
