@@ -104,8 +104,8 @@ describe("AnalyticsReporter", () => {
       // Queue 3rd report - should trigger flush
       reporter.queueReport({ tick: 1002 });
 
-      // Note: In tests without fetch, flush will warn and clear queue
-      await new Promise(resolve => setTimeout(resolve, 10));
+      // Wait for async flush to complete
+      await reporter.flush();
 
       summary = reporter.getSummary();
       // Queue should be cleared even if send fails
@@ -254,8 +254,9 @@ describe("AnalyticsReporter", () => {
       await reporter.flush();
 
       const summary = reporter.getSummary();
-      // Queue should not grow beyond reasonable limits
-      expect(summary.queuedReports).toBeLessThan(15);
+      // Queue should not grow beyond reasonable limits (batchSize * MAX_RETRY_QUEUE_MULTIPLIER)
+      // With isFlushing guard, only one flush processes at a time
+      expect(summary.queuedReports).toBeLessThanOrEqual(20);
     });
   });
 

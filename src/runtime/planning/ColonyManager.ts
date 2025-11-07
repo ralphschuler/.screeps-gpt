@@ -171,7 +171,7 @@ export class ColonyManager {
   /**
    * Request expansion to a target room
    */
-  public requestExpansion(targetRoom: string, reason: string, priority: number = 50, currentTick?: number): void {
+  public requestExpansion(targetRoom: string, reason: string, currentTick?: number, priority: number = 50): void {
     // Check if already claimed
     if (this.claimedRooms.has(targetRoom)) {
       this.logger.warn(`[ColonyManager] Cannot expand to ${targetRoom}: already claimed`);
@@ -193,8 +193,18 @@ export class ColonyManager {
       status: "pending"
     };
 
-    this.expansionQueue.push(request);
-    this.expansionQueue.sort((a, b) => b.priority - a.priority);
+    // Insert request into expansionQueue in sorted order (descending priority)
+    let left = 0;
+    let right = this.expansionQueue.length;
+    while (left < right) {
+      const mid = Math.floor((left + right) / 2);
+      if (this.expansionQueue[mid].priority > request.priority) {
+        left = mid + 1;
+      } else {
+        right = mid;
+      }
+    }
+    this.expansionQueue.splice(left, 0, request);
 
     this.logger.log(`[ColonyManager] Queued expansion to ${targetRoom}: ${reason} (priority: ${priority})`);
   }

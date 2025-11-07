@@ -38,12 +38,15 @@ export interface StatsReport {
 
 @profile
 export class AnalyticsReporter {
+  private static readonly MAX_RETRY_QUEUE_MULTIPLIER = 2;
+
   private readonly endpoint?: string;
   private readonly apiKey?: string;
   private readonly batchSize: number;
   private readonly enableCompression: boolean;
   private readonly logger: Pick<Console, "log" | "warn" | "error">;
   private readonly reportQueue: StatsReport[] = [];
+  private isFlushing = false;
 
   public constructor(config: AnalyticsConfig = {}) {
     this.endpoint = config.endpoint;
@@ -65,7 +68,7 @@ export class AnalyticsReporter {
 
     this.reportQueue.push(report);
 
-    if (this.reportQueue.length >= this.batchSize) {
+    if (this.reportQueue.length >= this.batchSize && !this.isFlushing) {
       void this.flush();
     }
   }
@@ -78,12 +81,17 @@ export class AnalyticsReporter {
       return;
     }
 
+    if (this.isFlushing) {
+      return; // Prevent concurrent flushes
+    }
+
     if (!this.endpoint) {
       this.logger.warn("[AnalyticsReporter] No endpoint configured, skipping flush");
       this.reportQueue.length = 0;
       return;
     }
 
+    this.isFlushing = true;
     const reports = [...this.reportQueue];
     this.reportQueue.length = 0;
 
@@ -94,9 +102,11 @@ export class AnalyticsReporter {
       const errorMsg = error instanceof Error ? error.message : String(error);
       this.logger.error(`[AnalyticsReporter] Failed to send reports: ${errorMsg}`);
       // Re-queue failed reports (with limit to prevent unbounded growth)
-      if (this.reportQueue.length < this.batchSize * 2) {
+      if (this.reportQueue.length < this.batchSize * AnalyticsReporter.MAX_RETRY_QUEUE_MULTIPLIER) {
         this.reportQueue.push(...reports);
       }
+    } finally {
+      this.isFlushing = false;
     }
   }
 

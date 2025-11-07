@@ -103,7 +103,7 @@ describe("ColonyManager", () => {
     it("should queue expansion request", () => {
       const manager = new ColonyManager({ memory });
 
-      manager.requestExpansion("W3N3", "nearby energy source", 75, 1000);
+      manager.requestExpansion("W3N3", "nearby energy source", 1000, 75);
       const queue = manager.getExpansionQueue();
 
       expect(queue).toHaveLength(1);
@@ -116,9 +116,9 @@ describe("ColonyManager", () => {
     it("should prioritize expansion requests by priority", () => {
       const manager = new ColonyManager({ memory });
 
-      manager.requestExpansion("W3N3", "low priority", 25, 1000);
-      manager.requestExpansion("W4N4", "high priority", 90, 1001);
-      manager.requestExpansion("W5N5", "medium priority", 50, 1002);
+      manager.requestExpansion("W3N3", "low priority", 1000, 25);
+      manager.requestExpansion("W4N4", "high priority", 1001, 90);
+      manager.requestExpansion("W5N5", "medium priority", 1002, 50);
 
       const queue = manager.getExpansionQueue();
 
@@ -131,8 +131,8 @@ describe("ColonyManager", () => {
       const logger = { log: () => {}, warn: () => {} };
       const manager = new ColonyManager({ memory, logger });
 
-      manager.requestExpansion("W3N3", "first request", 75, 1000);
-      manager.requestExpansion("W3N3", "duplicate request", 80, 1001);
+      manager.requestExpansion("W3N3", "first request", 1000, 75);
+      manager.requestExpansion("W3N3", "duplicate request", 1001, 80);
 
       const queue = manager.getExpansionQueue();
 
@@ -152,7 +152,7 @@ describe("ColonyManager", () => {
       };
 
       manager.run(mockRooms, 100);
-      manager.requestExpansion("W1N1", "already owned", 75, 100);
+      manager.requestExpansion("W1N1", "already owned", 100, 75);
 
       const queue = manager.getExpansionQueue();
 
@@ -162,7 +162,7 @@ describe("ColonyManager", () => {
     it("should use default priority of 50", () => {
       const manager = new ColonyManager({ memory });
 
-      manager.requestExpansion("W3N3", "default priority", undefined, 1000);
+      manager.requestExpansion("W3N3", "default priority", 1000);
       const queue = manager.getExpansionQueue();
 
       expect(queue[0].priority).toBe(50);
@@ -216,7 +216,7 @@ describe("ColonyManager", () => {
     it("should save state to memory", () => {
       const manager = new ColonyManager({ memory });
 
-      manager.requestExpansion("W3N3", "test expansion", 75, 1000);
+      manager.requestExpansion("W3N3", "test expansion", 1000, 75);
       manager.sendShardMessage("shard1", "status_update", {}, 1000);
       manager.saveToMemory();
 
@@ -227,8 +227,8 @@ describe("ColonyManager", () => {
     it("should persist expansion queue", () => {
       const manager = new ColonyManager({ memory });
 
-      manager.requestExpansion("W3N3", "expansion 1", 75, 1000);
-      manager.requestExpansion("W4N4", "expansion 2", 50, 1001);
+      manager.requestExpansion("W3N3", "expansion 1", 1000, 75);
+      manager.requestExpansion("W4N4", "expansion 2", 1001, 50);
       manager.saveToMemory();
 
       expect(memory.expansionQueue).toHaveLength(2);
@@ -266,8 +266,8 @@ describe("ColonyManager", () => {
       };
 
       manager.run(mockRooms, 100);
-      manager.requestExpansion("W3N3", "expansion 1", 75, 100);
-      manager.requestExpansion("W4N4", "expansion 2", 50, 101);
+      manager.requestExpansion("W3N3", "expansion 1", 100, 75);
+      manager.requestExpansion("W4N4", "expansion 2", 101, 50);
       manager.sendShardMessage("shard1", "status_update", {}, 100);
 
       const stats = manager.getStats();

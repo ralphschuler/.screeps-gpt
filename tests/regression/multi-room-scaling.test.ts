@@ -42,7 +42,7 @@ describe("Multi-room scaling regression", () => {
       expect(stats.claimedRooms).toBe(5);
 
       // Attempt to expand beyond limit
-      manager.requestExpansion("W6N1", "beyond capacity", 75);
+      manager.requestExpansion("W6N1", "beyond capacity", undefined, 75);
       manager.run(mockRooms, 200);
 
       // Expansion should be queued but not processed due to capacity
@@ -95,8 +95,8 @@ describe("Multi-room scaling regression", () => {
     it("should preserve expansion queue across manager recreations", () => {
       const manager1 = new ColonyManager({ memory });
 
-      manager1.requestExpansion("W3N3", "expansion 1", 75);
-      manager1.requestExpansion("W4N4", "expansion 2", 50);
+      manager1.requestExpansion("W3N3", "expansion 1", undefined, 75);
+      manager1.requestExpansion("W4N4", "expansion 2", undefined, 50);
       manager1.saveToMemory();
 
       // Create new manager instance with same memory
@@ -226,11 +226,11 @@ describe("Multi-room scaling regression", () => {
       const manager = new ColonyManager({ memory });
 
       // Initial requests
-      manager.requestExpansion("W3N3", "initial", 50);
-      manager.requestExpansion("W4N4", "initial", 60);
+      manager.requestExpansion("W3N3", "initial", undefined, 50);
+      manager.requestExpansion("W4N4", "initial", undefined, 60);
 
       // Attempt duplicate with different priorities (should be rejected)
-      manager.requestExpansion("W3N3", "duplicate", 90);
+      manager.requestExpansion("W3N3", "duplicate", undefined, 90);
 
       const queue = manager.getExpansionQueue();
 
@@ -243,9 +243,9 @@ describe("Multi-room scaling regression", () => {
       const manager1 = new ColonyManager({ memory });
 
       // Add requests in specific priority order
-      manager1.requestExpansion("W3N3", "low", 25);
-      manager1.requestExpansion("W4N4", "critical", 100);
-      manager1.requestExpansion("W5N5", "medium", 50);
+      manager1.requestExpansion("W3N3", "low", undefined, 25);
+      manager1.requestExpansion("W4N4", "critical", undefined, 100);
+      manager1.requestExpansion("W5N5", "medium", undefined, 50);
       manager1.saveToMemory();
 
       // Reload from memory
