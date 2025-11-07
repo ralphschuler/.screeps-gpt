@@ -85,6 +85,7 @@ export class TrafficManager {
 
   /**
    * Move a creep with priority-based collision avoidance
+   * TODO: Implement path caching to avoid recomputing paths every tick
    */
   private moveWithPriority(
     creep: Creep,
@@ -92,6 +93,7 @@ export class TrafficManager {
     priority: number
   ): { moved: boolean; collisionAvoided: boolean } {
     // Get next position in path
+    // TODO: Cache this path and reuse when destination unchanged
     const path = creep.pos.findPathTo(destination, {
       ignoreCreeps: true,
       maxRooms: 1

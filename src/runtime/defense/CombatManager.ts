@@ -165,21 +165,20 @@ export class CombatManager {
         if (creep.pos.getRangeTo(targetObj) > 3) {
           creep.moveTo(targetObj);
         } else {
-          // Attack if in range
-          if ("attack" in creep) {
-            if (creep.pos.getRangeTo(targetObj) === 1) {
-              if ("hits" in targetObj) {
-                creep.attack(targetObj);
-                engagements++;
-              }
+          // Attack if in range and has attack parts
+          const hasAttack = creep.body.some(part => part.type === ATTACK);
+          const hasRangedAttack = creep.body.some(part => part.type === RANGED_ATTACK);
+
+          if (hasAttack && creep.pos.getRangeTo(targetObj) === 1) {
+            if ("hits" in targetObj) {
+              creep.attack(targetObj);
+              engagements++;
             }
           }
-          if ("rangedAttack" in creep) {
-            if (creep.pos.getRangeTo(targetObj) <= 3) {
-              if ("hits" in targetObj) {
-                creep.rangedAttack(targetObj);
-                engagements++;
-              }
+          if (hasRangedAttack && creep.pos.getRangeTo(targetObj) <= 3) {
+            if ("hits" in targetObj) {
+              creep.rangedAttack(targetObj);
+              engagements++;
             }
           }
         }

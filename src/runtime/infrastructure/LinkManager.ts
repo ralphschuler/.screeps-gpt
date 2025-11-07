@@ -59,10 +59,11 @@ export class LinkManager {
           if (target) {
             const targetLink = Game.getObjectById(target.id);
             if (targetLink) {
+              const transferAmount = link.store.getUsedCapacity(RESOURCE_ENERGY);
               const result = link.transferEnergy(targetLink);
               if (result === OK) {
                 transfers++;
-                energyMoved += link.store.getUsedCapacity(RESOURCE_ENERGY);
+                energyMoved += transferAmount;
                 linkMeta.lastTransferTick = Game.time;
               }
             }
@@ -98,6 +99,7 @@ export class LinkManager {
 
   /**
    * Classify link role based on proximity to game objects
+   * TODO: Cache room.find(FIND_SOURCES) results at room level to reduce CPU usage
    */
   private classifyLink(link: StructureLink): LinkMetadata {
     const room = Game.rooms[link.room.name];
@@ -111,6 +113,7 @@ export class LinkManager {
     }
 
     // Check proximity to sources (within 2 tiles)
+    // TODO: This should be cached at the room level
     const sources = room.find(FIND_SOURCES);
     for (const source of sources) {
       if (link.pos.getRangeTo(source) <= 2) {
