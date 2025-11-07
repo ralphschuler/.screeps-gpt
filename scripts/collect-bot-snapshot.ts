@@ -1,6 +1,5 @@
-import { mkdirSync, readdirSync, statSync, unlinkSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, statSync, unlinkSync, writeFileSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { readFileSync } from "node:fs";
 
 interface BotSnapshot {
   timestamp: string;
@@ -151,7 +150,7 @@ async function collectBotSnapshot(): Promise<void> {
         if (latestStats.creeps !== undefined) {
           snapshot.creeps = {
             total: Number(latestStats.creeps) || 0,
-            byRole: latestStats.creepsByRole
+            byRole: latestStats.creepsByRole as Record<string, number> | undefined
           };
         }
 

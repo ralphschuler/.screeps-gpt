@@ -204,7 +204,7 @@ This page displays performance metrics for the Screeps GPT bot over the last 30 
       if (data.dataPoints.some(d => d.averageRcl !== undefined)) {
         datasets.push({
           label: 'Average RCL',
-          data: data.dataPoints.map(d => d.averageRcl !== undefined ? d.averageRcl.toFixed(1) : null),
+          data: data.dataPoints.map(d => d.averageRcl !== undefined ? parseFloat(d.averageRcl.toFixed(1)) : null),
           borderColor: 'rgb(255, 99, 132)',
           backgroundColor: 'rgba(255, 99, 132, 0.1)',
           tension: 0.3,
