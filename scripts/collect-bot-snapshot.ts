@@ -106,7 +106,7 @@ async function collectBotSnapshot(): Promise<void> {
 
         // Extract tick
         if (latestStats.tick !== undefined) {
-          snapshot.tick = latestStats.tick;
+          snapshot.tick = Number(latestStats.tick);
         }
 
         // Extract room data
@@ -150,7 +150,7 @@ async function collectBotSnapshot(): Promise<void> {
         // Extract creep data
         if (latestStats.creeps !== undefined) {
           snapshot.creeps = {
-            total: latestStats.creeps || 0,
+            total: Number(latestStats.creeps) || 0,
             byRole: latestStats.creepsByRole
           };
         }
@@ -158,8 +158,8 @@ async function collectBotSnapshot(): Promise<void> {
         // Extract spawn data
         if (latestStats.spawns !== undefined) {
           snapshot.spawns = {
-            total: latestStats.spawns || 0,
-            active: latestStats.activeSpawns || 0
+            total: Number(latestStats.spawns) || 0,
+            active: Number(latestStats.activeSpawns) || 0
           };
         }
       }
