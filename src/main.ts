@@ -1,7 +1,7 @@
 import { createKernel } from "@runtime/bootstrap";
 import type { GameContext } from "@runtime/types/GameContext";
 import { BehaviorController } from "@runtime/behavior/BehaviorController";
-import * as Profiler from "@profiler";
+import { init as initProfiler } from "@profiler";
 
 // Read task system enablement from environment variable or Memory flag
 // Memory access is safe here as it's initialized by the Screeps engine before loop() is called
@@ -19,16 +19,37 @@ const kernel = createKernel({
 });
 
 // Initialize profiler and expose it globally for console access
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+const profilerInstance = initProfiler();
 if (typeof global !== "undefined") {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-  (global as any).Profiler = Profiler.init();
+  (global as any).Profiler = profilerInstance;
 } else if (typeof window !== "undefined") {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-  (window as any).Profiler = Profiler.init();
+  (window as any).Profiler = profilerInstance;
 }
+
+// Auto-start profiler if __PROFILER_ENABLED__ is true and not already running
+// This ensures profiler data collection begins automatically on deployment
+let profilerAutoStarted = false;
 
 export const loop = (): void => {
   try {
+    // Auto-start profiler on first tick if enabled and not running
+    if (__PROFILER_ENABLED__ && !profilerAutoStarted && profilerInstance) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      const status = profilerInstance.status();
+      if (status === "Profiler is stopped") {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+        profilerInstance.start();
+        console.log("[Profiler] Auto-started profiler data collection");
+        profilerAutoStarted = true;
+      } else {
+        // Already running, no need to check again
+        profilerAutoStarted = true;
+      }
+    }
+
     kernel.run(Game as unknown as GameContext, Memory);
   } catch (error) {
     console.log(`Unhandled error in loop: ${String(error)}`);
