@@ -289,7 +289,7 @@ When profiler data is available, the monitoring agent will:
 
 ```bash
 # Run health check locally
-npx tsx scripts/check-profiler-health.ts
+bun run scripts/check-profiler-health.ts
 
 # Expected output when healthy:
 # Status: HEALTHY
@@ -307,7 +307,7 @@ npx tsx scripts/check-profiler-health.ts
 If profiler health check fails:
 
 1. **"Profiler report not found"**
-   - Run: `npx tsx scripts/fetch-profiler-console.ts`
+   - Run: `bun run scripts/fetch-profiler-console.ts`
    - Check `SCREEPS_TOKEN` environment variable
    - Verify monitoring workflow is running
 

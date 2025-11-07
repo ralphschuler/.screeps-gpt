@@ -26,7 +26,7 @@ async function checkProfilerHealth(): Promise<HealthCheckResult> {
       message: "Profiler report not found at reports/profiler/latest.json",
       details: [
         "Expected file to be created by monitoring workflow",
-        "Run: npx tsx scripts/fetch-profiler-console.ts to fetch profiler data"
+        "Run: bun run scripts/fetch-profiler-console.ts to fetch profiler data"
       ]
     };
   }
@@ -102,7 +102,11 @@ async function checkProfilerHealth(): Promise<HealthCheckResult> {
           `Total ticks: ${summary.totalTicks}`,
           `Functions profiled: ${summary.totalFunctions}`,
           `Avg CPU/tick: ${summary.averageCpuPerTick.toFixed(2)}ms`,
-          `Top consumer: ${summary.topCpuConsumers[0]?.name} (${summary.topCpuConsumers[0]?.cpuPerTick.toFixed(2)}ms/tick)`
+          ...(summary.topCpuConsumers.length > 0
+            ? [
+                `Top consumer: ${summary.topCpuConsumers[0].name} (${summary.topCpuConsumers[0].cpuPerTick.toFixed(2)}ms/tick)`
+              ]
+            : [])
         ]
       : []
   };
