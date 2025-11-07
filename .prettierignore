@@ -4,6 +4,9 @@ build/
 public/
 node_modules/
 
+# Generated reports should not be formatted
+reports/
+
 # Hexo scaffolds use {{ }} template syntax that Prettier breaks
 docs-build/scaffolds/
 
