@@ -146,6 +146,7 @@ Multiple specialized Copilot agents collaborate on different aspects of developm
 
 ### 📊 Monitoring & Operations
 
+- **[Bot Analytics](docs/analytics.md)** - 30-day performance charts and metrics
 - **[PTR Monitoring](docs/operations/stats-monitoring.md)** - Performance tracking on test realm
 - **[Respawn Handling](docs/operations/respawn-handling.md)** - Automatic respawn detection
 - **[Workflow Troubleshooting](docs/operations/workflow-troubleshooting.md)** - Common CI/CD issues

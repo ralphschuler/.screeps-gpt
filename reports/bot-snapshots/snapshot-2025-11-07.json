@@ -1,0 +1,38 @@
+{
+  "timestamp": "2025-11-07T16:34:37.829Z",
+  "cpu": {
+    "used": 45.5,
+    "limit": 100,
+    "bucket": 9500
+  },
+  "tick": 12345678,
+  "rooms": {
+    "W1N1": {
+      "rcl": 3,
+      "energy": 350,
+      "energyCapacity": 550,
+      "controllerProgress": 28000,
+      "controllerProgressTotal": 45000
+    },
+    "W2N2": {
+      "rcl": 5,
+      "energy": 850,
+      "energyCapacity": 1300,
+      "controllerProgress": 120000,
+      "controllerProgressTotal": 135000
+    }
+  },
+  "creeps": {
+    "total": 15,
+    "byRole": {
+      "harvester": 5,
+      "upgrader": 4,
+      "builder": 3,
+      "miner": 3
+    }
+  },
+  "spawns": {
+    "total": 2,
+    "active": 2
+  }
+}
