@@ -98,9 +98,7 @@ export class ColonyManager {
     if (this.memoryRef.shardMessages) {
       this.shardMessages.push(...this.memoryRef.shardMessages);
     }
-    if (this.memoryRef.lastExpansionCheck) {
-      this.lastExpansionCheck = this.memoryRef.lastExpansionCheck;
-    }
+    this.lastExpansionCheck = this.memoryRef.lastExpansionCheck;
   }
 
   /**

@@ -83,11 +83,6 @@
   - Threat assessment and engagement logic
   - TrafficManager for collision avoidance
   - Priority-based movement with position reservation
-- [x] Multi-room coordination and global management _(2025-11-07)_
-  - ColonyManager for multi-room expansion and inter-shard communication
-  - Expansion queue with priority-based room claiming
-  - Inter-shard messaging for resource coordination
-  - Analytics and observability with HTTP POST integration
 - [ ] Empire coordination and room claiming
 - [ ] Multi-room logistics and resource balancing
 - [ ] Automated expansion and colonization
@@ -95,8 +90,10 @@
 ### Phase 5: Multi-Room & Global Management (Completed)
 
 - [x] Colony and shard scaling _(2025-11-07)_
-  - ColonyManager with expansion queue and inter-shard messaging
+  - ColonyManager for multi-room expansion and inter-shard communication
+  - Expansion queue with priority-based room claiming
   - Multi-room tracking and coordination
+  - Inter-shard messaging for resource coordination
   - Memory persistence for colony state
   - Comprehensive unit and regression tests (34 tests total)
 - [x] Analytics and observability _(2025-11-07)_

@@ -1,3 +1,5 @@
+import { profile } from "@profiler";
+
 /**
  * Analytics reporter for sending Screeps statistics to external monitoring systems.
  * Supports HTTP POST integration for real-time telemetry and observability.
@@ -8,7 +10,7 @@
  *   endpoint: "https://monitoring.example.com/api/stats",
  *   apiKey: process.env.ANALYTICS_API_KEY
  * });
- * reporter.report(Memory.stats);
+ * reporter.queueReport(Memory.stats);
  * ```
  */
 export interface AnalyticsConfig {
@@ -34,6 +36,7 @@ export interface StatsReport {
   };
 }
 
+@profile
 export class AnalyticsReporter {
   private readonly endpoint?: string;
   private readonly apiKey?: string;
