@@ -90,7 +90,7 @@ describe("BehaviorController", () => {
 
       // Second tick - all roles satisfied, no new spawns
       const game2 = createGameContext({ time: 101, hasSpawns: true });
-      const roleCounts = { harvester: 2, upgrader: 1, builder: 1 };
+      const roleCounts = { harvester: 4, upgrader: 3, builder: 2 };
       controller.execute(game2, memory, roleCounts);
 
       // Counter should remain unchanged when no spawning occurs
@@ -98,7 +98,7 @@ describe("BehaviorController", () => {
 
       // Third tick - needs more harvesters
       const game3 = createGameContext({ time: 102, hasSpawns: true });
-      controller.execute(game3, memory, { harvester: 1, upgrader: 1, builder: 1 });
+      controller.execute(game3, memory, { harvester: 3, upgrader: 3, builder: 2 });
 
       // Counter should increment
       expect(memory.creepCounter).toBeGreaterThan(counterAfterTick1);
@@ -181,7 +181,7 @@ describe("BehaviorController", () => {
       };
 
       const memory = { creepCounter: 0 } as Memory;
-      const roleCounts = { harvester: 2, upgrader: 1, builder: 1 };
+      const roleCounts = { harvester: 4, upgrader: 3, builder: 2 };
 
       const result = controller.execute(game, memory, roleCounts);
 
@@ -250,7 +250,7 @@ describe("BehaviorController", () => {
       };
 
       const memory = { creepCounter: 0 } as Memory;
-      const roleCounts = { harvester: 2, upgrader: 1, builder: 1 };
+      const roleCounts = { harvester: 4, upgrader: 3, builder: 2 };
 
       const result = controller.execute(game, memory, roleCounts);
 
@@ -338,7 +338,7 @@ describe("BehaviorController", () => {
       };
 
       const memory = { creepCounter: 0 } as Memory;
-      const roleCounts = { harvester: 2, upgrader: 1, builder: 1, remoteMiner: 1 };
+      const roleCounts = { harvester: 4, upgrader: 3, builder: 2, remoteMiner: 1 };
 
       // Step 1: travel to remote room
       let result = controller.execute(game, memory, roleCounts);

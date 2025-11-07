@@ -140,7 +140,7 @@ describe("CPU timeout prevention regression", () => {
       };
 
       const memory = { creepCounter: 0 } as Memory;
-      const roleCounts = { harvester: 2, upgrader: 1, builder: 1 }; // Meet minimums to avoid spawning
+      const roleCounts = { harvester: 4, upgrader: 3, builder: 2 }; // Meet minimums to avoid spawning
 
       // Track CPU usage - simulate expensive creep
       let callCount = 0;
@@ -185,7 +185,7 @@ describe("CPU timeout prevention regression", () => {
       };
 
       const memory = { creepCounter: 0 } as Memory;
-      const roleCounts = { harvester: 1, upgrader: 1, builder: 1 };
+      const roleCounts = { harvester: 3, upgrader: 2, builder: 1 };
 
       const result = controller.execute(game, memory, roleCounts);
 
