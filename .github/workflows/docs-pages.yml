@@ -44,6 +44,10 @@ jobs:
         run: npm ci
       - name: Update versions
         run: bun run versions:update
+      - name: Generate analytics data
+        run: >-
+          npx tsx scripts/generate-analytics.ts ||
+          echo "Analytics generation failed (no snapshots yet)"
       - name: Generate documentation site
         working-directory: docs-build
         run: npm run build

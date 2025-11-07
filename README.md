@@ -157,6 +157,7 @@ Multiple specialized Copilot agents collaborate on different aspects of developm
 - **Runtime Evaluation**: Bot analyzes its own performance and generates improvement recommendations
 - **Resilient PTR Monitoring**: Multi-source telemetry collection (Stats API + Console fallback) eliminates monitoring blackouts
 - **Autonomous Strategic Analysis**: Combined bot performance and repository health monitoring every 30 minutes
+- **30-Day Analytics**: Automated collection and visualization of bot performance metrics with interactive charts
 - **Regression Testing**: Comprehensive test suites prevent quality degradation
 - **Coverage Tracking**: Ensure critical code paths remain tested
 

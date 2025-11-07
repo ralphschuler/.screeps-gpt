@@ -1,0 +1,46 @@
+{
+  "fetchedAt": "2025-11-07T12:00:00.000Z",
+  "endpoint": "https://screeps.com/api/user/stats?interval=180",
+  "payload": {
+    "ok": 1,
+    "stats": {
+      "12345678": {
+        "tick": 12345678,
+        "cpu": 45.5,
+        "cpuLimit": 100,
+        "bucket": 9500,
+        "creeps": 15,
+        "spawns": 2,
+        "activeSpawns": 2,
+        "creepsByRole": {
+          "harvester": 5,
+          "upgrader": 4,
+          "builder": 3,
+          "miner": 3
+        },
+        "rooms": {
+          "W1N1": {
+            "rcl": 3,
+            "controllerLevel": 3,
+            "energy": 350,
+            "energyAvailable": 350,
+            "energyCapacity": 550,
+            "energyCapacityAvailable": 550,
+            "controllerProgress": 28000,
+            "controllerProgressTotal": 45000
+          },
+          "W2N2": {
+            "rcl": 5,
+            "controllerLevel": 5,
+            "energy": 850,
+            "energyAvailable": 850,
+            "energyCapacity": 1300,
+            "energyCapacityAvailable": 1300,
+            "controllerProgress": 120000,
+            "controllerProgressTotal": 135000
+          }
+        }
+      }
+    }
+  }
+}
