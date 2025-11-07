@@ -792,3 +792,59 @@ console.log(`Created ${result.created} road sites`);
 - `repair`: Structures repaired
 
 **Documentation**: All Phase 3 features include comprehensive test coverage (unit + regression tests) and are documented in the appropriate guides.
+
+## Advanced Economy Automation (Phase 4)
+
+### Link Network Management
+
+The LinkManager automates energy distribution through link networks:
+
+- **Role Classification**: Automatically identifies links as source, storage, controller, or upgrade links based on proximity to game objects
+- **Energy Transfer**: Source links automatically transfer energy when full to controller/storage links with free capacity
+- **Priority System**: Controller links receive energy first, followed by storage links
+- **Network Tracking**: Maintains link metadata and transfer history for optimization
+
+### Terminal Operations
+
+The TerminalManager handles inter-room resource logistics:
+
+- **Energy Balancing**: Maintains minimum energy reserve (default 20,000) in terminals
+- **Resource Transfers**: Priority-based queue for inter-room resource requests
+- **Cooldown Management**: Waits for terminal cooldown before executing transfers
+- **Request Cleanup**: Automatically removes old requests (>1000 ticks)
+
+### Lab Automation
+
+The LabManager coordinates compound production and creep boosting:
+
+- **Production Mode**: Automatically produces compounds using input/output lab configuration
+- **Boosting Mode**: Priority system for creep boosting requests
+- **State Management**: Tracks lab states (idle, production, boosting, cooldown)
+- **Recipe System**: Built-in recipes for Tier 1 compounds (UH, UO, KH, KO, LH, LO, ZH, ZO, GH, GO)
+
+### Factory Automation
+
+The FactoryManager handles commodity production:
+
+- **Production Queue**: Priority-based orders for commodity production
+- **Auto-Production**: Automatically produces batteries when idle
+- **Resource Validation**: Checks factory has required components before production
+- **Order Management**: Removes completed orders and cleans up old orders (>5000 ticks)
+
+### Combat Coordination
+
+The CombatManager provides squad-based combat operations:
+
+- **Squad Formation**: Create and manage squads with offense/defense/raid roles
+- **Threat Assessment**: Identifies hostile creeps and structures with threat scoring
+- **Engagement Logic**: Commands squads to engage targets by priority
+- **Squad Lifecycle**: Automatically disbands squads when all members die
+
+### Traffic Management
+
+The TrafficManager coordinates creep movement with collision avoidance:
+
+- **Priority Movement**: Higher priority creeps get path preference
+- **Collision Detection**: Detects and resolves creep blocking situations
+- **Position Reservation**: Reserves positions for high-priority creeps
+- **Swap Logic**: Requests blocking creeps to move for higher priority traffic

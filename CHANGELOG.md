@@ -5,6 +5,22 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Added
+
+- **Phase 4 Advanced Economy**: Complete implementation of RCL 6-8 features
+  - LinkManager: Automated energy distribution through link networks with role-based classification
+  - TerminalManager: Inter-room resource logistics with priority-based transfer queue
+  - LabManager: Compound production and creep boosting with state management
+  - FactoryManager: Automated commodity production with priority queue system
+  - CombatManager: Squad-based combat coordination with threat assessment
+  - TrafficManager: Priority-based movement coordination with collision avoidance
+- Unit tests for all new managers (LinkManager, TerminalManager, LabManager, FactoryManager, CombatManager, TrafficManager)
+- Documentation for Phase 4 features in `docs/automation/overview.md`
+
+### Fixed
+
+- Removed Math.random() usage in CombatManager to maintain deterministic runtime requirements
+
 ## [0.14.0] - 2025-11-07
 
 ### Fixed
