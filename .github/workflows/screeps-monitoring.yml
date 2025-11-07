@@ -71,6 +71,13 @@ jobs:
           npx tsx scripts/fetch-profiler-console.ts || \
             echo "Profiler data fetch failed (may not be enabled)"
 
+      - name: Validate profiler health
+        if: always()
+        run: |
+          npx tsx scripts/check-profiler-health.ts || \
+            echo "::warning::Profiler health check failed or has warnings"
+        continue-on-error: true
+
       - name: Collect bot state snapshot
         id: collect_snapshot
         if: success()
