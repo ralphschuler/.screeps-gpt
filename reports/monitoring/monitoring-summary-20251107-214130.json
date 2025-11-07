@@ -1,0 +1,28 @@
+{
+  "run_id": "19181868290",
+  "run_url": "https://github.com/ralphschuler/.screeps-gpt/actions/runs/19181868290",
+  "timestamp": "2025-11-07T21:39:07Z",
+  "bot_health_score": 15,
+  "bot_status": "critical",
+  "ptr_status": "critical",
+  "repository_health": "needs-attention",
+  "ptr_snapshot_path": "reports/copilot/ptr-stats.json",
+  "profiler_status": "unavailable",
+  "profiler_snapshot_path": null,
+  "profiler_top_consumer": null,
+  "issues_created": ["#526"],
+  "issues_updated": ["#523", "#524"],
+  "issues_closed": [],
+  "critical_findings": 2,
+  "high_priority_findings": 4,
+  "medium_priority_findings": 4,
+  "ptr_anomalies_detected": 0,
+  "performance_bottlenecks_identified": 0,
+  "recommendations": [
+    "IMMEDIATE: Manual console verification to confirm bot functionality on shard3",
+    "URGENT: Fix console telemetry fallback to restore monitoring resilience", 
+    "CRITICAL: Investigate correlation between CPU timeouts and empty stats collection"
+  ],
+  "next_monitor_focus": "Telemetry restoration and bot functionality verification",
+  "notes": "Compound critical failure: complete telemetry blackout (3 cycles) with potential bot non-functionality. Stats API empty, console fallback failed, profiler unavailable. Cannot validate if bot is executing or if CPU timeout issue resolved. Emergency manual verification required."
+}
