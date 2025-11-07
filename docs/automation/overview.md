@@ -848,3 +848,84 @@ The TrafficManager coordinates creep movement with collision avoidance:
 - **Collision Detection**: Detects and resolves creep blocking situations
 - **Position Reservation**: Reserves positions for high-priority creeps
 - **Swap Logic**: Requests blocking creeps to move for higher priority traffic
+
+## Phase 5: Performance Optimizations and Error Handling
+
+### Profiling and CPU Optimization
+
+All runtime managers use the `@profile` decorator for automated CPU profiling:
+
+- **Automatic Profiling**: The profiler tracks CPU usage for all decorated methods
+- **Performance Monitoring**: Detailed breakdown of CPU costs per manager and method
+- **Zero-Cost in Production**: Profiling can be disabled via `PROFILER_ENABLED=false`
+- **Build Integration**: Profiler is conditionally included based on environment variable
+
+**Implementation:** [`src/profiler/Profiler.ts`](../../src/profiler/Profiler.ts)
+
+### Memory Efficiency
+
+Memory optimization strategies across the codebase:
+
+- **Batch Processing**: AnalyticsReporter batches reports to reduce memory overhead
+- **Queue Management**: Automatic cleanup of old data (e.g., shard messages >1000 ticks)
+- **Lazy Loading**: Managers only load state from Memory when configured
+- **State Persistence**: Explicit save operations prevent unnecessary memory writes
+
+### Error Handling and Recovery
+
+Comprehensive error handling across all managers:
+
+- **Graceful Degradation**: Managers continue operating when non-critical operations fail
+- **Logging**: All errors logged with context via Logger utility
+- **Recovery Patterns**: Failed operations re-queued with limits to prevent unbounded growth
+- **Validation**: Input validation prevents invalid state from propagating
+
+**Example from AnalyticsReporter:**
+
+```typescript
+try {
+  await this.sendReports(reports);
+  this.logger.log(`Successfully sent ${reports.length} reports`);
+} catch (error) {
+  const errorMsg = error instanceof Error ? error.message : String(error);
+  this.logger.error(`Failed to send reports: ${errorMsg}`);
+  // Re-queue with limit
+  if (this.reportQueue.length < this.batchSize * 2) {
+    this.reportQueue.push(...reports);
+  }
+}
+```
+
+### Testing Coverage
+
+Comprehensive test coverage for error scenarios:
+
+- **Unit Tests**: Error handling tested with invalid inputs and edge cases
+- **Regression Tests**: High-volume scenarios validate memory and performance
+- **Integration Tests**: End-to-end testing with StatsCollector integration
+- **Coverage Metrics**: 80%+ coverage for new Phase 5 implementations
+
+### Best Practices
+
+1. **Use the profiler**: Always decorate manager classes with `@profile`
+2. **Handle errors**: Catch and log errors, never let them crash the kernel
+3. **Validate inputs**: Check parameters before expensive operations
+4. **Limit growth**: Prevent unbounded queue/array growth with explicit limits
+5. **Log context**: Include relevant context in log messages for debugging
+6. **Test errors**: Write tests for error paths and recovery scenarios
+
+### Performance Metrics
+
+**Colony Manager:**
+
+- Room tracking: <1ms for 10 rooms
+- Message processing: <10ms for 100 messages
+- Expansion evaluation: <5ms per check
+
+**Analytics Reporter:**
+
+- Queue insertion: <0.1ms per report
+- Batch flush: <50ms for 100 reports
+- High-volume: 1000 reports in <200ms
+
+See test suites for detailed performance benchmarks.

@@ -21,6 +21,56 @@ Stats collected include:
 
 See [Stats Collection Implementation](./stats-collection.md) for detailed documentation.
 
+### Advanced Analytics and HTTP Reporting
+
+**NEW in Phase 5:** The analytics system now supports HTTP POST integration for real-time telemetry export to external monitoring platforms.
+
+**Implementation:** [`src/runtime/metrics/AnalyticsReporter.ts`](../../src/runtime/metrics/AnalyticsReporter.ts)
+
+**Features:**
+
+- **Batch Processing**: Configurable batch sizes for efficient network usage
+- **Compression**: Optional payload compression for large datasets
+- **Queue Management**: Automatic queue management with failure recovery
+- **Flexible Integration**: Compatible with any HTTP endpoint accepting JSON
+
+**Usage Example:**
+
+```typescript
+import { AnalyticsReporter } from "@runtime/metrics/AnalyticsReporter";
+
+const reporter = new AnalyticsReporter({
+  endpoint: process.env.ANALYTICS_ENDPOINT,
+  apiKey: process.env.ANALYTICS_API_KEY,
+  batchSize: 10,
+  enableCompression: true
+});
+
+// Queue stats for batched reporting
+reporter.queueReport(Memory.stats, {
+  shard: Game.shard?.name,
+  user: "your-username",
+  version: "1.0.0"
+});
+
+// Flush reports immediately if needed
+await reporter.flush();
+```
+
+**Configuration:**
+
+- `ANALYTICS_ENDPOINT`: HTTP endpoint for stats POST requests
+- `ANALYTICS_API_KEY`: Bearer token for authentication (optional)
+- `ANALYTICS_BATCH_SIZE`: Number of reports to batch (default: 10)
+- `ANALYTICS_COMPRESSION`: Enable payload compression (default: false)
+
+**Supported Platforms:**
+
+- Grafana Cloud with Loki/Prometheus
+- Datadog
+- New Relic
+- Custom endpoints accepting JSON payloads
+
 ### API-Side Stats Retrieval
 
 - Script: [`scripts/fetch-screeps-stats.mjs`](../../scripts/fetch-screeps-stats.mjs).
