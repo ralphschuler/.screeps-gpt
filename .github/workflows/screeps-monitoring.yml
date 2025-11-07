@@ -119,10 +119,26 @@ jobs:
               echo "No snapshot changes to commit"
             else
               git commit -m "chore: update bot state snapshots [skip ci]"
-              git pull --rebase origin "${GITHUB_REF##*/}" || \
-                { echo "::warning::Failed to rebase before push (may be merge conflict, continuing without push)"; exit 0; }
-              git push || \
-                echo "::warning::Failed to push snapshots (may be permissions issue)"
+              # Retry loop for pull/rebase/push to handle concurrent runs
+              ATTEMPTS=0
+              MAX_ATTEMPTS=5
+              SLEEP_SECONDS=10
+              SUCCESS=0
+              while [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; do
+                git pull --rebase --autostash origin "${GITHUB_REF##*/}" || {
+                  echo "::warning::Failed to rebase before push (may be merge conflict)";
+                  ATTEMPTS=$((ATTEMPTS+1))
+                  sleep $SLEEP_SECONDS
+                  continue
+                }
+                git push && SUCCESS=1 && break
+                echo "::warning::Failed to push snapshots (may be permissions issue or concurrent update), retrying..."
+                ATTEMPTS=$((ATTEMPTS+1))
+                sleep $SLEEP_SECONDS
+              done
+              if [ $SUCCESS -eq 0 ]; then
+                echo "::warning::Failed to push snapshots after $MAX_ATTEMPTS attempts (concurrent workflow runs may have caused conflicts)"
+              fi
             fi
           else
             echo "No snapshot files found to commit"
