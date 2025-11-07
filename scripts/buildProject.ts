@@ -1,4 +1,5 @@
-import { mkdir, readdir, rm } from "node:fs/promises";
+import { mkdir, readdir, rm, readFile, writeFile, stat, access } from "node:fs/promises";
+import { constants } from "node:fs";
 import { resolve, join } from "node:path";
 import { build, context as createContext, type BuildOptions } from "esbuild";
 
@@ -16,7 +17,6 @@ const RUNTIME_DEFINES = {
 } as const;
 
 async function prepare() {
-  const { readFile, writeFile } = await import("node:fs/promises");
   const lockFile = resolve(outDir, ".test-lock");
 
   // Preserve test lock file if it exists
@@ -44,7 +44,6 @@ async function findModuleEntryPoints(): Promise<Array<{ path: string; name: stri
   const entries: Array<{ path: string; name: string }> = [];
 
   try {
-    const { stat } = await import("node:fs/promises");
     const subdirs = await readdir(runtimeDir, { withFileTypes: true });
 
     for (const dirent of subdirs) {
@@ -180,9 +179,6 @@ export async function buildProject(watch: boolean): Promise<void> {
  * Validate that expected build artifacts were generated
  */
 async function validateBuildOutput(isModular: boolean, moduleNames?: string[]): Promise<void> {
-  const { access } = await import("node:fs/promises");
-  const { constants } = await import("node:fs");
-
   // Always require main.js
   const mainPath = resolve(outDir, "main.js");
   try {
