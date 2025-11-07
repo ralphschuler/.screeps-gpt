@@ -36,10 +36,11 @@ let profilerAutoStarted = false;
 export const loop = (): void => {
   try {
     // Auto-start profiler on first tick if enabled and not running
-    if (__PROFILER_ENABLED__ && !profilerAutoStarted && profilerInstance) {
+    if (__PROFILER_ENABLED__ && !profilerAutoStarted) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       const status = profilerInstance.status();
-      if (status === "Profiler is stopped") {
+      // Check if status string indicates profiler is stopped
+      if (typeof status === "string" && status.includes("stopped")) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         profilerInstance.start();
         console.log("[Profiler] Auto-started profiler data collection");

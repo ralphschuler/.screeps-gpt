@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 import { checkProfilerHealth } from "../../scripts/check-profiler-health";
 import type { ProfilerSnapshot } from "../../src/shared/profiler-types";
 
-const testDir = resolve("reports", "profiler");
+const testDir = resolve("test-reports", "profiler");
 const testFile = resolve(testDir, "latest.json");
 
 describe("check-profiler-health", () => {
@@ -18,18 +18,23 @@ describe("check-profiler-health", () => {
     } catch {
       // File may not exist
     }
+    try {
+      await rm(testDir, { recursive: true, force: true });
+    } catch {
+      // Directory may not exist
+    }
   });
 
   describe("File existence checks", () => {
     it("should return error when profiler report does not exist", async () => {
-      const result = await checkProfilerHealth();
+      const result = await checkProfilerHealth(testFile);
       expect(result.status).toBe("error");
       expect(result.message).toContain("not found");
     });
 
     it("should return error for invalid JSON", async () => {
       await writeFile(testFile, "invalid json", "utf-8");
-      const result = await checkProfilerHealth();
+      const result = await checkProfilerHealth(testFile);
       expect(result.status).toBe("error");
       expect(result.message).toContain("Failed to parse");
     });
@@ -46,7 +51,7 @@ describe("check-profiler-health", () => {
       };
       await writeFile(testFile, JSON.stringify(snapshot), "utf-8");
 
-      const result = await checkProfilerHealth();
+      const result = await checkProfilerHealth(testFile);
       expect(result.status).toBe("error");
       expect(result.message).toContain("fetch failed");
       expect(result.details).toContain("Connection timeout");
@@ -61,7 +66,7 @@ describe("check-profiler-health", () => {
       };
       await writeFile(testFile, JSON.stringify(snapshot), "utf-8");
 
-      const result = await checkProfilerHealth();
+      const result = await checkProfilerHealth(testFile);
       expect(result.status).toBe("warning");
       expect(result.message).toContain("not running");
     });
@@ -75,7 +80,7 @@ describe("check-profiler-health", () => {
       };
       await writeFile(testFile, JSON.stringify(snapshot), "utf-8");
 
-      const result = await checkProfilerHealth();
+      const result = await checkProfilerHealth(testFile);
       expect(result.status).toBe("warning");
       expect(result.message).toContain("no data");
     });
@@ -111,7 +116,7 @@ describe("check-profiler-health", () => {
       };
       await writeFile(testFile, JSON.stringify(snapshot), "utf-8");
 
-      const result = await checkProfilerHealth();
+      const result = await checkProfilerHealth(testFile);
       expect(result.status).toBe("warning");
       expect(result.message).toContain("stale");
     });
@@ -158,7 +163,7 @@ describe("check-profiler-health", () => {
       };
       await writeFile(testFile, JSON.stringify(snapshot), "utf-8");
 
-      const result = await checkProfilerHealth();
+      const result = await checkProfilerHealth(testFile);
       expect(result.status).toBe("healthy");
       expect(result.message).toContain("operational");
       expect(result.details).toBeDefined();
@@ -196,7 +201,7 @@ describe("check-profiler-health", () => {
       };
       await writeFile(testFile, JSON.stringify(snapshot), "utf-8");
 
-      const result = await checkProfilerHealth();
+      const result = await checkProfilerHealth(testFile);
       expect(result.details).toContain("Total ticks: 500");
       expect(result.details).toContain("Functions profiled: 1");
       expect(result.details).toContain("Avg CPU/tick: 5.00ms");

@@ -8,14 +8,31 @@ import type { ProfilerSnapshot } from "../src/shared/profiler-types";
  * Used in monitoring workflow to validate profiler data collection
  */
 
+/** Staleness threshold in minutes for profiler data */
+const STALENESS_THRESHOLD_MINUTES = 60;
+
 interface HealthCheckResult {
   status: "healthy" | "warning" | "error";
   message: string;
   details?: string[];
 }
 
-async function checkProfilerHealth(): Promise<HealthCheckResult> {
-  const profilerPath = resolve("reports", "profiler", "latest.json");
+/**
+ * Checks the health status of the profiler by validating the existence, readability,
+ * and contents of the profiler report. Returns a status object indicating whether
+ * the profiler is healthy, in a warning state, or in error.
+ *
+ * @param customPath - Optional custom path to the profiler report file (primarily for testing)
+ * @returns {Promise<HealthCheckResult>} An object with:
+ *   - status: "healthy" if the profiler report exists, is parseable, profiler is enabled,
+ *     has data, and the data is fresh (within the last hour).
+ *   - status: "warning" if the profiler is not running, has no data yet, or the data is stale.
+ *   - status: "error" if the profiler report is missing, cannot be parsed, or contains a fetch error.
+ *   - message: A human-readable summary of the health status.
+ *   - details: (optional) Additional context or suggestions for remediation.
+ */
+async function checkProfilerHealth(customPath?: string): Promise<HealthCheckResult> {
+  const profilerPath = customPath || resolve("reports", "profiler", "latest.json");
 
   // Check if profiler report exists
   try {
@@ -84,7 +101,7 @@ async function checkProfilerHealth(): Promise<HealthCheckResult> {
   const now = new Date();
   const ageMinutes = (now.getTime() - fetchedAt.getTime()) / (1000 * 60);
 
-  if (ageMinutes > 60) {
+  if (ageMinutes > STALENESS_THRESHOLD_MINUTES) {
     return {
       status: "warning",
       message: `Profiler data is stale (${Math.floor(ageMinutes)} minutes old)`,
