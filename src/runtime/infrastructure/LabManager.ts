@@ -292,7 +292,14 @@ export class LabManager {
     const queue = this.productionQueue.get(roomName);
     if (!queue) return;
 
-    const index = queue.indexOf(order);
+    const index = queue.findIndex(
+      o =>
+        o.compound === order.compound &&
+        o.amount === order.amount &&
+        o.priority === order.priority &&
+        o.lab1Resource === order.lab1Resource &&
+        o.lab2Resource === order.lab2Resource
+    );
     if (index !== -1) {
       queue.splice(index, 1);
     }
@@ -305,7 +312,9 @@ export class LabManager {
     const queue = this.boostQueue.get(roomName);
     if (!queue) return;
 
-    const index = queue.indexOf(request);
+    const index = queue.findIndex(
+      r => r.creepName === request.creepName && r.priority === request.priority && r.requestedAt === request.requestedAt
+    );
     if (index !== -1) {
       queue.splice(index, 1);
     }

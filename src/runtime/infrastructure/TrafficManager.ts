@@ -80,6 +80,11 @@ export class TrafficManager {
       }
     }
 
+    // Periodically clean up old requests
+    if (Game.time % 100 === 0) {
+      this.clearOldRequests();
+    }
+
     return { moves, collisionsAvoided };
   }
 

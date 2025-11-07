@@ -71,6 +71,11 @@ export class TerminalManager {
       resourcesSent += processed.resourcesSent;
     }
 
+    // Periodically clean up old requests
+    if (Game.time % 100 === 0) {
+      this.clearOldRequests();
+    }
+
     return { transfers, energyBalanced, resourcesSent };
   }
 
@@ -88,22 +93,7 @@ export class TerminalManager {
     const energy = terminal.store.getUsedCapacity(RESOURCE_ENERGY);
 
     if (energy < this.energyReserve) {
-      // Request energy from storage if available
-      const storages = room.find(FIND_MY_STRUCTURES, {
-        filter: (s: Structure) => s.structureType === STRUCTURE_STORAGE
-      }) as StructureStorage[];
-
-      if (storages.length > 0) {
-        const storage = storages[0];
-        const storageEnergy = storage.store.getUsedCapacity(RESOURCE_ENERGY);
-        const needed = this.energyReserve - energy;
-
-        if (storageEnergy >= needed + 50000) {
-          // Have enough in storage to transfer
-          // Energy transfer would be handled by hauler creeps
-          return false;
-        }
-      }
+      // Energy is below reserve threshold
       return false;
     }
 
@@ -196,7 +186,14 @@ export class TerminalManager {
     const requests = this.resourceRequests.get(roomName);
     if (!requests) return;
 
-    const index = requests.indexOf(request);
+    const index = requests.findIndex(
+      r =>
+        r.resource === request.resource &&
+        r.amount === request.amount &&
+        r.targetRoom === request.targetRoom &&
+        r.priority === request.priority &&
+        r.requestedAt === request.requestedAt
+    );
     if (index !== -1) {
       requests.splice(index, 1);
     }

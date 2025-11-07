@@ -24,6 +24,7 @@ export interface LinkMetadata {
 export class LinkManager {
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly linkNetworks: Map<string, LinkMetadata[]> = new Map();
+  private readonly sourceCache: Map<string, Source[]> = new Map();
 
   public constructor(logger: Pick<Console, "log" | "warn"> = console) {
     this.logger = logger;
@@ -98,8 +99,20 @@ export class LinkManager {
   }
 
   /**
+   * Get or create cached source list for a room
+   */
+  private getCachedSources(roomName: string): Source[] {
+    if (!this.sourceCache.has(roomName)) {
+      const room = Game.rooms[roomName];
+      if (room) {
+        this.sourceCache.set(roomName, room.find(FIND_SOURCES));
+      }
+    }
+    return this.sourceCache.get(roomName) ?? [];
+  }
+
+  /**
    * Classify link role based on proximity to game objects
-   * TODO: Cache room.find(FIND_SOURCES) results at room level to reduce CPU usage
    */
   private classifyLink(link: StructureLink): LinkMetadata {
     const room = Game.rooms[link.room.name];
@@ -113,8 +126,7 @@ export class LinkManager {
     }
 
     // Check proximity to sources (within 2 tiles)
-    // TODO: This should be cached at the room level
-    const sources = room.find(FIND_SOURCES);
+    const sources = this.getCachedSources(link.room.name);
     for (const source of sources) {
       if (link.pos.getRangeTo(source) <= 2) {
         return {

@@ -81,6 +81,11 @@ export class FactoryManager {
       }
     }
 
+    // Periodically clean up old orders
+    if (Game.time % 100 === 0) {
+      this.clearOldOrders();
+    }
+
     return { productions, commoditiesProduced };
   }
 
@@ -207,7 +212,13 @@ export class FactoryManager {
     const queue = this.productionQueue.get(roomName);
     if (!queue) return;
 
-    const index = queue.indexOf(order);
+    const index = queue.findIndex(
+      o =>
+        o.commodity === order.commodity &&
+        o.amount === order.amount &&
+        o.priority === order.priority &&
+        o.createdAt === order.createdAt
+    );
     if (index !== -1) {
       queue.splice(index, 1);
     }

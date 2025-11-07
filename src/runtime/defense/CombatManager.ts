@@ -222,7 +222,7 @@ export class CombatManager {
    * Create a new squad
    */
   public createSquad(members: string[], role: "offense" | "defense" | "raid", targetRoom?: string): string {
-    const squadId = `squad_${Game.time}_${members[0] ?? "default"}`;
+    const squadId = `squad_${Game.time}_${members.length > 0 ? members[0] : "default"}`;
     this.squads.set(squadId, {
       id: squadId,
       members,
