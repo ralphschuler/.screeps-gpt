@@ -55,7 +55,7 @@ describe("Multi-room scaling regression", () => {
       // Simulate concurrent expansion requests from multiple rooms
       const expansionTargets = ["W3N3", "W4N4", "W5N5", "W6N6", "W7N7"];
       expansionTargets.forEach((room, index) => {
-        manager.requestExpansion(room, `expansion ${index}`, 50 + index * 10);
+        manager.requestExpansion(room, `expansion ${index}`, undefined, 50 + index * 10);
       });
 
       const queue = manager.getExpansionQueue();
