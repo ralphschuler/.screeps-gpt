@@ -1,4 +1,5 @@
-import { mkdir, readdir, rm } from "node:fs/promises";
+import { mkdir, readdir, rm, readFile, writeFile, stat, access } from "node:fs/promises";
+import { constants } from "node:fs";
 import { resolve, join } from "node:path";
 import { build, context as createContext, type BuildOptions } from "esbuild";
 
@@ -16,8 +17,23 @@ const RUNTIME_DEFINES = {
 } as const;
 
 async function prepare() {
+  const lockFile = resolve(outDir, ".test-lock");
+
+  // Preserve test lock file if it exists
+  let lockContent: string | null = null;
+  try {
+    lockContent = await readFile(lockFile, "utf8");
+  } catch {
+    // Lock file doesn't exist, which is fine
+  }
+
   await rm(outDir, { recursive: true, force: true });
   await mkdir(outDir, { recursive: true });
+
+  // Restore lock file if it existed
+  if (lockContent !== null) {
+    await writeFile(lockFile, lockContent);
+  }
 }
 
 /**
@@ -28,7 +44,6 @@ async function findModuleEntryPoints(): Promise<Array<{ path: string; name: stri
   const entries: Array<{ path: string; name: string }> = [];
 
   try {
-    const { stat } = await import("node:fs/promises");
     const subdirs = await readdir(runtimeDir, { withFileTypes: true });
 
     for (const dirent of subdirs) {
@@ -63,8 +78,9 @@ async function findModuleEntryPoints(): Promise<Array<{ path: string; name: stri
 /**
  * Build individual modules separately to preserve boundaries
  * Each module is self-contained for Screeps compatibility
+ * Returns the list of module names that were built
  */
-async function buildModules(watch: boolean): Promise<void> {
+async function buildModules(watch: boolean): Promise<string[]> {
   const moduleEntries = await findModuleEntryPoints();
 
   // Build each runtime module as a separate self-contained bundle
@@ -112,6 +128,8 @@ async function buildModules(watch: boolean): Promise<void> {
   } else {
     await build(mainOptions);
   }
+
+  return moduleEntries.map(e => e.name);
 }
 
 export async function buildProject(watch: boolean): Promise<void> {
@@ -122,7 +140,12 @@ export async function buildProject(watch: boolean): Promise<void> {
 
   if (useModularBuild) {
     console.log("Building with modular architecture...");
-    await buildModules(watch);
+    const moduleNames = await buildModules(watch);
+
+    // Validate build output in non-watch mode
+    if (!watch) {
+      await validateBuildOutput(true, moduleNames);
+    }
   } else {
     // Legacy single-bundle build for backward compatibility
     const options: BuildOptions = {
@@ -143,6 +166,40 @@ export async function buildProject(watch: boolean): Promise<void> {
       console.log("Watching for changes...");
     } else {
       await build(options);
+
+      // Validate build output in non-watch mode
+      if (!watch) {
+        await validateBuildOutput(false);
+      }
     }
+  }
+}
+
+/**
+ * Validate that expected build artifacts were generated
+ */
+async function validateBuildOutput(isModular: boolean, moduleNames?: string[]): Promise<void> {
+  // Always require main.js
+  const mainPath = resolve(outDir, "main.js");
+  try {
+    await access(mainPath, constants.F_OK);
+  } catch {
+    throw new Error(`Build validation failed: main.js was not generated at ${mainPath}`);
+  }
+
+  if (isModular && moduleNames) {
+    // In modular mode, verify that all expected modules were generated
+    for (const moduleName of moduleNames) {
+      const modulePath = resolve(outDir, `${moduleName}.js`);
+      try {
+        await access(modulePath, constants.F_OK);
+      } catch {
+        throw new Error(`Build validation failed: Expected module ${moduleName}.js was not generated at ${modulePath}`);
+      }
+    }
+
+    console.log(`✓ Build validation passed: Generated main.js + ${moduleNames.length} runtime modules`);
+  } else {
+    console.log("✓ Build validation passed: Generated main.js");
   }
 }
