@@ -50,7 +50,7 @@ describe("Regression: remote miner return loop", () => {
     };
 
     const memory = { creepCounter: 0 } as Memory;
-    const roleCounts = { harvester: 2, upgrader: 1, builder: 1, remoteMiner: 1 };
+    const roleCounts = { harvester: 4, upgrader: 3, builder: 2, remoteMiner: 1 };
 
     const summary = controller.execute(game, memory, roleCounts);
 

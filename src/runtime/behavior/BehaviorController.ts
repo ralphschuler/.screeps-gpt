@@ -64,19 +64,19 @@ interface RemoteMinerMemory extends BaseCreepMemory {
 
 const ROLE_DEFINITIONS: Record<RoleName, RoleDefinition> = {
   harvester: {
-    minimum: 2,
+    minimum: 4,
     body: [WORK, CARRY, MOVE],
     memory: () => ({ role: "harvester", task: HARVEST_TASK, version: HARVESTER_VERSION }),
     run: (creep: ManagedCreep) => runHarvester(creep)
   },
   upgrader: {
-    minimum: 1,
+    minimum: 3,
     body: [WORK, CARRY, MOVE],
     memory: () => ({ role: "upgrader", task: RECHARGE_TASK, version: UPGRADER_VERSION }),
     run: (creep: ManagedCreep) => runUpgrader(creep)
   },
   builder: {
-    minimum: 1,
+    minimum: 2,
     body: [WORK, CARRY, MOVE, MOVE],
     memory: () =>
       ({

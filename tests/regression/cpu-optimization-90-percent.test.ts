@@ -138,7 +138,7 @@ describe("CPU optimization regression - 90% threshold", () => {
       };
 
       const memory = { creepCounter: 0 } as Memory;
-      const roleCounts = { harvester: 2, upgrader: 1, builder: 1 }; // Meet minimums
+      const roleCounts = { harvester: 4, upgrader: 3, builder: 2 }; // Meet minimums
 
       controller.execute(game, memory, roleCounts);
 
