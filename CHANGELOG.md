@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.29.3] - 2025-11-08
+
 ### Changed
 
 - **Repository Cleanup and Standardization**: Comprehensive cleanup to improve maintainability and consistency
