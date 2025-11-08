@@ -19,10 +19,10 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Security
 
-- **Verified Zero Security Vulnerabilities in Dependency Tree (#288)**
+- **Documented Zero Security Vulnerabilities in Dependency Tree (#288)**
   - Comprehensive audit confirmed all previous vulnerabilities (from #125) remain resolved
   - npm audit reports 0 vulnerabilities across all severity levels (critical, high, moderate, low)
-  - Validated that axios security fixes from v0.19.3 (2025-11-07) are still effective
+  - Validated that axios security fixes (axios@1.13.2) from Screeps GPT release 0.19.3 (2025-11-07) are still effective
   - Security audit workflow (`guard-security-audit.yml`) confirmed operational with daily scheduled runs
   - Issue #288 determined to be duplicate of already-resolved #125 (closed 2025-11-07)
   - All 451 unit tests passing, build successful, no security blockers for deployment
