@@ -238,7 +238,7 @@ All specialized agents are located in `.github/actions/copilot-*-agent/` directo
   - Duplicate detection and prevention
   - Severity assessment and prioritization
 - **Required Inputs**: `copilot-token`
-- **Used By**: `copilot-review.yml`
+- **Used By**: Currently available but not used by any workflow (uses `repository-review` prompt for more comprehensive analysis than `repository-audit`)
 
 **copilot-audit-agent** (`.github/actions/copilot-audit-agent/`):
 
