@@ -63,7 +63,7 @@ export class MemorySelfHealer {
       result.requiresReset = true;
       result.isHealthy = false;
 
-      if (this.config.autoRepair) {
+      if (this.config.logRepairs) {
         this.logger.warn?.("[MemorySelfHealer] CRITICAL: Memory is not serializable. Manual reset required.");
       }
       return result;
