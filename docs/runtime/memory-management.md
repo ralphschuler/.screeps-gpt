@@ -2,11 +2,11 @@
 
 ## Overview
 
-The Screeps AI runtime includes a comprehensive memory management system to prevent memory overflow, handle version migrations, and maintain optimal memory utilization through automated garbage collection. This system ensures stable long-term operation and supports safe schema evolution across version updates.
+The Screeps AI runtime includes a comprehensive memory management system to prevent memory overflow, handle version migrations, maintain optimal memory utilization through automated garbage collection, and automatically repair corrupted memory structures. This system ensures stable long-term operation, supports safe schema evolution across version updates, and provides self-healing capabilities to recover from memory corruption.
 
 ## Architecture
 
-The memory management system consists of three primary components:
+The memory management system consists of four primary components:
 
 ### 1. MemoryGarbageCollector
 
@@ -92,7 +92,81 @@ if (!manager.validateMemory(memory)) {
 
 - **Version 1:** Initialize memory version tracking
 
-### 3. MemoryUtilizationMonitor
+### 3. MemorySelfHealer
+
+**Location:** `src/runtime/memory/MemorySelfHealer.ts`
+
+Automatically detects and repairs corrupted or missing memory structures to prevent crashes and maintain system stability.
+
+**Features:**
+
+- Validates core memory structures (creeps, rooms, roles, respawn, stats, systemReport)
+- Repairs missing or invalid memory fields
+- Detects circular references and unserializable data
+- Removes invalid entries (malformed creep memories, negative role counts)
+- Emergency reset capability for complete corruption
+- Configurable auto-repair behavior
+
+**Configuration:**
+
+```typescript
+{
+  autoRepair: true,     // Automatically repair corrupted structures
+  logRepairs: true      // Log repair operations
+}
+```
+
+**Usage:**
+
+```typescript
+import { MemorySelfHealer } from "@runtime/memory";
+
+const healer = new MemorySelfHealer();
+
+// Check and repair memory
+const result = healer.checkAndRepair(memory);
+
+if (!result.isHealthy) {
+  console.log(`Found ${result.issuesFound.length} issues`);
+  console.log(`Repaired ${result.issuesRepaired.length} issues`);
+}
+
+if (result.requiresReset) {
+  // Complete corruption detected - manual intervention needed
+  healer.emergencyReset(memory);
+}
+```
+
+**Health Check Result:**
+
+```typescript
+interface HealthCheckResult {
+  isHealthy: boolean; // True if no issues found
+  issuesFound: string[]; // List of detected issues
+  issuesRepaired: string[]; // List of repairs made
+  requiresReset: boolean; // True if memory needs emergency reset
+}
+```
+
+**What Gets Validated:**
+
+- **Memory.creeps**: Must be an object, entries must be valid CreepMemory
+- **Memory.roles**: Must be an object, values must be non-negative numbers
+- **Memory.rooms**: Must be an object
+- **Memory.respawn**: Must be an object with valid boolean flags and optional tick number
+- **Memory.stats**: Optional, but if present must be a valid object
+- **Memory.systemReport**: Optional, but if present must be a valid object
+- **Memory.version**: Optional, but if present must be a number
+
+**Repair Actions:**
+
+- Missing structures → Initialize with safe defaults
+- Invalid types → Reset to safe defaults
+- Invalid entries → Remove corrupted entries
+- Circular references → Flag for emergency reset
+- Invalid field values → Reset to safe values
+
+### 4. MemoryUtilizationMonitor
 
 **Location:** `src/runtime/memory/MemoryUtilizationMonitor.ts`
 
@@ -160,11 +234,20 @@ The memory management system is integrated into the runtime kernel (`src/runtime
 
 ```typescript
 export class Kernel {
+  private readonly selfHealer: MemorySelfHealer;
   private readonly garbageCollector: MemoryGarbageCollector;
   private readonly migrationManager: MemoryMigrationManager;
   private readonly utilizationMonitor: MemoryUtilizationMonitor;
 
   public run(game: GameContext, memory: Memory): void {
+    // Self-heal memory before any other operations (enabled by default)
+    if (this.enableSelfHealing) {
+      const healthCheck = this.selfHealer.checkAndRepair(memory);
+      if (healthCheck.requiresReset) {
+        this.logger.warn?.("[Kernel] Memory corruption detected. Emergency reset required.");
+      }
+    }
+
     // Run migrations on version change
     const migrationResult = this.migrationManager.migrate(memory);
 
@@ -187,9 +270,14 @@ export class Kernel {
 ```typescript
 const kernel = new Kernel({
   memorySchemaVersion: 1,
+  enableSelfHealing: true, // Auto-repair memory (enabled by default)
   enableGarbageCollection: true,
   garbageCollector: new MemoryGarbageCollector({
     roomDataRetentionTicks: 5000
+  }),
+  selfHealer: new MemorySelfHealer({
+    autoRepair: true,
+    logRepairs: true
   })
 });
 ```
@@ -232,7 +320,28 @@ interface Memory {
 
 ## Best Practices
 
-### 1. Garbage Collection
+### 1. Self-Healing
+
+- **Enable by default:** Self-healing is enabled by default (`enableSelfHealing: true`)
+- **Automatic recovery:** The system automatically repairs common corruption patterns
+- **Monitor logs:** Check logs for repair notifications to identify recurring issues
+- **Emergency reset:** Use `emergencyReset()` only when circular references are detected
+- **Test resilience:** Self-healing prevents crashes from malformed memory structures
+
+**When Self-Healing Activates:**
+
+- Missing core structures (creeps, rooms, roles, respawn)
+- Invalid types (arrays instead of objects, strings instead of numbers)
+- Invalid field values (negative counts, non-finite numbers)
+- Corrupted entries (null or malformed data)
+
+**Limitations:**
+
+- Cannot recover from circular references (requires manual reset)
+- Cannot restore lost data (only repairs structure)
+- Does not prevent future corruption (only fixes existing issues)
+
+### 2. Garbage Collection
 
 - **Enable by default:** Set `enableGarbageCollection: true` in kernel config
 - **Tune retention periods:** Adjust based on your use case
@@ -240,7 +349,7 @@ interface Memory {
   - Long retention (10000 ticks): For strategic planning data
 - **Monitor CPU usage:** Adjust `maxCleanupPerTick` if GC causes spikes
 
-### 2. Migrations
+### 3. Migrations
 
 - **Version incrementally:** Increase version by 1 for each schema change
 - **Test migrations:** Write unit tests for migration handlers
@@ -266,14 +375,14 @@ manager.registerMigration({
 });
 ```
 
-### 3. Memory Monitoring
+### 4. Memory Monitoring
 
 - **Set appropriate thresholds:** Default 70% warning, 90% critical
 - **Monitor subsystems:** Track which subsystems consume the most memory
 - **Plan for growth:** Use `getBudget()` before expanding data structures
 - **React to alerts:** System evaluator will flag memory issues
 
-### 4. Memory Optimization
+### 5. Memory Optimization
 
 **Reduce Memory Footprint:**
 
@@ -308,6 +417,10 @@ if (memory.stats && game.time - memory.stats.time > 1000) {
 
 The memory management system is designed for minimal CPU overhead:
 
+- **Self-Healing:** ~0.1-1 CPU per tick
+  - Runs before any other operations
+  - Validates and repairs core structures
+  - Only processes invalid entries
 - **Garbage Collection:** ~0.5-2 CPU per tick (runs every 10 ticks)
   - Incremental cleanup via `maxCleanupPerTick`
   - Skipped when CPU threshold is exceeded
@@ -323,6 +436,24 @@ The memory management system is designed for minimal CPU overhead:
 - **Negligible impact:** <0.01% of 2MB limit
 
 ## Troubleshooting
+
+### Memory Corruption
+
+**Symptoms:** Unexpected behavior, missing data, crashes
+
+**Solutions:**
+
+1. Check self-healing logs: Look for repair notifications
+2. Identify corruption source: Review recent code changes
+3. Enable repair logging: Set `logRepairs: true`
+4. Emergency reset: Use `healer.emergencyReset(memory)` for circular references
+
+**Common Causes:**
+
+- External code modifying memory incorrectly
+- Race conditions in multi-threaded scenarios
+- Deserialization errors from Screeps API
+- Manual memory edits in console with errors
 
 ### Memory Still Growing
 
@@ -361,6 +492,7 @@ The memory management system is designed for minimal CPU overhead:
 
 Comprehensive unit tests cover all components:
 
+- **MemorySelfHealer:** 28 tests (validation, repair, emergency reset)
 - **MemoryGarbageCollector:** 6 tests
 - **MemoryMigrationManager:** 7 tests
 - **MemoryUtilizationMonitor:** 9 tests
@@ -368,18 +500,26 @@ Comprehensive unit tests cover all components:
 **Run tests:**
 
 ```bash
-bun run test:unit -- memoryManagement.test.ts
+# All memory management tests
+bun run test:unit -- memoryManagement.test.ts memoryBootstrap.test.ts memorySelfHealer.test.ts
+
+# Self-healing tests only
+bun run test:unit -- memorySelfHealer.test.ts
 ```
 
 ## Future Enhancements
 
 Potential improvements for future versions:
 
-1. **Compression:** Implement memory compression for large structures
-2. **Archival:** Save historical data to external storage
-3. **Predictive GC:** Schedule cleanup based on usage patterns
-4. **Memory Profiling:** Detailed subsystem breakdown and leak detection
-5. **Auto-tuning:** Dynamically adjust retention periods based on usage
+1. **Advanced Self-Healing:**
+   - Automatic backup and restore of corrupted subsystems
+   - Machine learning to detect corruption patterns
+   - Gradual rollback to last known good state
+2. **Compression:** Implement memory compression for large structures
+3. **Archival:** Save historical data to external storage
+4. **Predictive GC:** Schedule cleanup based on usage patterns
+5. **Memory Profiling:** Detailed subsystem breakdown and leak detection
+6. **Auto-tuning:** Dynamically adjust retention periods based on usage
 
 ## Related Documentation
 
@@ -391,6 +531,7 @@ Potential improvements for future versions:
 
 See TypeScript definitions in:
 
+- `src/runtime/memory/MemorySelfHealer.ts`
 - `src/runtime/memory/MemoryGarbageCollector.ts`
 - `src/runtime/memory/MemoryMigrationManager.ts`
 - `src/runtime/memory/MemoryUtilizationMonitor.ts`
