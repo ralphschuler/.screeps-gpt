@@ -64,7 +64,8 @@ runs:
         if [ -z "$PROJECT_NUMBER" ] || [ -z "$PROJECT_OWNER" ]; then
           echo "⚠️  Project configuration not provided"
           echo "   Skipping project sync"
-          echo "   Set PROJECT_NUMBER and PROJECT_OWNER to enable"
+          echo "   Set PROJECT_NUMBER and PROJECT_OWNER repository"
+          echo "   variables to enable"
           echo "status=skipped" >> "$GITHUB_OUTPUT"
           echo "enabled=false" >> "$GITHUB_OUTPUT"
           exit 0
@@ -81,9 +82,6 @@ runs:
       shell: bash
       env:
         GH_TOKEN: >-
-          ${{ inputs.github-token != '' &&
-          inputs.github-token || github.token }}
-        GITHUB_TOKEN: >-
           ${{ inputs.github-token != '' &&
           inputs.github-token || github.token }}
         PROJECT_NUMBER: ${{ inputs.project-number }}
@@ -129,9 +127,6 @@ runs:
       shell: bash
       env:
         GH_TOKEN: >-
-          ${{ inputs.github-token != '' &&
-          inputs.github-token || github.token }}
-        GITHUB_TOKEN: >-
           ${{ inputs.github-token != '' &&
           inputs.github-token || github.token }}
         PROJECT_NUMBER: ${{ inputs.project-number }}

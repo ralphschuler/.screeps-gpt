@@ -18,7 +18,7 @@ The repository includes comprehensive GitHub Projects V2 integration that automa
 
 - Tracks pull request lifecycle and review states
 - Updates status based on draft/ready state and review outcomes
-- Automation states: Draft, Ready for Review, Approved, Changes Requested, Merged
+- Automation states: Draft, Ready for Review, Review Requested, Reviewed, Approved, Changes Requested, Merged, Closed without Merge
 - Triggers on: PR ready_for_review, converted_to_draft, review_requested, review_submitted, closed
 
 **Comment Activity Tracking** (`project-comment-activity.yml`):

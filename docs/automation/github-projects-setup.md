@@ -77,8 +77,8 @@ Add the following custom fields to your project:
   - Triaged
   - Implementing
   - PR Created
-  - Under Review
   - Ready for Review
+  - Under Review
   - Reviewed
   - Approved
   - Changes Requested
@@ -88,6 +88,24 @@ Add the following custom fields to your project:
   - Merged
   - Closed without Merge
   - Completed
+
+> **Clarification of Automation State meanings:**
+>
+> - **Not Started**: No work has begun on the issue/PR
+> - **Triaged**: Issue/PR has been reviewed and categorized but work hasn't started
+> - **Implementing**: Work is actively in progress (coding, writing, etc.)
+> - **PR Created**: A pull request has been opened for the issue
+> - **Ready for Review**: PR is complete and ready for reviewers to begin
+> - **Under Review**: Reviewers are actively reviewing the PR
+> - **Reviewed**: Review process complete but not yet approved (comments/changes requested but no approval)
+> - **Approved**: PR has received necessary approvals from reviewers
+> - **Changes Requested**: Reviewers have requested changes to the PR
+> - **Autofix Attempted**: Automated fix has been attempted by CI/automation
+> - **Audit Completed**: Final audit or check (security, compliance) has been completed
+> - **Active Discussion**: Issue/PR currently has active discussion (design, requirements)
+> - **Merged**: PR has been merged into the main branch
+> - **Closed without Merge**: PR/issue was closed without merging
+> - **Completed**: All work finished, no further action required
 
 ### Domain Field (Single Select)
 
@@ -198,10 +216,9 @@ Set up useful views in your project board:
 **Solutions**:
 
 1. Verify field names match exactly (case-sensitive)
-2. Check that field option values match exactly (case-sensitive) - the values passed to workflows must match the option names configured in the project board exactly
+2. Ensure that field option values used in workflows exist as options in the project board configuration and match exactly (case-sensitive)
 3. Review workflow logs for specific field update errors
 4. Ensure field types are Single Select (not Text or other types)
-5. Verify all field values used in workflows exist as options in the project board configuration
 
 ### Permission Errors
 
