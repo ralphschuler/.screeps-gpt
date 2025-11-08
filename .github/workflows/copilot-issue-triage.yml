@@ -23,21 +23,14 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v5
       - name: Run Copilot issue triage
-        uses: ./.github/actions/copilot-exec
-        env:
-          REPO_NAME: "${{ github.repository }}"
-          ISSUE_NUMBER: "${{ github.event.issue.number }}"
-          ISSUE_TITLE: ${{ toJSON(github.event.issue.title) }}
-          ISSUE_BODY: ${{ toJSON(github.event.issue.body || '') }}
-          ISSUE_HTML_URL: ${{ toJSON(github.event.issue.html_url) }}
-          ISSUE_AUTHOR: ${{ toJSON(github.event.issue.user.login) }}
+        uses: ./.github/actions/copilot-triage-agent
         with:
-          force-response: true
           copilot-token: ${{ secrets.COPILOT_TOKEN }}
-          prompt-path: .github/copilot/prompts/issue-triage
-          output-path: >-
-            reports/copilot/issue-triage-${{
-            github.event.issue.number }}.log
+          issue-number: ${{ github.event.issue.number }}
+          issue-title: ${{ toJSON(github.event.issue.title) }}
+          issue-body: ${{ toJSON(github.event.issue.body || '') }}
+          issue-url: ${{ toJSON(github.event.issue.html_url) }}
+          issue-author: ${{ toJSON(github.event.issue.user.login) }}
       - name: Update project status after triage
         if: always()
         uses: ./.github/actions/project-sync

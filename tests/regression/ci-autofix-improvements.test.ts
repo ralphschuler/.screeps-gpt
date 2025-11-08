@@ -1,10 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "fs";
-import { resolve } from "path";
+import { resolve, join } from "path";
 import { parse } from "yaml";
 
 interface WorkflowStep {
   name: string;
+  uses?: string;
   with?: {
     timeout?: string;
     verbose?: string;
@@ -19,6 +20,17 @@ interface WorkflowJob {
 interface Workflow {
   jobs: {
     autofix: WorkflowJob;
+  };
+}
+
+interface AgentAction {
+  inputs: {
+    timeout?: {
+      default?: string;
+    };
+    verbose?: {
+      default?: string;
+    };
   };
 }
 
@@ -185,33 +197,72 @@ describe("CI Autofix Workflow Improvements", () => {
       const workflowContent = readFileSync(workflowPath, "utf-8");
       const workflow = parse(workflowContent) as Workflow;
 
-      // Should have timeout configured
+      // Should have timeout configured either in workflow or via specialized agent
       const autofixStep = workflow.jobs.autofix.steps.find(
         (step: WorkflowStep) => step.name === "Run Copilot CI auto-fix"
       );
-      expect(autofixStep?.with?.timeout).toBe("45");
+
+      // Check if using specialized agent (copilot-ci-autofix-agent)
+      const usesSpecializedAgent = autofixStep?.uses?.includes("copilot-ci-autofix-agent");
+
+      if (usesSpecializedAgent) {
+        // Specialized agent has timeout default of "45" in its action.yml
+        const agentPath = join(process.cwd(), ".github/actions/copilot-ci-autofix-agent/action.yml");
+        const agentContent = readFileSync(agentPath, "utf-8");
+        const agentAction = parse(agentContent) as AgentAction;
+        expect(agentAction.inputs.timeout?.default).toBe("45");
+      } else {
+        // Direct copilot-exec usage should specify timeout
+        expect(autofixStep?.with?.timeout).toBe("45");
+      }
     });
 
     it("should enable verbose logging", () => {
       const workflowContent = readFileSync(workflowPath, "utf-8");
       const workflow = parse(workflowContent) as Workflow;
 
-      // Should have verbose enabled
+      // Should have verbose enabled either in workflow or via specialized agent
       const autofixStep = workflow.jobs.autofix.steps.find(
         (step: WorkflowStep) => step.name === "Run Copilot CI auto-fix"
       );
-      expect(autofixStep?.with?.verbose).toBe("true");
+
+      // Check if using specialized agent (copilot-ci-autofix-agent)
+      const usesSpecializedAgent = autofixStep?.uses?.includes("copilot-ci-autofix-agent");
+
+      if (usesSpecializedAgent) {
+        // Specialized agent has verbose default of "true" in its action.yml
+        const agentPath = join(process.cwd(), ".github/actions/copilot-ci-autofix-agent/action.yml");
+        const agentContent = readFileSync(agentPath, "utf-8");
+        const agentAction = parse(agentContent) as AgentAction;
+        expect(agentAction.inputs.verbose?.default).toBe("true");
+      } else {
+        // Direct copilot-exec usage should specify verbose
+        expect(autofixStep?.with?.verbose).toBe("true");
+      }
     });
 
     it("should maintain force-response for time-sensitive data", () => {
       const workflowContent = readFileSync(workflowPath, "utf-8");
       const workflow = parse(workflowContent) as Workflow;
 
-      // Should have force-response enabled
+      // Should have force-response enabled either in workflow or via specialized agent
       const autofixStep = workflow.jobs.autofix.steps.find(
         (step: WorkflowStep) => step.name === "Run Copilot CI auto-fix"
       );
-      expect(autofixStep?.with?.["force-response"]).toBe(true);
+
+      // Check if using specialized agent (copilot-ci-autofix-agent)
+      const usesSpecializedAgent = autofixStep?.uses?.includes("copilot-ci-autofix-agent");
+
+      if (usesSpecializedAgent) {
+        // Specialized agent sets force-response: true internally in its action.yml
+        const agentPath = join(process.cwd(), ".github/actions/copilot-ci-autofix-agent/action.yml");
+        const agentContent = readFileSync(agentPath, "utf-8");
+        // Verify agent passes force-response: true to copilot-exec
+        expect(agentContent).toContain("force-response: true");
+      } else {
+        // Direct copilot-exec usage should specify force-response
+        expect(autofixStep?.with?.["force-response"]).toBe(true);
+      }
     });
   });
 

@@ -21,16 +21,9 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v5
       - name: Run Copilot repository audit
-        uses: ./.github/actions/copilot-exec
-        env:
-          REPO_NAME: "${{ github.repository }}"
-          RUN_ID: "${{ github.run_id }}"
-          RUN_URL: >-
+        uses: ./.github/actions/copilot-audit-agent
+        with:
+          copilot-token: ${{ secrets.COPILOT_TOKEN }}
+          run-url: >-
             https://github.com/${{ github.repository }}/actions/runs/${{
             github.run_id }}
-        with:
-          force-response: true
-          copilot-token: ${{ secrets.COPILOT_TOKEN }}
-          prompt-path: .github/copilot/prompts/repository-audit
-          output-path: >-
-            reports/copilot/repository-audit-${{ github.run_id }}.log

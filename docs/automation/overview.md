@@ -198,6 +198,148 @@ This will output:
 - The final selected model
 - Cache key information
 
+## Specialized Copilot Agent Actions
+
+The repository uses a specialized agent architecture for Copilot automation, where each agent handles a specific type of task with focused functionality and minimal input requirements.
+
+### Architecture Overview
+
+**Design Principles:**
+
+- **Single Responsibility**: Each agent handles only one specific task type
+- **Minimal Input Requirements**: Accept only essential parameters (copilot-token + task-specific inputs)
+- **Consistent Interface**: Standardized input/output patterns across all agents
+- **Composable**: Agents can be combined in workflows without conflicts
+- **Built on copilot-exec**: All agents leverage the existing `copilot-exec` composite action
+
+**Agent Implementations:**
+
+All specialized agents are located in `.github/actions/copilot-*-agent/` directories and provide wrappers around `copilot-exec` with task-specific configurations.
+
+### Available Agents
+
+**copilot-triage-agent** (`.github/actions/copilot-triage-agent/`):
+
+- **Purpose**: GitHub issue triage and reformulation
+- **Key Features**:
+  - Context-aware issue analysis with duplicate detection
+  - Automatic reformulation of title and description
+  - Intelligent label application based on content
+  - Related issue linking and relationship management
+- **Required Inputs**: `copilot-token`, `issue-number`, `issue-title`, `issue-url`, `issue-author`
+- **Used By**: `copilot-issue-triage.yml`
+
+**copilot-review-agent** (`.github/actions/copilot-review-agent/`):
+
+- **Purpose**: Repository reviews and quality assessment
+- **Key Features**:
+  - Comprehensive repository audit
+  - Automated issue filing for identified problems
+  - Duplicate detection and prevention
+  - Severity assessment and prioritization
+- **Required Inputs**: `copilot-token`
+- **Used By**: Currently available but not used by any workflow (uses `repository-review` prompt for more comprehensive analysis than `repository-audit`)
+
+**copilot-audit-agent** (`.github/actions/copilot-audit-agent/`):
+
+- **Purpose**: Scheduled repository health checks
+- **Key Features**:
+  - Periodic repository health assessment
+  - Automation and workflow quality evaluation
+  - Strategic recommendations for improvements
+  - Trend analysis and performance tracking
+- **Required Inputs**: `copilot-token`
+- **Used By**: `copilot-review.yml`
+
+**copilot-dev-agent** (`.github/actions/copilot-dev-agent/`):
+
+- **Purpose**: Development workflow assistance and code generation
+- **Key Features**:
+  - Context-aware code implementation and fixes
+  - Dependency and sub-task validation
+  - Incremental progress reporting and commit management
+  - Automated testing and validation
+- **Required Inputs**: `copilot-token`, `issue-number`, `issue-title`, `issue-url`, `issue-author`
+- **Used By**: `copilot-todo-pr.yml`
+
+**copilot-ci-autofix-agent** (`.github/actions/copilot-ci-autofix-agent/`):
+
+- **Purpose**: CI failure resolution and automated fixes
+- **Key Features**:
+  - Intelligent failure classification (lint, format, compilation, etc.)
+  - Specialized fix strategies per failure type
+  - Context-aware branch strategy (PR vs main vs feature)
+  - Manual review escalation for complex issues
+- **Required Inputs**: `copilot-token`, `workflow-name`, `run-id`, `run-url`, `trigger-event`
+- **Used By**: `copilot-ci-autofix.yml`
+
+### Usage Examples
+
+**Using the Triage Agent:**
+
+```yaml
+- name: Triage issue
+  uses: ./.github/actions/copilot-triage-agent
+  with:
+    copilot-token: ${{ secrets.COPILOT_TOKEN }}
+    issue-number: ${{ github.event.issue.number }}
+    issue-title: ${{ toJSON(github.event.issue.title) }}
+    issue-body: ${{ toJSON(github.event.issue.body || '') }}
+    issue-url: ${{ toJSON(github.event.issue.html_url) }}
+    issue-author: ${{ toJSON(github.event.issue.user.login) }}
+```
+
+**Using the CI AutoFix Agent:**
+
+```yaml
+- name: Auto-fix CI failure
+  uses: ./.github/actions/copilot-ci-autofix-agent
+  with:
+    copilot-token: ${{ secrets.COPILOT_TOKEN }}
+    workflow-name: ${{ toJSON(github.event.workflow_run.name) }}
+    run-id: ${{ github.event.workflow_run.id }}
+    run-url: ${{ toJSON(github.event.workflow_run.html_url) }}
+    trigger-event: ${{ toJSON(github.event.workflow_run.event) }}
+```
+
+**Using the Audit Agent:**
+
+```yaml
+- name: Run repository audit
+  uses: ./.github/actions/copilot-audit-agent
+  with:
+    copilot-token: ${{ secrets.COPILOT_TOKEN }}
+    run-url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+```
+
+### Benefits of Specialized Agents
+
+1. **Reduced Complexity**: Workflows are simpler and easier to understand with focused agents
+2. **Better Maintainability**: Agent-specific changes are isolated from other automation
+3. **Easier Debugging**: Agent boundaries make it clear where issues originate
+4. **Clear Contracts**: Well-defined input/output interfaces for each automation type
+5. **Optimized Configuration**: Agent-specific defaults and timeouts for each task type
+6. **Reusability**: Agents can be easily reused across multiple workflows
+
+### Backward Compatibility
+
+The generic `copilot-exec` composite action remains available for custom use cases and workflows that don't fit into the specialized agent categories. All specialized agents are built on top of `copilot-exec`, ensuring consistent behavior and shared optimizations.
+
+### Creating New Agents
+
+To create a new specialized agent:
+
+1. Create a new directory: `.github/actions/copilot-{name}-agent/`
+2. Define the agent action in `action.yml` with:
+   - Clear description of purpose and features
+   - Minimal required inputs specific to the task
+   - Sensible defaults for optional parameters
+   - Output path for result logs
+3. Use `copilot-exec` as the underlying implementation
+4. Map agent inputs to appropriate environment variables
+5. Reference an existing or new prompt template in `.github/copilot/prompts/`
+6. Update this documentation with the new agent's details
+
 ## Task Management System
 
 The runtime includes a priority-based task management system for coordinating creep work assignments:
