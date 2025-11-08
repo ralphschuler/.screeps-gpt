@@ -35,6 +35,8 @@ describe("Workflow concurrency controls", () => {
     "screeps-spawn-monitor.yml",
     // Notification workflows
     "email-notification.yml",
+    // Quality gate workflows
+    "quality-gate-summary.yml",
     // Singleton workflows
     "dependabot-automerge.yml",
     "label-sync.yml",

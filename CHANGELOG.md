@@ -5,6 +5,18 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Fixed
+
+- **Security Audit Workflow jq Parsing Error**: Fixed shell parsing error in `.github/workflows/guard-security-audit.yml` that was causing workflow failures
+  - Root cause: Multi-line jq command with backslash continuation was causing syntax errors in shell execution
+  - Fixed by properly formatting multi-line jq command without trailing backslashes before pipe operators
+  - Added defensive error handling for jq parsing failures to prevent workflow crashes
+  - Added handling for "unknown" vulnerability counts when parsing fails
+  - Created regression test (`tests/regression/guard-security-audit-workflow-syntax.test.ts`) to validate workflow syntax and error handling
+  - Workflow now passes yamllint validation with 80-character line limit
+  - Fixes consistently failing Security Audit workflow (run 19183827409 and subsequent runs)
+  - Restores CI/CD pipeline health for security vulnerability scanning
+
 ## [0.31.1] - 2025-11-08
 
 ### Added

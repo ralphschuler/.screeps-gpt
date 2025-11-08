@@ -46,16 +46,26 @@ jobs:
 
           # Parse results
           VULNERABILITIES=$(cat audit-results.json | jq -r \
-            '.metadata.vulnerabilities | to_entries | \
-            map("\(.key): \(.value)") | join(", ")')
-          TOTAL=$(cat audit-results.json | jq -r \
-            '.metadata.vulnerabilities.total')
+            '.metadata.vulnerabilities | to_entries |
+             map("\(.key): \(.value)") | join(", ")')
+          JQ_EXIT_CODE=$?
+          if [ $JQ_EXIT_CODE -ne 0 ]; then
+            echo "::error::Failed to parse audit results with jq"
+            VULNERABILITIES="parsing_error"
+            TOTAL="unknown"
+          else
+            TOTAL=$(cat audit-results.json | jq -r \
+              '.metadata.vulnerabilities.total')
+          fi
 
           echo "vulnerabilities=$VULNERABILITIES" >> $GITHUB_OUTPUT
           echo "total=$TOTAL" >> $GITHUB_OUTPUT
           echo "exit_code=$AUDIT_EXIT_CODE" >> $GITHUB_OUTPUT
 
-          if [ "$TOTAL" -gt 0 ]; then
+          if [ "$TOTAL" = "unknown" ]; then
+            echo "::error::Unable to determine vulnerability count " \
+              "due to parsing error"
+          elif [ "$TOTAL" -gt 0 ]; then
             echo "::warning::Found $TOTAL vulnerabilities: $VULNERABILITIES"
           else
             echo "::notice::No vulnerabilities found"
