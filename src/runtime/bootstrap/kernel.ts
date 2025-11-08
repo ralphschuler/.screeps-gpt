@@ -108,10 +108,17 @@ export class Kernel {
     if (this.enableSelfHealing) {
       const healthCheck = this.selfHealer.checkAndRepair(memory);
       if (healthCheck.requiresReset) {
-        this.logger.warn?.(
-          "[Kernel] Memory corruption detected. Emergency reset required. Please manually reset Memory."
-        );
-        // Still continue with tick processing, but memory state may be unreliable
+        this.logger.warn?.("[Kernel] Memory corruption detected. Attempting automatic emergency reset.");
+        this.selfHealer.emergencyReset(memory);
+        this.logger.warn?.("[Kernel] Emergency reset performed. Aborting tick to prevent further issues.");
+        const snapshot = this.tracker.end(game, {
+          processedCreeps: 0,
+          spawnedCreeps: [],
+          tasksExecuted: {}
+        });
+        this.statsCollector.collect(game, memory, snapshot);
+        this.evaluator.evaluateAndStore(memory, snapshot, repository);
+        return;
       }
     }
 

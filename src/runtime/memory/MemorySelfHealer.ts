@@ -64,7 +64,9 @@ export class MemorySelfHealer {
       result.isHealthy = false;
 
       if (this.config.logRepairs) {
-        this.logger.warn?.("[MemorySelfHealer] CRITICAL: Memory is not serializable. Manual reset recommended. Continuing with unreliable memory state.");
+        this.logger.warn?.(
+          "[MemorySelfHealer] CRITICAL: Memory is not serializable. Manual reset recommended. Continuing with unreliable memory state."
+        );
       }
       return result;
     }
@@ -90,6 +92,10 @@ export class MemorySelfHealer {
 
   /**
    * Check if memory can be serialized to JSON (detects circular references)
+   * Note: JSON.stringify() can be expensive for large memory structures.
+   * This check is performed once per tick. If performance becomes an issue,
+   * consider implementing a lighter-weight circular reference check or
+   * adding a config option to skip this validation.
    */
   private isSerializable(memory: Memory): boolean {
     try {

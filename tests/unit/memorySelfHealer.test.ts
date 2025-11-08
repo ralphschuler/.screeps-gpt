@@ -408,7 +408,7 @@ describe("MemorySelfHealer", () => {
       expect(result.isHealthy).toBe(false);
       expect(result.issuesFound).toContain("Memory contains circular references or unserializable data");
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        "[MemorySelfHealer] CRITICAL: Memory is not serializable. Manual reset required."
+        "[MemorySelfHealer] CRITICAL: Memory is not serializable. Manual reset recommended. Continuing with unreliable memory state."
       );
     });
   });
