@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.31.5] - 2025-11-08
+
 ### Fixed
 
 - **Security Audit Workflow jq Parsing Error**: Fixed shell parsing error in `.github/workflows/guard-security-audit.yml` that was causing workflow failures
