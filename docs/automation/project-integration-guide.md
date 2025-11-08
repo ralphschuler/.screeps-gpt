@@ -22,8 +22,8 @@ This guide provides a comprehensive overview of the GitHub Projects V2 integrati
 3. **Integrated Copilot Workflows**
    - `copilot-issue-triage.yml` - Updates status after triage
    - `copilot-todo-pr.yml` - Tracks Todo automation progress
-   - `copilot-ci-autofix.yml` - Tracks autofix attempts
-   - `copilot-review.yml` - Marks audit completion
+
+**Note**: CI AutoFix (`copilot-ci-autofix.yml`) and Repository Audit (`copilot-review.yml`) workflows are not integrated with project tracking because GitHub Projects cannot track workflow runs - only issues, PRs, and discussions can be added to projects.
 
 ## Lifecycle Tracking
 

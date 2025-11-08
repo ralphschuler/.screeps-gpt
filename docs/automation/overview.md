@@ -29,7 +29,7 @@ The repository includes comprehensive GitHub Projects V2 integration that automa
 
 ### Integration with Copilot Workflows
 
-All major Copilot workflows update project status automatically:
+Integrated Copilot workflows update project status automatically:
 
 **Issue Triage** (`copilot-issue-triage.yml`):
 
@@ -42,15 +42,7 @@ All major Copilot workflows update project status automatically:
 - On completion: Status → "Under Review", Automation State → "PR Created"
 - Tracks automated implementation from start to PR creation
 
-**CI AutoFix** (`copilot-ci-autofix.yml`):
-
-- After fix attempt: Status → "In Progress", Automation State → "Autofix Attempted"
-- Tracks which CI failures have been addressed by automation
-
-**Repository Audit** (`copilot-review.yml`):
-
-- After completion: Automation State → "Audit Completed"
-- Tracks scheduled repository health checks
+**Note**: CI AutoFix and Repository Audit workflows do not currently update project status due to GitHub Projects limitation - workflow runs cannot be tracked as project items (only issues, PRs, and discussions are supported).
 
 ### Project Board Configuration
 
