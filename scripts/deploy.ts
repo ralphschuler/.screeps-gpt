@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { ScreepsAPI } from "screeps-api";
-import { buildProject } from "./buildProject";
+import { buildProject } from "./lib/buildProject";
 
 interface ApiError extends Error {
   response?: {
