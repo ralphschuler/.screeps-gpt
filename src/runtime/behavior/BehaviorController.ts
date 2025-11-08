@@ -73,12 +73,10 @@ interface StationaryHarvesterMemory extends BaseCreepMemory {
   task: StationaryHarvesterTask;
   sourceId?: Id<Source>;
   containerId?: Id<StructureContainer>;
-  targetPos?: { x: number; y: number; roomName: string };
 }
 
 interface HaulerMemory extends BaseCreepMemory {
   task: HaulerTask;
-  sourceContainerId?: Id<StructureContainer>;
 }
 
 const ROLE_DEFINITIONS: Record<RoleName, RoleDefinition> = {
@@ -676,6 +674,22 @@ function runRemoteMiner(creep: ManagedCreep): string {
   return REMOTE_RETURN_TASK;
 }
 
+/**
+ * Executes the behavior for a stationary harvester creep.
+ *
+ * The stationary harvester is responsible for harvesting energy from a specific source,
+ * transferring it to an adjacent container if available, or dropping it on the ground if necessary.
+ * The function manages memory assignments for the source and container, ensures the creep is positioned
+ * correctly, and handles energy transfer logic.
+ *
+ * @param creep - The ManagedCreep instance representing the stationary harvester.
+ *   Expects creep.memory to be compatible with StationaryHarvesterMemory.
+ * @returns The current task string for the stationary harvester (typically STATIONARY_HARVEST_TASK).
+ *
+ * Side effects:
+ * - Updates creep.memory with sourceId and containerId as needed.
+ * - May move the creep, harvest energy, transfer to container, or drop energy.
+ */
 function runStationaryHarvester(creep: ManagedCreep): string {
   const memory = creep.memory as StationaryHarvesterMemory;
 
@@ -736,6 +750,16 @@ function runStationaryHarvester(creep: ManagedCreep): string {
   return STATIONARY_HARVEST_TASK;
 }
 
+/**
+ * Ensures the hauler creep's task state is consistent with its energy store.
+ *
+ * If the current task is invalid, sets it to pickup. Transitions from pickup to deliver
+ * when the creep's energy store is full, and from deliver to pickup when empty.
+ *
+ * @param memory - The hauler's memory object, containing the current task.
+ * @param creep - The hauler creep instance.
+ * @returns The updated hauler task.
+ */
 function ensureHaulerTask(memory: HaulerMemory, creep: CreepLike): HaulerTask {
   if (memory.task !== HAULER_PICKUP_TASK && memory.task !== HAULER_DELIVER_TASK) {
     memory.task = HAULER_PICKUP_TASK;
@@ -751,6 +775,27 @@ function ensureHaulerTask(memory: HaulerMemory, creep: CreepLike): HaulerTask {
   return memory.task;
 }
 
+/**
+ * Executes the behavior logic for a hauler creep.
+ *
+ * Haulers are responsible for transporting energy from containers or dropped resources
+ * (typically near sources) to structures that require energy. The function implements a
+ * priority-based delivery system:
+ *   1. Spawns and extensions (critical structures)
+ *   2. Towers (defense)
+ *   3. Storage (surplus)
+ *   4. Controller upgrade (fallback)
+ *
+ * When in pickup mode, the hauler seeks out containers with energy (priority) or
+ * dropped energy, withdrawing or picking up as appropriate. When in delivery mode,
+ * the hauler delivers energy to structures in need following the priority order above.
+ *
+ * The function manages the hauler's task state (pickup or deliver) and moves the creep
+ * accordingly.
+ *
+ * @param creep - The hauler creep to run behavior for.
+ * @returns The current hauler task ("pickup" or "haulerDeliver") as a string.
+ */
 function runHauler(creep: ManagedCreep): string {
   const memory = creep.memory as HaulerMemory;
   const task = ensureHaulerTask(memory, creep);
