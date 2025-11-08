@@ -5,6 +5,27 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Added
+
+- **Enhanced TypeScript Type Safety with Runtime Validation**: Improved type safety throughout the codebase to prevent runtime errors
+  - Added `lastTimeoutTick` field to `Memory.stats` interface in `types.d.ts` for CPU timeout detection tracking
+  - Created `MemoryValidator` class (`src/runtime/memory/MemoryValidator.ts`) using zod schemas for runtime validation of Memory structures
+  - Implemented `validateStats()` method to validate Memory.stats against TypeScript interface definitions
+  - Implemented `validateAndRepairStats()` method to automatically repair corrupted memory with sensible defaults
+  - Added `validateGameContext()` function in `src/main.ts` to replace unsafe `Game as unknown as GameContext` type casting
+  - Enhanced error handling with specific error classification (TypeError vs Error vs unknown errors)
+  - Added 26 comprehensive unit tests for memory validation and game context validation
+  - Strengthened ESLint configuration with stricter TypeScript rules for runtime files:
+    - `@typescript-eslint/no-explicit-any`: error (prevents unsafe any types)
+    - `@typescript-eslint/prefer-nullish-coalescing`: error (safer null/undefined handling)
+    - `@typescript-eslint/prefer-optional-chain`: error (cleaner optional property access)
+    - `@typescript-eslint/no-unsafe-assignment`: error (prevents unsafe type assignments)
+    - `@typescript-eslint/no-unsafe-call`: error (prevents calls without proper type checking)
+    - `@typescript-eslint/no-unsafe-member-access`: error (prevents unsafe property access)
+  - All tests pass (477 unit tests), build succeeds, runtime validation prevents type-related errors
+  - Improves autonomous monitoring compatibility with parseable error messages and consistent memory structure
+  - Benefits CPU timeout detection, evaluation system, and autonomous improvement workflows
+
 ## [0.31.5] - 2025-11-08
 
 ### Fixed

@@ -33,13 +33,37 @@ if (typeof global !== "undefined") {
 // This ensures profiler data collection begins automatically on deployment
 let profilerAutoStarted = false;
 
+/**
+ * Validates Game object at runtime to ensure it conforms to GameContext interface.
+ * Replaces unsafe type casting with explicit runtime validation.
+ * @param game - Game object from Screeps API
+ * @returns Validated GameContext object
+ * @throws {TypeError} if Game object is missing required properties
+ */
+function validateGameContext(game: Game): GameContext {
+  if (!game.cpu) {
+    throw new TypeError("Invalid Game object: missing cpu interface");
+  }
+  if (!game.creeps) {
+    throw new TypeError("Invalid Game object: missing creeps");
+  }
+  if (!game.spawns) {
+    throw new TypeError("Invalid Game object: missing spawns");
+  }
+  if (!game.rooms) {
+    throw new TypeError("Invalid Game object: missing rooms");
+  }
+  // Type assertion is now safe after explicit runtime validation
+  return game as GameContext;
+}
+
 export const loop = (): void => {
   try {
     // Auto-start profiler on first tick if enabled and not running
     // Check if profiler is not already running by inspecting Memory.profiler.start
     if (__PROFILER_ENABLED__ && !profilerAutoStarted) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      if (typeof Memory !== "undefined" && (!Memory.profiler || Memory.profiler.start === undefined)) {
+      if (typeof Memory !== "undefined" && Memory.profiler?.start === undefined) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         profilerInstance.start();
         console.log("[Profiler] Auto-started profiler data collection");
@@ -50,11 +74,18 @@ export const loop = (): void => {
       }
     }
 
-    kernel.run(Game as unknown as GameContext, Memory);
+    const gameContext = validateGameContext(Game);
+    kernel.run(gameContext, Memory);
   } catch (error) {
-    console.log(`Unhandled error in loop: ${String(error)}`);
-    if (error instanceof Error && error.stack) {
-      console.log(error.stack);
+    // Enhanced error handling with specific error classification
+    if (error instanceof TypeError) {
+      console.log(`[Type Error] ${error.message}`);
+      if (error.stack) console.log(error.stack);
+    } else if (error instanceof Error) {
+      console.log(`[Runtime Error] ${error.message}`);
+      if (error.stack) console.log(error.stack);
+    } else {
+      console.log(`[Unknown Error] ${String(error)}`);
     }
   }
 };

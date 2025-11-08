@@ -74,6 +74,31 @@ export default [
     }
   },
 
+  // Stricter type safety rules for runtime files and main entry point
+  {
+    files: ["src/runtime/**/*.ts", "src/main.ts"],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: 2020,
+        sourceType: "module",
+        project: "./tsconfig.json",
+        tsconfigRootDir: __dirname
+      }
+    },
+    plugins: {
+      "@typescript-eslint": tsPlugin
+    },
+    rules: {
+      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/prefer-nullish-coalescing": "error",
+      "@typescript-eslint/prefer-optional-chain": "error",
+      "@typescript-eslint/no-unsafe-assignment": "error",
+      "@typescript-eslint/no-unsafe-call": "error",
+      "@typescript-eslint/no-unsafe-member-access": "error"
+    }
+  },
+
   // Override for script files (*.mjs)
   {
     files: ["scripts/**/*.mjs"],

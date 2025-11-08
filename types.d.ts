@@ -26,6 +26,7 @@ declare global {
     colony?: ColonyManagerMemory;
     stats?: {
       time: number;
+      lastTimeoutTick?: number;
       cpu: {
         used: number;
         limit: number;
