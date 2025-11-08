@@ -1,0 +1,202 @@
+---
+name: project-sync
+description: |
+  Sync GitHub issues, PRs, and discussions with GitHub Projects V2 board.
+
+  This composite action adds items to the project board and updates field values
+  based on workflow events. It gracefully handles missing project configuration
+  and permission issues to avoid blocking workflows.
+
+author: "ralph@nyphon.de"
+
+inputs:
+  github-token:
+    description: GitHub token with project scope (defaults to github.token)
+    required: false
+    default: ""
+  project-number:
+    description: GitHub Project number (e.g., 1)
+    required: false
+    default: ""
+  project-owner:
+    description: Project owner (user or org login)
+    required: false
+    default: ""
+  item-type:
+    description: Type of item (issue, pull_request, or discussion)
+    required: true
+  item-url:
+    description: Full URL of the item to add
+    required: true
+  status-field:
+    description: Status field value to set (e.g., "Pending", "In Progress")
+    required: false
+    default: ""
+  priority-field:
+    description: Priority field value to set (e.g., "High", "Medium")
+    required: false
+    default: ""
+  automation-state-field:
+    description: Automation state field value to set (e.g., "Todo", "Completed")
+    required: false
+    default: ""
+
+outputs:
+  item-id:
+    description: Project item ID if successfully added
+    value: ${{ steps.add-item.outputs.item-id }}
+  status:
+    description: Operation status (success, skipped, or failed)
+    value: ${{ steps.sync.outputs.status }}
+
+runs:
+  using: composite
+  steps:
+    - name: Check project configuration
+      id: check-config
+      shell: bash
+      env:
+        PROJECT_NUMBER: ${{ inputs.project-number }}
+        PROJECT_OWNER: ${{ inputs.project-owner }}
+      run: |
+        set +e  # Don't fail on missing config
+
+        if [ -z "$PROJECT_NUMBER" ] || [ -z "$PROJECT_OWNER" ]; then
+          echo "⚠️  Project configuration not provided"
+          echo "   Skipping project sync"
+          echo "   Set PROJECT_NUMBER and PROJECT_OWNER to enable"
+          echo "status=skipped" >> "$GITHUB_OUTPUT"
+          echo "enabled=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        echo "✅ Project configuration found"
+        echo "   Project: $PROJECT_OWNER/$PROJECT_NUMBER"
+        echo "status=configured" >> "$GITHUB_OUTPUT"
+        echo "enabled=true" >> "$GITHUB_OUTPUT"
+
+    - name: Add item to project
+      id: add-item
+      if: steps.check-config.outputs.enabled == 'true'
+      shell: bash
+      env:
+        GH_TOKEN: >-
+          ${{ inputs.github-token != '' &&
+          inputs.github-token || github.token }}
+        GITHUB_TOKEN: >-
+          ${{ inputs.github-token != '' &&
+          inputs.github-token || github.token }}
+        PROJECT_NUMBER: ${{ inputs.project-number }}
+        PROJECT_OWNER: ${{ inputs.project-owner }}
+        ITEM_URL: ${{ inputs.item-url }}
+        ITEM_TYPE: ${{ inputs.item-type }}
+      run: |
+        set +e  # Don't fail if project operations fail
+
+        echo "📋 Adding $ITEM_TYPE to project..."
+        echo "   URL: $ITEM_URL"
+
+        # Try to add item using gh CLI
+        result=$(gh project item-add "$PROJECT_NUMBER" \
+          --owner "$PROJECT_OWNER" \
+          --url "$ITEM_URL" \
+          --format json 2>&1)
+        exit_code=$?
+
+        if [ $exit_code -eq 0 ]; then
+          echo "✅ Successfully added item to project"
+          item_id=$(echo "$result" | jq -r '.id // empty')
+          if [ -n "$item_id" ]; then
+            echo "item-id=$item_id" >> "$GITHUB_OUTPUT"
+            echo "status=success" >> "$GITHUB_OUTPUT"
+          else
+            echo "⚠️  Item added but no ID returned"
+            echo "status=partial" >> "$GITHUB_OUTPUT"
+          fi
+        else
+          echo "⚠️  Failed to add item to project"
+          echo "   Error: $result"
+          echo "   This is non-fatal, workflow will continue"
+          echo "status=failed" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Update project fields
+      id: update-fields
+      if: >-
+        steps.add-item.outputs.item-id != '' &&
+        (inputs.status-field != '' || inputs.priority-field != '' ||
+        inputs.automation-state-field != '')
+      shell: bash
+      env:
+        GH_TOKEN: >-
+          ${{ inputs.github-token != '' &&
+          inputs.github-token || github.token }}
+        GITHUB_TOKEN: >-
+          ${{ inputs.github-token != '' &&
+          inputs.github-token || github.token }}
+        PROJECT_NUMBER: ${{ inputs.project-number }}
+        PROJECT_OWNER: ${{ inputs.project-owner }}
+        ITEM_ID: ${{ steps.add-item.outputs.item-id }}
+        STATUS_VALUE: ${{ inputs.status-field }}
+        PRIORITY_VALUE: ${{ inputs.priority-field }}
+        AUTOMATION_STATE_VALUE: ${{ inputs.automation-state-field }}
+      run: |
+        set +e  # Don't fail if field updates fail
+
+        echo "🔧 Updating project item fields..."
+
+        # Update Status field if provided
+        if [ -n "$STATUS_VALUE" ]; then
+          echo "   Setting Status: $STATUS_VALUE"
+          gh project item-edit \
+            --id "$ITEM_ID" \
+            --project-id "$PROJECT_OWNER/$PROJECT_NUMBER" \
+            --field-name "Status" \
+            --text "$STATUS_VALUE" 2>&1 || \
+            echo "⚠️  Failed to update Status"
+        fi
+
+        # Update Priority field if provided
+        if [ -n "$PRIORITY_VALUE" ]; then
+          echo "   Setting Priority: $PRIORITY_VALUE"
+          gh project item-edit \
+            --id "$ITEM_ID" \
+            --project-id "$PROJECT_OWNER/$PROJECT_NUMBER" \
+            --field-name "Priority" \
+            --text "$PRIORITY_VALUE" 2>&1 || \
+            echo "⚠️  Failed to update Priority"
+        fi
+
+        # Update Automation State field if provided
+        if [ -n "$AUTOMATION_STATE_VALUE" ]; then
+          echo "   Setting Automation State: $AUTOMATION_STATE_VALUE"
+          gh project item-edit \
+            --id "$ITEM_ID" \
+            --project-id "$PROJECT_OWNER/$PROJECT_NUMBER" \
+            --field-name "Automation State" \
+            --text "$AUTOMATION_STATE_VALUE" 2>&1 || \
+            echo "⚠️  Failed to update Automation State"
+        fi
+
+        echo "✅ Field update operations completed"
+
+    - name: Sync summary
+      id: sync
+      shell: bash
+      env:
+        CONFIG_STATUS: ${{ steps.check-config.outputs.status }}
+        ADD_STATUS: ${{ steps.add-item.outputs.status }}
+      run: |
+        if [ "$CONFIG_STATUS" = "skipped" ]; then
+          echo "status=skipped" >> "$GITHUB_OUTPUT"
+          echo "📊 Project Sync: Skipped (no configuration)"
+        elif [ "$ADD_STATUS" = "success" ]; then
+          echo "status=success" >> "$GITHUB_OUTPUT"
+          echo "📊 Project Sync: Success"
+        elif [ "$ADD_STATUS" = "partial" ]; then
+          echo "status=partial" >> "$GITHUB_OUTPUT"
+          echo "📊 Project Sync: Partial (item added, no ID)"
+        else
+          echo "status=failed" >> "$GITHUB_OUTPUT"
+          echo "📊 Project Sync: Failed (non-fatal)"
+        fi

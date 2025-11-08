@@ -1,0 +1,57 @@
+---
+name: Update Project on Comment Activity
+
+on:
+  issue_comment:
+    types:
+      - created
+  pull_request_review_comment:
+    types:
+      - created
+
+permissions:
+  issues: read
+  pull-requests: read
+  repository-projects: write
+
+concurrency:
+  group: >-
+    project-comment-${{
+    github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  update-activity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Determine item details
+        id: item-details
+        run: |
+          if [ -n "${{ github.event.issue.number }}" ]; then
+            if [ -n "${{ github.event.issue.pull_request }}" ]; then
+              echo "type=pull_request" >> "$GITHUB_OUTPUT"
+              url="${{ github.event.issue.html_url }}"
+              echo "url=$url" >> "$GITHUB_OUTPUT"
+            else
+              echo "type=issue" >> "$GITHUB_OUTPUT"
+              url="${{ github.event.issue.html_url }}"
+              echo "url=$url" >> "$GITHUB_OUTPUT"
+            fi
+          elif [ -n "${{ github.event.pull_request.number }}" ]; then
+            echo "type=pull_request" >> "$GITHUB_OUTPUT"
+            url="${{ github.event.pull_request.html_url }}"
+            echo "url=$url" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Update project with comment activity
+        uses: ./.github/actions/project-sync
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          project-number: ${{ vars.PROJECT_NUMBER }}
+          project-owner: ${{ vars.PROJECT_OWNER }}
+          item-type: ${{ steps.item-details.outputs.type }}
+          item-url: ${{ steps.item-details.outputs.url }}
+          automation-state-field: Active Discussion

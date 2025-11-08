@@ -10,6 +10,7 @@ permissions:
   contents: write
   issues: write
   pull-requests: write
+  repository-projects: write
 
 concurrency:
   group: copilot-todo-${{ github.event.issue.number }}
@@ -22,6 +23,16 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
+      - name: Update project status to In Progress
+        uses: ./.github/actions/project-sync
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          project-number: ${{ vars.PROJECT_NUMBER }}
+          project-owner: ${{ vars.PROJECT_OWNER }}
+          item-type: issue
+          item-url: ${{ github.event.issue.html_url }}
+          status-field: In Progress
+          automation-state-field: Implementing
       - name: Run Copilot Todo automation
         uses: ./.github/actions/copilot-exec
         env:
@@ -37,3 +48,14 @@ jobs:
           output-path: >-
             reports/copilot/todo-issue-${{
             github.event.issue.number }}.log
+      - name: Update project status after completion
+        if: always()
+        uses: ./.github/actions/project-sync
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          project-number: ${{ vars.PROJECT_NUMBER }}
+          project-owner: ${{ vars.PROJECT_OWNER }}
+          item-type: issue
+          item-url: ${{ github.event.issue.html_url }}
+          status-field: Under Review
+          automation-state-field: PR Created

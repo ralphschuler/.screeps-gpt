@@ -2,6 +2,112 @@
 
 This document expands on the workflows under `.github/workflows/` and how they combine with the Copilot CLI.
 
+## GitHub Projects Integration
+
+The repository includes comprehensive GitHub Projects V2 integration that automatically tracks issues, pull requests, and discussions through their entire lifecycle.
+
+### Project Management Workflows
+
+**Automated Item Sync** (`project-sync-items.yml`):
+
+- Automatically adds new issues, PRs, and discussions to the project board
+- Sets initial status to "Pending" and automation state to "Not Started"
+- Triggers on: issue/PR opened or reopened, discussion created
+
+**PR Status Tracking** (`project-pr-status.yml`):
+
+- Tracks pull request lifecycle and review states
+- Updates status based on draft/ready state and review outcomes
+- Automation states: Draft, Ready for Review, Approved, Changes Requested, Merged
+- Triggers on: PR ready_for_review, converted_to_draft, review_requested, review_submitted, closed
+
+**Comment Activity Tracking** (`project-comment-activity.yml`):
+
+- Marks items with active discussion when comments are added
+- Helps identify items requiring attention
+- Triggers on: issue_comment, pull_request_review_comment created
+
+### Integration with Copilot Workflows
+
+All major copilot workflows update project status automatically:
+
+**Issue Triage** (`copilot-issue-triage.yml`):
+
+- After triage: Status → "Backlog", Automation State → "Triaged"
+- Indicates issue has been processed and categorized
+
+**Todo Automation** (`copilot-todo-pr.yml`):
+
+- On start: Status → "In Progress", Automation State → "Implementing"
+- On completion: Status → "Under Review", Automation State → "PR Created"
+- Tracks automated implementation from start to PR creation
+
+**CI AutoFix** (`copilot-ci-autofix.yml`):
+
+- After fix attempt: Status → "In Progress", Automation State → "Autofix Attempted"
+- Tracks which CI failures have been addressed by automation
+
+**Repository Audit** (`copilot-review.yml`):
+
+- After completion: Automation State → "Audit Completed"
+- Tracks scheduled repository health checks
+
+### Project Board Configuration
+
+The system expects the following project fields:
+
+- **Status**: Pending, Backlog, In Progress, Under Review, Blocked, Done, Canceled
+- **Priority**: Critical, High, Medium, Low, None
+- **Type**: Bug, Feature, Enhancement, Chore, Question
+- **Automation State**: Various states tracking automation pipeline progress
+- **Domain**: Runtime, Automation, Documentation, Dependencies, Monitoring, Infrastructure
+
+See [GitHub Projects Setup Guide](./github-projects-setup.md) for complete configuration instructions.
+
+### Configuration Variables
+
+Set the following repository variables to enable project integration:
+
+- `PROJECT_NUMBER`: GitHub Project number (e.g., `1`)
+- `PROJECT_OWNER`: Project owner username or organization name
+
+**Graceful Degradation**: If these variables are not set, workflows will skip project sync operations and continue normally. This allows opt-in project integration without breaking existing functionality.
+
+### Project Sync Composite Action
+
+The `project-sync` composite action (`.github/actions/project-sync/action.yml`) provides centralized project management functionality:
+
+**Features**:
+
+- Adds items to project board using GitHub CLI
+- Updates project field values (Status, Priority, Automation State)
+- Gracefully handles missing configuration (non-fatal failures)
+- Supports issues, pull requests, and discussions
+- Provides detailed logging of sync operations
+
+**Usage Example**:
+
+```yaml
+- name: Update project status
+  uses: ./.github/actions/project-sync
+  with:
+    github-token: ${{ secrets.GITHUB_TOKEN }}
+    project-number: ${{ vars.PROJECT_NUMBER }}
+    project-owner: ${{ vars.PROJECT_OWNER }}
+    item-type: issue
+    item-url: ${{ github.event.issue.html_url }}
+    status-field: In Progress
+    automation-state-field: Implementing
+```
+
+### Benefits
+
+- **Full Lifecycle Visibility**: Track items from creation through completion
+- **Automation Pipeline Monitoring**: See which items are being processed by copilot workflows
+- **Bottleneck Identification**: Quickly identify items stuck in specific states
+- **Historical Tracking**: Maintain project history with automation state transitions
+- **Integration with Existing Tools**: Works seamlessly with copilot workflows and label system
+
 ## Build and Deployment
 
 The repository supports two deployment architectures:

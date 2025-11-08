@@ -35,6 +35,7 @@ permissions:
   contents: write
   issues: write
   pull-requests: write
+  repository-projects: write
 
 concurrency:
   group: ci-autofix-${{ github.event.workflow_run.id }}
@@ -71,6 +72,18 @@ jobs:
             reports/copilot/ci-autofix-${{ github.run_id }}.log
           timeout: "45"
           verbose: "true"
+
+      - name: Update project after autofix attempt
+        if: always()
+        uses: ./.github/actions/project-sync
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          project-number: ${{ vars.PROJECT_NUMBER }}
+          project-owner: ${{ vars.PROJECT_OWNER }}
+          item-type: issue
+          item-url: ${{ github.event.workflow_run.html_url }}
+          status-field: In Progress
+          automation-state-field: Autofix Attempted
 
       - name: Notify CI failure via email
         if: always()

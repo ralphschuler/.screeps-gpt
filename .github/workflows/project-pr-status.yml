@@ -1,0 +1,76 @@
+---
+name: Update Project PR Status
+
+on:
+  pull_request:
+    types:
+      - ready_for_review
+      - converted_to_draft
+      - review_requested
+  pull_request_review:
+    types:
+      - submitted
+  pull_request_target:
+    types:
+      - closed
+
+permissions:
+  pull-requests: read
+  repository-projects: write
+
+concurrency:
+  group: project-pr-status-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  update-status:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Determine status based on PR state
+        id: determine-status
+        run: |
+          if [ "${{ github.event.action }}" = "ready_for_review" ]; then
+            echo "status=Under Review" >> "$GITHUB_OUTPUT"
+            echo "automation-state=Ready for Review" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.action }}" = "converted_to_draft" ]; then
+            echo "status=In Progress" >> "$GITHUB_OUTPUT"
+            echo "automation-state=Draft" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.action }}" = "review_requested" ]; then
+            echo "status=Under Review" >> "$GITHUB_OUTPUT"
+            echo "automation-state=Review Requested" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.action }}" = "submitted" ]; then
+            review_state="${{ github.event.review.state }}"
+            if [ "$review_state" = "approved" ]; then
+              echo "status=Under Review" >> "$GITHUB_OUTPUT"
+              echo "automation-state=Approved" >> "$GITHUB_OUTPUT"
+            elif [ "$review_state" = "changes_requested" ]; then
+              echo "status=In Progress" >> "$GITHUB_OUTPUT"
+              echo "automation-state=Changes Requested" >> "$GITHUB_OUTPUT"
+            else
+              echo "status=Under Review" >> "$GITHUB_OUTPUT"
+              echo "automation-state=Reviewed" >> "$GITHUB_OUTPUT"
+            fi
+          elif [ "${{ github.event.action }}" = "closed" ]; then
+            if [ "${{ github.event.pull_request.merged }}" = "true" ]; then
+              echo "status=Done" >> "$GITHUB_OUTPUT"
+              echo "automation-state=Merged" >> "$GITHUB_OUTPUT"
+            else
+              echo "status=Canceled" >> "$GITHUB_OUTPUT"
+              echo "automation-state=Closed without Merge" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
+      - name: Update project PR status
+        uses: ./.github/actions/project-sync
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          project-number: ${{ vars.PROJECT_NUMBER }}
+          project-owner: ${{ vars.PROJECT_OWNER }}
+          item-type: pull_request
+          item-url: ${{ github.event.pull_request.html_url }}
+          status-field: ${{ steps.determine-status.outputs.status }}
+          automation-state-field: >-
+            ${{ steps.determine-status.outputs.automation-state }}

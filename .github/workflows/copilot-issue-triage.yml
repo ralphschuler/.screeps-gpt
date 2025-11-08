@@ -10,6 +10,7 @@ on:
 permissions:
   contents: read
   issues: write
+  repository-projects: write
 
 concurrency:
   group: ${{ github.workflow }}
@@ -37,3 +38,14 @@ jobs:
           output-path: >-
             reports/copilot/issue-triage-${{
             github.event.issue.number }}.log
+      - name: Update project status after triage
+        if: always()
+        uses: ./.github/actions/project-sync
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          project-number: ${{ vars.PROJECT_NUMBER }}
+          project-owner: ${{ vars.PROJECT_OWNER }}
+          item-type: issue
+          item-url: ${{ github.event.issue.html_url }}
+          status-field: Backlog
+          automation-state-field: Triaged
