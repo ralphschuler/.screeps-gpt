@@ -96,7 +96,7 @@ describe("BehaviorController", () => {
       // Counter should remain unchanged when no spawning occurs
       expect(memory.creepCounter).toBe(counterAfterTick1);
 
-      // Third tick - needs more harvesters
+      // Third tick - needs more harvesters (below minimum)
       const game3 = createGameContext({ time: 102, hasSpawns: true });
       controller.execute(game3, memory, { harvester: 3, upgrader: 3, builder: 2 });
 
