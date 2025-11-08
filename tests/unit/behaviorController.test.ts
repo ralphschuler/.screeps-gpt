@@ -367,4 +367,559 @@ describe("BehaviorController", () => {
       expect(remoteMiner.memory.task).toBe("travel");
     });
   });
+
+  describe("energy source protection", () => {
+    it("prevents upgraders from withdrawing energy from spawns", () => {
+      const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
+
+      const spawn = {
+        structureType: STRUCTURE_SPAWN,
+        store: {
+          getFreeCapacity: vi.fn(() => 0),
+          getUsedCapacity: vi.fn(() => 300)
+        }
+      } as unknown as AnyStoreStructure;
+
+      const container = {
+        structureType: STRUCTURE_CONTAINER,
+        store: {
+          getFreeCapacity: vi.fn(() => 0),
+          getUsedCapacity: vi.fn(() => 200)
+        }
+      } as unknown as AnyStoreStructure;
+
+      const upgraderRoom: RoomLike = {
+        name: "W0N0",
+        controller: {
+          id: "controller",
+          progress: 0,
+          progressTotal: 0
+        } as unknown as StructureController,
+        find: (type: FindConstant, opts?: FilterOptions<FindConstant>) => {
+          if (type === FIND_STRUCTURES) {
+            const structures = [spawn, container];
+            if (opts && opts.filter) {
+              return structures.filter(opts.filter);
+            }
+            return structures;
+          }
+          if (type === FIND_SOURCES_ACTIVE) {
+            return [];
+          }
+          if (type === FIND_DROPPED_RESOURCES) {
+            return [];
+          }
+          return [];
+        }
+      };
+
+      const withdraw = vi.fn(() => OK);
+      const upgrader: CreepLike = {
+        name: "upgrader-alpha",
+        memory: { role: "upgrader", task: "recharge", version: 1 },
+        store: {
+          getFreeCapacity: vi.fn(() => 50),
+          getUsedCapacity: vi.fn(() => 0)
+        },
+        pos: {
+          findClosestByPath: vi.fn((objects: unknown[]) => (objects.length > 0 ? (objects[0] as never) : null))
+        },
+        room: upgraderRoom,
+        harvest: vi.fn(() => OK),
+        transfer: vi.fn(() => OK),
+        moveTo: vi.fn(() => OK),
+        upgradeController: vi.fn(() => OK),
+        withdraw,
+        pickup: vi.fn(() => OK),
+        build: vi.fn(() => OK),
+        repair: vi.fn(() => OK)
+      };
+
+      const game: GameContext = {
+        time: 1,
+        cpu: { getUsed: () => 0, limit: 10, bucket: 1000 },
+        creeps: { upgrader },
+        spawns: {},
+        rooms: { W0N0: upgraderRoom }
+      };
+
+      const memory = { creepCounter: 0 } as Memory;
+      const roleCounts = { harvester: 4, upgrader: 3, builder: 2 };
+
+      controller.execute(game, memory, roleCounts);
+
+      // Verify that withdraw was called with the container, not the spawn
+      expect(withdraw).toHaveBeenCalledTimes(1);
+      expect(withdraw).toHaveBeenCalledWith(container, RESOURCE_ENERGY);
+    });
+
+    it("prevents upgraders from withdrawing energy from extensions", () => {
+      const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
+
+      const extension = {
+        structureType: STRUCTURE_EXTENSION,
+        store: {
+          getFreeCapacity: vi.fn(() => 0),
+          getUsedCapacity: vi.fn(() => 50)
+        }
+      } as unknown as AnyStoreStructure;
+
+      const container = {
+        structureType: STRUCTURE_CONTAINER,
+        store: {
+          getFreeCapacity: vi.fn(() => 0),
+          getUsedCapacity: vi.fn(() => 200)
+        }
+      } as unknown as AnyStoreStructure;
+
+      const upgraderRoom: RoomLike = {
+        name: "W0N0",
+        controller: {
+          id: "controller",
+          progress: 0,
+          progressTotal: 0
+        } as unknown as StructureController,
+        find: (type: FindConstant, opts?: FilterOptions<FindConstant>) => {
+          if (type === FIND_STRUCTURES) {
+            const structures = [extension, container];
+            if (opts && opts.filter) {
+              return structures.filter(opts.filter);
+            }
+            return structures;
+          }
+          if (type === FIND_SOURCES_ACTIVE) {
+            return [];
+          }
+          if (type === FIND_DROPPED_RESOURCES) {
+            return [];
+          }
+          return [];
+        }
+      };
+
+      const withdraw = vi.fn(() => OK);
+      const upgrader: CreepLike = {
+        name: "upgrader-beta",
+        memory: { role: "upgrader", task: "recharge", version: 1 },
+        store: {
+          getFreeCapacity: vi.fn(() => 50),
+          getUsedCapacity: vi.fn(() => 0)
+        },
+        pos: {
+          findClosestByPath: vi.fn((objects: unknown[]) => (objects.length > 0 ? (objects[0] as never) : null))
+        },
+        room: upgraderRoom,
+        harvest: vi.fn(() => OK),
+        transfer: vi.fn(() => OK),
+        moveTo: vi.fn(() => OK),
+        upgradeController: vi.fn(() => OK),
+        withdraw,
+        pickup: vi.fn(() => OK),
+        build: vi.fn(() => OK),
+        repair: vi.fn(() => OK)
+      };
+
+      const game: GameContext = {
+        time: 1,
+        cpu: { getUsed: () => 0, limit: 10, bucket: 1000 },
+        creeps: { upgrader },
+        spawns: {},
+        rooms: { W0N0: upgraderRoom }
+      };
+
+      const memory = { creepCounter: 0 } as Memory;
+      const roleCounts = { harvester: 4, upgrader: 3, builder: 2 };
+
+      controller.execute(game, memory, roleCounts);
+
+      // Verify that withdraw was called with the container, not the extension
+      expect(withdraw).toHaveBeenCalledTimes(1);
+      expect(withdraw).toHaveBeenCalledWith(container, RESOURCE_ENERGY);
+    });
+
+    it("prevents builders from withdrawing energy from spawns", () => {
+      const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
+
+      const spawn = {
+        structureType: STRUCTURE_SPAWN,
+        store: {
+          getFreeCapacity: vi.fn(() => 0),
+          getUsedCapacity: vi.fn(() => 300)
+        }
+      } as unknown as AnyStoreStructure;
+
+      const storage = {
+        structureType: STRUCTURE_STORAGE,
+        store: {
+          getFreeCapacity: vi.fn(() => 0),
+          getUsedCapacity: vi.fn(() => 500)
+        }
+      } as unknown as AnyStoreStructure;
+
+      const builderRoom: RoomLike = {
+        name: "W0N0",
+        controller: null,
+        find: (type: FindConstant, opts?: FilterOptions<FindConstant>) => {
+          if (type === FIND_STRUCTURES) {
+            const structures = [spawn, storage];
+            if (opts && opts.filter) {
+              return structures.filter(opts.filter);
+            }
+            return structures;
+          }
+          if (type === FIND_CONSTRUCTION_SITES) {
+            return [];
+          }
+          if (type === FIND_SOURCES_ACTIVE) {
+            return [];
+          }
+          if (type === FIND_DROPPED_RESOURCES) {
+            return [];
+          }
+          return [];
+        }
+      };
+
+      const withdraw = vi.fn(() => OK);
+      const builder: CreepLike = {
+        name: "builder-gamma",
+        memory: { role: "builder", task: "gather", version: 1 },
+        store: {
+          getFreeCapacity: vi.fn(() => 50),
+          getUsedCapacity: vi.fn(() => 0)
+        },
+        pos: {
+          findClosestByPath: vi.fn((objects: unknown[]) => (objects.length > 0 ? (objects[0] as never) : null))
+        },
+        room: builderRoom,
+        harvest: vi.fn(() => OK),
+        transfer: vi.fn(() => OK),
+        moveTo: vi.fn(() => OK),
+        upgradeController: vi.fn(() => OK),
+        withdraw,
+        pickup: vi.fn(() => OK),
+        build: vi.fn(() => OK),
+        repair: vi.fn(() => OK)
+      };
+
+      const game: GameContext = {
+        time: 1,
+        cpu: { getUsed: () => 0, limit: 10, bucket: 1000 },
+        creeps: { builder },
+        spawns: {},
+        rooms: { W0N0: builderRoom }
+      };
+
+      const memory = { creepCounter: 0 } as Memory;
+      const roleCounts = { harvester: 4, upgrader: 3, builder: 2 };
+
+      controller.execute(game, memory, roleCounts);
+
+      // Verify that withdraw was called with the storage, not the spawn
+      expect(withdraw).toHaveBeenCalledTimes(1);
+      expect(withdraw).toHaveBeenCalledWith(storage, RESOURCE_ENERGY);
+    });
+
+    it("prevents builders from withdrawing energy from extensions", () => {
+      const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
+
+      const extension = {
+        structureType: STRUCTURE_EXTENSION,
+        store: {
+          getFreeCapacity: vi.fn(() => 0),
+          getUsedCapacity: vi.fn(() => 50)
+        }
+      } as unknown as AnyStoreStructure;
+
+      const container = {
+        structureType: STRUCTURE_CONTAINER,
+        store: {
+          getFreeCapacity: vi.fn(() => 0),
+          getUsedCapacity: vi.fn(() => 200)
+        }
+      } as unknown as AnyStoreStructure;
+
+      const builderRoom: RoomLike = {
+        name: "W0N0",
+        controller: null,
+        find: (type: FindConstant, opts?: FilterOptions<FindConstant>) => {
+          if (type === FIND_STRUCTURES) {
+            const structures = [extension, container];
+            if (opts && opts.filter) {
+              return structures.filter(opts.filter);
+            }
+            return structures;
+          }
+          if (type === FIND_CONSTRUCTION_SITES) {
+            return [];
+          }
+          if (type === FIND_SOURCES_ACTIVE) {
+            return [];
+          }
+          if (type === FIND_DROPPED_RESOURCES) {
+            return [];
+          }
+          return [];
+        }
+      };
+
+      const withdraw = vi.fn(() => OK);
+      const builder: CreepLike = {
+        name: "builder-delta",
+        memory: { role: "builder", task: "gather", version: 1 },
+        store: {
+          getFreeCapacity: vi.fn(() => 50),
+          getUsedCapacity: vi.fn(() => 0)
+        },
+        pos: {
+          findClosestByPath: vi.fn((objects: unknown[]) => (objects.length > 0 ? (objects[0] as never) : null))
+        },
+        room: builderRoom,
+        harvest: vi.fn(() => OK),
+        transfer: vi.fn(() => OK),
+        moveTo: vi.fn(() => OK),
+        upgradeController: vi.fn(() => OK),
+        withdraw,
+        pickup: vi.fn(() => OK),
+        build: vi.fn(() => OK),
+        repair: vi.fn(() => OK)
+      };
+
+      const game: GameContext = {
+        time: 1,
+        cpu: { getUsed: () => 0, limit: 10, bucket: 1000 },
+        creeps: { builder },
+        spawns: {},
+        rooms: { W0N0: builderRoom }
+      };
+
+      const memory = { creepCounter: 0 } as Memory;
+      const roleCounts = { harvester: 4, upgrader: 3, builder: 2 };
+
+      controller.execute(game, memory, roleCounts);
+
+      // Verify that withdraw was called with the container, not the extension
+      expect(withdraw).toHaveBeenCalledTimes(1);
+      expect(withdraw).toHaveBeenCalledWith(container, RESOURCE_ENERGY);
+    });
+
+    it("allows upgraders to withdraw from storage when available", () => {
+      const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
+
+      const storage = {
+        structureType: STRUCTURE_STORAGE,
+        store: {
+          getFreeCapacity: vi.fn(() => 0),
+          getUsedCapacity: vi.fn(() => 1000)
+        }
+      } as unknown as AnyStoreStructure;
+
+      const upgraderRoom: RoomLike = {
+        name: "W0N0",
+        controller: {
+          id: "controller",
+          progress: 0,
+          progressTotal: 0
+        } as unknown as StructureController,
+        find: (type: FindConstant, opts?: FilterOptions<FindConstant>) => {
+          if (type === FIND_STRUCTURES) {
+            const structures = [storage];
+            if (opts && opts.filter) {
+              return structures.filter(opts.filter);
+            }
+            return structures;
+          }
+          if (type === FIND_SOURCES_ACTIVE) {
+            return [];
+          }
+          if (type === FIND_DROPPED_RESOURCES) {
+            return [];
+          }
+          return [];
+        }
+      };
+
+      const withdraw = vi.fn(() => OK);
+      const upgrader: CreepLike = {
+        name: "upgrader-epsilon",
+        memory: { role: "upgrader", task: "recharge", version: 1 },
+        store: {
+          getFreeCapacity: vi.fn(() => 50),
+          getUsedCapacity: vi.fn(() => 0)
+        },
+        pos: {
+          findClosestByPath: vi.fn((objects: unknown[]) => (objects.length > 0 ? (objects[0] as never) : null))
+        },
+        room: upgraderRoom,
+        harvest: vi.fn(() => OK),
+        transfer: vi.fn(() => OK),
+        moveTo: vi.fn(() => OK),
+        upgradeController: vi.fn(() => OK),
+        withdraw,
+        pickup: vi.fn(() => OK),
+        build: vi.fn(() => OK),
+        repair: vi.fn(() => OK)
+      };
+
+      const game: GameContext = {
+        time: 1,
+        cpu: { getUsed: () => 0, limit: 10, bucket: 1000 },
+        creeps: { upgrader },
+        spawns: {},
+        rooms: { W0N0: upgraderRoom }
+      };
+
+      const memory = { creepCounter: 0 } as Memory;
+      const roleCounts = { harvester: 4, upgrader: 3, builder: 2 };
+
+      controller.execute(game, memory, roleCounts);
+
+      // Verify that withdraw was called with storage
+      expect(withdraw).toHaveBeenCalledTimes(1);
+      expect(withdraw).toHaveBeenCalledWith(storage, RESOURCE_ENERGY);
+    });
+
+    it("allows upgraders to pickup dropped energy when no storage or containers available", () => {
+      const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
+
+      const droppedEnergy = {
+        resourceType: RESOURCE_ENERGY,
+        amount: 100
+      } as Resource;
+
+      const upgraderRoom: RoomLike = {
+        name: "W0N0",
+        controller: {
+          id: "controller",
+          progress: 0,
+          progressTotal: 0
+        } as unknown as StructureController,
+        find: (type: FindConstant, opts?: FilterOptions<FindConstant>) => {
+          if (type === FIND_STRUCTURES) {
+            return [];
+          }
+          if (type === FIND_DROPPED_RESOURCES) {
+            const resources = [droppedEnergy];
+            if (opts && opts.filter) {
+              return resources.filter(opts.filter);
+            }
+            return resources;
+          }
+          if (type === FIND_SOURCES_ACTIVE) {
+            return [];
+          }
+          return [];
+        }
+      };
+
+      const pickup = vi.fn(() => OK);
+      const upgrader: CreepLike = {
+        name: "upgrader-zeta",
+        memory: { role: "upgrader", task: "recharge", version: 1 },
+        store: {
+          getFreeCapacity: vi.fn(() => 50),
+          getUsedCapacity: vi.fn(() => 0)
+        },
+        pos: {
+          findClosestByPath: vi.fn((objects: unknown[]) => (objects.length > 0 ? (objects[0] as never) : null))
+        },
+        room: upgraderRoom,
+        harvest: vi.fn(() => OK),
+        transfer: vi.fn(() => OK),
+        moveTo: vi.fn(() => OK),
+        upgradeController: vi.fn(() => OK),
+        withdraw: vi.fn(() => OK),
+        pickup,
+        build: vi.fn(() => OK),
+        repair: vi.fn(() => OK)
+      };
+
+      const game: GameContext = {
+        time: 1,
+        cpu: { getUsed: () => 0, limit: 10, bucket: 1000 },
+        creeps: { upgrader },
+        spawns: {},
+        rooms: { W0N0: upgraderRoom }
+      };
+
+      const memory = { creepCounter: 0 } as Memory;
+      const roleCounts = { harvester: 4, upgrader: 3, builder: 2 };
+
+      controller.execute(game, memory, roleCounts);
+
+      // Verify that pickup was called with dropped energy
+      expect(pickup).toHaveBeenCalledTimes(1);
+      expect(pickup).toHaveBeenCalledWith(droppedEnergy);
+    });
+
+    it("allows upgraders to harvest directly from sources when no other energy available", () => {
+      const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
+
+      const source = { id: "source-1" } as Source;
+
+      const upgraderRoom: RoomLike = {
+        name: "W0N0",
+        controller: {
+          id: "controller",
+          progress: 0,
+          progressTotal: 0
+        } as unknown as StructureController,
+        find: (type: FindConstant, opts?: FilterOptions<FindConstant>) => {
+          if (type === FIND_STRUCTURES) {
+            return [];
+          }
+          if (type === FIND_DROPPED_RESOURCES) {
+            return [];
+          }
+          if (type === FIND_SOURCES_ACTIVE) {
+            const sources = [source];
+            if (opts && opts.filter) {
+              return sources.filter(opts.filter);
+            }
+            return sources;
+          }
+          return [];
+        }
+      };
+
+      const harvest = vi.fn(() => OK);
+      const upgrader: CreepLike = {
+        name: "upgrader-eta",
+        memory: { role: "upgrader", task: "recharge", version: 1 },
+        store: {
+          getFreeCapacity: vi.fn(() => 50),
+          getUsedCapacity: vi.fn(() => 0)
+        },
+        pos: {
+          findClosestByPath: vi.fn((objects: unknown[]) => (objects.length > 0 ? (objects[0] as never) : null))
+        },
+        room: upgraderRoom,
+        harvest,
+        transfer: vi.fn(() => OK),
+        moveTo: vi.fn(() => OK),
+        upgradeController: vi.fn(() => OK),
+        withdraw: vi.fn(() => OK),
+        pickup: vi.fn(() => OK),
+        build: vi.fn(() => OK),
+        repair: vi.fn(() => OK)
+      };
+
+      const game: GameContext = {
+        time: 1,
+        cpu: { getUsed: () => 0, limit: 10, bucket: 1000 },
+        creeps: { upgrader },
+        spawns: {},
+        rooms: { W0N0: upgraderRoom }
+      };
+
+      const memory = { creepCounter: 0 } as Memory;
+      const roleCounts = { harvester: 4, upgrader: 3, builder: 2 };
+
+      controller.execute(game, memory, roleCounts);
+
+      // Verify that harvest was called with the source
+      expect(harvest).toHaveBeenCalledTimes(1);
+      expect(harvest).toHaveBeenCalledWith(source);
+    });
+  });
 });

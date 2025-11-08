@@ -39,6 +39,7 @@ globals.FIND_MY_CONSTRUCTION_SITES = 114;
 globals.FIND_MY_STRUCTURES = 112;
 globals.FIND_MY_CREEPS = 113;
 globals.FIND_HOSTILE_CREEPS = 6;
+globals.FIND_DROPPED_RESOURCES = 106;
 globals.STRUCTURE_SPAWN = "spawn";
 globals.STRUCTURE_EXTENSION = "extension";
 globals.STRUCTURE_CONTAINER = "container";
