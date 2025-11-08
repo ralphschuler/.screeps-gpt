@@ -29,7 +29,7 @@ The repository includes comprehensive GitHub Projects V2 integration that automa
 
 ### Integration with Copilot Workflows
 
-All major copilot workflows update project status automatically:
+All major Copilot workflows update project status automatically:
 
 **Issue Triage** (`copilot-issue-triage.yml`):
 
@@ -103,10 +103,10 @@ The `project-sync` composite action (`.github/actions/project-sync/action.yml`) 
 ### Benefits
 
 - **Full Lifecycle Visibility**: Track items from creation through completion
-- **Automation Pipeline Monitoring**: See which items are being processed by copilot workflows
+- **Automation Pipeline Monitoring**: See which items are being processed by Copilot workflows
 - **Bottleneck Identification**: Quickly identify items stuck in specific states
 - **Historical Tracking**: Maintain project history with automation state transitions
-- **Integration with Existing Tools**: Works seamlessly with copilot workflows and label system
+- **Integration with Existing Tools**: Works seamlessly with Copilot workflows and label system
 
 ## Build and Deployment
 

@@ -145,6 +145,11 @@ runs:
 
         echo "🔧 Updating project item fields..."
 
+        # Note: Using --text flag for single-select fields works with
+        # GitHub CLI when field values match option names exactly.
+        # Field values must be case-sensitive matches to configured
+        # options in the project board.
+
         # Update Status field if provided
         if [ -n "$STATUS_VALUE" ]; then
           echo "   Setting Status: $STATUS_VALUE"
@@ -153,7 +158,7 @@ runs:
             --project-id "$PROJECT_OWNER/$PROJECT_NUMBER" \
             --field-name "Status" \
             --text "$STATUS_VALUE" 2>&1 || \
-            echo "⚠️  Failed to update Status"
+            echo "⚠️  Failed to update Status field"
         fi
 
         # Update Priority field if provided
@@ -164,7 +169,7 @@ runs:
             --project-id "$PROJECT_OWNER/$PROJECT_NUMBER" \
             --field-name "Priority" \
             --text "$PRIORITY_VALUE" 2>&1 || \
-            echo "⚠️  Failed to update Priority"
+            echo "⚠️  Failed to update Priority field"
         fi
 
         # Update Automation State field if provided
@@ -175,7 +180,7 @@ runs:
             --project-id "$PROJECT_OWNER/$PROJECT_NUMBER" \
             --field-name "Automation State" \
             --text "$AUTOMATION_STATE_VALUE" 2>&1 || \
-            echo "⚠️  Failed to update Automation State"
+            echo "⚠️  Failed to update Automation State field"
         fi
 
         echo "✅ Field update operations completed"

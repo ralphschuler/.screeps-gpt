@@ -35,15 +35,3 @@ jobs:
           prompt-path: .github/copilot/prompts/repository-audit
           output-path: >-
             reports/copilot/repository-audit-${{ github.run_id }}.log
-      - name: Update project after audit completion
-        if: always()
-        uses: ./.github/actions/project-sync
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          project-number: ${{ vars.PROJECT_NUMBER }}
-          project-owner: ${{ vars.PROJECT_OWNER }}
-          item-type: issue
-          item-url: >-
-            ${{ github.event.repository.html_url }}/actions/runs/${{
-            github.run_id }}
-          automation-state-field: Audit Completed

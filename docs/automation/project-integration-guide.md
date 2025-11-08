@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide provides a comprehensive overview of the GitHub Projects V2 integration implemented for automated copilot workflow management. The integration tracks issues, pull requests, and discussions through their entire lifecycle on a project board.
+This guide provides a comprehensive overview of the GitHub Projects V2 integration implemented for automated Copilot workflow management. The integration tracks issues, pull requests, and discussions through their entire lifecycle on a project board.
 
 ## Architecture
 
@@ -154,7 +154,7 @@ This ensures project integration is opt-in and doesn't break existing functional
 2. **Automation Pipeline Monitoring**: See which items are being processed
 3. **Bottleneck Identification**: Quickly find items stuck in specific states
 4. **Historical Tracking**: Maintain project history with state transitions
-5. **Integration with Existing Tools**: Works seamlessly with label system and copilot workflows
+5. **Integration with Existing Tools**: Works seamlessly with label system and Copilot workflows
 
 ## Future Enhancements
 

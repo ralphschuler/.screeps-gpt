@@ -1,6 +1,6 @@
 # GitHub Projects Integration Setup Guide
 
-This guide explains how to set up and configure the GitHub Projects V2 integration for automated copilot workflow management.
+This guide explains how to set up and configure the GitHub Projects V2 integration for automated Copilot workflow management.
 
 ## Overview
 
@@ -79,6 +79,7 @@ Add the following custom fields to your project:
   - PR Created
   - Under Review
   - Ready for Review
+  - Reviewed
   - Approved
   - Changes Requested
   - Autofix Attempted
@@ -197,9 +198,10 @@ Set up useful views in your project board:
 **Solutions**:
 
 1. Verify field names match exactly (case-sensitive)
-2. Check that field options include the values being set
+2. Check that field option values match exactly (case-sensitive) - the values passed to workflows must match the option names configured in the project board exactly
 3. Review workflow logs for specific field update errors
 4. Ensure field types are Single Select (not Text or other types)
+5. Verify all field values used in workflows exist as options in the project board configuration
 
 ### Permission Errors
 

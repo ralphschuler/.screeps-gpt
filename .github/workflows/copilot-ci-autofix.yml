@@ -73,18 +73,6 @@ jobs:
           timeout: "45"
           verbose: "true"
 
-      - name: Update project after autofix attempt
-        if: always()
-        uses: ./.github/actions/project-sync
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          project-number: ${{ vars.PROJECT_NUMBER }}
-          project-owner: ${{ vars.PROJECT_OWNER }}
-          item-type: issue
-          item-url: ${{ github.event.workflow_run.html_url }}
-          status-field: In Progress
-          automation-state-field: Autofix Attempted
-
       - name: Notify CI failure via email
         if: always()
         uses: ./.github/actions/send-email-notification

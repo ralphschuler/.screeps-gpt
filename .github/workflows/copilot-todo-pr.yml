@@ -49,7 +49,7 @@ jobs:
             reports/copilot/todo-issue-${{
             github.event.issue.number }}.log
       - name: Update project status after completion
-        if: always()
+        if: success()
         uses: ./.github/actions/project-sync
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
