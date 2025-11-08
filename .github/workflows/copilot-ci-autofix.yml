@@ -50,27 +50,17 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v5
       - name: Run Copilot CI auto-fix
-        uses: ./.github/actions/copilot-exec
-        env:
-          REPO_NAME: "${{ github.repository }}"
-          WORKFLOW_NAME: ${{ toJSON(github.event.workflow_run.name) }}
-          RUN_ID: "${{ github.event.workflow_run.id }}"
-          RUN_HTML_URL: >-
+        uses: ./.github/actions/copilot-ci-autofix-agent
+        with:
+          copilot-token: ${{ secrets.COPILOT_TOKEN }}
+          workflow-name: ${{ toJSON(github.event.workflow_run.name) }}
+          run-id: ${{ github.event.workflow_run.id }}
+          run-url: >-
             ${{ toJSON(github.event.workflow_run.html_url ||
             format('https://github.com/{0}/actions/runs/{1}',
             github.repository, github.event.workflow_run.id)) }}
-          TRIGGER_EVENT: >-
+          trigger-event: >-
             ${{ toJSON(github.event.workflow_run.event) }}
-          EVENT_PATH: "${{ github.event_path }}"
-          WORKSPACE: "${{ github.workspace }}"
-        with:
-          force-response: true
-          copilot-token: ${{ secrets.COPILOT_TOKEN }}
-          prompt-path: .github/copilot/prompts/ci-autofix
-          output-path: >-
-            reports/copilot/ci-autofix-${{ github.run_id }}.log
-          timeout: "45"
-          verbose: "true"
 
       - name: Notify CI failure via email
         if: always()

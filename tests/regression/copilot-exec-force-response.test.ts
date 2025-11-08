@@ -83,27 +83,29 @@ describe("Copilot-Exec Force-Response Feature", () => {
 describe("Copilot-Exec Backward Compatibility", () => {
   const workflowsDir = join(process.cwd(), ".github/workflows");
 
-  // List of workflows that use copilot-exec
+  // List of workflows that use copilot-exec directly or through specialized agents
   const workflowFiles = [
-    "copilot-review.yml",
-    "copilot-email-triage.yml",
-    "copilot-issue-triage.yml",
-    "copilot-todo-pr.yml",
-    "screeps-monitoring.yml",
-    "copilot-todo-daily.yml",
-    "copilot-speckit.yml",
-    "copilot-ci-autofix.yml"
+    { file: "copilot-review.yml", agent: "copilot-audit-agent" },
+    { file: "copilot-email-triage.yml", agent: "copilot-exec" },
+    { file: "copilot-issue-triage.yml", agent: "copilot-triage-agent" },
+    { file: "copilot-todo-pr.yml", agent: "copilot-dev-agent" },
+    { file: "screeps-monitoring.yml", agent: "copilot-exec" },
+    { file: "copilot-todo-daily.yml", agent: "copilot-exec" },
+    { file: "copilot-speckit.yml", agent: "copilot-exec" },
+    { file: "copilot-ci-autofix.yml", agent: "copilot-ci-autofix-agent" }
   ];
 
-  workflowFiles.forEach(workflowFile => {
-    it(`should not require force-response parameter in ${workflowFile}`, () => {
+  workflowFiles.forEach(({ file: workflowFile, agent }) => {
+    it(`should use copilot-exec or specialized agent in ${workflowFile}`, () => {
       const workflowPath = join(workflowsDir, workflowFile);
       const workflowContent = readFileSync(workflowPath, "utf-8");
 
-      // Verify workflow can still work without force-response parameter
-      // (this is implicit - if the workflow uses copilot-exec without the parameter,
-      // it will use the default value of false)
-      expect(workflowContent).toContain("uses: ./.github/actions/copilot-exec");
+      // Verify workflow uses either copilot-exec directly or a specialized agent
+      // Specialized agents wrap copilot-exec, so force-response is still available
+      const usesCopilotExec = workflowContent.includes("uses: ./.github/actions/copilot-exec");
+      const usesSpecializedAgent = workflowContent.includes(`uses: ./.github/actions/${agent}`);
+
+      expect(usesCopilotExec || usesSpecializedAgent).toBe(true);
     });
   });
 });

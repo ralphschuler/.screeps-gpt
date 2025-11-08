@@ -1,0 +1,58 @@
+name: copilot-review-agent
+description: |
+  Specialized Copilot agent for repository reviews and analysis.
+
+  Features:
+  - Comprehensive repository audit and quality assessment
+  - Automated issue filing for identified problems
+  - Duplicate detection and prevention
+  - Severity assessment and prioritization
+  - Single responsibility focused on review operations
+author: "ralph@nyphon.de"
+inputs:
+  copilot-token:
+    description: Personal access token with Copilot Requests scope
+    required: true
+  repository:
+    description: Repository name in owner/repo format
+    required: false
+    default: ${{ github.repository }}
+  run-id:
+    description: GitHub Actions run ID for tracking
+    required: false
+    default: ${{ github.run_id }}
+  run-url:
+    description: GitHub Actions run URL
+    required: false
+    default: ""
+  verbose:
+    description: Enable verbose logging for debugging
+    required: false
+    default: "false"
+  timeout:
+    description: Maximum time in minutes for Copilot CLI execution
+    required: false
+    default: "30"
+
+outputs:
+  output-path:
+    description: Absolute path to the review output log file
+    value: ${{ steps.review.outputs.output-path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Run Copilot repository review
+      id: review
+      uses: ./.github/actions/copilot-exec
+      env:
+        REPO_NAME: ${{ inputs.repository }}
+        RUN_ID: ${{ inputs.run-id }}
+        RUN_URL: ${{ inputs.run-url }}
+      with:
+        force-response: true
+        copilot-token: ${{ inputs.copilot-token }}
+        prompt-path: .github/copilot/prompts/repository-review
+        output-path: reports/copilot/repository-review-${{ inputs.run-id }}.log
+        verbose: ${{ inputs.verbose }}
+        timeout: ${{ inputs.timeout }}
