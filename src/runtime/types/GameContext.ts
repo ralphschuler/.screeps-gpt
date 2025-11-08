@@ -11,11 +11,14 @@ export interface StoreLike {
 
 export interface PositionLike {
   findClosestByPath<T>(objects: T[], opts?: FindPathOpts & { filter?: (object: unknown) => boolean }): T | null;
+  inRangeTo(target: RoomPosition | { pos: RoomPosition }, range: number): boolean;
+  findInRange<T>(type: FindConstant, range: number, opts?: { filter?: (object: unknown) => boolean }): T[];
 }
 
 export interface RoomLike {
   name: string;
   controller: StructureController | null;
+  storage?: StructureStorage | null;
   find(type: FindConstant, opts?: { filter?: (object: unknown) => boolean }): unknown[];
   findPath(from: RoomPosition, to: RoomPosition, opts?: FindPathOpts): PathStep[];
   createConstructionSite(x: number, y: number, structureType: BuildableStructureConstant): ScreepsReturnCode;
@@ -35,6 +38,8 @@ export interface CreepLike {
   withdraw(target: Structure, resource: ResourceConstant): ScreepsReturnCode;
   build(target: ConstructionSite): ScreepsReturnCode;
   repair(target: Structure): ScreepsReturnCode;
+  pickup(target: Resource): ScreepsReturnCode;
+  drop(resourceType: ResourceConstant, amount?: number): ScreepsReturnCode;
 }
 
 export interface SpawnLike {
