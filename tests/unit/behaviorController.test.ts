@@ -395,7 +395,7 @@ describe("BehaviorController", () => {
           progress: 0,
           progressTotal: 0
         } as unknown as StructureController,
-        find: (type: FindConstant, opts?: FilterOptions<FindConstant>) => {
+        find: (type: FindConstant, opts?: { filter?: (object: unknown) => boolean }) => {
           if (type === FIND_STRUCTURES) {
             const structures = [spawn, container];
             if (opts && opts.filter) {
@@ -479,7 +479,7 @@ describe("BehaviorController", () => {
           progress: 0,
           progressTotal: 0
         } as unknown as StructureController,
-        find: (type: FindConstant, opts?: FilterOptions<FindConstant>) => {
+        find: (type: FindConstant, opts?: { filter?: (object: unknown) => boolean }) => {
           if (type === FIND_STRUCTURES) {
             const structures = [extension, container];
             if (opts && opts.filter) {
@@ -559,7 +559,7 @@ describe("BehaviorController", () => {
       const builderRoom: RoomLike = {
         name: "W0N0",
         controller: null,
-        find: (type: FindConstant, opts?: FilterOptions<FindConstant>) => {
+        find: (type: FindConstant, opts?: { filter?: (object: unknown) => boolean }) => {
           if (type === FIND_STRUCTURES) {
             const structures = [spawn, storage];
             if (opts && opts.filter) {
@@ -642,7 +642,7 @@ describe("BehaviorController", () => {
       const builderRoom: RoomLike = {
         name: "W0N0",
         controller: null,
-        find: (type: FindConstant, opts?: FilterOptions<FindConstant>) => {
+        find: (type: FindConstant, opts?: { filter?: (object: unknown) => boolean }) => {
           if (type === FIND_STRUCTURES) {
             const structures = [extension, container];
             if (opts && opts.filter) {
@@ -721,7 +721,7 @@ describe("BehaviorController", () => {
           progress: 0,
           progressTotal: 0
         } as unknown as StructureController,
-        find: (type: FindConstant, opts?: FilterOptions<FindConstant>) => {
+        find: (type: FindConstant, opts?: { filter?: (object: unknown) => boolean }) => {
           if (type === FIND_STRUCTURES) {
             const structures = [storage];
             if (opts && opts.filter) {
@@ -794,7 +794,7 @@ describe("BehaviorController", () => {
           progress: 0,
           progressTotal: 0
         } as unknown as StructureController,
-        find: (type: FindConstant, opts?: FilterOptions<FindConstant>) => {
+        find: (type: FindConstant, opts?: { filter?: (object: unknown) => boolean }) => {
           if (type === FIND_STRUCTURES) {
             return [];
           }
