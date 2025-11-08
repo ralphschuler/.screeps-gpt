@@ -723,7 +723,7 @@ function runStationaryHarvester(creep: ManagedCreep): string {
   const container = memory.containerId ? Game.getObjectById(memory.containerId) : null;
 
   // Move to source if not adjacent
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+
   const isNear = creep.pos.inRangeTo(source, 1);
   if (!isNear) {
     creep.moveTo(source, { range: 1, reusePath: 50 });
@@ -742,7 +742,7 @@ function runStationaryHarvester(creep: ManagedCreep): string {
       creep.transfer(container, RESOURCE_ENERGY);
     } else {
       // Drop on ground if no container or container is full
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+
       creep.drop(RESOURCE_ENERGY);
     }
   }
@@ -822,7 +822,7 @@ function runHauler(creep: ManagedCreep): string {
     } else if (droppedEnergy.length > 0) {
       const closest = creep.pos.findClosestByPath(droppedEnergy);
       const target = closest !== null ? closest : droppedEnergy[0];
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+
       const result = creep.pickup(target);
       if (result === ERR_NOT_IN_RANGE) {
         creep.moveTo(target, { range: 1, reusePath: 30 });
@@ -871,14 +871,12 @@ function runHauler(creep: ManagedCreep): string {
   }
 
   // Priority 3: Storage
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
   const storage = creep.room.storage;
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+
   if (storage && storage.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const result = creep.transfer(storage, RESOURCE_ENERGY);
     if (result === ERR_NOT_IN_RANGE) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       creep.moveTo(storage, { range: 1, reusePath: 30 });
     }
     return HAULER_DELIVER_TASK;
