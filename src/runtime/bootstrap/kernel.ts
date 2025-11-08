@@ -5,7 +5,8 @@ import {
   MemoryManager,
   MemoryGarbageCollector,
   MemoryMigrationManager,
-  MemoryUtilizationMonitor
+  MemoryUtilizationMonitor,
+  MemorySelfHealer
 } from "@runtime/memory";
 import { PerformanceTracker } from "@runtime/metrics/PerformanceTracker";
 import { StatsCollector } from "@runtime/metrics/StatsCollector";
@@ -21,6 +22,7 @@ export interface KernelConfig {
   garbageCollector?: MemoryGarbageCollector;
   migrationManager?: MemoryMigrationManager;
   utilizationMonitor?: MemoryUtilizationMonitor;
+  selfHealer?: MemorySelfHealer;
   tracker?: PerformanceTracker;
   statsCollector?: StatsCollector;
   pixelGenerator?: PixelGenerator;
@@ -35,6 +37,7 @@ export interface KernelConfig {
   memorySchemaVersion?: number;
   enableGarbageCollection?: boolean;
   garbageCollectionInterval?: number;
+  enableSelfHealing?: boolean;
 }
 
 /**
@@ -47,6 +50,7 @@ export class Kernel {
   private readonly garbageCollector: MemoryGarbageCollector;
   private readonly migrationManager: MemoryMigrationManager;
   private readonly utilizationMonitor: MemoryUtilizationMonitor;
+  private readonly selfHealer: MemorySelfHealer;
   private readonly tracker: PerformanceTracker;
   private readonly statsCollector: StatsCollector;
   private readonly pixelGenerator: PixelGenerator;
@@ -60,6 +64,7 @@ export class Kernel {
   private readonly cpuEmergencyThreshold: number;
   private readonly enableGarbageCollection: boolean;
   private readonly garbageCollectionInterval: number;
+  private readonly enableSelfHealing: boolean;
 
   public constructor(config: KernelConfig = {}) {
     this.logger = config.logger ?? console;
@@ -68,6 +73,7 @@ export class Kernel {
     this.migrationManager =
       config.migrationManager ?? new MemoryMigrationManager(config.memorySchemaVersion ?? 1, this.logger);
     this.utilizationMonitor = config.utilizationMonitor ?? new MemoryUtilizationMonitor({}, this.logger);
+    this.selfHealer = config.selfHealer ?? new MemorySelfHealer({}, this.logger);
     this.tracker = config.tracker ?? new PerformanceTracker({}, this.logger);
     this.statsCollector = config.statsCollector ?? new StatsCollector();
     this.pixelGenerator = config.pixelGenerator ?? new PixelGenerator({}, this.logger);
@@ -77,6 +83,7 @@ export class Kernel {
     this.constructionManager = config.constructionManager ?? new ConstructionManager(this.logger);
     this.enableGarbageCollection = config.enableGarbageCollection ?? true;
     this.garbageCollectionInterval = config.garbageCollectionInterval ?? 10;
+    this.enableSelfHealing = config.enableSelfHealing ?? true;
     this.visualManager =
       config.visualManager ??
       new RoomVisualManager({
@@ -96,6 +103,24 @@ export class Kernel {
     const repository = this.repositorySignalProvider?.();
 
     this.tracker.begin(game);
+
+    // Self-heal memory before any other operations
+    if (this.enableSelfHealing) {
+      const healthCheck = this.selfHealer.checkAndRepair(memory);
+      if (healthCheck.requiresReset) {
+        this.logger.warn?.("[Kernel] Memory corruption detected. Attempting automatic emergency reset.");
+        this.selfHealer.emergencyReset(memory);
+        this.logger.warn?.("[Kernel] Emergency reset performed. Aborting tick to prevent further issues.");
+        const snapshot = this.tracker.end(game, {
+          processedCreeps: 0,
+          spawnedCreeps: [],
+          tasksExecuted: {}
+        });
+        this.statsCollector.collect(game, memory, snapshot);
+        this.evaluator.evaluateAndStore(memory, snapshot, repository);
+        return;
+      }
+    }
 
     // Run memory migrations on first tick or version change
     const migrationResult = this.migrationManager.migrate(memory);
