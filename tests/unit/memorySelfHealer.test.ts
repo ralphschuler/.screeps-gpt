@@ -444,9 +444,7 @@ describe("MemorySelfHealer", () => {
       const memory: Memory = {} as Memory;
       healer.checkAndRepair(memory);
 
-      expect(mockLogger.log).toHaveBeenCalledWith(
-        expect.stringMatching(/\[MemorySelfHealer\] Found .+ repaired/)
-      );
+      expect(mockLogger.log).toHaveBeenCalledWith(expect.stringMatching(/\[MemorySelfHealer\] Found .+ repaired/));
     });
   });
 
