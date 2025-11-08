@@ -3,7 +3,7 @@ import type { CreepLike, GameContext, SpawnLike } from "@runtime/types/GameConte
 import { TaskManager } from "@runtime/tasks";
 import { profile } from "@profiler";
 
-type RoleName = "harvester" | "upgrader" | "builder" | "remoteMiner";
+type RoleName = "harvester" | "upgrader" | "builder" | "remoteMiner" | "stationaryHarvester" | "hauler";
 
 interface BaseCreepMemory extends CreepMemory {
   role: RoleName;
@@ -26,6 +26,8 @@ const HARVESTER_VERSION = 1;
 const UPGRADER_VERSION = 1;
 const BUILDER_VERSION = 1;
 const REMOTE_MINER_VERSION = 1;
+const STATIONARY_HARVESTER_VERSION = 1;
+const HAULER_VERSION = 1;
 
 const HARVEST_TASK = "harvest" as const;
 const DELIVER_TASK = "deliver" as const;
@@ -37,11 +39,16 @@ const BUILDER_MAINTAIN_TASK = "maintain" as const;
 const REMOTE_TRAVEL_TASK = "travel" as const;
 const REMOTE_MINE_TASK = "mine" as const;
 const REMOTE_RETURN_TASK = "return" as const;
+const STATIONARY_HARVEST_TASK = "stationaryHarvest" as const;
+const HAULER_PICKUP_TASK = "pickup" as const;
+const HAULER_DELIVER_TASK = "haulerDeliver" as const;
 
 type HarvesterTask = typeof HARVEST_TASK | typeof DELIVER_TASK | typeof UPGRADE_TASK;
 type UpgraderTask = typeof RECHARGE_TASK | typeof UPGRADE_TASK;
 type BuilderTask = typeof BUILDER_GATHER_TASK | typeof BUILDER_BUILD_TASK | typeof BUILDER_MAINTAIN_TASK;
 type RemoteMinerTask = typeof REMOTE_TRAVEL_TASK | typeof REMOTE_MINE_TASK | typeof REMOTE_RETURN_TASK;
+type StationaryHarvesterTask = typeof STATIONARY_HARVEST_TASK;
+type HaulerTask = typeof HAULER_PICKUP_TASK | typeof HAULER_DELIVER_TASK;
 
 interface HarvesterMemory extends BaseCreepMemory {
   task: HarvesterTask;
@@ -60,6 +67,18 @@ interface RemoteMinerMemory extends BaseCreepMemory {
   homeRoom: string;
   targetRoom: string;
   sourceId?: Id<Source>;
+}
+
+interface StationaryHarvesterMemory extends BaseCreepMemory {
+  task: StationaryHarvesterTask;
+  sourceId?: Id<Source>;
+  containerId?: Id<StructureContainer>;
+  targetPos?: { x: number; y: number; roomName: string };
+}
+
+interface HaulerMemory extends BaseCreepMemory {
+  task: HaulerTask;
+  sourceContainerId?: Id<StructureContainer>;
 }
 
 const ROLE_DEFINITIONS: Record<RoleName, RoleDefinition> = {
@@ -98,6 +117,28 @@ const ROLE_DEFINITIONS: Record<RoleName, RoleDefinition> = {
         targetRoom: ""
       }) satisfies RemoteMinerMemory,
     run: (creep: ManagedCreep) => runRemoteMiner(creep)
+  },
+  stationaryHarvester: {
+    minimum: 0,
+    body: [WORK, WORK, WORK, WORK, WORK, MOVE],
+    memory: () =>
+      ({
+        role: "stationaryHarvester",
+        task: STATIONARY_HARVEST_TASK,
+        version: STATIONARY_HARVESTER_VERSION
+      }) satisfies StationaryHarvesterMemory,
+    run: (creep: ManagedCreep) => runStationaryHarvester(creep)
+  },
+  hauler: {
+    minimum: 0,
+    body: [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE],
+    memory: () =>
+      ({
+        role: "hauler",
+        task: HAULER_PICKUP_TASK,
+        version: HAULER_VERSION
+      }) satisfies HaulerMemory,
+    run: (creep: ManagedCreep) => runHauler(creep)
   }
 };
 
@@ -633,4 +674,179 @@ function runRemoteMiner(creep: ManagedCreep): string {
   }
 
   return REMOTE_RETURN_TASK;
+}
+
+function runStationaryHarvester(creep: ManagedCreep): string {
+  const memory = creep.memory as StationaryHarvesterMemory;
+
+  // Find or remember assigned source
+  if (!memory.sourceId) {
+    const sources = creep.room.find(FIND_SOURCES) as Source[];
+    const source = sources.length > 0 ? (creep.pos.findClosestByPath(sources) ?? sources[0]) : null;
+    if (source) {
+      memory.sourceId = source.id;
+    } else {
+      return STATIONARY_HARVEST_TASK;
+    }
+  }
+
+  const source = Game.getObjectById(memory.sourceId);
+  if (!source) {
+    delete memory.sourceId;
+    return STATIONARY_HARVEST_TASK;
+  }
+
+  // Find or remember container adjacent to source
+  if (!memory.containerId) {
+    const nearbyStructures = source.pos.findInRange(FIND_STRUCTURES, 1);
+    const containers = nearbyStructures.filter((s): s is StructureContainer => s.structureType === STRUCTURE_CONTAINER);
+
+    if (containers.length > 0) {
+      memory.containerId = containers[0].id;
+    }
+  }
+
+  const container = memory.containerId ? Game.getObjectById(memory.containerId) : null;
+
+  // Move to source if not adjacent
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+  const isNear = creep.pos.inRangeTo(source, 1);
+  if (!isNear) {
+    creep.moveTo(source, { range: 1, reusePath: 50 });
+    return STATIONARY_HARVEST_TASK;
+  }
+
+  // Harvest energy
+  const harvestResult = creep.harvest(source);
+  if (harvestResult === ERR_NOT_IN_RANGE) {
+    creep.moveTo(source, { range: 1, reusePath: 50 });
+  }
+
+  // Drop energy into container or on ground if full
+  if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+    if (container && container.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+      creep.transfer(container, RESOURCE_ENERGY);
+    } else {
+      // Drop on ground if no container or container is full
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      creep.drop(RESOURCE_ENERGY);
+    }
+  }
+
+  return STATIONARY_HARVEST_TASK;
+}
+
+function ensureHaulerTask(memory: HaulerMemory, creep: CreepLike): HaulerTask {
+  if (memory.task !== HAULER_PICKUP_TASK && memory.task !== HAULER_DELIVER_TASK) {
+    memory.task = HAULER_PICKUP_TASK;
+    return memory.task;
+  }
+
+  if (memory.task === HAULER_PICKUP_TASK && creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+    memory.task = HAULER_DELIVER_TASK;
+  } else if (memory.task === HAULER_DELIVER_TASK && creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+    memory.task = HAULER_PICKUP_TASK;
+  }
+
+  return memory.task;
+}
+
+function runHauler(creep: ManagedCreep): string {
+  const memory = creep.memory as HaulerMemory;
+  const task = ensureHaulerTask(memory, creep);
+
+  if (task === HAULER_PICKUP_TASK) {
+    // Priority: Pick up from containers near sources
+    const containers = creep.room.find(FIND_STRUCTURES, {
+      filter: s =>
+        s.structureType === STRUCTURE_CONTAINER && (s as StructureContainer).store.getUsedCapacity(RESOURCE_ENERGY) > 0
+    }) as StructureContainer[];
+
+    // Also check for dropped energy near sources
+    const droppedEnergy = creep.room.find(FIND_DROPPED_RESOURCES, {
+      filter: r => r.resourceType === RESOURCE_ENERGY && r.amount > 50
+    }) as Resource[];
+
+    if (containers.length > 0) {
+      const closest = creep.pos.findClosestByPath(containers);
+      const target = closest !== null ? closest : containers[0];
+      const result = creep.withdraw(target, RESOURCE_ENERGY);
+      if (result === ERR_NOT_IN_RANGE) {
+        creep.moveTo(target, { range: 1, reusePath: 30 });
+      }
+    } else if (droppedEnergy.length > 0) {
+      const closest = creep.pos.findClosestByPath(droppedEnergy);
+      const target = closest !== null ? closest : droppedEnergy[0];
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+      const result = creep.pickup(target);
+      if (result === ERR_NOT_IN_RANGE) {
+        creep.moveTo(target, { range: 1, reusePath: 30 });
+      }
+    }
+
+    return HAULER_PICKUP_TASK;
+  }
+
+  // HAULER_DELIVER_TASK: Priority-based delivery
+  // Priority 1: Spawns and extensions (critical)
+  const criticalTargets = creep.room.find(FIND_STRUCTURES, {
+    filter: (structure: AnyStructure) =>
+      (structure.structureType === STRUCTURE_SPAWN || structure.structureType === STRUCTURE_EXTENSION) &&
+      (structure as AnyStoreStructure).store.getFreeCapacity(RESOURCE_ENERGY) > 0
+  });
+
+  if (criticalTargets.length > 0) {
+    const closest = creep.pos.findClosestByPath(criticalTargets);
+    const target = closest !== null ? closest : criticalTargets[0];
+    const result = creep.transfer(target, RESOURCE_ENERGY);
+    if (result === ERR_NOT_IN_RANGE) {
+      creep.moveTo(target, { range: 1, reusePath: 30 });
+    }
+    return HAULER_DELIVER_TASK;
+  }
+
+  // Priority 2: Towers
+  const towers = creep.room.find(FIND_STRUCTURES, {
+    filter: (structure: AnyStructure) => {
+      if (structure.structureType !== STRUCTURE_TOWER) return false;
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+      const tower = structure as StructureTower;
+      return tower.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
+    }
+  });
+
+  if (towers.length > 0) {
+    const closest = creep.pos.findClosestByPath(towers);
+    const target = closest !== null ? closest : towers[0];
+    const result = creep.transfer(target, RESOURCE_ENERGY);
+    if (result === ERR_NOT_IN_RANGE) {
+      creep.moveTo(target, { range: 1, reusePath: 30 });
+    }
+    return HAULER_DELIVER_TASK;
+  }
+
+  // Priority 3: Storage
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const storage = creep.room.storage;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+  if (storage && storage.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    const result = creep.transfer(storage, RESOURCE_ENERGY);
+    if (result === ERR_NOT_IN_RANGE) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      creep.moveTo(storage, { range: 1, reusePath: 30 });
+    }
+    return HAULER_DELIVER_TASK;
+  }
+
+  // Fallback: Upgrade controller
+  const controller = creep.room.controller;
+  if (controller) {
+    const result = creep.upgradeController(controller);
+    if (result === ERR_NOT_IN_RANGE) {
+      creep.moveTo(controller, { range: 3, reusePath: 30 });
+    }
+  }
+
+  return HAULER_DELIVER_TASK;
 }
