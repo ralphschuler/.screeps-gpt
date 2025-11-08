@@ -63,8 +63,8 @@ jobs:
           echo "exit_code=$AUDIT_EXIT_CODE" >> $GITHUB_OUTPUT
 
           if [ "$TOTAL" = "unknown" ]; then
-            echo "::error::Unable to determine vulnerability count \
-due to parsing error"
+            echo "::error::Unable to determine vulnerability count " \
+              "due to parsing error"
           elif [ "$TOTAL" -gt 0 ]; then
             echo "::warning::Found $TOTAL vulnerabilities: $VULNERABILITIES"
           else

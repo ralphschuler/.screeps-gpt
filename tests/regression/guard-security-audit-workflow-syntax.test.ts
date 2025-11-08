@@ -26,6 +26,11 @@ describe("Security Audit workflow syntax", () => {
     // a pipe character at the start of the next line
     const brokenPattern = /jq[^|]*\\\s*\n\s*['"][^'"]*\|[^'"]*\\\s*\n/;
     expect(content).not.toMatch(brokenPattern);
+
+    // Also check for the specific broken pattern with double quotes
+    // that was in the original issue
+    const brokenPatternDoubleQuote = /jq\s+-r\s+\\\s*\n\s*'[^']*\|\s*[^']*\\\s*\n/;
+    expect(content).not.toMatch(brokenPatternDoubleQuote);
   });
 
   it("should properly parse audit results in the Run npm audit step", () => {
