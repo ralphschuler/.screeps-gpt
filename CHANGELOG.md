@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.31.1] - 2025-11-08
+
 ### Added
 
 - **Screeps Quorum Architecture Analysis**: Comprehensive analysis of the Screeps Quorum community-driven bot architecture
