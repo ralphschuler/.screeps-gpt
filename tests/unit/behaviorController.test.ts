@@ -864,7 +864,7 @@ describe("BehaviorController", () => {
           progress: 0,
           progressTotal: 0
         } as unknown as StructureController,
-        find: (type: FindConstant, opts?: FilterOptions<FindConstant>) => {
+        find: (type: FindConstant, opts?: { filter?: (object: unknown) => boolean }) => {
           if (type === FIND_STRUCTURES) {
             return [];
           }
