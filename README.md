@@ -184,6 +184,9 @@ Multiple specialized Copilot agents collaborate on different aspects of developm
 
 ### 📊 Monitoring & Operations
 
+- **[CPU Timeout Diagnostic Runbook](docs/operations/cpu-timeout-diagnosis.md)** - CPU timeout diagnosis and resolution
+- **[Monitoring Alert Playbook](docs/operations/monitoring-alerts-playbook.md)** - Alert response procedures
+- **[CPU Optimization Strategies](docs/runtime/operations/cpu-optimization-strategies.md)** - CPU budget allocation and optimization
 - **[PTR Monitoring](docs/operations/stats-monitoring.md)** - Performance tracking on test realm
 - **[Respawn Handling](docs/operations/respawn-handling.md)** - Automatic respawn detection
 - **[Workflow Troubleshooting](docs/operations/workflow-troubleshooting.md)** - Common CI/CD issues
