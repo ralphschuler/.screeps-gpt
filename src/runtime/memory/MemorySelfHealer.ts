@@ -127,7 +127,7 @@ export class MemorySelfHealer {
     // Validate individual creep memories
     for (const name in memory.creeps) {
       const creepMemory = memory.creeps[name];
-      if (!creepMemory || typeof creepMemory !== "object") {
+      if (!creepMemory || typeof creepMemory !== "object" || Array.isArray(creepMemory)) {
         result.issuesFound.push(`Memory.creeps["${name}"] is invalid`);
         if (this.config.autoRepair) {
           delete memory.creeps[name];
