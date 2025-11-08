@@ -58,13 +58,16 @@ For a complete setup guide, see the **[Getting Started Guide](getting-started.md
 
 ### Operations & Monitoring
 
+- [CPU Timeout Diagnostic Runbook](operations/cpu-timeout-diagnosis.md) - Comprehensive CPU timeout diagnosis, resolution, and prevention guide
+- [Monitoring Alert Playbook](operations/monitoring-alerts-playbook.md) - Alert classification, response procedures, and auto-resolution guidelines
+- [CPU Optimization Strategies](runtime/operations/cpu-optimization-strategies.md) - Kernel CPU budgets, incremental protection, and behavior optimization
 - [Memory Management](runtime/operations/memory-management.md) - Memory patterns, cleanup strategies, and corruption recovery
 - [Performance Monitoring](runtime/operations/performance-monitoring.md) - CPU tracking, optimization techniques, and alerting
 - [Performance Optimization](operations/performance-optimization.md) - CPU and memory optimization strategies, pathfinding, and profiling
 - [CPU Timeout Incident Tracking](operations/cpu-timeout-incidents.md) - Systematic CPU timeout pattern documentation and coordination
 - [PTR Monitoring Pipeline](operations/stats-monitoring.md)
 - [Respawn Handling](operations/respawn-handling.md)
-- [Deployment Troubleshooting](operations/deployment-troubleshooting.md) - Common deployment issues and solutions
+- [Deployment Troubleshooting](operations/deployment-troubleshooting.md) - Deployment issues, timeout scenarios, retry logic, and API error handling
 - [Workflow Troubleshooting](operations/workflow-troubleshooting.md) - GitHub Actions workflow issues and fixes
 
 ### Development Guidelines
