@@ -185,7 +185,7 @@ describe("CPU timeout prevention regression", () => {
       };
 
       const memory = { creepCounter: 0 } as Memory;
-      const roleCounts = { harvester: 3, upgrader: 2, builder: 1 };
+      const roleCounts = { harvester: 4, upgrader: 3, builder: 2 };
 
       const result = controller.execute(game, memory, roleCounts);
 
