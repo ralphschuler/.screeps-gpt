@@ -24,7 +24,7 @@ describe("Security Audit workflow syntax", () => {
     // Check that we don't have the broken pattern:
     // A backslash at end of line, followed by a jq filter starting with
     // a pipe character at the start of the next line
-    const brokenPattern = /jq[^|]*\\\s*\n\s*'[^']*\|[^']*\\\s*\n/;
+    const brokenPattern = /jq[^|]*\\\s*\n\s*['"][^'"]*\|[^'"]*\\\s*\n/;
     expect(content).not.toMatch(brokenPattern);
   });
 
