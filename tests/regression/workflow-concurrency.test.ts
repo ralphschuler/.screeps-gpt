@@ -38,6 +38,10 @@ describe("Workflow concurrency controls", () => {
     // Singleton workflows
     "dependabot-automerge.yml",
     "label-sync.yml",
+    // Project management workflows
+    "project-sync-items.yml",
+    "project-pr-status.yml",
+    "project-comment-activity.yml",
     // Other workflows that already had concurrency
     "deploy.yml",
     "docs-pages.yml",

@@ -1,0 +1,68 @@
+---
+name: Sync Items to Project
+
+on:
+  issues:
+    types:
+      - opened
+      - reopened
+  pull_request:
+    types:
+      - opened
+      - reopened
+  discussion:
+    types:
+      - created
+
+permissions:
+  issues: read
+  pull-requests: read
+  repository-projects: write
+
+concurrency:
+  group: >-
+    project-sync-${{
+    github.event.issue.number || github.event.pull_request.number ||
+    github.event.discussion.number }}
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine item details
+        id: item-details
+        run: |
+          if [ "${{ github.event_name }}" = "issues" ]; then
+            echo "type=issue" >> "$GITHUB_OUTPUT"
+            url="${{ github.event.issue.html_url }}"
+            echo "url=$url" >> "$GITHUB_OUTPUT"
+            num="${{ github.event.issue.number }}"
+            echo "number=$num" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "type=pull_request" >> "$GITHUB_OUTPUT"
+            url="${{ github.event.pull_request.html_url }}"
+            echo "url=$url" >> "$GITHUB_OUTPUT"
+            num="${{ github.event.pull_request.number }}"
+            echo "number=$num" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "discussion" ]; then
+            echo "type=discussion" >> "$GITHUB_OUTPUT"
+            url="${{ github.event.discussion.html_url }}"
+            echo "url=$url" >> "$GITHUB_OUTPUT"
+            num="${{ github.event.discussion.number }}"
+            echo "number=$num" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Add item to project
+        uses: ./.github/actions/project-sync
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          project-number: ${{ vars.PROJECT_NUMBER }}
+          project-owner: ${{ vars.PROJECT_OWNER }}
+          item-type: ${{ steps.item-details.outputs.type }}
+          item-url: ${{ steps.item-details.outputs.url }}
+          status-field: Pending
+          automation-state-field: Not Started
