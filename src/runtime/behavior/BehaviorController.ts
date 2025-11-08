@@ -79,6 +79,39 @@ interface HaulerMemory extends BaseCreepMemory {
   task: HaulerTask;
 }
 
+/**
+ * Determines if a structure is a valid energy source that creeps can withdraw from.
+ * Valid sources include containers and storage, but NOT spawns, extensions, or towers.
+ *
+ * @param structure - The structure to check
+ * @returns true if the structure is a valid energy source for withdrawal
+ */
+function isValidEnergySource(structure: AnyStructure): boolean {
+  // Only containers and storage are valid withdrawal sources
+  if (structure.structureType !== STRUCTURE_CONTAINER && structure.structureType !== STRUCTURE_STORAGE) {
+    return false;
+  }
+
+  const store = structure as AnyStoreStructure;
+  return store.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
+}
+
+/**
+ * Determines if a structure is a critical energy consumer that should never be depleted.
+ * Critical consumers include spawns, extensions, and towers.
+ * This function is exported for use in other modules that need to identify critical structures.
+ *
+ * @param structure - The structure to check
+ * @returns true if the structure is a critical energy consumer
+ */
+export function isCriticalEnergyConsumer(structure: AnyStructure): boolean {
+  return (
+    structure.structureType === STRUCTURE_SPAWN ||
+    structure.structureType === STRUCTURE_EXTENSION ||
+    structure.structureType === STRUCTURE_TOWER
+  );
+}
+
 const ROLE_DEFINITIONS: Record<RoleName, RoleDefinition> = {
   harvester: {
     minimum: 4,
@@ -415,26 +448,42 @@ function runUpgrader(creep: ManagedCreep): string {
   const task = ensureUpgraderTask(memory, creep);
 
   if (task === RECHARGE_TASK) {
-    const sources = creep.room.find(FIND_STRUCTURES, {
-      filter: (structure: AnyStructure) => {
-        if (
-          structure.structureType !== STRUCTURE_SPAWN &&
-          structure.structureType !== STRUCTURE_EXTENSION &&
-          structure.structureType !== STRUCTURE_CONTAINER
-        ) {
-          return false;
-        }
-
-        const store = structure as AnyStoreStructure;
-        return store.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
-      }
+    // Find valid energy sources (containers and storage only, NOT spawns/extensions/towers)
+    const energySources = creep.room.find(FIND_STRUCTURES, {
+      filter: isValidEnergySource
     }) as AnyStoreStructure[];
 
-    const target = sources.length > 0 ? (creep.pos.findClosestByPath(sources) ?? sources[0]) : null;
+    const target = energySources.length > 0 ? (creep.pos.findClosestByPath(energySources) ?? energySources[0]) : null;
     if (target) {
       const result = creep.withdraw(target, RESOURCE_ENERGY);
       if (result === ERR_NOT_IN_RANGE) {
         creep.moveTo(target, { range: 1, reusePath: 30 });
+      }
+      return RECHARGE_TASK;
+    }
+
+    // Fallback: Check for dropped energy
+    const droppedEnergy = creep.room.find(FIND_DROPPED_RESOURCES, {
+      filter: r => r.resourceType === RESOURCE_ENERGY && r.amount > 50
+    }) as Resource[];
+
+    if (droppedEnergy.length > 0) {
+      const closest = creep.pos.findClosestByPath(droppedEnergy);
+      const droppedTarget = closest !== null ? closest : droppedEnergy[0];
+      const result = creep.pickup(droppedTarget);
+      if (result === ERR_NOT_IN_RANGE) {
+        creep.moveTo(droppedTarget, { range: 1, reusePath: 30 });
+      }
+      return RECHARGE_TASK;
+    }
+
+    // Fallback: Harvest from sources directly if no other options
+    const sources = creep.room.find(FIND_SOURCES_ACTIVE) as Source[];
+    const source = sources.length > 0 ? (creep.pos.findClosestByPath(sources) ?? sources[0]) : null;
+    if (source) {
+      const result = creep.harvest(source);
+      if (result === ERR_NOT_IN_RANGE) {
+        creep.moveTo(source, { range: 1, reusePath: 30 });
       }
     }
     return RECHARGE_TASK;
@@ -476,20 +525,9 @@ function runBuilder(creep: ManagedCreep): string {
   const task = ensureBuilderTask(memory, creep);
 
   if (task === BUILDER_GATHER_TASK) {
+    // Find valid energy sources (containers and storage only, NOT spawns/extensions/towers)
     const energySources = creep.room.find(FIND_STRUCTURES, {
-      filter: (structure: AnyStructure) => {
-        if (
-          structure.structureType !== STRUCTURE_SPAWN &&
-          structure.structureType !== STRUCTURE_EXTENSION &&
-          structure.structureType !== STRUCTURE_CONTAINER &&
-          structure.structureType !== STRUCTURE_STORAGE
-        ) {
-          return false;
-        }
-
-        const store = structure as AnyStoreStructure;
-        return store.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
-      }
+      filter: isValidEnergySource
     }) as AnyStoreStructure[];
 
     const target = energySources.length > 0 ? (creep.pos.findClosestByPath(energySources) ?? energySources[0]) : null;
@@ -498,14 +536,31 @@ function runBuilder(creep: ManagedCreep): string {
       if (result === ERR_NOT_IN_RANGE) {
         creep.moveTo(target, { range: 1, reusePath: 30 });
       }
-    } else {
-      const sources = creep.room.find(FIND_SOURCES_ACTIVE) as Source[];
-      const source = sources.length > 0 ? (creep.pos.findClosestByPath(sources) ?? sources[0]) : null;
-      if (source) {
-        const harvestResult = creep.harvest(source);
-        if (harvestResult === ERR_NOT_IN_RANGE) {
-          creep.moveTo(source, { range: 1, reusePath: 30 });
-        }
+      return BUILDER_GATHER_TASK;
+    }
+
+    // Fallback: Check for dropped energy
+    const droppedEnergy = creep.room.find(FIND_DROPPED_RESOURCES, {
+      filter: r => r.resourceType === RESOURCE_ENERGY && r.amount > 50
+    }) as Resource[];
+
+    if (droppedEnergy.length > 0) {
+      const closest = creep.pos.findClosestByPath(droppedEnergy);
+      const droppedTarget = closest !== null ? closest : droppedEnergy[0];
+      const result = creep.pickup(droppedTarget);
+      if (result === ERR_NOT_IN_RANGE) {
+        creep.moveTo(droppedTarget, { range: 1, reusePath: 30 });
+      }
+      return BUILDER_GATHER_TASK;
+    }
+
+    // Fallback: Harvest from sources directly if no other options
+    const sources = creep.room.find(FIND_SOURCES_ACTIVE) as Source[];
+    const source = sources.length > 0 ? (creep.pos.findClosestByPath(sources) ?? sources[0]) : null;
+    if (source) {
+      const harvestResult = creep.harvest(source);
+      if (harvestResult === ERR_NOT_IN_RANGE) {
+        creep.moveTo(source, { range: 1, reusePath: 30 });
       }
     }
 
