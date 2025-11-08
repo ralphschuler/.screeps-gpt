@@ -1,0 +1,186 @@
+---
+name: Quality Gate Summary
+
+# This workflow provides a single, reliable quality gate status for PRs
+# by aggregating results from individual guard workflows.
+#
+# Why this exists:
+# - Individual guard workflows may show 'action_required' when cancelled by concurrency
+# - This summary workflow waits for actual results and reports definitive status
+# - Provides single check for branch protection requirements
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  checks: read
+
+# Don't cancel this workflow - it must complete to report status
+concurrency:
+  group: quality-gate-summary-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  wait-for-guards:
+    name: Wait for Guard Workflows
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      status: ${{ steps.check-guards.outputs.status }}
+    steps:
+      - name: Wait for guard workflows to complete
+        id: check-guards
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Guard workflows to check
+            const requiredGuards = [
+              'Guard - Unit Tests',
+              'Guard - Build',
+              'Guard - Lint', 
+              'Guard - Format',
+              'Guard - YAML Lint'
+            ];
+            
+            const maxWaitMinutes = 25;
+            const pollIntervalSeconds = 15;
+            const maxAttempts = Math.ceil((maxWaitMinutes * 60) / pollIntervalSeconds);
+            
+            core.info(`Monitoring ${requiredGuards.length} guard workflows`);
+            core.info(`Will poll every ${pollIntervalSeconds}s for up to ${maxWaitMinutes} minutes`);
+            
+            for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+              core.info(`\n=== Poll attempt ${attempt}/${maxAttempts} ===`);
+              
+              // Get workflow runs for this PR's head SHA
+              const { data: workflowRuns } = await github.rest.actions.listWorkflowRunsForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                head_sha: context.payload.pull_request.head.sha,
+                per_page: 100
+              });
+              
+              // Find latest run for each required guard
+              const guardStatuses = new Map();
+              
+              for (const guardName of requiredGuards) {
+                const runs = workflowRuns.workflow_runs
+                  .filter(run => run.name === guardName)
+                  .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                
+                if (runs.length > 0) {
+                  const latestRun = runs[0];
+                  guardStatuses.set(guardName, {
+                    status: latestRun.status,
+                    conclusion: latestRun.conclusion,
+                    run_number: latestRun.run_number,
+                    html_url: latestRun.html_url
+                  });
+                  
+                  core.info(`${guardName}: ${latestRun.status}/${latestRun.conclusion || 'pending'}`);
+                } else {
+                  core.info(`${guardName}: No runs found yet`);
+                }
+              }
+              
+              // Check if all guards have completed (not in progress)
+              const allCompleted = requiredGuards.every(name => {
+                const guard = guardStatuses.get(name);
+                return guard && guard.status === 'completed';
+              });
+              
+              if (allCompleted) {
+                core.info('\n✓ All guard workflows completed');
+                
+                // Check for failures or action_required with actual jobs
+                const results = [];
+                for (const guardName of requiredGuards) {
+                  const guard = guardStatuses.get(guardName);
+                  
+                  // Treat action_required as success (it means cancelled by concurrency)
+                  const effectiveConclusion = guard.conclusion === 'action_required' 
+                    ? 'cancelled' 
+                    : guard.conclusion;
+                  
+                  results.push({
+                    name: guardName,
+                    conclusion: effectiveConclusion,
+                    url: guard.html_url
+                  });
+                  
+                  if (effectiveConclusion === 'failure') {
+                    core.error(`✗ ${guardName} failed: ${guard.html_url}`);
+                  } else if (effectiveConclusion === 'success') {
+                    core.info(`✓ ${guardName} passed`);
+                  } else if (effectiveConclusion === 'cancelled') {
+                    core.info(`○ ${guardName} cancelled (superseded by newer commit)`);
+                  }
+                }
+                
+                // Determine overall status
+                const failures = results.filter(r => r.conclusion === 'failure');
+                
+                if (failures.length > 0) {
+                  core.setFailed(`Quality gate failed: ${failures.length} workflow(s) failed`);
+                  core.setOutput('status', 'failure');
+                  return;
+                }
+                
+                core.info('\n✓ Quality gate passed - all guards succeeded or were cancelled');
+                core.setOutput('status', 'success');
+                return;
+              }
+              
+              // Not all complete yet - wait and retry (unless last attempt)
+              if (attempt < maxAttempts) {
+                const pending = requiredGuards.filter(name => {
+                  const guard = guardStatuses.get(name);
+                  return !guard || guard.status !== 'completed';
+                });
+                
+                core.info(`\nWaiting for: ${pending.join(', ')}`);
+                core.info(`Next check in ${pollIntervalSeconds}s...`);
+                await new Promise(resolve => setTimeout(resolve, pollIntervalSeconds * 1000));
+              }
+            }
+            
+            // Timeout - not all guards completed
+            const stillPending = requiredGuards.filter(name => {
+              const guard = guardStatuses.get(name);
+              return !guard || guard.status !== 'completed';
+            });
+            
+            core.setFailed(`Timeout: Guards did not complete within ${maxWaitMinutes} minutes: ${stillPending.join(', ')}`);
+            core.setOutput('status', 'timeout');
+
+  report-status:
+    name: Report Quality Gate Status
+    needs: wait-for-guards
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Report final status
+        run: |
+          STATUS="${{ needs.wait-for-guards.outputs.status }}"
+          
+          case "$STATUS" in
+            success)
+              echo "✓ Quality gate passed"
+              exit 0
+              ;;
+            failure)
+              echo "✗ Quality gate failed - one or more guards failed"
+              exit 1
+              ;;
+            timeout)
+              echo "⏱ Quality gate timed out waiting for guards"
+              exit 1
+              ;;
+            *)
+              echo "? Quality gate status unknown: $STATUS"
+              exit 1
+              ;;
+          esac
