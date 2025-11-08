@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.24.0] - 2025-11-08
+
 ### Added
 
 - **Self-Healing Memory System**: Automatic detection and repair of corrupted memory structures
