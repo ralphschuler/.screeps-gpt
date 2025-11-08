@@ -5,16 +5,7 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
-### Added
-
-- **Comprehensive Operational Documentation**: Implemented four new operational guides to enhance autonomous improvement reliability
-  - Created `docs/operations/cpu-timeout-diagnosis.md` - Complete CPU timeout diagnostic runbook with symptom identification, diagnostic procedures, resolution actions, and prevention strategies
-  - Created `docs/operations/monitoring-alerts-playbook.md` - Monitoring alert playbook with classification system (CRITICAL/HIGH/MEDIUM/LOW), response procedures, escalation criteria, and auto-resolution guidelines
-  - Created `docs/runtime/operations/cpu-optimization-strategies.md` - CPU optimization strategies covering kernel CPU budget allocation, incremental protection patterns, memory operation optimization, and creep behavior efficiency
-  - Enhanced `docs/operations/deployment-troubleshooting.md` with timeout scenarios, retry logic configuration, environment variable validation, and comprehensive API error code interpretation
-  - Updated `docs/index.md` and `README.md` to link new operational documentation
-  - Enables more reliable autonomous improvements by Copilot workflows with reduced manual intervention requirements
-  - Addresses ralphschuler/.screeps-gpt#364 (incremental CPU guards), ralphschuler/.screeps-gpt#392 (proactive CPU monitoring), ralphschuler/.screeps-gpt#351 (PTR telemetry), ralphschuler/.screeps-gpt#340, ralphschuler/.screeps-gpt#329, ralphschuler/.screeps-gpt#315 (CPU timeout incidents), ralphschuler/.screeps-gpt#344 (infrastructure crisis)
+## [0.31.5] - 2025-11-08
 
 ### Fixed
 
