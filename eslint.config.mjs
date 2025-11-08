@@ -2,13 +2,8 @@
  * ESLint Flat Configuration
  *
  * Migrated from .eslintrc.cjs to flat config format (ESLint v9+)
- * Requires structuredClone polyfill for Node.js 16 compatibility
+ * Requires Node.js 18+ (for native structuredClone support)
  */
-
-// Load polyfill first (before any ESLint modules)
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-require("./.eslintrc-polyfill.cjs");
 
 import tsParser from "@typescript-eslint/parser";
 import tsPlugin from "@typescript-eslint/eslint-plugin";
@@ -23,17 +18,7 @@ const __dirname = dirname(__filename);
 export default [
   // Global ignores (applies to all configs)
   {
-    ignores: [
-      "dist/**",
-      "build/**",
-      "coverage/**",
-      "node_modules/**",
-      "*.config.ts",
-      "eslint.config.js.bak",
-      "eslint.config.mjs",
-      ".eslintrc-polyfill.cjs",
-      ".eslintrc.cjs"
-    ]
+    ignores: ["dist/**", "build/**", "coverage/**", "node_modules/**", "*.config.ts", "eslint.config.mjs"]
   },
 
   // TypeScript files configuration (memory-optimized)

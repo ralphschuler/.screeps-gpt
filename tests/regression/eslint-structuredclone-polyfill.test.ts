@@ -1,38 +1,37 @@
 /**
- * Regression test for ESLint structuredClone polyfill (#156)
+ * Regression test for ESLint structuredClone support (#156)
  *
- * Ensures that the structuredClone polyfill is properly loaded and available
- * for ESLint when running on Node.js 16 which doesn't have native structuredClone.
+ * Verifies that ESLint flat config works correctly with Node.js 18+ which has
+ * native structuredClone support. The polyfill previously required for Node.js 16
+ * has been removed as the repository now requires Node.js 18+.
  *
  * Background: @typescript-eslint v8+ requires structuredClone which was added in Node 17.
- * Our polyfill in .eslintrc-polyfill.cjs provides compatibility for Node 16.
+ * Since package.json now requires Node.js 18+, we use native structuredClone.
  */
 
 import { describe, it, expect } from "vitest";
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 
-describe("ESLint structuredClone polyfill (#156)", () => {
-  it("should have polyfill file in repository root", () => {
-    const polyfillPath = join(process.cwd(), ".eslintrc-polyfill.cjs");
-    const polyfillContent = readFileSync(polyfillPath, "utf-8");
-
-    expect(polyfillContent).toContain("global.structuredClone");
-    expect(polyfillContent).toContain("function structuredClone");
-  });
-
-  it("should have flat config file that loads polyfill", () => {
+describe("ESLint structuredClone support (#156)", () => {
+  it("should use flat config without polyfill (Node.js 18+ requirement)", () => {
     const configPath = join(process.cwd(), "eslint.config.mjs");
     const configContent = readFileSync(configPath, "utf-8");
 
-    // Verify that the config loads the polyfill before importing ESLint modules
-    expect(configContent).toContain(".eslintrc-polyfill.cjs");
-    expect(configContent).toContain("createRequire");
+    // Verify that the config does NOT load a polyfill (since Node 18+ has native support)
+    expect(configContent).not.toContain(".eslintrc-polyfill.cjs");
+    expect(configContent).not.toContain("createRequire");
 
-    // Verify it's loaded early (before other imports)
-    const polyfillIndex = configContent.indexOf(".eslintrc-polyfill.cjs");
-    const tsParserIndex = configContent.indexOf("@typescript-eslint/parser");
-    expect(polyfillIndex).toBeLessThan(tsParserIndex);
+    // Verify it documents Node.js 18+ requirement
+    expect(configContent).toContain("Node.js 18+");
+  });
+
+  it("should not have old ESLint config files (.eslintrc.cjs)", () => {
+    const oldConfigPaths = [".eslintrc.cjs", ".eslintrc-polyfill.cjs"];
+
+    oldConfigPaths.forEach(path => {
+      expect(existsSync(join(process.cwd(), path))).toBe(false);
+    });
   });
 
   it("should have updated lint scripts without ESLINT_USE_FLAT_CONFIG=false", () => {
@@ -49,60 +48,27 @@ describe("ESLint structuredClone polyfill (#156)", () => {
     expect(JSON.stringify(packageJson["lint-staged"])).not.toContain("ESLINT_USE_FLAT_CONFIG=false");
   });
 
-  it("polyfill should handle basic object cloning", () => {
-    // Simulate Node 16 environment by temporarily removing structuredClone
-    const originalClone = (global as { structuredClone?: typeof structuredClone }).structuredClone;
-    delete (global as { structuredClone?: typeof structuredClone }).structuredClone;
+  it("should require Node.js 18+ which has native structuredClone", () => {
+    const packageJson = JSON.parse(readFileSync(join(process.cwd(), "package.json"), "utf-8")) as {
+      engines: { node: string };
+    };
 
-    try {
-      // Load the polyfill
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      require("../../.eslintrc-polyfill.cjs");
-
-      // Verify it was installed
-      expect(typeof (global as { structuredClone?: typeof structuredClone }).structuredClone).toBe("function");
-
-      // Test basic cloning
-      const original = { a: 1, b: { c: 2 }, d: [3, 4] };
-      const cloned = (global as { structuredClone: typeof structuredClone }).structuredClone(original);
-
-      expect(cloned).toEqual(original);
-      expect(cloned).not.toBe(original);
-      expect(cloned.b).not.toBe(original.b);
-      expect(cloned.d).not.toBe(original.d);
-    } finally {
-      // Restore original (or re-apply polyfill if it wasn't there)
-      if (originalClone) {
-        (global as { structuredClone?: typeof structuredClone }).structuredClone = originalClone;
-      }
-    }
+    // Verify Node.js 18+ requirement
+    expect(packageJson.engines.node).toContain("18");
   });
 
-  it("polyfill should handle null and undefined", () => {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    require("../../.eslintrc-polyfill.cjs");
+  it("native structuredClone should be available", () => {
+    // Verify that native structuredClone exists (Node.js 18+ requirement)
+    expect(typeof structuredClone).toBe("function");
 
-    expect((global as { structuredClone: typeof structuredClone }).structuredClone(null)).toBeNull();
-    expect((global as { structuredClone: typeof structuredClone }).structuredClone(undefined)).toBeUndefined();
-  });
+    // Test basic cloning with native implementation
+    const original = { a: 1, b: { c: 2 }, d: [3, 4] };
+    const cloned = structuredClone(original);
 
-  it("polyfill should handle primitive types", () => {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    require("../../.eslintrc-polyfill.cjs");
-
-    expect((global as { structuredClone: typeof structuredClone }).structuredClone(42)).toBe(42);
-    expect((global as { structuredClone: typeof structuredClone }).structuredClone("hello")).toBe("hello");
-    expect((global as { structuredClone: typeof structuredClone }).structuredClone(true)).toBe(true);
-  });
-
-  it("should document Node 16 polyfill in README", () => {
-    const readme = readFileSync(join(process.cwd(), "README.md"), "utf-8");
-
-    // After migrating to Bun, we no longer need Node 16 polyfill documentation
-    // since Bun has native structuredClone support. The polyfill is kept for
-    // backward compatibility but doesn't need to be documented.
-    // This test is updated to reflect the migration to Bun.
-    expect(readme).toContain("Bun");
+    expect(cloned).toEqual(original);
+    expect(cloned).not.toBe(original);
+    expect(cloned.b).not.toBe(original.b);
+    expect(cloned.d).not.toBe(original.d);
   });
 
   it("should document fix in CHANGELOG", () => {

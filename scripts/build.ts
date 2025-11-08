@@ -1,4 +1,4 @@
-import { buildProject } from "./buildProject";
+import { buildProject } from "./lib/buildProject";
 
 const watch = process.argv.includes("--watch");
 

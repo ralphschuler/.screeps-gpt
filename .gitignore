@@ -42,6 +42,9 @@ screeps.json
 *.zip
 *.vi
 *~
+*.backup
+*.bak
+*.tmp
 
 # Editor folders
 .cache
@@ -101,3 +104,9 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 hexo-source/
+
+# Temporary documentation and implementation notes
+IMPLEMENTATION*.md
+*_NOTES.md
+*_FIX.md
+validate-*.sh
