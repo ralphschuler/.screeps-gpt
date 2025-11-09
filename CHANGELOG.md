@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.31.9] - 2025-11-09
+
 ### Added
 
 - **Enhanced TypeScript Type Safety with Runtime Validation**: Improved type safety throughout the codebase to prevent runtime errors
