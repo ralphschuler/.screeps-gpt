@@ -28,7 +28,7 @@ export class SystemEvaluator {
     private readonly logger: Pick<Console, "log" | "warn"> = console
   ) {
     this.options = {
-      cpuUsageWarningRatio: options.cpuUsageWarningRatio ?? 0.8,
+      cpuUsageWarningRatio: options.cpuUsageWarningRatio ?? 0.85,
       cpuCriticalRatio: options.cpuCriticalRatio ?? 0.95,
       lowBucketThreshold: options.lowBucketThreshold ?? 500,
       minimumCoverage: options.minimumCoverage ?? 85,

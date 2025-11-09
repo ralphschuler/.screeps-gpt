@@ -12,12 +12,16 @@ import type { GameContext, CreepLike, RoomLike } from "@runtime/types/GameContex
  *
  * Related issues:
  * - CPU optimization issue: perf: optimize CPU usage to maintain below 90% threshold ([#117](https://github.com/your-org/your-repo/issues/117))
+ * - Account upgrade: chore: account upgraded to lifetime subscription with increased resources
  *
  * Key optimizations verified:
- * 1. BehaviorController uses 80% CPU safety margin by default
- * 2. PerformanceTracker warns at 70% and critical at 90%
+ * 1. BehaviorController uses 85% CPU safety margin by default (updated for 150 CPU limit)
+ * 2. PerformanceTracker warns at 75% and critical at 90%
  * 3. Kernel emergency threshold at 90%
  * 4. Movement operations use higher reusePath values (30-50 ticks)
+ *
+ * Note: Thresholds were adjusted after account upgrade from 20 CPU to 150 CPU (lifetime subscription).
+ * The new thresholds provide similar safety margins while accounting for the increased resource allocation.
  */
 describe("CPU optimization regression - 90% threshold", () => {
   function createMockCreep(name: string, role: string): CreepLike {
@@ -55,7 +59,7 @@ describe("CPU optimization regression - 90% threshold", () => {
   }
 
   describe("BehaviorController default CPU safety margin", () => {
-    it("should use 80% CPU safety margin by default", () => {
+    it("should use 85% CPU safety margin by default", () => {
       const warn = vi.fn();
       const controller = new BehaviorController({ useTaskSystem: false }, { log: vi.fn(), warn });
 
@@ -81,12 +85,12 @@ describe("CPU optimization regression - 90% threshold", () => {
       const memory = { creepCounter: 0 } as Memory;
       const roleCounts = { harvester: 3 };
 
-      // Simulate CPU reaching 85% (8.5 of 10 limit) - should trigger stopping
+      // Simulate CPU reaching 90% (9.0 of 10 limit) - should trigger stopping
       let callCount = 0;
       game.cpu.getUsed = () => {
         callCount++;
         if (callCount > 2) {
-          cpuUsed = 8.5; // 85% of limit, exceeds 80% safety margin
+          cpuUsed = 9.0; // 90% of limit, exceeds 85% safety margin
         }
         return cpuUsed;
       };
@@ -147,7 +151,7 @@ describe("CPU optimization regression - 90% threshold", () => {
   });
 
   describe("PerformanceTracker default thresholds", () => {
-    it("should warn at 70% CPU usage by default", () => {
+    it("should warn at 75% CPU usage by default", () => {
       const warn = vi.fn();
       const log = vi.fn();
       const tracker = new PerformanceTracker({}, { log, warn });
@@ -158,7 +162,7 @@ describe("CPU optimization regression - 90% threshold", () => {
           getUsed: vi
             .fn()
             .mockReturnValueOnce(0) // begin()
-            .mockReturnValueOnce(7.5), // end() - 75% of 10 limit
+            .mockReturnValueOnce(8.0), // end() - 80% of 10 limit, exceeds 75% threshold
           limit: 10,
           bucket: 5000
         },
@@ -207,7 +211,7 @@ describe("CPU optimization regression - 90% threshold", () => {
       expect(snapshot.warnings.some(w => /CRITICAL.*CPU usage.*exceeds 90%/.test(w))).toBe(true);
     });
 
-    it("should not warn when CPU is below 70% threshold", () => {
+    it("should not warn when CPU is below 75% threshold", () => {
       const warn = vi.fn();
       const log = vi.fn();
       const tracker = new PerformanceTracker({}, { log, warn });
@@ -218,7 +222,7 @@ describe("CPU optimization regression - 90% threshold", () => {
           getUsed: vi
             .fn()
             .mockReturnValueOnce(0) // begin()
-            .mockReturnValueOnce(6.5), // end() - 65% of 10 limit
+            .mockReturnValueOnce(7.0), // end() - 70% of 10 limit, below 75% threshold
           limit: 10,
           bucket: 5000
         },

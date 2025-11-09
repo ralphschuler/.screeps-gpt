@@ -181,6 +181,7 @@ Multiple specialized Copilot agents collaborate on different aspects of developm
 
 ### 📊 Monitoring & Operations
 
+- **[Resource Allocation](docs/operations/resource-allocation.md)** - Account configuration and CPU/memory limits
 - **[CPU Timeout Diagnostic Runbook](docs/operations/cpu-timeout-diagnosis.md)** - CPU timeout diagnosis and resolution
 - **[Monitoring Alert Playbook](docs/operations/monitoring-alerts-playbook.md)** - Alert response procedures
 - **[CPU Optimization Strategies](docs/runtime/operations/cpu-optimization-strategies.md)** - CPU budget allocation and optimization
