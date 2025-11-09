@@ -19,13 +19,12 @@ const kernel = createKernel({
 });
 
 // Initialize profiler and expose it globally for console access
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const profilerInstance = initProfiler();
 if (typeof global !== "undefined") {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (global as any).Profiler = profilerInstance;
 } else if (typeof window !== "undefined") {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any).Profiler = profilerInstance;
 }
 
@@ -62,9 +61,7 @@ export const loop = (): void => {
     // Auto-start profiler on first tick if enabled and not running
     // Check if profiler is not already running by inspecting Memory.profiler.start
     if (__PROFILER_ENABLED__ && !profilerAutoStarted) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (typeof Memory !== "undefined" && Memory.profiler?.start === undefined) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         profilerInstance.start();
         console.log("[Profiler] Auto-started profiler data collection");
         profilerAutoStarted = true;

@@ -95,12 +95,26 @@ export class MemoryValidator {
       return true;
     }
 
+    // Preserve lastTimeoutTick before validation if it exists and is a number
+    let previousLastTimeoutTick: number | undefined;
+    if (
+      memory.stats &&
+      typeof memory.stats === "object" &&
+      memory.stats !== null &&
+      "lastTimeoutTick" in memory.stats
+    ) {
+      const value = memory.stats.lastTimeoutTick;
+      if (typeof value === "number") {
+        previousLastTimeoutTick = value;
+      }
+    }
+
     const validated = this.validateStats(memory.stats);
     if (!validated) {
       console.log("[MemoryValidator] Repairing corrupted Memory.stats with defaults");
       memory.stats = {
         time: currentTick,
-        lastTimeoutTick: memory.stats.lastTimeoutTick,
+        lastTimeoutTick: previousLastTimeoutTick,
         cpu: { used: 0, limit: 0, bucket: 0 },
         creeps: { count: 0 },
         rooms: { count: 0 }
