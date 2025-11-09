@@ -54,7 +54,7 @@ export class TaskManager {
 
     for (const creep of idleCreeps) {
       const task = this.findBestTask(creep);
-      if (task && task.assign(creep)) {
+      if (task?.assign(creep)) {
         creep.memory.taskId = task.id;
       }
     }
@@ -198,7 +198,7 @@ export class TaskManager {
 
   private generateUpgradeTasks(room: Room): void {
     const controller = room.controller;
-    if (!controller || !controller.my) return;
+    if (!controller?.my) return;
 
     // Always keep one upgrade task available
     const existingTask = Array.from(this.tasks.values()).find(

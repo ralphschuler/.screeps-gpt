@@ -51,7 +51,7 @@ export class ConstructionManager {
       const room = game.rooms[roomName];
 
       // Only plan for rooms we own
-      if (!room.controller || !room.controller.my) {
+      if (!room.controller?.my) {
         continue;
       }
 
@@ -72,7 +72,7 @@ export class ConstructionManager {
    */
   private planRoomConstruction(room: RoomLike): number {
     const controller = room.controller;
-    if (!controller || !controller.my) {
+    if (!controller?.my) {
       return 0;
     }
 
