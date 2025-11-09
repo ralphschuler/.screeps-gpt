@@ -376,17 +376,7 @@ export class BehaviorController {
    * Calculate the energy cost of body parts
    */
   private calculateBodyCost(body: BodyPartConstant[]): number {
-    const costs: Record<BodyPartConstant, number> = {
-      [MOVE]: 50,
-      [WORK]: 100,
-      [CARRY]: 50,
-      [ATTACK]: 80,
-      [RANGED_ATTACK]: 150,
-      [HEAL]: 250,
-      [CLAIM]: 600,
-      [TOUGH]: 10
-    };
-    return body.reduce((total, part) => total + (costs[part] ?? 0), 0);
+    return body.reduce((total, part) => total + (BODYPART_COST[part] ?? 0), 0);
   }
 
   /**
