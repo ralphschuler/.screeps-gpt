@@ -77,13 +77,18 @@ function extractInternalLinks(html: string, baseUrl: string): string[] {
     const href = match[1];
 
     // Skip external links, anchors, and special protocols
-    if (
+    // Check for protocol schemes that should be filtered out
+    const hasExternalProtocol =
       href.startsWith("http://") ||
       href.startsWith("https://") ||
       href.startsWith("mailto:") ||
       href.startsWith("javascript:") ||
-      href.startsWith("#")
-    ) {
+      href.startsWith("data:") ||
+      href.startsWith("vbscript:") ||
+      href.startsWith("file:") ||
+      href.startsWith("#");
+
+    if (hasExternalProtocol) {
       continue;
     }
 
