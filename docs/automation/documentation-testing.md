@@ -18,7 +18,7 @@ The documentation testing suite ensures that:
 ### Run All Documentation Tests
 
 ```bash
-npm run test:docs
+bun run test:docs
 ```
 
 This command runs:
@@ -31,16 +31,16 @@ This command runs:
 
 ```bash
 # Unit tests only (fast, no build required)
-npm run test:unit tests/unit/build-hexo-site.test.ts
+bun run test:unit tests/unit/build-hexo-site.test.ts
 
 # Regression tests (includes full build)
-npm run test:regression tests/regression/hexo-documentation-build.test.ts
+bun run test:regression tests/regression/hexo-documentation-build.test.ts
 
 # Workflow validation
-npm run test:regression tests/regression/documentation-workflow.test.ts
+bun run test:regression tests/regression/documentation-workflow.test.ts
 
 # End-to-end documentation site tests
-npm run test:e2e tests/e2e/docs-site.test.ts
+bun run test:e2e tests/e2e/docs-site.test.ts
 ```
 
 ## Test Coverage
@@ -138,7 +138,7 @@ If validation fails, the workflow reports the failure, allowing maintainers to i
 
 Documentation tests are also included in:
 
-- **Regression tests** (`npm run test:regression`)
+- **Regression tests** (`bun run test:regression`)
 - **Quality gate** workflow (deprecated but still active)
 
 ## Test Development
@@ -240,10 +240,10 @@ Test E2E against deployed site:
 
 ```bash
 # Test against production site (tests are skipped by default)
-RUN_DOCS_SITE_TESTS=true DOCS_SITE_URL=https://nyphon.de/.screeps-gpt/ npm run test:e2e tests/e2e/docs-site.test.ts
+RUN_DOCS_SITE_TESTS=true DOCS_SITE_URL=https://nyphon.de/.screeps-gpt/ bun run test:e2e tests/e2e/docs-site.test.ts
 
 # Run without enabling (tests will be skipped)
-npm run test:e2e tests/e2e/docs-site.test.ts
+bun run test:e2e tests/e2e/docs-site.test.ts
 ```
 
 ## Related Documentation

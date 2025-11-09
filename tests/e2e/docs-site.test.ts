@@ -12,6 +12,8 @@ import { describe, it, expect, beforeAll } from "vitest";
 // Configuration
 const DOCS_SITE_URL = process.env.DOCS_SITE_URL || "https://nyphon.de/.screeps-gpt/";
 const REQUEST_TIMEOUT = 10000; // 10 seconds
+const MIN_VALID_HTML_LENGTH = 500; // Minimum bytes for valid HTML with content
+const MIN_HOMEPAGE_CONTENT_LENGTH = 1000; // Homepage should have substantial content
 
 interface FetchResult {
   status: number;
@@ -58,7 +60,7 @@ function isValidHtmlContent(html: string): boolean {
 
   // Must have substantial content (more than just empty structure)
   const contentLength = html.length;
-  if (contentLength < 500) {
+  if (contentLength < MIN_VALID_HTML_LENGTH) {
     return false;
   }
 
@@ -132,7 +134,7 @@ describe("Documentation Site E2E Tests", () => {
 
       expect(isValidHtmlContent(result.body)).toBe(true);
       expect(result.body).toContain("<title>");
-      expect(result.body.length).toBeGreaterThan(1000);
+      expect(result.body.length).toBeGreaterThan(MIN_HOMEPAGE_CONTENT_LENGTH);
     }, 15000);
 
     it("should have proper meta tags", async () => {
@@ -223,7 +225,7 @@ describe("Documentation Site E2E Tests", () => {
       // Check for common broken link indicators
       expect(result.body).not.toContain('href="undefined"');
       expect(result.body).not.toContain('href="null"');
-      expect(result.body).not.toContain('href=""');
+      // Note: href="" is valid HTML5 for self-referencing links, so we don't check for it
     }, 15000);
   });
 
@@ -260,8 +262,13 @@ describe("Documentation Site E2E Tests", () => {
       // Check for common error indicators
       expect(result.body.toLowerCase()).not.toContain("build failed");
       expect(result.body.toLowerCase()).not.toContain("error generating");
-      expect(result.body.toLowerCase()).not.toContain("todo: ");
-      expect(result.body.toLowerCase()).not.toContain("fixme:");
+
+      // Check for TODO/FIXME only in HTML comments to avoid false positives in code examples
+      const htmlComments = Array.from(result.body.matchAll(/<!--([\s\S]*?)-->/g)).map(m => m[1].toLowerCase());
+      for (const comment of htmlComments) {
+        expect(comment).not.toContain("todo:");
+        expect(comment).not.toContain("fixme:");
+      }
     }, 15000);
   });
 

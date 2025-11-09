@@ -81,10 +81,26 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: "20"
+          cache: "npm"
       - name: Install dependencies
         run: npm install
       - name: Wait for deployment propagation
-        run: sleep 30
+        run: |
+          URL="https://nyphon.de/.screeps-gpt/"
+          echo "Waiting for $URL to become available..."
+          for i in {1..24}; do
+            if curl -sSf -o /dev/null "$URL"; then
+              echo "Site is up!"
+              break
+            fi
+            echo "Not ready yet. Retrying in 5 seconds..."
+            sleep 5
+          done
+          # Final check, fail if still not up
+          if ! curl -sSf -o /dev/null "$URL"; then
+            echo "Site did not become available in time." >&2
+            exit 1
+          fi
       - name: Run documentation site E2E tests
         env:
           DOCS_SITE_URL: https://nyphon.de/.screeps-gpt/
