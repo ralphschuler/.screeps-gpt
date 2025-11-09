@@ -9,6 +9,10 @@ const srcDir = resolve("src");
 /**
  * Common runtime defines for all build configurations
  * Replaces Node.js environment variables with literals at build time
+ *
+ * Note: esbuild's define expects string values containing JavaScript expressions.
+ * For booleans, use "true" or "false" (which become boolean literals in output),
+ * not JSON.stringify(true) which would create the string "true".
  */
 const RUNTIME_DEFINES = {
   __PROFILER_ENABLED__: process.env.PROFILER_ENABLED === "false" ? "false" : "true",

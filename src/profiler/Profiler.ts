@@ -18,7 +18,11 @@ export function init(): Profiler {
   const cli: Profiler = {
     clear() {
       const running = isEnabled();
-      Memory.profiler = defaults;
+      // Create a new object to avoid mutating the defaults reference
+      Memory.profiler = {
+        data: {},
+        total: 0
+      };
       if (running) {
         Memory.profiler.start = Game.time;
       }
