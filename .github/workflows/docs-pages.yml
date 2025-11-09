@@ -70,3 +70,23 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deploy
         uses: actions/deploy-pages@v4
+
+  validate:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        run: npm install
+      - name: Wait for deployment propagation
+        run: sleep 30
+      - name: Run documentation site E2E tests
+        env:
+          DOCS_SITE_URL: https://nyphon.de/.screeps-gpt/
+          RUN_DOCS_SITE_TESTS: true
+        run: npm run test:e2e tests/e2e/docs-site.test.ts
