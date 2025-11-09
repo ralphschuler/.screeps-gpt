@@ -43,6 +43,8 @@ describe("Memory Migration Safety", () => {
         stats: { time: 100 } as any
       } as Memory;
 
+      // Capture the complete initial state
+      const originalVersion = memory.version;
       const originalStats = memory.stats?.time;
 
       const result = manager.migrate(memory);
@@ -51,9 +53,10 @@ describe("Memory Migration Safety", () => {
       expect(result.success).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
 
-      // Memory should be rolled back to original state
-      expect(memory.version).toBe(1);
+      // Memory should be rolled back to original state - the mutation inside handler should not persist
+      expect(memory.version).toBe(originalVersion);
       expect(memory.stats?.time).toBe(originalStats);
+      expect(memory.stats?.time).not.toBe(999); // Ensure the mutation was rolled back
     });
 
     it("should rollback memory when validation fails after migration", () => {
@@ -196,7 +199,7 @@ describe("Memory Migration Safety", () => {
         }
       });
 
-      // Create memory with circular reference (though JSON.stringify will handle it)
+      // Create memory with circular reference
       const memory: Memory = { version: 1 } as Memory;
 
       const result = manager.migrate(memory);

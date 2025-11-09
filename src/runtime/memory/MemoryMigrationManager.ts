@@ -232,22 +232,26 @@ export class MemoryMigrationManager {
    */
   private rollback(memory: Memory, backup: MigrationBackup): void {
     try {
-      // Verify backup integrity
-      const currentChecksum = this.calculateChecksum(backup.snapshot);
-      if (currentChecksum !== backup.checksum) {
-        this.logger.warn?.("[Migration] Backup checksum mismatch, attempting restore anyway");
-      }
-
       // Parse and restore
       const restored = JSON.parse(backup.snapshot) as Memory;
 
-      // Clear current memory - need to use any here to delete dynamic keys
-      Object.keys(memory).forEach(key => {
-        delete (memory as Record<string, unknown>)[key];
-      });
+      // Verify backup integrity by recalculating checksum from restored object
+      const recalculatedChecksum = this.calculateChecksum(JSON.stringify(restored));
+      if (recalculatedChecksum !== backup.checksum) {
+        this.logger.warn?.("[Migration] Backup checksum mismatch after parsing, attempting restore anyway");
+      }
 
-      // Restore from backup
-      Object.assign(memory, restored);
+      // Update memory in place to match restored backup
+      // Assign/overwrite keys from restored
+      Object.keys(restored).forEach(key => {
+        (memory as Record<string, unknown>)[key] = (restored as Record<string, unknown>)[key];
+      });
+      // Delete keys not present in restored
+      Object.keys(memory).forEach(key => {
+        if (!(key in restored)) {
+          delete (memory as Record<string, unknown>)[key];
+        }
+      });
 
       this.logger.log(`[Migration] Memory rolled back to v${backup.version} from tick ${backup.timestamp}`);
     } catch (error) {
@@ -262,8 +266,7 @@ export class MemoryMigrationManager {
     let hash = 0;
     for (let i = 0; i < data.length; i++) {
       const char = data.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash = hash & hash; // Convert to 32-bit integer
+      hash = (hash << 5) - hash + char; // Bitwise ops ensure 32-bit signed integer overflow
     }
     return hash.toString(16);
   }
