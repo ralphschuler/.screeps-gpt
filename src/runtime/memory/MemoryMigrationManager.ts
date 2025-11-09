@@ -26,6 +26,27 @@ export interface MigrationResult {
 }
 
 /**
+ * Backup snapshot of memory state before migration
+ */
+export interface MigrationBackup {
+  version: number;
+  timestamp: number;
+  snapshot: string;
+  checksum: string;
+}
+
+/**
+ * Preview of migration changes without applying them
+ */
+export interface MigrationPreview {
+  success: boolean;
+  fromVersion: number;
+  toVersion: number;
+  migrationsToApply: number;
+  error?: string;
+}
+
+/**
  * Manages memory schema versioning and migrations across version updates.
  * Ensures backward compatibility and safe memory structure changes.
  */
@@ -54,6 +75,7 @@ export class MemoryMigrationManager {
 
   /**
    * Execute pending migrations to bring memory to current version
+   * Includes automatic backup and rollback on failure
    */
   public migrate(memory: Memory): MigrationResult {
     const currentMemoryVersion = memory.version ?? 0;
@@ -72,38 +94,64 @@ export class MemoryMigrationManager {
 
     this.logger.log(`[Migration] Starting migration from v${currentMemoryVersion} to v${this.currentVersion}`);
 
-    // Apply migrations in order
-    const migrationVersions = Array.from(this.migrations.keys())
-      .filter(v => v > currentMemoryVersion && v <= this.currentVersion)
-      .sort((a, b) => a - b);
+    // Create backup before applying migrations
+    const backup = this.createBackup(memory);
 
-    for (const version of migrationVersions) {
-      const migration = this.migrations.get(version);
-      if (!migration) {
-        continue;
+    try {
+      // Apply migrations in order
+      const migrationVersions = Array.from(this.migrations.keys())
+        .filter(v => v > currentMemoryVersion && v <= this.currentVersion)
+        .sort((a, b) => a - b);
+
+      for (const version of migrationVersions) {
+        const migration = this.migrations.get(version);
+        if (!migration) {
+          continue;
+        }
+
+        try {
+          this.logger.log(`[Migration] Applying v${version}: ${migration.description}`);
+          migration.handler(memory);
+          result.migrationsApplied++;
+        } catch (error) {
+          const errorMsg = `Failed to apply migration v${version}: ${String(error)}`;
+          this.logger.warn?.(`[Migration] ${errorMsg}`);
+          result.errors.push(errorMsg);
+          result.success = false;
+          break;
+        }
       }
 
-      try {
-        this.logger.log(`[Migration] Applying v${version}: ${migration.description}`);
-        migration.handler(memory);
-        result.migrationsApplied++;
-      } catch (error) {
-        const errorMsg = `Failed to apply migration v${version}: ${String(error)}`;
-        this.logger.warn?.(`[Migration] ${errorMsg}`);
-        result.errors.push(errorMsg);
-        result.success = false;
-        break;
-      }
-    }
+      // Update memory version if successful
+      if (result.success) {
+        memory.version = this.currentVersion;
 
-    // Update memory version if successful
-    if (result.success) {
-      memory.version = this.currentVersion;
-      this.logger.log(
-        `[Migration] Successfully migrated to v${this.currentVersion} (${result.migrationsApplied} migrations applied)`
-      );
-    } else {
-      this.logger.warn?.(`[Migration] Migration failed. Memory remains at v${currentMemoryVersion}`);
+        // Validate memory after migration
+        if (!this.validateMemory(memory)) {
+          const errorMsg = "Memory validation failed after migration";
+          this.logger.warn?.(`[Migration] ${errorMsg}`);
+          result.errors.push(errorMsg);
+          result.success = false;
+          throw new Error(errorMsg);
+        }
+
+        this.logger.log(
+          `[Migration] Successfully migrated to v${this.currentVersion} (${result.migrationsApplied} migrations applied)`
+        );
+      } else {
+        // Rollback on migration failure
+        this.rollback(memory, backup);
+        this.logger.warn?.(
+          `[Migration] Migration failed and was rolled back. Memory restored to v${currentMemoryVersion}`
+        );
+      }
+    } catch (error) {
+      // Rollback on any unexpected error
+      this.rollback(memory, backup);
+      const errorMsg = `Unexpected error during migration: ${String(error)}`;
+      this.logger.warn?.(`[Migration] ${errorMsg}`);
+      result.errors.push(errorMsg);
+      result.success = false;
     }
 
     return result;
@@ -164,5 +212,124 @@ export class MemoryMigrationManager {
       pendingMigrations,
       availableMigrations: this.migrations.size
     };
+  }
+
+  /**
+   * Create a backup snapshot of memory before migration
+   */
+  private createBackup(memory: Memory): MigrationBackup {
+    const snapshot = JSON.stringify(memory);
+    return {
+      version: memory.version ?? 0,
+      timestamp: typeof Game !== "undefined" ? Game.time : 0,
+      snapshot,
+      checksum: this.calculateChecksum(snapshot)
+    };
+  }
+
+  /**
+   * Restore memory from a backup snapshot
+   */
+  private rollback(memory: Memory, backup: MigrationBackup): void {
+    try {
+      // Verify backup integrity
+      const currentChecksum = this.calculateChecksum(backup.snapshot);
+      if (currentChecksum !== backup.checksum) {
+        this.logger.warn?.("[Migration] Backup checksum mismatch, attempting restore anyway");
+      }
+
+      // Parse and restore
+      const restored = JSON.parse(backup.snapshot) as Memory;
+
+      // Clear current memory - need to use any here to delete dynamic keys
+      Object.keys(memory).forEach(key => {
+        delete (memory as Record<string, unknown>)[key];
+      });
+
+      // Restore from backup
+      Object.assign(memory, restored);
+
+      this.logger.log(`[Migration] Memory rolled back to v${backup.version} from tick ${backup.timestamp}`);
+    } catch (error) {
+      this.logger.warn?.(`[Migration] Failed to rollback memory: ${String(error)}`);
+    }
+  }
+
+  /**
+   * Calculate a simple checksum for backup verification
+   */
+  private calculateChecksum(data: string): string {
+    let hash = 0;
+    for (let i = 0; i < data.length; i++) {
+      const char = data.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return hash.toString(16);
+  }
+
+  /**
+   * Preview migration changes without applying them
+   * Useful for testing migrations before execution
+   */
+  public previewMigration(memory: Memory): MigrationPreview {
+    const currentMemoryVersion = memory.version ?? 0;
+
+    // Already at current version
+    if (currentMemoryVersion >= this.currentVersion) {
+      return {
+        success: true,
+        fromVersion: currentMemoryVersion,
+        toVersion: this.currentVersion,
+        migrationsToApply: 0
+      };
+    }
+
+    // Count pending migrations
+    const migrationsToApply = Array.from(this.migrations.keys()).filter(
+      v => v > currentMemoryVersion && v <= this.currentVersion
+    ).length;
+
+    // Create a copy to test migrations
+    const backup = this.createBackup(memory);
+
+    try {
+      const testMemory = JSON.parse(backup.snapshot) as Memory;
+
+      // Apply migrations to test copy
+      const migrationVersions = Array.from(this.migrations.keys())
+        .filter(v => v > currentMemoryVersion && v <= this.currentVersion)
+        .sort((a, b) => a - b);
+
+      for (const version of migrationVersions) {
+        const migration = this.migrations.get(version);
+        if (!migration) {
+          continue;
+        }
+
+        migration.handler(testMemory);
+      }
+
+      testMemory.version = this.currentVersion;
+
+      // Validate test memory
+      const isValid = this.validateMemory(testMemory);
+
+      return {
+        success: isValid,
+        fromVersion: currentMemoryVersion,
+        toVersion: this.currentVersion,
+        migrationsToApply,
+        error: isValid ? undefined : "Memory validation failed after preview"
+      };
+    } catch (error) {
+      return {
+        success: false,
+        fromVersion: currentMemoryVersion,
+        toVersion: this.currentVersion,
+        migrationsToApply,
+        error: String(error)
+      };
+    }
   }
 }

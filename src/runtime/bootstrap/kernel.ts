@@ -123,15 +123,20 @@ export class Kernel {
     }
 
     // Run memory migrations on first tick or version change
-    const migrationResult = this.migrationManager.migrate(memory);
-    if (migrationResult.migrationsApplied > 0) {
-      this.logger.log?.(
-        `[Kernel] Applied ${migrationResult.migrationsApplied} memory migration(s) to v${migrationResult.toVersion}`
-      );
-      // Validate memory after migration
-      if (!this.migrationManager.validateMemory(memory)) {
-        this.logger.warn?.("[Kernel] Memory validation failed after migration");
+    try {
+      const migrationResult = this.migrationManager.migrate(memory);
+      if (migrationResult.migrationsApplied > 0) {
+        if (migrationResult.success) {
+          this.logger.log?.(
+            `[Kernel] Applied ${migrationResult.migrationsApplied} memory migration(s) to v${migrationResult.toVersion}`
+          );
+        } else {
+          this.logger.warn?.(`[Kernel] Migration failed and was rolled back: ${migrationResult.errors.join(", ")}`);
+        }
       }
+    } catch (error) {
+      this.logger.warn?.(`[Kernel] Unexpected error during migration: ${String(error)}`);
+      // Continue execution with previous memory schema
     }
 
     // Emergency CPU check before expensive operations
