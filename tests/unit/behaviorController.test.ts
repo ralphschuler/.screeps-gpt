@@ -922,4 +922,168 @@ describe("BehaviorController", () => {
       expect(harvest).toHaveBeenCalledWith(source);
     });
   });
+
+  describe("harvester container filling", () => {
+    it("should deliver energy to containers when spawn and extensions are full", () => {
+      const controller = new BehaviorController({ useTaskSystem: false, log: vi.fn(), warn: vi.fn() });
+
+      const spawn = {
+        structureType: STRUCTURE_SPAWN,
+        store: {
+          getFreeCapacity: vi.fn(() => 0),
+          getUsedCapacity: vi.fn(() => 300)
+        }
+      } as unknown as AnyStoreStructure;
+
+      const container = {
+        structureType: STRUCTURE_CONTAINER,
+        store: {
+          getFreeCapacity: vi.fn(() => 1500),
+          getUsedCapacity: vi.fn(() => 500)
+        }
+      } as unknown as AnyStoreStructure;
+
+      const harvesterRoom: RoomLike = {
+        name: "W0N0",
+        controller: {
+          id: "controller",
+          progress: 0,
+          progressTotal: 0
+        } as unknown as StructureController,
+        find: (type: FindConstant, opts?: { filter?: (object: unknown) => boolean }) => {
+          if (type === FIND_STRUCTURES) {
+            const structures = [spawn, container];
+            if (opts && opts.filter) {
+              return structures.filter(opts.filter);
+            }
+            return structures;
+          }
+          if (type === FIND_SOURCES_ACTIVE) {
+            return [];
+          }
+          return [];
+        }
+      };
+
+      const transfer = vi.fn(() => OK);
+      const harvester: CreepLike = {
+        name: "harvester-alpha",
+        memory: { role: "harvester", task: "deliver", version: 1 },
+        store: {
+          getFreeCapacity: vi.fn(() => 0),
+          getUsedCapacity: vi.fn(() => 50)
+        },
+        pos: {
+          findClosestByPath: vi.fn((objects: unknown[]) => (objects.length > 0 ? (objects[0] as never) : null))
+        },
+        room: harvesterRoom,
+        harvest: vi.fn(() => OK),
+        transfer,
+        moveTo: vi.fn(() => OK),
+        upgradeController: vi.fn(() => OK),
+        withdraw: vi.fn(() => OK),
+        pickup: vi.fn(() => OK),
+        build: vi.fn(() => OK),
+        repair: vi.fn(() => OK)
+      };
+
+      const game: GameContext = {
+        time: 1,
+        cpu: { getUsed: () => 0, limit: 10, bucket: 1000 },
+        creeps: { harvester },
+        spawns: {},
+        rooms: { W0N0: harvesterRoom }
+      };
+
+      const memory = { creepCounter: 0 } as Memory;
+      const roleCounts = { harvester: 4, upgrader: 3, builder: 2 };
+
+      controller.execute(game, memory, roleCounts);
+
+      // Verify that transfer was called with the container (not spawn, which is full)
+      expect(transfer).toHaveBeenCalledTimes(1);
+      expect(transfer).toHaveBeenCalledWith(container, RESOURCE_ENERGY);
+    });
+
+    it("should prioritize spawn and extensions over containers", () => {
+      const controller = new BehaviorController({ useTaskSystem: false, log: vi.fn(), warn: vi.fn() });
+
+      const spawn = {
+        structureType: STRUCTURE_SPAWN,
+        store: {
+          getFreeCapacity: vi.fn(() => 100),
+          getUsedCapacity: vi.fn(() => 200)
+        }
+      } as unknown as AnyStoreStructure;
+
+      const container = {
+        structureType: STRUCTURE_CONTAINER,
+        store: {
+          getFreeCapacity: vi.fn(() => 1500),
+          getUsedCapacity: vi.fn(() => 500)
+        }
+      } as unknown as AnyStoreStructure;
+
+      const harvesterRoom: RoomLike = {
+        name: "W0N0",
+        controller: {
+          id: "controller",
+          progress: 0,
+          progressTotal: 0
+        } as unknown as StructureController,
+        find: (type: FindConstant, opts?: { filter?: (object: unknown) => boolean }) => {
+          if (type === FIND_STRUCTURES) {
+            const structures = [container, spawn]; // Container first to test priority
+            if (opts && opts.filter) {
+              return structures.filter(opts.filter);
+            }
+            return structures;
+          }
+          if (type === FIND_SOURCES_ACTIVE) {
+            return [];
+          }
+          return [];
+        }
+      };
+
+      const transfer = vi.fn(() => OK);
+      const harvester: CreepLike = {
+        name: "harvester-beta",
+        memory: { role: "harvester", task: "deliver", version: 1 },
+        store: {
+          getFreeCapacity: vi.fn(() => 0),
+          getUsedCapacity: vi.fn(() => 50)
+        },
+        pos: {
+          findClosestByPath: vi.fn((objects: unknown[]) => (objects.length > 0 ? (objects[0] as never) : null))
+        },
+        room: harvesterRoom,
+        harvest: vi.fn(() => OK),
+        transfer,
+        moveTo: vi.fn(() => OK),
+        upgradeController: vi.fn(() => OK),
+        withdraw: vi.fn(() => OK),
+        pickup: vi.fn(() => OK),
+        build: vi.fn(() => OK),
+        repair: vi.fn(() => OK)
+      };
+
+      const game: GameContext = {
+        time: 1,
+        cpu: { getUsed: () => 0, limit: 10, bucket: 1000 },
+        creeps: { harvester },
+        spawns: {},
+        rooms: { W0N0: harvesterRoom }
+      };
+
+      const memory = { creepCounter: 0 } as Memory;
+      const roleCounts = { harvester: 4, upgrader: 3, builder: 2 };
+
+      controller.execute(game, memory, roleCounts);
+
+      // Verify that transfer was called with the spawn (has capacity), not container
+      expect(transfer).toHaveBeenCalledTimes(1);
+      expect(transfer).toHaveBeenCalledWith(spawn, RESOURCE_ENERGY);
+    });
+  });
 });

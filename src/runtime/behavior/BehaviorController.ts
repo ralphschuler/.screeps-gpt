@@ -402,22 +402,40 @@ function runHarvester(creep: ManagedCreep): string {
     return HARVEST_TASK;
   }
 
-  const deliveryTargets = creep.room.find(FIND_STRUCTURES, {
+  // Priority 1: Fill spawns and extensions
+  const criticalTargets = creep.room.find(FIND_STRUCTURES, {
     filter: (structure: AnyStructure) =>
       (structure.structureType === STRUCTURE_SPAWN || structure.structureType === STRUCTURE_EXTENSION) &&
       (structure as AnyStoreStructure).store.getFreeCapacity(RESOURCE_ENERGY) > 0
   }) as AnyStoreStructure[];
 
-  const target =
-    deliveryTargets.length > 0 ? (creep.pos.findClosestByPath(deliveryTargets) ?? deliveryTargets[0]) : null;
-  if (target) {
-    const result = creep.transfer(target, RESOURCE_ENERGY);
+  const criticalTarget =
+    criticalTargets.length > 0 ? (creep.pos.findClosestByPath(criticalTargets) ?? criticalTargets[0]) : null;
+  if (criticalTarget) {
+    const result = creep.transfer(criticalTarget, RESOURCE_ENERGY);
     if (result === ERR_NOT_IN_RANGE) {
-      creep.moveTo(target, { range: 1, reusePath: 30 });
+      creep.moveTo(criticalTarget, { range: 1, reusePath: 30 });
     }
     return DELIVER_TASK;
   }
 
+  // Priority 2: Fill containers
+  const containers = creep.room.find(FIND_STRUCTURES, {
+    filter: (structure: AnyStructure) =>
+      structure.structureType === STRUCTURE_CONTAINER &&
+      (structure as AnyStoreStructure).store.getFreeCapacity(RESOURCE_ENERGY) > 0
+  }) as AnyStoreStructure[];
+
+  const container = containers.length > 0 ? (creep.pos.findClosestByPath(containers) ?? containers[0]) : null;
+  if (container) {
+    const result = creep.transfer(container, RESOURCE_ENERGY);
+    if (result === ERR_NOT_IN_RANGE) {
+      creep.moveTo(container, { range: 1, reusePath: 30 });
+    }
+    return DELIVER_TASK;
+  }
+
+  // Priority 3: Upgrade controller
   memory.task = UPGRADE_TASK;
   const controller = creep.room.controller;
   if (controller) {
