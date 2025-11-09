@@ -47,7 +47,8 @@ describe("Workflow concurrency controls", () => {
     // Other workflows that already had concurrency
     "deploy.yml",
     "docs-pages.yml",
-    "post-merge-release.yml"
+    "post-merge-release.yml",
+    "publish-package.yml"
   ];
 
   for (const workflowFile of expectedWorkflows) {
