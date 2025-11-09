@@ -49,7 +49,7 @@ The bot uses the following CPU thresholds to prevent script execution timeouts:
 
 ### Kernel
 
-- **Emergency Threshold:** 90% of limit (135 CPU)
+- **Emergency Threshold:** 90% of limit (45 CPU)
   - Last line of defense to prevent timeout
 
 ## Impact of Resource Upgrade
