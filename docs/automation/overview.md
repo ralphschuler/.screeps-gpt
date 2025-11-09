@@ -489,6 +489,17 @@ Quality checks are split into separate guard workflows for better granularity an
 - Secrets: `SCREEPS_TOKEN` (required), `SCREEPS_HOST`/`PORT`/`PROTOCOL`/`BRANCH` (optional overrides). `PUSH_TOKEN` (optional) for deployment alerts.
 - Notes: Deployment is triggered automatically when the `post-merge-release.yml` workflow pushes a version tag. The workflow uses only the `push.tags` trigger because GitHub Actions does not trigger `release.published` events when releases are created by workflows using `GITHUB_TOKEN` (security measure to prevent recursive workflow execution). The autospawner ensures the bot is active after each deployment.
 
+## Publish Package (`publish-package.yml`)
+
+- Trigger: Release published + manual dispatch with optional version tag input.
+- Behaviour: Publishes the bot as an npm package to GitHub Packages registry for use as an NPC bot on private Screeps servers. The workflow builds the project, verifies the output, and publishes to `@ralphschuler/screeps-gpt` on GitHub Packages.
+- Package Configuration: The package includes the `screeps_bot: true` flag in package.json, making it compatible with Screeps private server bot loading. The main entry point is `dist/main.js`.
+- Installation: Users can install via `npm install @ralphschuler/screeps-gpt` after configuring npm to use GitHub Packages registry.
+- Usage: On private servers, spawn the bot with `bots.spawn('screeps-gpt', 'ROOM_NAME', options)`.
+- Permissions: Requires `packages: write` permission to publish to GitHub Packages.
+- Secrets: Uses `GITHUB_TOKEN` for authentication.
+- Notes: The `prepublishOnly` script ensures the project is built before publishing. Published artifacts include dist/main.js, dist/main.js.map, README.md, and LICENSE.
+
 ## Copilot Repository Review (`copilot-review.yml`)
 
 - Trigger: Daily schedule + manual dispatch.
