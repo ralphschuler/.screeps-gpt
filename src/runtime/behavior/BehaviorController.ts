@@ -193,7 +193,7 @@ export class BehaviorController {
   public constructor(options: BehaviorControllerOptions = {}, logger: Pick<Console, "log" | "warn"> = console) {
     this.logger = logger;
     this.options = {
-      cpuSafetyMargin: options.cpuSafetyMargin ?? 0.8,
+      cpuSafetyMargin: options.cpuSafetyMargin ?? 0.85,
       maxCpuPerCreep: options.maxCpuPerCreep ?? 1.5,
       useTaskSystem: options.useTaskSystem ?? true
     };
