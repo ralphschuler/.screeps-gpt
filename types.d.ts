@@ -31,6 +31,19 @@ declare global {
      * @see src/profiler/Profiler.ts
      */
     profiler?: ProfilerMemory;
+    /**
+     * Spawn health tracking for stuck spawn detection.
+     * Maps spawn ID to stuck state information.
+     * @see src/runtime/behavior/BehaviorController.ts
+     */
+    spawnHealth?: Record<
+      string,
+      {
+        detectedAt: number;
+        creepName: string;
+        remainingTime: number;
+      }
+    >;
     stats?: {
       time: number;
       lastTimeoutTick?: number;

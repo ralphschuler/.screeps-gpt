@@ -340,6 +340,9 @@ export class BehaviorController {
       return;
     }
 
+    // Validate spawn health on each tick
+    this.validateSpawnHealth(game.spawns, game.creeps, game.time, memory);
+
     for (const [role, definition] of Object.entries(ROLE_DEFINITIONS)) {
       const current = roleCounts[role] ?? 0;
       if (current >= definition.minimum) {
@@ -348,8 +351,13 @@ export class BehaviorController {
 
       const spawn = this.findAvailableSpawn(game.spawns);
       if (!spawn) {
-        this.logger.warn?.(`No available spawns to satisfy minimum role ${role}`);
-        continue;
+        continue; // No available spawns
+      }
+
+      // Validate sufficient energy before spawning to prevent partial spawns
+      const spawnCost = this.calculateBodyCost(definition.body);
+      if (spawn.room && spawn.room.energyAvailable < spawnCost) {
+        continue; // Not enough energy yet
       }
 
       const name = `${role}-${game.time}-${memory.creepCounter}`;
@@ -360,6 +368,88 @@ export class BehaviorController {
         roleCounts[role] = current + 1;
       } else {
         this.logger.warn?.(`Failed to spawn ${role}: ${result}`);
+      }
+    }
+  }
+
+  /**
+   * Calculate the energy cost of body parts
+   */
+  private calculateBodyCost(body: BodyPartConstant[]): number {
+    const costs: Record<BodyPartConstant, number> = {
+      [MOVE]: 50,
+      [WORK]: 100,
+      [CARRY]: 50,
+      [ATTACK]: 80,
+      [RANGED_ATTACK]: 150,
+      [HEAL]: 250,
+      [CLAIM]: 600,
+      [TOUGH]: 10
+    };
+    return body.reduce((total, part) => total + (costs[part] ?? 0), 0);
+  }
+
+  /**
+   * Validate spawn health and detect stuck spawn states.
+   * Logs warnings when spawns appear to be stuck.
+   */
+  private validateSpawnHealth(
+    spawns: Record<string, SpawnLike>,
+    creeps: Record<string, CreepLike>,
+    currentTick: number,
+    memory: Memory
+  ): void {
+    memory.spawnHealth ??= {};
+
+    const spawnCount = Object.values(spawns).length;
+    if (spawnCount === 0) {
+      return;
+    }
+
+    for (const spawn of Object.values(spawns)) {
+      const spawnIdKey = spawn.name; // Use spawn name as key to avoid type issues
+
+      if (spawn.spawning === null) {
+        // Clear stuck state tracking when spawn becomes available
+        delete memory.spawnHealth[spawnIdKey];
+        continue;
+      }
+
+      // Validate spawning state
+      const spawningCreepName = spawn.spawning.name;
+      const spawningCreepExists = creeps[spawningCreepName] !== undefined;
+      const remainingTime = spawn.spawning.remainingTime;
+      const needTime = spawn.spawning.needTime;
+
+      // Detect stuck state: creep already exists but spawn.spawning not cleared
+      if (spawningCreepExists && remainingTime <= 0) {
+        if (!memory.spawnHealth[spawnIdKey]) {
+          memory.spawnHealth[spawnIdKey] = {
+            detectedAt: currentTick,
+            creepName: spawningCreepName,
+            remainingTime
+          };
+          this.logger.warn?.(
+            `[SpawnHealth] Detected stuck spawn: ${spawn.name} shows spawning ${spawningCreepName} ` +
+              `but creep exists and remainingTime is ${remainingTime}. This may indicate a Screeps API issue.`
+          );
+        } else {
+          const ticksStuck = currentTick - memory.spawnHealth[spawnIdKey].detectedAt;
+          if (ticksStuck > 10) {
+            this.logger.warn?.(
+              `[SpawnHealth] CRITICAL: Spawn ${spawn.name} stuck for ${ticksStuck} ticks. ` +
+                `Manual intervention may be required.`
+            );
+          }
+        }
+      }
+
+      // Detect invalid spawn timing (potential corruption)
+      if (remainingTime > needTime) {
+        this.logger.warn?.(
+          `[SpawnHealth] Spawn ${spawn.name} has invalid timing: ` +
+            `remainingTime (${remainingTime}) > needTime (${needTime})`
+        );
       }
     }
   }
