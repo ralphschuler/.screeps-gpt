@@ -144,7 +144,10 @@ describe("Documentation Site E2E Tests", () => {
 
       const result = await fetchWithTimeout(DOCS_SITE_URL);
 
-      expect(result.body).toContain('charset="utf-8"');
+      // Accept charset meta tag in any valid HTML form (double/single/no quotes, any case)
+      expect(
+        /<meta\s+[^>]*charset\s*=\s*["']?utf-8["']?/i.test(result.body)
+      ).toBe(true);
       expect(result.body).toContain('name="viewport"');
     }, 15000);
   });
