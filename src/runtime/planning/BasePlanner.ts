@@ -69,7 +69,7 @@ export class BasePlanner {
 
     // RCL 5: Links (2 allowed)
     { type: "link" as BuildableStructureConstant, dx: 4, dy: -4, rcl: 5 },
-    { type: "link" as BuildableStructureConstant, dx: -4, dy: 4, rcl: 5 },
+    { type: "link" as BuildableStructureConstant, dx: -4, dy: 6, rcl: 5 },
 
     // RCL 5: More extensions (30 total, 10 more)
     { type: "extension" as BuildableStructureConstant, dx: 6, dy: 0, rcl: 5 },
@@ -84,7 +84,7 @@ export class BasePlanner {
     { type: "extension" as BuildableStructureConstant, dx: -2, dy: -6, rcl: 5 },
 
     // RCL 5: Second tower
-    { type: "tower" as BuildableStructureConstant, dx: 2, dy: -4, rcl: 5 }
+    { type: "tower" as BuildableStructureConstant, dx: 4, dy: -2, rcl: 5 }
   ];
 
   public constructor(roomName: string) {
