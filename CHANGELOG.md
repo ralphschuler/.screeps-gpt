@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.33.5] - 2025-11-09
+
 ### Changed
 
 - **Account Upgraded to Lifetime Subscription**: Screeps account upgraded from free tier to lifetime subscription
