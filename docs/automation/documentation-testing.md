@@ -11,13 +11,14 @@ The documentation testing suite ensures that:
 3. **All required pages exist** and contain proper content
 4. **Workflow configuration is correct** for GitHub Pages deployment
 5. **Regression prevention** catches issues before deployment
+6. **Deployed site is accessible** and functioning correctly (E2E tests)
 
 ## Quick Start
 
 ### Run All Documentation Tests
 
 ```bash
-npm run test:docs
+bun run test:docs
 ```
 
 This command runs:
@@ -26,17 +27,22 @@ This command runs:
 - Regression tests for build process verification
 - Workflow configuration tests
 
+**Note**: This does not include the E2E documentation site tests. To run those, use `bun run test:e2e tests/e2e/docs-site.test.ts` with `RUN_DOCS_SITE_TESTS=true`.
+
 ### Run Individual Test Suites
 
 ```bash
 # Unit tests only (fast, no build required)
-npm run test:unit tests/unit/build-hexo-site.test.ts
+bun run test:unit tests/unit/build-hexo-site.test.ts
 
 # Regression tests (includes full build)
-npm run test:regression tests/regression/hexo-documentation-build.test.ts
+bun run test:regression tests/regression/hexo-documentation-build.test.ts
 
 # Workflow validation
-npm run test:regression tests/regression/documentation-workflow.test.ts
+bun run test:regression tests/regression/documentation-workflow.test.ts
+
+# End-to-end documentation site tests
+bun run test:e2e tests/e2e/docs-site.test.ts
 ```
 
 ## Test Coverage
@@ -87,6 +93,27 @@ Tests GitHub Actions workflow for documentation deployment:
 
 **Purpose**: Ensure the CI/CD pipeline is correctly configured.
 
+### 4. Documentation Site E2E Tests (`tests/e2e/docs-site.test.ts`)
+
+Tests the deployed documentation site at https://nyphon.de/.screeps-gpt/:
+
+- ✅ Homepage accessibility (HTTP 200 status)
+- ✅ Valid HTML content rendering
+- ✅ Meta tags and SEO elements
+- ✅ Key documentation pages accessibility
+- ✅ CSS stylesheet loading
+- ✅ Favicon and asset loading
+- ✅ Internal link validation
+- ✅ Navigation menu presence
+- ✅ Footer elements
+- ✅ Content quality checks
+- ✅ Response headers validation
+- ✅ Performance validation
+
+**Purpose**: Validate that the deployed site is accessible and functioning correctly after deployment. These tests run automatically after GitHub Pages deployment to catch any deployment issues.
+
+**Configuration**: Use environment variable `DOCS_SITE_URL` to specify the site URL (defaults to https://nyphon.de/.screeps-gpt/). Set `RUN_DOCS_SITE_TESTS=true` to enable these tests (they are skipped by default to avoid failures when the site isn't accessible).
+
 ## CI/CD Integration
 
 ### Automated Testing in Pull Requests
@@ -99,11 +126,21 @@ The `guard-test-docs.yml` workflow runs automatically on PRs that modify:
 - Test files
 - Documentation workflow (`docs-pages.yml`)
 
+### Post-Deployment Validation
+
+The `docs-pages.yml` workflow includes a `validate` job that runs after deployment:
+
+1. **Build**: Generates documentation site from source
+2. **Deploy**: Deploys to GitHub Pages
+3. **Validate**: Runs E2E tests against deployed site to verify accessibility and functionality
+
+If validation fails, the workflow reports the failure, allowing maintainers to investigate deployment issues.
+
 ### Quality Gate Integration
 
 Documentation tests are also included in:
 
-- **Regression tests** (`npm run test:regression`)
+- **Regression tests** (`bun run test:regression`)
 - **Quality gate** workflow (deprecated but still active)
 
 ## Test Development
@@ -166,6 +203,19 @@ tests/
 - Check Hexo generators are loaded
 - Review `_config.yml` plugin configuration
 
+**"E2E tests failing with timeout or connection errors"**
+
+- Check if documentation site is accessible
+- Verify DNS resolution for nyphon.de
+- Tests are skipped by default; set `RUN_DOCS_SITE_TESTS=true` to enable them
+- Check GitHub Pages deployment status
+
+**"E2E tests failing with HTTP errors"**
+
+- Verify the site URL is correct in `DOCS_SITE_URL` environment variable
+- Check GitHub Pages deployment logs
+- Test pages manually by visiting URLs in browser
+
 ### Manual Testing
 
 Build documentation locally:
@@ -188,6 +238,16 @@ npm run server
 # Visit http://localhost:4000/.screeps-gpt/
 ```
 
+Test E2E against deployed site:
+
+```bash
+# Test against production site (tests are skipped by default)
+RUN_DOCS_SITE_TESTS=true DOCS_SITE_URL=https://nyphon.de/.screeps-gpt/ bun run test:e2e tests/e2e/docs-site.test.ts
+
+# Run without enabling (tests will be skipped)
+bun run test:e2e tests/e2e/docs-site.test.ts
+```
+
 ## Related Documentation
 
 - [GitHub Actions Workflow](../.github/workflows/docs-pages.yml)
@@ -197,6 +257,7 @@ npm run server
 
 ## Related Issues
 
-- [#252](https://github.com/ralphschuler/.screeps-gpt/issues/252) - Implement automated testing for documentation site functionality
-- [#251](https://github.com/ralphschuler/.screeps-gpt/issues/251) - Fix Hexo documentation site rendering
-- [#228](https://github.com/ralphschuler/.screeps-gpt/issues/228) - Resolve documentation workflow issues
+- [ralphschuler/.screeps-gpt#475](https://github.com/ralphschuler/.screeps-gpt/issues/475) - Add end-to-end tests for documentation site
+- [ralphschuler/.screeps-gpt#252](https://github.com/ralphschuler/.screeps-gpt/issues/252) - Implement automated testing for documentation site functionality
+- [ralphschuler/.screeps-gpt#251](https://github.com/ralphschuler/.screeps-gpt/issues/251) - Fix Hexo documentation site rendering
+- [ralphschuler/.screeps-gpt#228](https://github.com/ralphschuler/.screeps-gpt/issues/228) - Resolve documentation workflow issues

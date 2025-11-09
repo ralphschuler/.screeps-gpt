@@ -70,3 +70,38 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deploy
         uses: actions/deploy-pages@v4
+
+  validate:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.1
+      - name: Install dependencies
+        run: bun install --no-optional
+      - name: Wait for deployment propagation
+        run: |
+          URL="https://nyphon.de/.screeps-gpt/"
+          echo "Waiting for $URL to become available..."
+          for ((attempt=1; attempt<=24; attempt++)); do
+            if curl -sSf -o /dev/null "$URL"; then
+              echo "Site is up!"
+              break
+            fi
+            echo "Not ready yet. Retrying in 5 seconds... (attempt $attempt/24)"
+            sleep 5
+          done
+          # Final check, fail if still not up
+          if ! curl -sSf -o /dev/null "$URL"; then
+            echo "Site did not become available in time." >&2
+            exit 1
+          fi
+      - name: Run documentation site E2E tests
+        env:
+          DOCS_SITE_URL: https://nyphon.de/.screeps-gpt/
+          RUN_DOCS_SITE_TESTS: true
+        run: bun run test:e2e tests/e2e/docs-site.test.ts

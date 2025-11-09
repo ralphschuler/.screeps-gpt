@@ -499,8 +499,13 @@ Quality checks are split into separate guard workflows for better granularity an
 ## Documentation Pages (`docs-pages.yml`)
 
 - Trigger: Pushes to `main`, published releases, and manual dispatches.
-- Behaviour: Executes `bun run versions:update` and `bun run build:docs-site`, then publishes `build/docs-site` to GitHub Pages.
+- Behaviour: Builds and deploys documentation site with post-deployment validation:
+  1. **Build**: Executes `bun run versions:update`, generates analytics data, and builds documentation site with Hexo
+  2. **Deploy**: Publishes `build/docs-site` to GitHub Pages
+  3. **Validate**: Runs E2E tests against deployed site to verify accessibility and functionality
+- Testing: Post-deployment validation includes homepage accessibility checks, key page validation, link checking, and asset loading verification
 - Permissions: Requires `pages: write` and `id-token: write`.
+- Notes: E2E tests run against https://nyphon.de/.screeps-gpt/ after deployment completes. Test failures indicate deployment issues requiring investigation.
 
 ## Changelog to Blog Automation (`copilot-changelog-to-blog.yml`)
 
