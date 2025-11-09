@@ -27,6 +27,8 @@ This command runs:
 - Regression tests for build process verification
 - Workflow configuration tests
 
+**Note**: This does not include the E2E documentation site tests. To run those, use `bun run test:e2e tests/e2e/docs-site.test.ts` with `RUN_DOCS_SITE_TESTS=true`.
+
 ### Run Individual Test Suites
 
 ```bash
@@ -255,7 +257,7 @@ bun run test:e2e tests/e2e/docs-site.test.ts
 
 ## Related Issues
 
-- [#475](https://github.com/ralphschuler/.screeps-gpt/issues/475) - Add end-to-end tests for documentation site
-- [#252](https://github.com/ralphschuler/.screeps-gpt/issues/252) - Implement automated testing for documentation site functionality
-- [#251](https://github.com/ralphschuler/.screeps-gpt/issues/251) - Fix Hexo documentation site rendering
-- [#228](https://github.com/ralphschuler/.screeps-gpt/issues/228) - Resolve documentation workflow issues
+- [ralphschuler/.screeps-gpt#475](https://github.com/ralphschuler/.screeps-gpt/issues/475) - Add end-to-end tests for documentation site
+- [ralphschuler/.screeps-gpt#252](https://github.com/ralphschuler/.screeps-gpt/issues/252) - Implement automated testing for documentation site functionality
+- [ralphschuler/.screeps-gpt#251](https://github.com/ralphschuler/.screeps-gpt/issues/251) - Fix Hexo documentation site rendering
+- [ralphschuler/.screeps-gpt#228](https://github.com/ralphschuler/.screeps-gpt/issues/228) - Resolve documentation workflow issues

@@ -78,24 +78,26 @@ function extractInternalLinks(html: string, baseUrl: string): string[] {
   while ((match = linkPattern.exec(html)) !== null) {
     const href = match[1];
 
-    // Skip external links, anchors, and special protocols
-    // Check for protocol schemes that should be filtered out
-    const hasExternalProtocol =
-      href.startsWith("http://") ||
-      href.startsWith("https://") ||
+    // Skip anchors and special protocols
+    if (
       href.startsWith("mailto:") ||
       href.startsWith("javascript:") ||
       href.startsWith("data:") ||
       href.startsWith("vbscript:") ||
       href.startsWith("file:") ||
-      href.startsWith("#");
-
-    if (hasExternalProtocol) {
+      href.startsWith("#")
+    ) {
       continue;
     }
 
     // Convert relative links to absolute
     const absoluteUrl = new URL(href, baseUrl).toString();
+
+    // Skip external links (different domain than baseUrl)
+    if (!absoluteUrl.startsWith(baseUrl)) {
+      continue;
+    }
+
     if (!links.includes(absoluteUrl)) {
       links.push(absoluteUrl);
     }
