@@ -202,6 +202,10 @@ export class TransferAction extends TaskAction {
     }
   }
 
+  public getTargetId(): Id<AnyStoreStructure> {
+    return this.targetId;
+  }
+
   public action(creep: Creep): boolean {
     const target = Game.getObjectById(this.targetId);
     if (!target || target.store.getFreeCapacity(this.resourceType) === 0) {
