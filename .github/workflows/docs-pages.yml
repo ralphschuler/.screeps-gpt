@@ -77,13 +77,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: "20"
-          cache: "npm"
+          bun-version: 1.3.1
       - name: Install dependencies
-        run: npm install
+        run: bun install --no-optional
       - name: Wait for deployment propagation
         run: |
           URL="https://nyphon.de/.screeps-gpt/"
@@ -105,4 +104,4 @@ jobs:
         env:
           DOCS_SITE_URL: https://nyphon.de/.screeps-gpt/
           RUN_DOCS_SITE_TESTS: true
-        run: npm run test:e2e tests/e2e/docs-site.test.ts
+        run: bun run test:e2e tests/e2e/docs-site.test.ts
