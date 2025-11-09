@@ -40,8 +40,6 @@ jobs:
             https://github.com/${{ github.repository }}/actions/runs/${{
             github.run_id }}
           SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
-          SCREEPS_EMAIL: ${{ secrets.SCREEPS_EMAIL }}
-          SCREEPS_PASSWORD: ${{ secrets.SCREEPS_PASSWORD }}
           SCREEPS_HOST: ${{ secrets.SCREEPS_HOST }}
           SCREEPS_SHARD: ${{ secrets.SCREEPS_SHARD }}
           SCREEPS_PORT: ${{ secrets.SCREEPS_PORT }}
