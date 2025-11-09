@@ -967,7 +967,7 @@ describe("BehaviorController", () => {
 
       const transfer = vi.fn(() => OK);
       const harvester: CreepLike = {
-        name: "harvester-alpha",
+        name: "harvester-theta",
         memory: { role: "harvester", task: "deliver", version: 1 },
         store: {
           getFreeCapacity: vi.fn(() => 0),
@@ -1048,7 +1048,7 @@ describe("BehaviorController", () => {
 
       const transfer = vi.fn(() => OK);
       const harvester: CreepLike = {
-        name: "harvester-beta",
+        name: "harvester-iota",
         memory: { role: "harvester", task: "deliver", version: 1 },
         store: {
           getFreeCapacity: vi.fn(() => 0),
