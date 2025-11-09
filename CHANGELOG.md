@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.31.11] - 2025-11-09
+
 ### Security
 
 - **Removed Unnecessary Credential Exposure in Monitoring Workflow**: Eliminated `SCREEPS_EMAIL` and `SCREEPS_PASSWORD` from `screeps-monitoring.yml` workflow
