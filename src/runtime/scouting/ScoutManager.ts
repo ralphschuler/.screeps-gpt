@@ -86,13 +86,11 @@ export class ScoutManager {
    * Initialize scout memory if not present
    */
   public initializeMemory(memory: Memory): void {
-    if (!memory.scout) {
-      memory.scout = {
-        rooms: {},
-        lastUpdate: 0,
-        activeScouts: {}
-      } as ScoutMemory;
-    }
+    memory.scout ??= {
+      rooms: {},
+      lastUpdate: 0,
+      activeScouts: {}
+    } as ScoutMemory;
   }
 
   /**
@@ -181,7 +179,7 @@ export class ScoutManager {
   public getRoomData(roomName: string, memory: Memory): RemoteRoomData | null {
     this.initializeMemory(memory);
     const scoutMemory = memory.scout as ScoutMemory;
-    return scoutMemory.rooms[roomName] || null;
+    return scoutMemory.rooms[roomName] ?? null;
   }
 
   /**
@@ -242,8 +240,8 @@ export class ScoutManager {
 
     // Sort by distance (if available) and source count
     candidates.sort((a, b) => {
-      const distA = a.pathDistance || 999;
-      const distB = b.pathDistance || 999;
+      const distA = a.pathDistance ?? 999;
+      const distB = b.pathDistance ?? 999;
 
       if (distA !== distB) {
         return distA - distB;

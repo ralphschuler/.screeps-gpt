@@ -469,7 +469,7 @@ function runUpgrader(creep: ManagedCreep): string {
 
     if (droppedEnergy.length > 0) {
       const closest = creep.pos.findClosestByPath(droppedEnergy);
-      const droppedTarget = closest !== null ? closest : droppedEnergy[0];
+      const droppedTarget = closest ?? droppedEnergy[0];
       const result = creep.pickup(droppedTarget);
       if (result === ERR_NOT_IN_RANGE) {
         creep.moveTo(droppedTarget, { range: 1, reusePath: 30 });
@@ -546,7 +546,7 @@ function runBuilder(creep: ManagedCreep): string {
 
     if (droppedEnergy.length > 0) {
       const closest = creep.pos.findClosestByPath(droppedEnergy);
-      const droppedTarget = closest !== null ? closest : droppedEnergy[0];
+      const droppedTarget = closest ?? droppedEnergy[0];
       const result = creep.pickup(droppedTarget);
       if (result === ERR_NOT_IN_RANGE) {
         creep.moveTo(droppedTarget, { range: 1, reusePath: 30 });
@@ -869,14 +869,14 @@ function runHauler(creep: ManagedCreep): string {
 
     if (containers.length > 0) {
       const closest = creep.pos.findClosestByPath(containers);
-      const target = closest !== null ? closest : containers[0];
+      const target = closest ?? containers[0];
       const result = creep.withdraw(target, RESOURCE_ENERGY);
       if (result === ERR_NOT_IN_RANGE) {
         creep.moveTo(target, { range: 1, reusePath: 30 });
       }
     } else if (droppedEnergy.length > 0) {
       const closest = creep.pos.findClosestByPath(droppedEnergy);
-      const target = closest !== null ? closest : droppedEnergy[0];
+      const target = closest ?? droppedEnergy[0];
 
       const result = creep.pickup(target);
       if (result === ERR_NOT_IN_RANGE) {

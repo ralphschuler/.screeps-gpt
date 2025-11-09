@@ -225,7 +225,7 @@ export class LabManager {
       for (const boostResource of request.boosts) {
         const lab = labs.find(l => l.store.getUsedCapacity(boostResource) >= 30 && l.pos.getRangeTo(creep) <= 1);
 
-        if (lab && lab.cooldown === 0) {
+        if (lab?.cooldown === 0) {
           const result = lab.boostCreep(creep);
           if (result === OK) {
             boosts++;

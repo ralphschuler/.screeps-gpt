@@ -22,12 +22,10 @@ export class RespawnManager {
     const hasCreeps = Object.keys(game.creeps).length > 0;
 
     // Initialize respawn state if not present
-    if (!memory.respawn) {
-      memory.respawn = {
-        needsRespawn: false,
-        respawnRequested: false
-      };
-    }
+    memory.respawn ??= {
+      needsRespawn: false,
+      respawnRequested: false
+    };
 
     // If we have spawns, we're not in a respawn situation
     if (hasSpawns) {
@@ -75,7 +73,7 @@ export class RespawnManager {
    * Get a human-readable status message about the respawn state.
    */
   public getStatusMessage(memory: Memory, currentTick?: number): string {
-    if (!memory.respawn || !memory.respawn.needsRespawn) {
+    if (!memory.respawn?.needsRespawn) {
       return "Spawns available - no respawn needed";
     }
 

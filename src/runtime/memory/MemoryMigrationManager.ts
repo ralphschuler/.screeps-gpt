@@ -139,9 +139,7 @@ export class MemoryMigrationManager {
       version: 1,
       description: "Initialize memory version tracking",
       handler: (memory: Memory) => {
-        if (!memory.version) {
-          memory.version = 1;
-        }
+        memory.version ??= 1;
       }
     });
   }

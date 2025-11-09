@@ -134,7 +134,7 @@ export class TowerManager {
     // Sort by priority (higher = more dangerous)
     threats.sort((a, b) => b.priority - a.priority);
 
-    return threats[0]?.creep || null;
+    return threats[0]?.creep ?? null;
   }
 
   /**
@@ -212,7 +212,7 @@ export class TowerManager {
     }
 
     // Otherwise repair closest damaged structure
-    return tower.pos.findClosestByRange(structures) || structures[0];
+    return tower.pos.findClosestByRange(structures) ?? structures[0];
   }
 
   /**
@@ -239,7 +239,7 @@ export class TowerManager {
 
     const threats = hostiles.map(hostile => this.assessThreat(towers[0], hostile));
     const totalThreat = threats.reduce((sum, t) => sum + t.priority, 0);
-    const highestThreat = threats.sort((a, b) => b.priority - a.priority)[0] || null;
+    const highestThreat = threats.sort((a, b) => b.priority - a.priority)[0] ?? null;
 
     return {
       hostileCount: hostiles.length,
