@@ -33,27 +33,46 @@ this.constructionManager.planConstructionSites(game);
 
 This runs once per tick before creep behavior execution, ensuring construction sites are available for builders.
 
-## Bunker Layout Pattern
+## Chess Pattern Layout
 
-The bunker uses a compact layout with structures placed at fixed offsets from an anchor point (typically the spawn):
+The base uses a **chess/checkerboard pattern** layout where structures are placed at fixed offsets from an anchor point (typically the spawn). This pattern ensures that all 8 adjacent tiles to the spawn remain walkable, preventing spawning blockage.
+
+### Pattern Rules
+
+- Structures are placed at positions where the sum of coordinates (dx + dy) is even
+- This creates a checkerboard pattern with alternating walkable and structure tiles
+- All tiles adjacent to the spawn (distance 1) remain walkable at all RCL levels
+- Structures are distributed evenly in all four quadrants
 
 ### RCL 2
 
-- 5 Extensions
+- 5 Extensions (placed at distance 2)
 - 1 Container
+- **8/8 walkable tiles adjacent to spawn**
 
 ### RCL 3
 
-- 10 Extensions (5 from RCL 2 + 5 new)
+- 10 Extensions (5 from RCL 2 + 5 new at distance 2-4)
 - 1 Tower
 - 1 Container (from RCL 2)
+- **8/8 walkable tiles adjacent to spawn**
 
 ### RCL 4
 
-- 20 Extensions (10 from RCL 3 + 10 new)
+- 20 Extensions (10 from RCL 3 + 10 new at distance 2-4)
 - 1 Storage
 - 1 Tower (from RCL 3)
 - 1 Container (from RCL 2)
+- **8/8 walkable tiles adjacent to spawn**
+
+### RCL 5
+
+- 30 Extensions (20 from RCL 4 + 10 new at distance 2-6)
+- 2 Links
+- 2 Towers
+- 1 Storage
+- 1 Container
+- **8/8 walkable tiles adjacent to spawn**
 
 ## Anchor Point Selection
 

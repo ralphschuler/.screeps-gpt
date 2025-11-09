@@ -11,15 +11,19 @@
 
 import { describe, it, expect } from "vitest";
 import { BasePlanner } from "../../src/runtime/planning/BasePlanner";
+import {
+  createMockTerrain,
+  createMockTerrainWithWalls,
+  createMockRoom,
+  TEST_CONSTANTS
+} from "../helpers/mockFactories";
 
-// Define Screeps constants for testing
-const FIND_MY_SPAWNS = 104;
-const FIND_STRUCTURES = 107;
-const FIND_MY_CONSTRUCTION_SITES = 114;
+// Extract constants for convenience
+const { FIND_MY_SPAWNS, FIND_STRUCTURES, FIND_MY_CONSTRUCTION_SITES, TERRAIN_MASK_WALL } = TEST_CONSTANTS;
+
+// Define additional Screeps constants
 const STRUCTURE_EXTENSION = "extension" as BuildableStructureConstant;
-const STRUCTURE_SPAWN = "spawn" as BuildableStructureConstant;
 const STRUCTURE_CONTAINER = "container" as BuildableStructureConstant;
-const TERRAIN_MASK_WALL = 1;
 
 describe("Extension Placement Regression", () => {
   describe("RCL 1 Extension Placement", () => {
@@ -180,71 +184,3 @@ describe("Extension Placement Regression", () => {
     });
   });
 });
-
-// Mock helper functions
-function createMockTerrain(): RoomTerrain {
-  return {
-    get: (x: number, y: number) => {
-      // Simple terrain - mostly plain
-      if (x === 0 || y === 0 || x === 49 || y === 49) {
-        return TERRAIN_MASK_WALL;
-      }
-      return 0;
-    },
-    getRawBuffer: () => new Uint8Array(2500)
-  } as RoomTerrain;
-}
-
-function createMockTerrainWithWalls(): RoomTerrain {
-  return {
-    get: (x: number, y: number) => {
-      // Add walls around spawn area to test placement logic
-      if (x === 0 || y === 0 || x === 49 || y === 49) {
-        return TERRAIN_MASK_WALL;
-      }
-      if (x === 26 && y === 25) {
-        return TERRAIN_MASK_WALL;
-      }
-      return 0;
-    },
-    getRawBuffer: () => new Uint8Array(2500)
-  } as RoomTerrain;
-}
-
-function createMockRoom(rcl: number) {
-  return {
-    name: "W1N1",
-    controller: {
-      my: true,
-      level: rcl,
-      pos: { x: 25, y: 25 }
-    },
-    find: (findConstant: FindConstant) => {
-      if (findConstant === FIND_MY_SPAWNS) {
-        return [
-          {
-            pos: { x: 25, y: 25 },
-            name: "Spawn1",
-            structureType: STRUCTURE_SPAWN
-          }
-        ];
-      }
-      if (findConstant === FIND_STRUCTURES) {
-        return [
-          {
-            pos: { x: 25, y: 25 },
-            structureType: STRUCTURE_SPAWN
-          }
-        ];
-      }
-      if (findConstant === FIND_MY_CONSTRUCTION_SITES) {
-        return [];
-      }
-      return [];
-    },
-    getTerrain: () => createMockTerrain()
-  } as unknown as RoomLike;
-}
-
-// Import RoomLike type
-type RoomLike = import("../../src/runtime/types/GameContext").RoomLike;
