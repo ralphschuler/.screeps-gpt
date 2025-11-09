@@ -20,8 +20,10 @@ export class BasePlanner {
   private anchor: RoomPosition | null = null;
 
   /**
-   * Comprehensive bunker layout centered around spawn
+   * Chess/checkerboard pattern layout centered around spawn
    * Offsets are relative to the anchor point (spawn position)
+   * Structures are placed at even-sum coordinates (dx+dy is even)
+   * This ensures all 8 adjacent tiles to spawn remain walkable for creeps
    * Covers RCL 1-5 for Phase 3 requirements
    */
   private readonly bunkerLayout: Array<{
@@ -30,59 +32,59 @@ export class BasePlanner {
     dy: number;
     rcl: number;
   }> = [
-    // RCL 2: Extensions (5 total)
-    { type: "extension" as BuildableStructureConstant, dx: 1, dy: 0, rcl: 2 },
-    { type: "extension" as BuildableStructureConstant, dx: -1, dy: 0, rcl: 2 },
-    { type: "extension" as BuildableStructureConstant, dx: 0, dy: 1, rcl: 2 },
-    { type: "extension" as BuildableStructureConstant, dx: 0, dy: -1, rcl: 2 },
-    { type: "extension" as BuildableStructureConstant, dx: 1, dy: 1, rcl: 2 },
+    // RCL 2: Extensions (5 total) - placed at distance 2 with even-sum coordinates
+    { type: "extension" as BuildableStructureConstant, dx: 2, dy: 0, rcl: 2 },
+    { type: "extension" as BuildableStructureConstant, dx: 0, dy: 2, rcl: 2 },
+    { type: "extension" as BuildableStructureConstant, dx: -2, dy: 0, rcl: 2 },
+    { type: "extension" as BuildableStructureConstant, dx: 0, dy: -2, rcl: 2 },
+    { type: "extension" as BuildableStructureConstant, dx: 2, dy: 2, rcl: 2 },
 
-    // RCL 2: Container near sources (placed separately)
-    { type: "container" as BuildableStructureConstant, dx: 2, dy: 0, rcl: 2 },
+    // RCL 2: Container
+    { type: "container" as BuildableStructureConstant, dx: -2, dy: 2, rcl: 2 },
 
     // RCL 3: More extensions (10 total, 5 more)
-    { type: "extension" as BuildableStructureConstant, dx: -1, dy: 1, rcl: 3 },
-    { type: "extension" as BuildableStructureConstant, dx: 1, dy: -1, rcl: 3 },
-    { type: "extension" as BuildableStructureConstant, dx: -1, dy: -1, rcl: 3 },
-    { type: "extension" as BuildableStructureConstant, dx: 2, dy: 1, rcl: 3 },
-    { type: "extension" as BuildableStructureConstant, dx: 2, dy: -1, rcl: 3 },
+    { type: "extension" as BuildableStructureConstant, dx: -2, dy: -2, rcl: 3 },
+    { type: "extension" as BuildableStructureConstant, dx: 4, dy: 0, rcl: 3 },
+    { type: "extension" as BuildableStructureConstant, dx: 0, dy: 4, rcl: 3 },
+    { type: "extension" as BuildableStructureConstant, dx: -4, dy: 0, rcl: 3 },
+    { type: "extension" as BuildableStructureConstant, dx: 0, dy: -4, rcl: 3 },
 
     // RCL 3: Tower
-    { type: "tower" as BuildableStructureConstant, dx: 0, dy: 2, rcl: 3 },
+    { type: "tower" as BuildableStructureConstant, dx: 2, dy: -2, rcl: 3 },
 
     // RCL 4: Storage
-    { type: "storage" as BuildableStructureConstant, dx: -2, dy: 0, rcl: 4 },
+    { type: "storage" as BuildableStructureConstant, dx: -4, dy: -4, rcl: 4 },
 
     // RCL 4: More extensions (20 total, 10 more)
-    { type: "extension" as BuildableStructureConstant, dx: -2, dy: 1, rcl: 4 },
-    { type: "extension" as BuildableStructureConstant, dx: -2, dy: -1, rcl: 4 },
-    { type: "extension" as BuildableStructureConstant, dx: 3, dy: 0, rcl: 4 },
-    { type: "extension" as BuildableStructureConstant, dx: 3, dy: 1, rcl: 4 },
-    { type: "extension" as BuildableStructureConstant, dx: 3, dy: -1, rcl: 4 },
-    { type: "extension" as BuildableStructureConstant, dx: -3, dy: 0, rcl: 4 },
-    { type: "extension" as BuildableStructureConstant, dx: -3, dy: 1, rcl: 4 },
-    { type: "extension" as BuildableStructureConstant, dx: -3, dy: -1, rcl: 4 },
-    { type: "extension" as BuildableStructureConstant, dx: 0, dy: 3, rcl: 4 },
-    { type: "extension" as BuildableStructureConstant, dx: 0, dy: -3, rcl: 4 },
+    { type: "extension" as BuildableStructureConstant, dx: 4, dy: 2, rcl: 4 },
+    { type: "extension" as BuildableStructureConstant, dx: 2, dy: 4, rcl: 4 },
+    { type: "extension" as BuildableStructureConstant, dx: -4, dy: 2, rcl: 4 },
+    { type: "extension" as BuildableStructureConstant, dx: -2, dy: 4, rcl: 4 },
+    { type: "extension" as BuildableStructureConstant, dx: 4, dy: -2, rcl: 4 },
+    { type: "extension" as BuildableStructureConstant, dx: 2, dy: -4, rcl: 4 },
+    { type: "extension" as BuildableStructureConstant, dx: -4, dy: -2, rcl: 4 },
+    { type: "extension" as BuildableStructureConstant, dx: -2, dy: -4, rcl: 4 },
+    { type: "extension" as BuildableStructureConstant, dx: 4, dy: 4, rcl: 4 },
+    { type: "extension" as BuildableStructureConstant, dx: -4, dy: 4, rcl: 4 },
 
     // RCL 5: Links (2 allowed)
-    { type: "link" as BuildableStructureConstant, dx: 0, dy: -2, rcl: 5 },
-    { type: "link" as BuildableStructureConstant, dx: -2, dy: 2, rcl: 5 },
+    { type: "link" as BuildableStructureConstant, dx: 4, dy: -4, rcl: 5 },
+    { type: "link" as BuildableStructureConstant, dx: -4, dy: 4, rcl: 5 },
 
     // RCL 5: More extensions (30 total, 10 more)
-    { type: "extension" as BuildableStructureConstant, dx: 2, dy: 2, rcl: 5 },
-    { type: "extension" as BuildableStructureConstant, dx: -2, dy: -2, rcl: 5 },
-    { type: "extension" as BuildableStructureConstant, dx: 4, dy: 0, rcl: 5 },
-    { type: "extension" as BuildableStructureConstant, dx: -4, dy: 0, rcl: 5 },
-    { type: "extension" as BuildableStructureConstant, dx: 0, dy: 4, rcl: 5 },
-    { type: "extension" as BuildableStructureConstant, dx: 0, dy: -4, rcl: 5 },
-    { type: "extension" as BuildableStructureConstant, dx: 3, dy: 2, rcl: 5 },
-    { type: "extension" as BuildableStructureConstant, dx: 3, dy: -2, rcl: 5 },
-    { type: "extension" as BuildableStructureConstant, dx: -3, dy: 2, rcl: 5 },
-    { type: "extension" as BuildableStructureConstant, dx: -3, dy: -2, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: 6, dy: 0, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: 0, dy: 6, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: -6, dy: 0, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: 0, dy: -6, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: 6, dy: 2, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: 2, dy: 6, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: -6, dy: 2, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: -2, dy: 6, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: 6, dy: -2, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: -2, dy: -6, rcl: 5 },
 
     // RCL 5: Second tower
-    { type: "tower" as BuildableStructureConstant, dx: 2, dy: -2, rcl: 5 }
+    { type: "tower" as BuildableStructureConstant, dx: 2, dy: -4, rcl: 5 }
   ];
 
   public constructor(roomName: string) {
