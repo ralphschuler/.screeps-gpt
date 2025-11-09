@@ -164,12 +164,17 @@ export class TaskManager {
 
     if (containers.length === 0) return;
 
-    // Limit the number of container deposit tasks to avoid overwhelming the system
+    // Only count transfer tasks whose target is a container in this room
+    const containerIds = new Set(containers.map(c => c.id));
     const containerTransferTasks = Array.from(this.tasks.values()).filter(
-      t => t.status !== "COMPLETE" && t.task instanceof TransferAction
+      t =>
+        t.status !== "COMPLETE" &&
+        t.task instanceof TransferAction &&
+        containerIds.has(t.task.getTargetId() as Id<StructureContainer>)
     );
 
-    // Create transfer tasks for containers with capacity (limit to first 2)
+    // Create transfer tasks for containers with capacity
+    // Process up to 2 containers per tick, with a global limit of 4 concurrent container deposit tasks
     for (const container of containers.slice(0, 2)) {
       if (containerTransferTasks.length >= 4) {
         break;

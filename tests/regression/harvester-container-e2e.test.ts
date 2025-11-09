@@ -192,7 +192,8 @@ describe("Harvester Container Transfer E2E", () => {
     // Then a container becomes available
 
     // Setup: Harvester has energy and is in UPGRADE_TASK
-    mockHarvester.memory.task = "upgrade" as HarvesterTask;
+    // Note: "upgrade" is a valid HarvesterTask value as defined in BehaviorController
+    mockHarvester.memory.task = "upgrade";
     (mockHarvester.store.getFreeCapacity as ReturnType<typeof vi.fn>).mockReturnValue(0);
     (mockHarvester.store.getUsedCapacity as ReturnType<typeof vi.fn>).mockReturnValue(50);
 
@@ -228,5 +229,6 @@ describe("Harvester Container Transfer E2E", () => {
   });
 });
 
-// Type augmentation for the test
-type HarvesterTask = "harvest" | "deliver" | "upgrade";
+// Type augmentation matching BehaviorController's HarvesterTask definition
+// HarvesterTask = typeof HARVEST_TASK | typeof DELIVER_TASK | typeof UPGRADE_TASK
+// where HARVEST_TASK = "harvest", DELIVER_TASK = "deliver", UPGRADE_TASK = "upgrade"
