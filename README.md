@@ -85,23 +85,20 @@ bun run docker:test:unit
 ```bash
 # Configure secrets: SCREEPS_TOKEN, SCREEPS_HOST (optional)
 bun run deploy
-
-# Enable experimental task system (optional)
-TASK_SYSTEM_ENABLED=true bun run deploy
 ```
 
-**Experimental Features:**
+**Task System (Default Since v0.32.0):**
 
-The bot includes a priority-based task management system that can replace the legacy role-based behavior system. **Benchmark testing shows 58.8% lower CPU usage** compared to the legacy system.
+The bot uses a priority-based task management system by default. **Benchmark testing shows 58.8% lower CPU usage** compared to the legacy role-based system.
 
-Enable it via:
+The legacy role-based system is still available if needed:
 
 ```bash
-# Environment variable (build-time)
-TASK_SYSTEM_ENABLED=true npm run build
+# Disable task system via environment variable (build-time)
+TASK_SYSTEM_ENABLED=false npm run build
 
 # Or in-game console (runtime)
-Memory.experimentalFeatures = { taskSystem: true };
+Memory.experimentalFeatures = { taskSystem: false };
 ```
 
 See [Task System Architecture](docs/runtime/task-system.md) and [Evaluation Report](docs/runtime/task-system-evaluation.md) for details.

@@ -1,14 +1,14 @@
 # Task System Evaluation Report
 
-**Date:** 2025-11-06  
-**Status:** ✅ **RECOMMENDED FOR ENABLEMENT**  
-**Issue:** #[TBD] - feat(runtime): evaluate and enable priority-based task system
+**Date:** 2025-11-06 (Evaluation) | 2025-11-09 (Enabled)  
+**Status:** ✅ **ENABLED IN v0.32.0**  
+**Issue:** feat(runtime): evaluate and enable priority-based task system
 
 ## Executive Summary
 
-The priority-based task management system has been **comprehensively evaluated and validated** for production use. Benchmark testing demonstrates **superior performance** compared to the legacy role-based system, with **58.8% lower CPU overhead**. All core behaviors are implemented with full feature parity, comprehensive test coverage, and production-ready code quality.
+The priority-based task management system has been **comprehensively evaluated, validated, and enabled as the default** in v0.32.0. Benchmark testing demonstrates **superior performance** compared to the legacy role-based system, with **58.8% lower CPU overhead**. All core behaviors are implemented with full feature parity, comprehensive test coverage, and production-ready code quality.
 
-**Recommendation:** Enable task system as the default behavior system in the next release cycle.
+**Decision:** Task system enabled as default in v0.32.0. Legacy role-based system deprecated but available via opt-out.
 
 ---
 

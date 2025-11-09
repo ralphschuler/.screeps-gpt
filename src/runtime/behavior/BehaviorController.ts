@@ -181,7 +181,8 @@ interface BehaviorControllerOptions {
 
 /**
  * Coordinates spawning and per-tick behaviour execution for every registered role.
- * Enhanced with optional task management system for priority-based execution.
+ * Uses priority-based task management system by default (v0.32.0+).
+ * Legacy role-based system available via useTaskSystem: false.
  */
 @profile
 export class BehaviorController {
@@ -194,7 +195,7 @@ export class BehaviorController {
     this.options = {
       cpuSafetyMargin: options.cpuSafetyMargin ?? 0.8,
       maxCpuPerCreep: options.maxCpuPerCreep ?? 1.5,
-      useTaskSystem: options.useTaskSystem ?? false
+      useTaskSystem: options.useTaskSystem ?? true
     };
     this.taskManager = new TaskManager({
       cpuThreshold: this.options.cpuSafetyMargin,
@@ -260,6 +261,8 @@ export class BehaviorController {
 
   /**
    * Execute using the legacy role-based system.
+   * @deprecated Since v0.32.0 - Task system is now the default. Use useTaskSystem: false to enable.
+   * This method will be removed in a future version once task system is fully validated in production.
    */
   private executeWithRoleSystem(
     game: GameContext,

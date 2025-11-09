@@ -142,7 +142,7 @@ describe("Stationary Harvester Role", () => {
       rooms: { W0N0: room }
     };
 
-    const controller = new BehaviorController({}, { log: vi.fn(), warn: vi.fn() });
+    const controller = new BehaviorController({ useTaskSystem: false }, { log: vi.fn(), warn: vi.fn() });
     const memory = {} as Memory;
 
     controller.execute(game, memory, { stationaryHarvester: 1 });
@@ -255,7 +255,7 @@ describe("Hauler Role", () => {
       rooms: { W0N0: room }
     };
 
-    const controller = new BehaviorController({}, { log: vi.fn(), warn: vi.fn() });
+    const controller = new BehaviorController({ useTaskSystem: false }, { log: vi.fn(), warn: vi.fn() });
     const memory = {} as Memory;
 
     controller.execute(game, memory, { hauler: 1 });
@@ -310,7 +310,7 @@ describe("Hauler Role", () => {
       rooms: { W0N0: room }
     };
 
-    const controller = new BehaviorController({}, { log: vi.fn(), warn: vi.fn() });
+    const controller = new BehaviorController({ useTaskSystem: false }, { log: vi.fn(), warn: vi.fn() });
     const memory = {} as Memory;
 
     controller.execute(game, memory, { hauler: 1 });
@@ -372,7 +372,7 @@ describe("Hauler Role", () => {
       rooms: { W0N0: room }
     };
 
-    const controller = new BehaviorController({}, { log: vi.fn(), warn: vi.fn() });
+    const controller = new BehaviorController({ useTaskSystem: false }, { log: vi.fn(), warn: vi.fn() });
     const memory = {} as Memory;
 
     controller.execute(game, memory, { hauler: 1 });

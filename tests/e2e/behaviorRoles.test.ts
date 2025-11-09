@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { Kernel } from "@runtime/bootstrap/kernel";
+import { BehaviorController } from "@runtime/behavior/BehaviorController";
 import type { CreepLike, GameContext, RoomLike } from "@runtime/types/GameContext";
 
 function createCreep(role: string, room: RoomLike, store: { free: number; used: number }): CreepLike {
@@ -63,7 +64,10 @@ describe("BehaviorController role integration", () => {
     };
 
     const memory = { creeps: {}, roles: {} } as unknown as Memory;
-    const kernel = new Kernel({ logger: { log: vi.fn(), warn: vi.fn() } });
+    const kernel = new Kernel({
+      behavior: new BehaviorController({ useTaskSystem: false }),
+      logger: { log: vi.fn(), warn: vi.fn() }
+    });
 
     kernel.run(game, memory);
 

@@ -4,7 +4,7 @@ import type { CreepLike, GameContext, RoomLike } from "@runtime/types/GameContex
 
 describe("Regression: remote miner return loop", () => {
   it("resets to travel when energy is exhausted after returning home", () => {
-    const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
+    const controller = new BehaviorController({ useTaskSystem: false, log: vi.fn(), warn: vi.fn() });
 
     const homeRoom: RoomLike = {
       name: "W0N0",
