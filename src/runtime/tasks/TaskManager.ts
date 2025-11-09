@@ -29,6 +29,9 @@ export class TaskManager {
     // Generate harvest tasks
     this.generateHarvestTasks(room);
 
+    // Generate container deposit tasks (for harvesters to deposit into containers)
+    this.generateContainerDepositTasks(room);
+
     // Generate build tasks
     this.generateBuildTasks(room);
 
@@ -145,6 +148,38 @@ export class TaskManager {
         const request = new TaskRequest(this.getNextTaskId(), task, TaskPriority.NORMAL, Game.time + 50);
         this.tasks.set(request.id, request);
       }
+    }
+  }
+
+  /**
+   * Generate tasks for depositing harvested energy into containers.
+   * This ensures harvesters have a follow-up task after completing harvest.
+   */
+  private generateContainerDepositTasks(room: Room): void {
+    // Find containers with free capacity
+    const allStructures = room.find(FIND_STRUCTURES);
+    const containers = allStructures.filter((s): s is StructureContainer => {
+      return s.structureType === STRUCTURE_CONTAINER && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
+    });
+
+    if (containers.length === 0) return;
+
+    // Limit the number of container deposit tasks to avoid overwhelming the system
+    const containerTransferTasks = Array.from(this.tasks.values()).filter(
+      t => t.status !== "COMPLETE" && t.task instanceof TransferAction
+    );
+
+    // Create transfer tasks for containers with capacity (limit to first 2)
+    for (const container of containers.slice(0, 2)) {
+      if (containerTransferTasks.length >= 4) {
+        break;
+      }
+
+      const task = new TransferAction(container.id, RESOURCE_ENERGY);
+      // Higher priority than general transfer tasks to ensure harvesters deposit quickly
+      const request = new TaskRequest(this.getNextTaskId(), task, TaskPriority.HIGH, Game.time + 50);
+      this.tasks.set(request.id, request);
+      containerTransferTasks.push(request);
     }
   }
 
