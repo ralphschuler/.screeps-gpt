@@ -19,7 +19,8 @@
     "dist/main.js",
     "dist/main.js.map",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "engines": {
     "node": ">=18.0.0 <=22.x",
