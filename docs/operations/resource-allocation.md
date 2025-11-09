@@ -14,14 +14,14 @@ The account was upgraded from the free tier to a lifetime subscription, providin
 
 ### CPU Allocation
 
-| Resource      | Previous (Free Tier) | Current (Lifetime) | Change       |
-| ------------- | -------------------- | ------------------ | ------------ |
-| **CPU Limit** | 20                   | 150                | +130 (+750%) |
-| **Memory**    | 2048 KB              | 2048 KB            | Unchanged    |
+| Resource      | Previous (Free Tier) | Current (Lifetime) | Change      |
+| ------------- | -------------------- | ------------------ | ----------- |
+| **CPU Limit** | 20                   | 50                 | +30 (+150%) |
+| **Memory**    | 2048 KB              | 2048 KB            | Unchanged   |
 
 ### CPU Budget Details
 
-- **Total CPU Limit:** 150 per tick
+- **Total CPU Limit:** 50 per tick
 - **Bucket Maximum:** 10,000 (standard)
 - **Bucket Refill Rate:** Unused CPU per tick
 
@@ -31,19 +31,19 @@ The bot uses the following CPU thresholds to prevent script execution timeouts:
 
 ### Performance Tracker
 
-- **High CPU Warning:** 75% of limit (112.5 CPU)
-- **Critical CPU Alert:** 90% of limit (135 CPU)
+- **High CPU Warning:** 75% of limit (37.5 CPU)
+- **Critical CPU Alert:** 90% of limit (45 CPU)
 - **Bucket Warning:** Below 500
 
 ### System Evaluator
 
-- **CPU Usage Warning:** 85% of limit (127.5 CPU)
-- **CPU Critical Level:** 95% of limit (142.5 CPU)
+- **CPU Usage Warning:** 85% of limit (42.5 CPU)
+- **CPU Critical Level:** 95% of limit (47.5 CPU)
 - **Low Bucket Threshold:** 500
 
 ### Behavior Controller
 
-- **CPU Safety Margin:** 85% of limit (127.5 CPU)
+- **CPU Safety Margin:** 85% of limit (42.5 CPU)
   - Behavior execution stops when CPU usage exceeds this threshold
 - **Max CPU per Creep:** 1.5 CPU per creep
 
@@ -57,8 +57,8 @@ The bot uses the following CPU thresholds to prevent script execution timeouts:
 ### Performance Benefits
 
 1. **Reduced CPU Pressure**
-   - 7.5x more CPU budget eliminates previous CPU constraint concerns
-   - Significantly reduces risk of CPU timeout incidents
+   - 2.5x more CPU budget reduces previous CPU constraint concerns
+   - Reduces risk of CPU timeout incidents
    - Allows for more sophisticated AI logic and decision-making
 
 2. **Advanced Features**
@@ -98,8 +98,8 @@ The bot includes comprehensive CPU monitoring:
 
 Alerts are triggered based on the new CPU limits:
 
-- **Warning Alerts:** CPU usage > 85% (127.5 CPU)
-- **Critical Alerts:** CPU usage > 95% (142.5 CPU)
+- **Warning Alerts:** CPU usage > 85% (42.5 CPU)
+- **Critical Alerts:** CPU usage > 95% (47.5 CPU)
 - **Bucket Alerts:** CPU bucket < 500
 
 ## Related Documentation
@@ -123,21 +123,21 @@ Before the upgrade, the bot operated under significant CPU constraints:
 
 ### Current Configuration (Lifetime Subscription)
 
-With the upgrade, constraints are significantly reduced:
+With the upgrade, constraints are reduced:
 
-- **CPU Limit:** 150 per tick (7.5x increase)
-- **Relaxed Thresholds:** 85% safety margins provide more headroom
-- **Enabled Features:** Can run profiler and advanced systems continuously
-- **Improved Stability:** Timeout risk significantly reduced
+- **CPU Limit:** 50 per tick (2.5x increase)
+- **Adjusted Thresholds:** 85% safety margins provide more headroom
+- **Enabled Features:** Can run profiler and advanced systems with better margins
+- **Improved Stability:** Timeout risk reduced
 
 ## Conclusion
 
-The lifetime subscription upgrade represents a strategic infrastructure enhancement that removes previous operational constraints. The focus shifts from aggressive CPU optimization for survival to enabling more sophisticated AI features and multi-room scaling opportunities.
+The lifetime subscription upgrade represents a strategic infrastructure enhancement that reduces previous operational constraints. The focus shifts from aggressive CPU optimization for survival to enabling more sophisticated AI features with better safety margins.
 
 The increased CPU budget enables:
 
-- More ambitious strategic development
-- Advanced AI behaviors and planning systems
-- Continuous performance profiling and analysis
-- Multi-room expansion and coordination
-- Reduced operational overhead and monitoring noise
+- More strategic development opportunities
+- Advanced AI behaviors with better margins
+- Continuous performance profiling with headroom
+- Better multi-room coordination potential
+- Reduced risk of CPU timeout incidents

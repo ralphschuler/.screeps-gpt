@@ -8,17 +8,17 @@ All notable changes to this project are documented here. This changelog now main
 ### Changed
 
 - **Account Upgraded to Lifetime Subscription**: Screeps account upgraded from free tier to lifetime subscription
-  - CPU allocation increased from 20 to 150 (750% increase, +130 CPU)
+  - CPU allocation increased from 20 to 50 (150% increase, +30 CPU)
   - Memory allocation remains at 2048 KB (unchanged)
   - Updated CPU thresholds to reflect new resource allocation:
     - PerformanceTracker: highCpuThreshold 70% → 75%, criticalCpuThreshold remains 90%
     - SystemEvaluator: cpuUsageWarningRatio 80% → 85%, cpuCriticalRatio remains 95%
     - BehaviorController: cpuSafetyMargin 80% → 85%
     - Kernel: cpuEmergencyThreshold remains 90% (last line of defense)
-  - Benefits: Significantly reduced CPU constraint concerns, enables advanced features (profiler, task management system), reduces timeout risk
-  - Strategic opportunity: Focus shifts from aggressive CPU optimization to sophisticated AI development and multi-room expansion
+  - Benefits: Reduced CPU constraint concerns, enables advanced features (profiler, task management system) with better margins, reduces timeout risk
+  - Strategic opportunity: Focus shifts from aggressive CPU optimization to sophisticated AI development with better safety margins
   - Documentation: Added comprehensive resource allocation guide at `docs/operations/resource-allocation.md`
-  - Impact: Resolves CPU timeout incidents (#468, #494) and enables evaluation of previously disabled features (#478, #475)
+  - Impact: Helps mitigate CPU timeout incidents (#468, #494) and enables evaluation of previously disabled features (#478, #475)
 
 ## [0.31.11] - 2025-11-09
 
