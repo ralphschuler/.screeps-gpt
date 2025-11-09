@@ -3,11 +3,17 @@ import type { GameContext } from "@runtime/types/GameContext";
 import { BehaviorController } from "@runtime/behavior/BehaviorController";
 import { init as initProfiler } from "@profiler";
 
-// Read task system enablement from environment variable or Memory flag
+// Task system is enabled by default (v0.32.0+)
+// Can be disabled via TASK_SYSTEM_ENABLED=false or Memory flag
 // Memory access is safe here as it's initialized by the Screeps engine before loop() is called
 const taskSystemEnabled =
-  process.env.TASK_SYSTEM_ENABLED === "true" ||
-  (typeof Memory !== "undefined" && Memory.experimentalFeatures?.taskSystem === true);
+  process.env.TASK_SYSTEM_ENABLED === "false"
+    ? false
+    : process.env.TASK_SYSTEM_ENABLED === "true"
+      ? true
+      : typeof Memory !== "undefined" && Memory.experimentalFeatures?.taskSystem === false
+        ? false
+        : true; // Default to enabled
 
 const kernel = createKernel({
   repositorySignalProvider: () => Memory.systemReport?.report.repository,

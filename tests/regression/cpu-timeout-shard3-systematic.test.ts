@@ -61,6 +61,7 @@ describe("CPU timeout prevention for shard3 systematic analysis (issue #417)", (
       const warn = vi.fn();
       const log = vi.fn();
       const kernel = new Kernel({
+        behavior: new BehaviorController({ useTaskSystem: false }),
         cpuEmergencyThreshold: 0.9,
         logger: { log, warn }
       });
@@ -126,6 +127,7 @@ describe("CPU timeout prevention for shard3 systematic analysis (issue #417)", (
       const expensiveMemoryManager = new MemoryManager({ log, warn });
 
       const kernel = new Kernel({
+        behavior: new BehaviorController({ useTaskSystem: false }),
         cpuEmergencyThreshold: 0.9,
         memoryManager: expensiveMemoryManager,
         logger: { log, warn }
@@ -189,6 +191,7 @@ describe("CPU timeout prevention for shard3 systematic analysis (issue #417)", (
       const warn = vi.fn();
       const log = vi.fn();
       const kernel = new Kernel({
+        behavior: new BehaviorController({ useTaskSystem: false }),
         cpuEmergencyThreshold: 0.9,
         logger: { log, warn }
       });
@@ -429,6 +432,7 @@ describe("CPU timeout prevention for shard3 systematic analysis (issue #417)", (
       const warn = vi.fn();
       const log = vi.fn();
       const kernel = new Kernel({
+        behavior: new BehaviorController({ useTaskSystem: false }),
         cpuEmergencyThreshold: 0.95,
         logger: { log, warn }
       });

@@ -119,7 +119,7 @@ describe("BehaviorController", () => {
 
   describe("role execution", () => {
     it("runs builder gather logic to withdraw energy when storage is available", () => {
-      const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
+      const controller = new BehaviorController({ useTaskSystem: false, log: vi.fn(), warn: vi.fn() });
 
       const container = {
         structureType: STRUCTURE_CONTAINER,
@@ -190,7 +190,7 @@ describe("BehaviorController", () => {
     });
 
     it("repairs structures when builder has no construction work", () => {
-      const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
+      const controller = new BehaviorController({ useTaskSystem: false, log: vi.fn(), warn: vi.fn() });
 
       const damagedRoad = {
         structureType: STRUCTURE_ROAD,
@@ -259,7 +259,7 @@ describe("BehaviorController", () => {
     });
 
     it("cycles remote miner through travel, mine, and return tasks", () => {
-      const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
+      const controller = new BehaviorController({ useTaskSystem: false, log: vi.fn(), warn: vi.fn() });
 
       const homeSpawn = {
         structureType: STRUCTURE_SPAWN,
@@ -370,7 +370,7 @@ describe("BehaviorController", () => {
 
   describe("energy source protection", () => {
     it("prevents upgraders from withdrawing energy from spawns", () => {
-      const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
+      const controller = new BehaviorController({ useTaskSystem: false, log: vi.fn(), warn: vi.fn() });
 
       const spawn = {
         structureType: STRUCTURE_SPAWN,
@@ -454,7 +454,7 @@ describe("BehaviorController", () => {
     });
 
     it("prevents upgraders from withdrawing energy from extensions", () => {
-      const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
+      const controller = new BehaviorController({ useTaskSystem: false, log: vi.fn(), warn: vi.fn() });
 
       const extension = {
         structureType: STRUCTURE_EXTENSION,
@@ -538,7 +538,7 @@ describe("BehaviorController", () => {
     });
 
     it("prevents builders from withdrawing energy from spawns", () => {
-      const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
+      const controller = new BehaviorController({ useTaskSystem: false, log: vi.fn(), warn: vi.fn() });
 
       const spawn = {
         structureType: STRUCTURE_SPAWN,
@@ -621,7 +621,7 @@ describe("BehaviorController", () => {
     });
 
     it("prevents builders from withdrawing energy from extensions", () => {
-      const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
+      const controller = new BehaviorController({ useTaskSystem: false, log: vi.fn(), warn: vi.fn() });
 
       const extension = {
         structureType: STRUCTURE_EXTENSION,
@@ -704,7 +704,7 @@ describe("BehaviorController", () => {
     });
 
     it("allows upgraders to withdraw from storage when available", () => {
-      const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
+      const controller = new BehaviorController({ useTaskSystem: false, log: vi.fn(), warn: vi.fn() });
 
       const storage = {
         structureType: STRUCTURE_STORAGE,
@@ -780,7 +780,7 @@ describe("BehaviorController", () => {
     });
 
     it("allows upgraders to pickup dropped energy when no storage or containers available", () => {
-      const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
+      const controller = new BehaviorController({ useTaskSystem: false, log: vi.fn(), warn: vi.fn() });
 
       const droppedEnergy = {
         resourceType: RESOURCE_ENERGY,
@@ -853,7 +853,7 @@ describe("BehaviorController", () => {
     });
 
     it("allows upgraders to harvest directly from sources when no other energy available", () => {
-      const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
+      const controller = new BehaviorController({ useTaskSystem: false, log: vi.fn(), warn: vi.fn() });
 
       const source = { id: "source-1" } as Source;
 

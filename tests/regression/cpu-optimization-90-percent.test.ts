@@ -57,7 +57,7 @@ describe("CPU optimization regression - 90% threshold", () => {
   describe("BehaviorController default CPU safety margin", () => {
     it("should use 80% CPU safety margin by default", () => {
       const warn = vi.fn();
-      const controller = new BehaviorController({}, { log: vi.fn(), warn });
+      const controller = new BehaviorController({ useTaskSystem: false }, { log: vi.fn(), warn });
 
       let cpuUsed = 0;
       const creeps: Record<string, CreepLike> = {
@@ -100,7 +100,7 @@ describe("CPU optimization regression - 90% threshold", () => {
 
     it("should use 1.5 CPU per creep threshold by default", () => {
       const warn = vi.fn();
-      const controller = new BehaviorController({}, { log: vi.fn(), warn });
+      const controller = new BehaviorController({ useTaskSystem: false }, { log: vi.fn(), warn });
 
       const creeps: Record<string, CreepLike> = {
         expensiveCreep: createMockCreep("expensiveCreep", "harvester")
@@ -241,6 +241,7 @@ describe("CPU optimization regression - 90% threshold", () => {
     it("should use 90% emergency threshold by default", () => {
       const warn = vi.fn();
       const kernel = new Kernel({
+        behavior: new BehaviorController({ useTaskSystem: false }),
         logger: { log: vi.fn(), warn }
       });
 
@@ -282,9 +283,7 @@ describe("CPU optimization regression - 90% threshold", () => {
     it("should process normally at 85% CPU (below 90% emergency threshold)", () => {
       const warn = vi.fn();
       const log = vi.fn();
-      const kernel = new Kernel({
-        logger: { log, warn }
-      });
+      const kernel = new Kernel({ behavior: new BehaviorController({ useTaskSystem: false }), logger: { log, warn } });
 
       const mockRoom: RoomLike = {
         name: "W0N0",
