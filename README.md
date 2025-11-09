@@ -275,6 +275,50 @@ See [Push Notification Documentation](docs/automation/push-notifications.md) for
 - ✅ **Agent Swarm**: Multiple Copilot agents collaborating on development
 - 🚧 **Continuous Improvement**: Self-evaluating and evolving strategies
 
+## Using as an NPC Bot
+
+This package can be used as an NPC bot on your Screeps private server. The package is published to GitHub Packages npm registry.
+
+### Installation
+
+```bash
+# Configure npm to use GitHub Packages for @ralphschuler scope
+npm config set @ralphschuler:registry https://npm.pkg.github.com
+
+# Install the package
+npm install @ralphschuler/screeps-gpt
+```
+
+**Note**: You'll need a GitHub personal access token with `read:packages` scope to install packages from GitHub Packages. Configure it with:
+
+```bash
+npm login --scope=@ralphschuler --registry=https://npm.pkg.github.com
+```
+
+### Using on Private Server
+
+Once installed, you can spawn the bot on your private server using the Screeps console:
+
+```javascript
+// List available bots
+help(bots);
+
+// Spawn the bot in a specific room
+bots.spawn("screeps-gpt", "W7N3", {
+  name: "ScreensGPT", // Bot player name (optional)
+  cpu: 100, // CPU limit (optional, default: 100)
+  gcl: 1, // Global Control Level (optional, default: 1)
+  x: 25, // Spawn X position (optional, default: random)
+  y: 25 // Spawn Y position (optional, default: random)
+});
+```
+
+The bot AI is located in the `dist/main.js` file, which is the compiled and bundled version of the entire codebase.
+
+### Publishing Updates
+
+The package is automatically published to GitHub Packages when a new release is created. The workflow can also be triggered manually via GitHub Actions.
+
 ## License
 
 MIT © OpenAI Automations

@@ -1,11 +1,26 @@
 {
-  "name": "screeps-gpt",
+  "name": "@ralphschuler/screeps-gpt",
   "version": "0.35.2",
   "description": "Autonomously evolving Screeps AI with automated development and deployment workflows.",
   "license": "MIT",
   "author": "OpenAI Automations",
   "type": "module",
+  "main": "dist/main.js",
+  "screeps_bot": true,
   "packageManager": "bun@1.3.1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ralphschuler/.screeps-gpt.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "files": [
+    "dist/main.js",
+    "dist/main.js.map",
+    "README.md",
+    "LICENSE"
+  ],
   "engines": {
     "node": ">=18.0.0 <=22.x",
     "bun": ">=1.0.0"
@@ -17,6 +32,7 @@
     "build:docs-site-legacy": "tsx scripts/build-docs-site.ts",
     "migrate:docs-to-hexo": "tsx scripts/migrate-docs-to-hexo.ts",
     "build:watch": "tsx scripts/build.ts --watch",
+    "prepublishOnly": "npm run build",
     "lint": "node --max-old-space-size=8192 ./node_modules/.bin/eslint .",
     "lint:fix": "node --max-old-space-size=8192 ./node_modules/.bin/eslint . --fix",
     "format": "prettier .",

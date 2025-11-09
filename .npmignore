@@ -1,0 +1,112 @@
+# Source files (only publish built dist/)
+/src
+/scripts
+/tests
+
+# Configuration files
+tsconfig.json
+vitest.config.ts
+eslint.config.mjs
+.prettierrc
+.prettierignore
+.editorconfig
+.nvmrc
+.npmrc
+.yamllint.yml
+_config.yml
+
+# GitHub specific
+/.github
+.husky
+.gitignore
+.gitattributes
+
+# Documentation build artifacts
+/docs
+/docs-build
+/public
+/themes
+hexo-source/
+
+# Reports and logs
+/reports
+*.log
+
+# Docker files
+Dockerfile.*
+docker-compose.yml
+.dockerignore
+
+# Development files
+/.vscode
+/.devcontainer
+/node_modules
+
+# Task files
+TASKS.md
+AGENTS.md
+DOCS.md
+IMPLEMENTATION*.md
+*_NOTES.md
+*_FIX.md
+validate-*.sh
+
+# Test and coverage
+/coverage
+/.rpt2_cache
+/tsc-out
+/_book
+/build/*
+
+# Screeps config
+screeps.json
+
+# Temporary files
+*.diff
+*.err
+*.orig
+*.rej
+*.swo
+*.swp
+*.zip
+*.vi
+*~
+*.backup
+*.bak
+*.tmp
+
+# Editor folders
+.cache
+.project
+.settings
+.tmproj
+*.esproj
+nbproject
+*.sublime-project
+*.sublime-workspace
+.idea
+
+# OS files
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+*.lnk
+
+# Copilot cache
+/.copilot-cache
