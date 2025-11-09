@@ -1,5 +1,21 @@
 [
   {
+    "version": "0.31.11",
+    "date": "2025-11-09",
+    "notes": [
+      "**Removed Unnecessary Credential Exposure in Monitoring Workflow**: Eliminated `SCREEPS_EMAIL` and `SCREEPS_PASSWORD` from `screeps-monitoring.yml` workflow",
+      "Credentials were unnecessarily exposed to GitHub Copilot CLI during monitoring operations",
+      "Scripts (`fetch-profiler-console.ts`, `check-ptr-alerts.ts`) use only `SCREEPS_TOKEN` for API authentication",
+      "Follows least-privilege principle by providing only token-based read-only access",
+      "Reduces attack surface by removing write-capable credentials from third-party AI service environment",
+      "Aligns with `deploy.yml` workflow pattern which demonstrates token-only authentication is sufficient",
+      "Impact: High priority security improvement - eliminated credential exposure in workflow running every 30 minutes",
+      "No functionality changes - all monitoring features (PTR stats, profiler fetch, alert checking) continue to work with token-only authentication"
+    ],
+    "anchor": "03111---2025-11-09",
+    "slug": "v0-31-11"
+  },
+  {
     "version": "0.31.9",
     "date": "2025-11-09",
     "notes": [
