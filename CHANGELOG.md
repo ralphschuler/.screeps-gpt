@@ -18,6 +18,11 @@ All notable changes to this project are documented here. This changelog now main
   - Comprehensive documentation in `docs/runtime/bootstrap.md`
   - 37 unit tests validating bootstrap activation, completion, role minimums, and integration
   - Resolves #530: Implement bootstrap phase for optimal first-room resource utilization
+- **Operational Milestones Documentation**: Created `docs/operations/milestones.md` for tracking progression achievements
+  - Documented E46S58 controller level 2 upgrade milestone (2025-11-08, shard3)
+  - Established milestone tracking framework for controller upgrades, territorial expansion, and infrastructure development
+  - Includes automation recommendations for future milestone detection
+  - Related to #533: Monitoring verification for controller upgrade detection
 
 ## [0.43.1] - 2025-11-10
 
