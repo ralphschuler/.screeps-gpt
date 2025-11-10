@@ -73,3 +73,27 @@ globals.BODYPART_COST = {
   claim: 600,
   tough: 10
 };
+
+// Mock Game object for screeps-cartographer
+globals.Game = {
+  time: 0,
+  cpu: {
+    limit: 500,
+    tickLimit: 500,
+    bucket: 10000,
+    getUsed: () => 0
+  }
+};
+
+// Mock Memory object for screeps-cartographer
+globals.Memory = {};
+
+// Mock PathFinder for screeps-cartographer
+globals.PathFinder = {
+  search: () => ({
+    path: [],
+    ops: 0,
+    cost: 0,
+    incomplete: false
+  })
+};

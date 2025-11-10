@@ -177,6 +177,7 @@ interface BehaviorControllerOptions {
   cpuSafetyMargin?: number;
   maxCpuPerCreep?: number;
   useTaskSystem?: boolean;
+  pathfindingProvider?: "default" | "cartographer";
 }
 
 /**
@@ -195,10 +196,12 @@ export class BehaviorController {
     this.options = {
       cpuSafetyMargin: options.cpuSafetyMargin ?? 0.85,
       maxCpuPerCreep: options.maxCpuPerCreep ?? 1.5,
-      useTaskSystem: options.useTaskSystem ?? true
+      useTaskSystem: options.useTaskSystem ?? true,
+      pathfindingProvider: options.pathfindingProvider ?? "default"
     };
     this.taskManager = new TaskManager({
       cpuThreshold: this.options.cpuSafetyMargin,
+      pathfindingProvider: this.options.pathfindingProvider,
       logger: this.logger
     });
   }

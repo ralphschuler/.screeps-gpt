@@ -75,6 +75,7 @@
     "node-fetch": "^3.3.2",
     "nodemailer": "^7.0.10",
     "screeps-api": "^1.16.1",
+    "screeps-cartographer": "^1.8.13",
     "semver": "^7.7.3",
     "zod": "^4.1.12"
   },

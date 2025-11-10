@@ -1,9 +1,11 @@
 import { TaskRequest, TaskPriority } from "./TaskRequest";
 import { BuildAction, HarvestAction, RepairAction, TransferAction, UpgradeAction, WithdrawAction } from "./TaskAction";
+import { PathfindingManager } from "@runtime/pathfinding";
 
 export interface TaskManagerConfig {
   cpuThreshold?: number;
   logger?: Pick<Console, "log" | "warn">;
+  pathfindingProvider?: "default" | "cartographer";
 }
 
 /**
@@ -16,10 +18,23 @@ export class TaskManager {
   private nextTaskId = 0;
   private readonly cpuThreshold: number;
   private readonly logger: Pick<Console, "log" | "warn">;
+  private readonly pathfindingManager: PathfindingManager;
 
   public constructor(config: TaskManagerConfig = {}) {
     this.cpuThreshold = config.cpuThreshold ?? 0.8;
     this.logger = config.logger ?? console;
+    this.pathfindingManager = new PathfindingManager({
+      provider: config.pathfindingProvider ?? "default",
+      logger: this.logger
+    });
+  }
+
+  /**
+   * Helper to configure a task action with pathfinding manager
+   */
+  private configureTaskAction<T extends { setPathfindingManager(manager: PathfindingManager): void }>(action: T): T {
+    action.setPathfindingManager(this.pathfindingManager);
+    return action;
   }
 
   /**
@@ -144,7 +159,7 @@ export class TaskManager {
       );
 
       if (!existingTask) {
-        const task = new HarvestAction(source.id);
+        const task = this.configureTaskAction(new HarvestAction(source.id));
         const request = new TaskRequest(this.getNextTaskId(), task, TaskPriority.NORMAL, Game.time + 50);
         this.tasks.set(request.id, request);
       }
@@ -180,7 +195,7 @@ export class TaskManager {
         break;
       }
 
-      const task = new TransferAction(container.id, RESOURCE_ENERGY);
+      const task = this.configureTaskAction(new TransferAction(container.id, RESOURCE_ENERGY));
       // Higher priority than general transfer tasks to ensure harvesters deposit quickly
       const request = new TaskRequest(this.getNextTaskId(), task, TaskPriority.HIGH, Game.time + 50);
       this.tasks.set(request.id, request);
@@ -201,7 +216,7 @@ export class TaskManager {
       });
 
       if (!existingTask) {
-        const task = new BuildAction(site.id);
+        const task = this.configureTaskAction(new BuildAction(site.id));
         const priority = site.structureType === STRUCTURE_SPAWN ? TaskPriority.HIGH : TaskPriority.NORMAL;
         const request = new TaskRequest(this.getNextTaskId(), task, priority, Game.time + 100);
         this.tasks.set(request.id, request);
@@ -229,7 +244,7 @@ export class TaskManager {
       });
 
       if (!existingTask) {
-        const task = new RepairAction(structure.id);
+        const task = this.configureTaskAction(new RepairAction(structure.id));
         const request = new TaskRequest(this.getNextTaskId(), task, TaskPriority.LOW, Game.time + 50);
         this.tasks.set(request.id, request);
       }
@@ -246,7 +261,7 @@ export class TaskManager {
     );
 
     if (!existingTask) {
-      const task = new UpgradeAction(controller.id);
+      const task = this.configureTaskAction(new UpgradeAction(controller.id));
       const request = new TaskRequest(this.getNextTaskId(), task, TaskPriority.NORMAL, Game.time + 100);
       this.tasks.set(request.id, request);
     }
@@ -289,12 +304,12 @@ export class TaskManager {
       const target = needEnergy[0];
 
       // Create withdraw task
-      const withdrawTask = new WithdrawAction(source.id, RESOURCE_ENERGY);
+      const withdrawTask = this.configureTaskAction(new WithdrawAction(source.id, RESOURCE_ENERGY));
       const withdrawRequest = new TaskRequest(this.getNextTaskId(), withdrawTask, TaskPriority.HIGH, Game.time + 50);
       this.tasks.set(withdrawRequest.id, withdrawRequest);
 
       // Create transfer task
-      const transferTask = new TransferAction(target.id, RESOURCE_ENERGY);
+      const transferTask = this.configureTaskAction(new TransferAction(target.id, RESOURCE_ENERGY));
       const transferRequest = new TaskRequest(this.getNextTaskId(), transferTask, TaskPriority.HIGH, Game.time + 50);
       this.tasks.set(transferRequest.id, transferRequest);
     }
