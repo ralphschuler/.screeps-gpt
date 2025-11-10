@@ -9,7 +9,7 @@ The deployment workflow (`.github/workflows/deploy.yml`) automatically deploys t
 1. A version tag matching `v*` is pushed
 2. The Post Merge Release workflow completes successfully
 
-The deployment uses `scripts/deploy.ts` which:
+The deployment uses `packages/utilities/scripts/deploy.ts` which:
 
 1. Builds the project (`bun run build` → `dist/main.js`)
 2. Reads the compiled bundle
@@ -72,8 +72,8 @@ Build step failed or `dist/main.js` was not generated.
 **Resolution:**
 
 1. Check build logs for errors: `bun run build`
-2. Ensure `src/main.ts` exists and has no syntax errors
-3. Verify `buildProject.ts` configuration is correct
+2. Ensure `packages/bot/src/main.ts` exists and has no syntax errors
+3. Verify `packages/utilities/scripts/build.ts` configuration is correct
 4. Check disk space and file permissions
 
 ### Issue: Connection refused or timeout errors
@@ -459,7 +459,7 @@ if (!/^[a-zA-Z0-9_-]+$/.test(branch)) {
 
 ### Validation Script
 
-Create `scripts/validate-deploy-env.ts`:
+Create `packages/utilities/scripts/validate-deploy-env.ts`:
 
 ```typescript
 function validateDeploymentEnv(): void {
@@ -703,8 +703,8 @@ export SCREEPS_PATH="/"
 ## Related Files
 
 - `.github/workflows/deploy.yml` - Deployment automation
-- `scripts/deploy.ts` - Core deployment logic
-- `scripts/buildProject.ts` - Build compilation
+- `packages/utilities/scripts/deploy.ts` - Core deployment logic
+- `packages/utilities/scripts/build.ts` - Build compilation
 - `tests/regression/deploy-api-format.test.ts` - API format regression test
 - `tests/regression/deploy-env-vars.test.ts` - Environment variable handling test
 

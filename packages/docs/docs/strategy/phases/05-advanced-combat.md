@@ -152,7 +152,7 @@ class RangerRole {
 **Purpose**: Coordinate military creeps in formations
 
 ```typescript
-// src/runtime/military/SquadManager.ts
+// packages/bot/src/runtime/military/SquadManager.ts
 export class SquadManager {
   public createSquad(composition: SquadComposition): Squad {
     const squadId = `squad-${Game.time}`;
@@ -265,7 +265,7 @@ type FormationType = "tight" | "spread" | "line";
 **Purpose**: Automated defense coordination
 
 ```typescript
-// src/runtime/military/DefenseManager.ts
+// packages/bot/src/runtime/military/DefenseManager.ts
 export class DefenseManager {
   public run(room: Room): void {
     const threats = this.assessThreats(room);
@@ -341,7 +341,7 @@ export class DefenseManager {
 **Purpose**: Offensive room conquest
 
 ```typescript
-// src/runtime/military/SiegeManager.ts
+// packages/bot/src/runtime/military/SiegeManager.ts
 export class SiegeManager {
   public planSiege(targetRoom: string): SiegePlan {
     const intel = this.gatherIntelligence(targetRoom);
@@ -418,7 +418,7 @@ interface RoomIntelligence {
 **Shard Coordinator**:
 
 ```typescript
-// src/runtime/shard/ShardCoordinator.ts
+// packages/bot/src/runtime/shard/ShardCoordinator.ts
 export class ShardCoordinator {
   public run(): void {
     const currentShard = Game.shard.name;
@@ -490,7 +490,7 @@ interface ShardStatus {
 **Portal Manager**:
 
 ```typescript
-// src/runtime/shard/PortalManager.ts
+// packages/bot/src/runtime/shard/PortalManager.ts
 export class PortalManager {
   public findPortals(room: Room): StructurePortal[] {
     return room.find(FIND_STRUCTURES, {

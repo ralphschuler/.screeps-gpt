@@ -184,7 +184,7 @@ export EMAIL_HTML="<html><body>This is a test</body></html>"  # Optional
 export EMAIL_PRIORITY="high"  # Optional: high, normal, low
 
 # Run script
-npx tsx scripts/send-email-notification.ts
+npx tsx packages/utilities/scripts/send-email-notification.ts
 ```
 
 ### Programmatically
@@ -192,7 +192,7 @@ npx tsx scripts/send-email-notification.ts
 Import and use the notification function:
 
 ```typescript
-import { sendEmailNotification } from "./scripts/send-email-notification.js";
+import { sendEmailNotification } from "./packages/utilities/scripts/send-email-notification.js";
 
 await sendEmailNotification({
   to: "recipient@example.com",
@@ -305,7 +305,7 @@ Test email notifications manually:
 
 Rate limiting prevents spam but may delay urgent notifications:
 
-1. **Adjust thresholds:** Modify rate limits in `scripts/send-email-notification.ts`
+1. **Adjust thresholds:** Modify rate limits in `packages/utilities/scripts/send-email-notification.ts`
 2. **Prioritize alerts:** Focus on critical/high severity notifications only
 3. **Use email digest:** Batch multiple alerts into single email (future enhancement)
 

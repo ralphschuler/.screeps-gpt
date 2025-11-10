@@ -45,7 +45,7 @@ This guide provides detailed implementation tasks for Phase 2, which transitions
 **Implementation**: Create priority-based task queue
 
 ```typescript
-// src/runtime/tasks/TaskTypes.ts
+// packages/bot/src/runtime/tasks/TaskTypes.ts
 export interface Task {
   id: string;
   type: TaskType;
@@ -85,7 +85,7 @@ export const TaskPriority = {
 ```
 
 ```typescript
-// src/runtime/tasks/TaskQueue.ts
+// packages/bot/src/runtime/tasks/TaskQueue.ts
 export class TaskQueue {
   private tasks: Map<string, Task> = new Map();
 
@@ -137,7 +137,7 @@ export class TaskQueue {
 **Implementation**: Assign tasks to creeps based on proximity and capability
 
 ```typescript
-// src/runtime/tasks/TaskAssigner.ts
+// packages/bot/src/runtime/tasks/TaskAssigner.ts
 export class TaskAssigner {
   public assignTasks(creeps: Creep[], taskQueue: TaskQueue): void {
     const availableTasks = taskQueue.getAvailableTasks();
@@ -216,7 +216,7 @@ export class TaskAssigner {
 **Implementation**: Optimize energy distribution from storage
 
 ```typescript
-// src/runtime/managers/StorageManager.ts
+// packages/bot/src/runtime/managers/StorageManager.ts
 export class StorageManager {
   private readonly RESERVE_TARGET = 20000;
   private readonly WITHDRAW_THRESHOLD = 25000;
@@ -277,7 +277,7 @@ export class StorageManager {
 **Implementation**: Optimize link network for energy highways
 
 ```typescript
-// src/runtime/managers/LinkManager.ts
+// packages/bot/src/runtime/managers/LinkManager.ts
 export class LinkManager {
   public run(room: Room): void {
     const links = room.find(FIND_MY_STRUCTURES, {
@@ -336,7 +336,7 @@ export class LinkManager {
 **Implementation**: Automated defense and repair
 
 ```typescript
-// src/runtime/managers/TowerManager.ts
+// packages/bot/src/runtime/managers/TowerManager.ts
 export class TowerManager {
   private readonly REPAIR_THRESHOLD = 0.7; // Repair if <70% hits
 

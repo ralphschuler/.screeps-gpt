@@ -613,14 +613,14 @@ Quality checks are split into separate guard workflows for better granularity an
 
 - Trigger: Every 30 minutes (cron schedule) + on "Deploy Screeps AI" completion + manual dispatch.
 - Behaviour: Comprehensive autonomous monitoring workflow combining strategic analysis with PTR telemetry monitoring. Copilot performs multi-phase analysis:
-  - **PTR Telemetry Collection**: Fetches stats from Screeps API using `scripts/fetch-screeps-stats.mjs`, stores in `reports/screeps-stats/latest.json`
+  - **PTR Telemetry Collection**: Fetches stats from Screeps API using `packages/utilities/scripts/fetch-screeps-stats.mjs`, stores in `reports/screeps-stats/latest.json`
   - **Bot Performance Analysis**: Direct console access via screeps-mcp MCP server to evaluate spawning, CPU usage, energy economy, RCL progress, defense capabilities, and strategic execution
   - **PTR Anomaly Detection**: Analyzes telemetry for critical conditions (CPU >95%, >80%, low energy) with concrete evidence requirements
   - **Repository Health Analysis**: GitHub MCP server integration to assess codebase quality, automation effectiveness, CI/CD health, and development velocity
   - **Strategic Decision Making**: Intelligent prioritization of development tasks based on game performance impact and infrastructure health
   - **Autonomous Issue Management**: Creates, updates, and closes issues with evidence-based recommendations (strategic issues prefixed with `[Autonomous Monitor]`, PTR anomalies with `PTR:`)
   - **Strategic Reporting**: Generates comprehensive analysis report with bot health score (0-100), PTR status, top priorities, and actionable recommendations
-  - **Alert Notifications**: Executes `scripts/check-ptr-alerts.ts` to send push notifications for critical/high severity PTR alerts
+  - **Alert Notifications**: Executes `packages/utilities/scripts/check-ptr-alerts.ts` to send push notifications for critical/high severity PTR alerts
 - MCP Integration: Uses three MCP servers for comprehensive analysis:
   - `github` - Repository operations (issues, PRs, code search, workflow logs)
   - `screeps-mcp` - Bot console access (commands, memory, room data) via `@ralphschuler/screeps-api-mcp`
@@ -647,18 +647,18 @@ The system tracks and persists several types of reports:
    - Telemetry snapshots from Screeps Stats API or console fallback
    - CPU usage, energy levels, and resource metrics
    - Saved with timestamps for historical tracking
-   - Managed by `scripts/check-ptr-alerts.ts`
+   - Managed by `packages/utilities/scripts/check-ptr-alerts.ts`
 
 2. **System Evaluation Reports** (`reports/evaluations/`)
    - Runtime health assessments from `SystemEvaluator`
    - Test results, lint errors, coverage metrics
    - Findings and recommendations for improvements
-   - Managed by `scripts/evaluate-system.ts`
+   - Managed by `packages/utilities/scripts/evaluate-system.ts`
 
 3. **Profiler Snapshots** (`reports/profiler/`)
    - CPU profiling data from Memory.profiler
    - Function-level performance metrics
-   - Managed by `scripts/fetch-profiler-console.ts`
+   - Managed by `packages/utilities/scripts/fetch-profiler-console.ts`
 
 4. **Copilot Workflow Logs** (`reports/copilot/`)
    - Monitoring and analysis reports
@@ -667,7 +667,7 @@ The system tracks and persists several types of reports:
 
 ### Storage Infrastructure
 
-The report storage system is implemented in `scripts/lib/report-storage.ts` and provides:
+The report storage system is implemented in `packages/utilities/scripts/lib/report-storage.ts` and provides:
 
 - **Timestamped Storage**: Reports saved with ISO 8601 timestamps in filenames
 - **Type-based Organization**: Reports grouped by type in subdirectories
@@ -680,7 +680,7 @@ The report storage system is implemented in `scripts/lib/report-storage.ts` and 
 
 ### Historical Comparison
 
-The comparison system is implemented in `scripts/lib/report-comparison.ts` and provides:
+The comparison system is implemented in `packages/utilities/scripts/lib/report-comparison.ts` and provides:
 
 **PTR Stats Comparison**:
 
@@ -719,7 +719,7 @@ Default configuration (configurable per report type):
 - **Maximum Age**: 30 days
 - **Minimum Reports**: 10 (always kept regardless of age)
 - **Cleanup Frequency**: On each monitoring/evaluation run
-- **Manual Cleanup**: `npx tsx scripts/cleanup-old-reports.ts`
+- **Manual Cleanup**: `npx tsx packages/utilities/scripts/cleanup-old-reports.ts`
 
 The retention policy ensures historical data availability while managing repository size by removing old reports that exceed both the age threshold and minimum count requirement.
 
@@ -744,8 +744,8 @@ The retention policy ensures historical data availability while managing reposit
 **Load and compare PTR stats**:
 
 ```typescript
-import { listReports, loadReport } from "./scripts/lib/report-storage";
-import { comparePTRStats, formatPTRTrendReport } from "./scripts/lib/report-comparison";
+import { listReports, loadReport } from "./packages/utilities/scripts/lib/report-storage";
+import { comparePTRStats, formatPTRTrendReport } from "./packages/utilities/scripts/lib/report-comparison";
 
 // Load the two most recent reports
 const reports = await listReports("ptr-stats");
@@ -759,7 +759,7 @@ console.log(formatPTRTrendReport(comparison));
 **Save a report**:
 
 ```typescript
-import { saveReport } from "./scripts/lib/report-storage";
+import { saveReport } from "./packages/utilities/scripts/lib/report-storage";
 
 const report = {
   tick: 1000,
@@ -774,7 +774,7 @@ console.log(`Report saved to: ${path}`);
 **Apply retention policy**:
 
 ```typescript
-import { applyRetentionPolicy } from "./scripts/lib/report-storage";
+import { applyRetentionPolicy } from "./packages/utilities/scripts/lib/report-storage";
 
 const deleted = await applyRetentionPolicy("ptr-stats", {
   maxAgeDays: 30,
@@ -947,7 +947,7 @@ All credentials must be stored as GitHub Actions secrets and referenced in workf
 
 ### Current Integrations
 
-- **screeps-monitoring.yml**: Uses the `scripts/fetch-screeps-stats.mjs` script to fetch telemetry from the Screeps REST API and integrates with screeps-mcp MCP server for console access
+- **screeps-monitoring.yml**: Uses the `packages/utilities/scripts/fetch-screeps-stats.mjs` script to fetch telemetry from the Screeps REST API and integrates with screeps-mcp MCP server for console access
 
 See `AGENTS.md` for detailed MCP server capabilities and best practices.
 

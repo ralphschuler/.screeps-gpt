@@ -35,7 +35,7 @@ This guide covers empire-level coordination, room claiming, colonization, and in
 **Purpose**: Coordinate multiple rooms and allocate empire-wide resources
 
 ```typescript
-// src/runtime/empire/EmpireManager.ts
+// packages/bot/src/runtime/empire/EmpireManager.ts
 export class EmpireManager {
   public run(): void {
     const rooms = this.getManagedRooms();
@@ -250,7 +250,7 @@ interface ResourceDistribution {
 **Purpose**: Handle room claiming and initial colonization
 
 ```typescript
-// src/runtime/empire/ColonyManager.ts
+// packages/bot/src/runtime/empire/ColonyManager.ts
 export class ColonyManager {
   public claimRoom(targetRoom: string, homeRoom: Room): void {
     // Create claimer creep if needed
@@ -333,7 +333,7 @@ interface ColonyStatus {
 **Purpose**: Explore and evaluate potential expansion rooms
 
 ```typescript
-// src/runtime/empire/ScoutManager.ts
+// packages/bot/src/runtime/empire/ScoutManager.ts
 export class ScoutManager {
   public scoutRoom(roomName: string): void {
     // Create scout creep if needed

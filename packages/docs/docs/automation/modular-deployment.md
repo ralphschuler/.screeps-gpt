@@ -109,7 +109,7 @@ Single bundle mode bundles everything into one file, while modular mode creates 
 
 ### Module Upload
 
-The deployment script (`scripts/deploy.ts`):
+The deployment script (`packages/utilities/scripts/deploy.ts`):
 
 1. Scans `dist/` directory for all `.js` files
 2. Reads each module's content

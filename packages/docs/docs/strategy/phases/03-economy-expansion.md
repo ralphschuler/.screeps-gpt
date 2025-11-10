@@ -26,7 +26,7 @@ This guide covers advanced economy features including terminal management, miner
 **Purpose**: Inter-room resource transfer and market integration
 
 ```typescript
-// src/runtime/managers/TerminalManager.ts
+// packages/bot/src/runtime/managers/TerminalManager.ts
 export class TerminalManager {
   private readonly ENERGY_RESERVE = 20000;
   private readonly TRANSFER_AMOUNT = 1000;
@@ -78,7 +78,7 @@ export class TerminalManager {
 **Purpose**: Automate mineral reactions and compound production
 
 ```typescript
-// src/runtime/managers/LabManager.ts
+// packages/bot/src/runtime/managers/LabManager.ts
 export class LabManager {
   public run(room: Room): void {
     const labs = room.find(FIND_MY_STRUCTURES, {
@@ -141,7 +141,7 @@ export class LabManager {
 **Purpose**: Automated market analysis and trading
 
 ```typescript
-// src/runtime/managers/MarketManager.ts
+// packages/bot/src/runtime/managers/MarketManager.ts
 export class MarketManager {
   private readonly PRICE_HISTORY_TICKS = 1000;
   private readonly PROFIT_MARGIN = 1.2; // 20% markup
@@ -209,7 +209,7 @@ export class MarketManager {
 **Purpose**: Automate factory production
 
 ```typescript
-// src/runtime/managers/FactoryManager.ts
+// packages/bot/src/runtime/managers/FactoryManager.ts
 export class FactoryManager {
   public run(room: Room): void {
     const factory = room.find(FIND_MY_STRUCTURES, {

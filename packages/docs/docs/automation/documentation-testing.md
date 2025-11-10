@@ -49,7 +49,7 @@ bun run test:e2e tests/e2e/docs-site.test.ts
 
 ### 1. Build Script Validation (`tests/unit/build-hexo-site.test.ts`)
 
-Tests the `scripts/build-hexo-site.ts` build script:
+Tests the `packages/utilities/scripts/build-hexo-site.ts` build script:
 
 - ✅ Hexo initialization and configuration
 - ✅ Plugin loading (renderers, generators)
@@ -122,7 +122,7 @@ The `guard-test-docs.yml` workflow runs automatically on PRs that modify:
 
 - Documentation source files (`docs-build/`, `source/`)
 - Hexo configuration (`_config.yml`)
-- Build scripts (`scripts/build-hexo-site.ts`)
+- Build scripts (`packages/utilities/scripts/build-hexo-site.ts`)
 - Test files
 - Documentation workflow (`docs-pages.yml`)
 
@@ -252,7 +252,7 @@ bun run test:e2e tests/e2e/docs-site.test.ts
 
 - [GitHub Actions Workflow](../.github/workflows/docs-pages.yml)
 - [Hexo Configuration](_config.yml)
-- [Build Script](scripts/build-hexo-site.ts)
+- [Build Script](packages/utilities/scripts/build-hexo-site.ts)
 - [Documentation Source](source/)
 
 ## Related Issues

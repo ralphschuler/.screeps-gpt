@@ -27,13 +27,13 @@ The workflow executes in seven mandatory phases:
 
 **PTR Telemetry Collection - Resilient Architecture (Deployed 2025-11-05):**
 
-The workflow executes the resilient telemetry fetch script (`scripts/fetch-resilient-telemetry.ts`) which:
+The workflow executes the resilient telemetry fetch script (`packages/utilities/scripts/fetch-resilient-telemetry.ts`) which:
 
-- **Primary Source**: Stats API via `scripts/fetch-screeps-stats.mjs`
+- **Primary Source**: Stats API via `packages/utilities/scripts/fetch-screeps-stats.mjs`
   - Historical time-series data from `/api/user/stats` endpoint
   - Uses `SCREEPS_STATS_TOKEN` or `SCREEPS_TOKEN`
   - Provides comprehensive performance metrics
-- **Fallback Source**: Console Telemetry via `scripts/fetch-console-telemetry.ts`
+- **Fallback Source**: Console Telemetry via `packages/utilities/scripts/fetch-console-telemetry.ts`
   - Real-time bot operational data via console commands
   - Activates automatically when Stats API fails
   - Uses `SCREEPS_TOKEN` for console access
@@ -106,7 +106,7 @@ Analyzes the PTR telemetry snapshot for critical performance anomalies requiring
 - All severity labels must be justified with specific impact assessment
 - All analysis must be reproducible with stored snapshot data
 
-After Copilot analysis completes, the workflow also executes `scripts/check-ptr-alerts.ts` which:
+After Copilot analysis completes, the workflow also executes `packages/utilities/scripts/check-ptr-alerts.ts` which:
 
 - Reads the PTR stats snapshot from `reports/screeps-stats/latest.json`
 - Analyzes for high CPU usage (>80% sustained), critical CPU (>95%), and low energy reserves

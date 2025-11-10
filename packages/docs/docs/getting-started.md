@@ -366,11 +366,14 @@ Understanding the repository layout helps you navigate and contribute effectivel
 │   ├── operations/   # Operational runbooks and troubleshooting
 │   ├── runtime/      # Bot runtime documentation
 │   └── strategy/     # Game strategy and planning
-├── scripts/          # Build, deploy, and automation scripts (TypeScript)
-├── src/              # Source code for the Screeps AI bot
-│   ├── main.ts       # Entry point for the bot
-│   ├── runtime/      # Runtime system components
-│   └── shared/       # Shared types and contracts
+├── packages/         # Monorepo package structure
+│   ├── bot/          # Core Screeps AI implementation
+│   │   └── src/      # Source code (main.ts, runtime/, shared/)
+│   ├── utilities/    # Build, deploy, and automation scripts
+│   │   └── scripts/  # TypeScript utility scripts
+│   ├── docs/         # Hexo documentation site
+│   ├── actions/      # GitHub composite actions (placeholder)
+│   └── console/      # Screeps console integration (placeholder)
 ├── tests/            # Test suites
 │   ├── unit/         # Unit tests (Vitest)
 │   ├── e2e/          # End-to-end tests
@@ -395,12 +398,12 @@ Understanding the repository layout helps you navigate and contribute effectivel
 | `DOCS.md`           | Developer guide and resources     |
 | `TASKS.md`          | Active development tasks          |
 
-### Source Code Structure (`src/`)
+### Source Code Structure (`packages/bot/src/`)
 
-The `src/` directory contains the core bot implementation:
+The `packages/bot/src/` directory contains the core bot implementation:
 
 ```
-src/
+packages/bot/src/
 ├── main.ts                    # Bot entry point and main loop
 ├── runtime/
 │   ├── bootstrap/             # Kernel initialization and system wiring
@@ -417,7 +420,7 @@ src/
     └── types/                 # Shared type declarations
 ```
 
-### Script Files (`scripts/`)
+### Script Files (`packages/utilities/scripts/`)
 
 Automation and build scripts executed by Bun:
 
@@ -429,7 +432,7 @@ Automation and build scripts executed by Bun:
 | `evaluate-system.ts` | Generate system health reports |
 | `test-actions.ts`    | Dry-run workflows locally      |
 
-### Documentation Structure (`docs/`)
+### Documentation Structure (`packages/docs/docs/`)
 
 | Directory     | Contents                                |
 | ------------- | --------------------------------------- |
@@ -440,18 +443,18 @@ Automation and build scripts executed by Bun:
 
 ## Runtime Architecture
 
-- `src/runtime/bootstrap/` – Kernel wiring that orchestrates memory maintenance, behavioural control, performance tracking, and evaluation.
-- `src/runtime/behavior/` – High-level creep role orchestration and spawn logic.
-- `src/runtime/memory/` – Helpers to keep `Memory` consistent between ticks.
-- `src/runtime/metrics/` – CPU usage and execution accounting.
-- `src/runtime/respawn/` – Automatic detection and handling of respawn scenarios when all spawns are lost.
-- `src/runtime/evaluation/` – Generates health reports and improvement recommendations from runtime and repository signals.
-- `src/shared/` – Shared contracts for metrics, evaluation results, and repository telemetry.
-- `scripts/` – Node.js 18–22 compatible TypeScript automation scripts executed through Bun (build, deploy, version bump, repository evaluation).
+- `packages/bot/src/runtime/bootstrap/` – Kernel wiring that orchestrates memory maintenance, behavioural control, performance tracking, and evaluation.
+- `packages/bot/src/runtime/behavior/` – High-level creep role orchestration and spawn logic.
+- `packages/bot/src/runtime/memory/` – Helpers to keep `Memory` consistent between ticks.
+- `packages/bot/src/runtime/metrics/` – CPU usage and execution accounting.
+- `packages/bot/src/runtime/respawn/` – Automatic detection and handling of respawn scenarios when all spawns are lost.
+- `packages/bot/src/runtime/evaluation/` – Generates health reports and improvement recommendations from runtime and repository signals.
+- `packages/bot/src/shared/` – Shared contracts for metrics, evaluation results, and repository telemetry.
+- `packages/utilities/scripts/` – Node.js 18–22 compatible TypeScript automation scripts executed through Bun (build, deploy, version bump, repository evaluation).
 - `tests/` – Vitest suites split into unit, e2e, and regression directories.
 - `reports/` – Persistent analysis artifacts (e.g., `system-evaluation.json`).
 
-The main loop lives in `src/main.ts` and delegates to a kernel that can be exercised in tests or tooling. The system automatically detects when all spawns are lost and flags critical respawn conditions in evaluation reports—see [`operations/respawn-handling.md`](operations/respawn-handling.md) for details.
+The main loop lives in `packages/bot/src/main.ts` and delegates to a kernel that can be exercised in tests or tooling. The system automatically detects when all spawns are lost and flags critical respawn conditions in evaluation reports—see [`operations/respawn-handling.md`](operations/respawn-handling.md) for details.
 
 ## Required Secrets
 
@@ -486,7 +489,7 @@ See [`automation/push-notifications.md`](automation/push-notifications.md) for d
 
 ## Repository Evaluation Pipeline
 
-`scripts/evaluate-system.ts` aggregates coverage output and environment hints into a `RepositorySignal`, runs the same `SystemEvaluator` that powers the runtime health checks, and records the result in `reports/system-evaluation.json`. Use this command locally after running the test + coverage suite to understand whether the current code is considered ready for deployment and which improvements are recommended.
+`packages/utilities/scripts/evaluate-system.ts` aggregates coverage output and environment hints into a `RepositorySignal`, runs the same `SystemEvaluator` that powers the runtime health checks, and records the result in `reports/system-evaluation.json`. Use this command locally after running the test + coverage suite to understand whether the current code is considered ready for deployment and which improvements are recommended.
 
 ## Troubleshooting
 
@@ -779,7 +782,7 @@ See [CPU Optimization Strategies](runtime/operations/cpu-optimization-strategies
 bun run build  # Much faster than npm
 
 # Run specific tests instead of full suite
-bun run test:unit -- src/runtime/behavior
+bun run test:unit -- packages/bot/src/runtime/behavior
 
 # Use Docker to avoid local environment issues
 bun run docker:build:ai

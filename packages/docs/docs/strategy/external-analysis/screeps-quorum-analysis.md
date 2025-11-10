@@ -309,7 +309,7 @@ src/
 
 **Screeps Quorum Approach**:
 \`\`\`javascript
-// src/action/harvest.js
+// packages/bot/src/action/harvest.js
 module.exports = function(creep, target) {
 if (creep.harvest(target) === ERR_NOT_IN_RANGE) {
 creep.moveTo(target);
@@ -354,7 +354,7 @@ return result;
 
 **Screeps Quorum Approach**:
 \`\`\`javascript
-// src/config/constants.js
+// packages/bot/src/config/constants.js
 module.exports = {
 ROLE_PRIORITIES: {
 harvester: 1,
@@ -418,7 +418,7 @@ return Memory.config?.roleLimits?.[role] ?? this.SPAWN_LIMITS[role] ?? 1;
 
 **Screeps Quorum Approach**:
 \`\`\`javascript
-// src/config/version.js
+// packages/bot/src/config/version.js
 module.exports = {
 VERSION: '2.1.3',
 DEPLOYED_AT: Date.now(),
@@ -444,7 +444,7 @@ taskSystemEnabled: **TASK_SYSTEM_ENABLED**
 }
 };
 
-// src/runtime/bootstrap/BootstrapKernel.ts
+// packages/bot/src/runtime/bootstrap/BootstrapKernel.ts
 console.log(\`[Kernel] Screeps GPT v\${VERSION_INFO.version} (\${VERSION_INFO.commitSha.slice(0, 7)})\`);
 \`\`\`
 
@@ -605,7 +605,7 @@ const violations: string[] = [];
 **Proposal**:
 \`\`\`typescript
 // Proposed: Export metrics to JSON file during build
-// scripts/export-metrics.ts
+// packages/utilities/scripts/export-metrics.ts
 export function exportMetrics(): void {
 const metrics = {
 version: VERSION_INFO.version,

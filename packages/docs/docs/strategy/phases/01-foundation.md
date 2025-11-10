@@ -206,7 +206,7 @@ Place containers adjacent to sources and spawns to:
 **Task 2.1**: Create ContainerPlacement utility
 
 ```typescript
-// src/runtime/behavior/infrastructure/ContainerPlacement.ts
+// packages/bot/src/runtime/behavior/infrastructure/ContainerPlacement.ts
 
 export class ContainerPlacement {
   /**
@@ -359,7 +359,7 @@ Automatically plan and build roads connecting:
 **Task 3.1**: Create RoadPlanning utility
 
 ```typescript
-// src/runtime/behavior/infrastructure/RoadPlanning.ts
+// packages/bot/src/runtime/behavior/infrastructure/RoadPlanning.ts
 
 export class RoadPlanning {
   public planRoadNetwork(room: Room): RoomPosition[] {
