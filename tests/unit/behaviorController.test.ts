@@ -1094,8 +1094,9 @@ describe("BehaviorController", () => {
       const memory = {} as Memory;
       const roleCounts = {};
 
-      // Execute with bootstrap phase active
-      const result = controller.execute(game, memory, roleCounts, true);
+      // Execute with bootstrap phase active - pass bootstrap role minimums
+      const bootstrapMinimums = { harvester: 6, upgrader: 1, builder: 0 };
+      const result = controller.execute(game, memory, roleCounts, bootstrapMinimums);
 
       // Should spawn harvesters prioritized (6 harvesters, 1 upgrader, 0 builders)
       const harvesterSpawns = result.spawnedCreeps.filter(name => name.startsWith("harvester-"));
@@ -1113,8 +1114,8 @@ describe("BehaviorController", () => {
       const memory = {} as Memory;
       const roleCounts = {};
 
-      // Execute without bootstrap phase (normal operation)
-      const result = controller.execute(game, memory, roleCounts, false);
+      // Execute without bootstrap phase (normal operation) - pass empty minimums
+      const result = controller.execute(game, memory, roleCounts, {});
 
       // Should spawn at least one creep with normal minimums (default is 4 harvesters)
       // Note: Mock spawn can only spawn one creep per tick
@@ -1132,7 +1133,8 @@ describe("BehaviorController", () => {
       const roleCounts = { harvester: 3, upgrader: 0, builder: 0 };
 
       // Execute with bootstrap phase active and some harvesters already present
-      const result = controller.execute(game, memory, roleCounts, true);
+      const bootstrapMinimums = { harvester: 6, upgrader: 1, builder: 0 };
+      const result = controller.execute(game, memory, roleCounts, bootstrapMinimums);
 
       // Should spawn to reach bootstrap minimums (6 harvesters total)
       const harvesterSpawns = result.spawnedCreeps.filter(name => name.startsWith("harvester-"));
@@ -1147,7 +1149,8 @@ describe("BehaviorController", () => {
       const roleCounts = { harvester: 6, upgrader: 1, builder: 0 };
 
       // Execute with bootstrap phase active but minimums already met
-      const result = controller.execute(game, memory, roleCounts, true);
+      const bootstrapMinimums = { harvester: 6, upgrader: 1, builder: 0 };
+      const result = controller.execute(game, memory, roleCounts, bootstrapMinimums);
 
       // Should not spawn any new creeps
       expect(result.spawnedCreeps.length).toBe(0);

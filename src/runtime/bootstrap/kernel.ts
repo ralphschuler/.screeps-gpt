@@ -241,7 +241,9 @@ export class Kernel {
       this.bootstrapManager.completeBootstrap(game, memory, bootstrapStatus.reason);
     }
 
-    const behaviorSummary = this.behavior.execute(game, memory, roleCounts, bootstrapStatus.isActive);
+    // Get bootstrap role minimums from manager if bootstrap is active
+    const bootstrapMinimums = this.bootstrapManager.getBootstrapRoleMinimums(bootstrapStatus.isActive);
+    const behaviorSummary = this.behavior.execute(game, memory, roleCounts, bootstrapMinimums);
     const snapshot = this.tracker.end(game, behaviorSummary);
     this.statsCollector.collect(game, memory, snapshot);
     const result = this.evaluator.evaluateAndStore(memory, snapshot, repository, memoryUtilization);
