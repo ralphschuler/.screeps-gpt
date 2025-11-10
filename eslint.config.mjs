@@ -18,7 +18,19 @@ const __dirname = dirname(__filename);
 export default [
   // Global ignores (applies to all configs)
   {
-    ignores: ["dist/**", "build/**", "coverage/**", "node_modules/**", "*.config.ts", "eslint.config.mjs"]
+    ignores: [
+      "dist/**",
+      "build/**",
+      "coverage/**",
+      "node_modules/**",
+      "*.config.ts",
+      "eslint.config.mjs",
+      "src/**",
+      "scripts/**",
+      "docs/**",
+      "source/**",
+      "themes/**"
+    ]
   },
 
   // TypeScript files configuration (memory-optimized)
@@ -55,7 +67,7 @@ export default [
 
   // Memory-intensive type-checking rules for core source files only
   {
-    files: ["src/**/*.ts"],
+    files: ["packages/bot/src/**/*.ts"],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
@@ -76,7 +88,7 @@ export default [
 
   // Stricter type safety rules for runtime files
   {
-    files: ["src/runtime/**/*.ts"],
+    files: ["packages/bot/src/runtime/**/*.ts"],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
@@ -102,7 +114,7 @@ export default [
   // Exception: Profiler initialization in main.ts requires unsafe operations for global exposure.
   // These rules are disabled only for this file to allow integration with the profiler system.
   {
-    files: ["src/main.ts"],
+    files: ["packages/bot/src/main.ts"],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
@@ -127,7 +139,7 @@ export default [
 
   // Override for script files (*.mjs)
   {
-    files: ["scripts/**/*.mjs"],
+    files: ["packages/utilities/scripts/**/*.mjs"],
     languageOptions: {
       parser: tsParser,
       parserOptions: {

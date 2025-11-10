@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { MemoryMigrationManager } from "../../src/runtime/memory/MemoryMigrationManager";
+import { MemoryMigrationManager } from "../../packages/bot/src/runtime/memory/MemoryMigrationManager";
 
 describe("Memory Migration Safety", () => {
   let manager: MemoryMigrationManager;

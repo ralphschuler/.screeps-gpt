@@ -9,7 +9,7 @@ import {
   loadReport,
   applyRetentionPolicy,
   getReportsInRange
-} from "../../scripts/lib/report-storage";
+} from "../../packages/utilities/scripts/lib/report-storage";
 
 const TEST_REPORTS_DIR = resolve("test-reports-temp");
 

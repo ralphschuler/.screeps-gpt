@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
-import { MemoryGarbageCollector } from "../../src/runtime/memory/MemoryGarbageCollector";
-import { MemoryMigrationManager } from "../../src/runtime/memory/MemoryMigrationManager";
-import { MemoryUtilizationMonitor } from "../../src/runtime/memory/MemoryUtilizationMonitor";
+import { MemoryGarbageCollector } from "../../packages/bot/src/runtime/memory/MemoryGarbageCollector";
+import { MemoryMigrationManager } from "../../packages/bot/src/runtime/memory/MemoryMigrationManager";
+import { MemoryUtilizationMonitor } from "../../packages/bot/src/runtime/memory/MemoryUtilizationMonitor";
 
 describe("Memory Management System", () => {
   describe("MemoryGarbageCollector", () => {

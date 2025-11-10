@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { MemoryValidator } from "../../src/runtime/memory/MemoryValidator";
+import { MemoryValidator } from "../../packages/bot/src/runtime/memory/MemoryValidator";
 
 /**
  * Regression test for TypeError: Cannot convert object to primitive value

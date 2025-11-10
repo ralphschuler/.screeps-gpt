@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { PixelGenerator } from "../../src/runtime/metrics/PixelGenerator";
+import { PixelGenerator } from "../../packages/bot/src/runtime/metrics/PixelGenerator";
 
 describe("PixelGenerator", () => {
   describe("Pixel Generation", () => {

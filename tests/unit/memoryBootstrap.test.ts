@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { MemoryManager } from "../../src/runtime/memory/MemoryManager";
+import { MemoryManager } from "../../packages/bot/src/runtime/memory/MemoryManager";
 
 describe("Memory Bootstrapping", () => {
   describe("Memory Initialization", () => {

@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { PathfindingManager, DefaultPathfinder, CartographerPathfinder } from "../../src/runtime/pathfinding";
+import {
+  PathfindingManager,
+  DefaultPathfinder,
+  CartographerPathfinder
+} from "../../packages/bot/src/runtime/pathfinding";
 
 // Mock screeps-cartographer at the top level
 vi.mock("screeps-cartographer", () => ({
