@@ -5,6 +5,25 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Changed
+
+- **Monorepo Restructuring**: Reorganized repository into packages-based monorepo structure
+  - Created `/packages` directory with bot, docs, utilities, actions, and console packages
+  - Migrated `src/` to `packages/bot/src/` for core Screeps AI implementation
+  - Migrated `scripts/` to `packages/utilities/scripts/` for build tooling and utilities
+  - Migrated `docs/`, `source/`, `themes/`, `_config.yml` to `packages/docs/` for documentation site
+  - Configured Bun workspaces in root `package.json` for monorepo dependency management
+  - Updated TypeScript path aliases to reference new package locations
+  - Updated ESLint configuration to lint new package structure
+  - Updated vitest configuration for new source paths
+  - Updated all GitHub workflows to reference new package paths
+  - Updated all import paths in tests and utilities
+  - All 580 tests passing, lint passing, build working
+  - Improved code organization with clear package boundaries
+  - Enables independent package versioning and deployment
+  - Better separation of concerns across codebase
+  - Resolves #[issue-number]: Restructure repository into monorepo with packages organization
+
 ## [0.44.0] - 2025-11-10
 
 ### Added
