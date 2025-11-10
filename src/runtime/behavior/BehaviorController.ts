@@ -2,6 +2,7 @@ import type { BehaviorSummary } from "@shared/contracts";
 import type { CreepLike, GameContext, SpawnLike } from "@runtime/types/GameContext";
 import { TaskManager } from "@runtime/tasks";
 import { profile } from "@profiler";
+import { CreepCommunicationManager } from "./CreepCommunicationManager";
 
 type RoleName = "harvester" | "upgrader" | "builder" | "remoteMiner" | "stationaryHarvester" | "hauler";
 
@@ -178,7 +179,11 @@ interface BehaviorControllerOptions {
   maxCpuPerCreep?: number;
   useTaskSystem?: boolean;
   pathfindingProvider?: "default" | "cartographer";
+  enableCreepCommunication?: boolean;
 }
+
+// Global communication manager instance for role functions to access
+let communicationManager: CreepCommunicationManager | null = null;
 
 /**
  * Coordinates spawning and per-tick behaviour execution for every registered role.
@@ -190,6 +195,7 @@ export class BehaviorController {
   private readonly options: Required<BehaviorControllerOptions>;
   private readonly taskManager: TaskManager;
   private readonly logger: Pick<Console, "log" | "warn">;
+  private readonly communicationManager: CreepCommunicationManager;
 
   public constructor(options: BehaviorControllerOptions = {}, logger: Pick<Console, "log" | "warn"> = console) {
     this.logger = logger;
@@ -197,13 +203,16 @@ export class BehaviorController {
       cpuSafetyMargin: options.cpuSafetyMargin ?? 0.85,
       maxCpuPerCreep: options.maxCpuPerCreep ?? 1.5,
       useTaskSystem: options.useTaskSystem ?? true,
-      pathfindingProvider: options.pathfindingProvider ?? "default"
+      pathfindingProvider: options.pathfindingProvider ?? "default",
+      enableCreepCommunication: options.enableCreepCommunication ?? true
     };
     this.taskManager = new TaskManager({
       cpuThreshold: this.options.cpuSafetyMargin,
       pathfindingProvider: this.options.pathfindingProvider,
       logger: this.logger
     });
+    this.communicationManager = new CreepCommunicationManager();
+    communicationManager = this.communicationManager;
   }
 
   /**
@@ -215,6 +224,19 @@ export class BehaviorController {
     if (typeof memory.creepCounter !== "number") {
       memory.creepCounter = 0;
     }
+
+    // Update communication configuration from Memory
+    if (this.options.enableCreepCommunication && memory.creepCommunication) {
+      this.communicationManager.updateConfig({
+        verbosity: memory.creepCommunication.verbosity,
+        enableRoomVisuals: memory.creepCommunication.enableRoomVisuals
+      });
+    } else if (!this.options.enableCreepCommunication) {
+      this.communicationManager.updateConfig({ verbosity: "disabled" });
+    }
+
+    // Reset communication manager tick counter
+    this.communicationManager.resetTick(game.time);
 
     const spawned: string[] = [];
     this.ensureRoleMinimums(game, memory, roleCounts, spawned);
@@ -452,6 +474,13 @@ export class BehaviorController {
   }
 }
 
+/**
+ * Helper to get communication manager instance
+ */
+function getComm(): CreepCommunicationManager | null {
+  return communicationManager;
+}
+
 function ensureHarvesterTask(memory: HarvesterMemory, creep: CreepLike): HarvesterTask {
   if (memory.task !== HARVEST_TASK && memory.task !== DELIVER_TASK && memory.task !== UPGRADE_TASK) {
     memory.task = HARVEST_TASK;
@@ -472,8 +501,16 @@ function ensureHarvesterTask(memory: HarvesterMemory, creep: CreepLike): Harvest
 function runHarvester(creep: ManagedCreep): string {
   const memory = creep.memory as HarvesterMemory;
   const task = ensureHarvesterTask(memory, creep);
+  const comm = getComm();
 
   if (task === HARVEST_TASK) {
+    // Communicate status change when transitioning to full
+    if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+      comm?.say(creep, "full");
+    } else {
+      comm?.say(creep, "harvest");
+    }
+
     const sources = creep.room.find(FIND_SOURCES_ACTIVE) as Source[];
     const source = sources.length > 0 ? (creep.pos.findClosestByPath(sources) ?? sources[0]) : null;
     if (source) {
@@ -486,6 +523,8 @@ function runHarvester(creep: ManagedCreep): string {
   }
 
   // Priority 1: Fill spawns and extensions
+  comm?.say(creep, "deliver");
+
   const criticalTargets = creep.room.find(FIND_STRUCTURES, {
     filter: (structure: AnyStructure) =>
       (structure.structureType === STRUCTURE_SPAWN || structure.structureType === STRUCTURE_EXTENSION) &&
@@ -520,6 +559,8 @@ function runHarvester(creep: ManagedCreep): string {
 
   // Priority 3: Upgrade controller
   memory.task = UPGRADE_TASK;
+  comm?.say(creep, "upgrade");
+
   const controller = creep.room.controller;
   if (controller) {
     const upgrade = creep.upgradeController(controller);
@@ -550,8 +591,11 @@ function ensureUpgraderTask(memory: UpgraderMemory, creep: CreepLike): UpgraderT
 function runUpgrader(creep: ManagedCreep): string {
   const memory = creep.memory as UpgraderMemory;
   const task = ensureUpgraderTask(memory, creep);
+  const comm = getComm();
 
   if (task === RECHARGE_TASK) {
+    comm?.say(creep, "gather");
+
     // Find valid energy sources (containers and storage only, NOT spawns/extensions/towers)
     const energySources = creep.room.find(FIND_STRUCTURES, {
       filter: isValidEnergySource
@@ -593,6 +637,8 @@ function runUpgrader(creep: ManagedCreep): string {
     return RECHARGE_TASK;
   }
 
+  comm?.say(creep, "upgrade");
+
   const controller = creep.room.controller;
   if (controller) {
     const result = creep.upgradeController(controller);
@@ -627,8 +673,11 @@ function ensureBuilderTask(memory: BuilderMemory, creep: CreepLike): BuilderTask
 function runBuilder(creep: ManagedCreep): string {
   const memory = creep.memory as BuilderMemory;
   const task = ensureBuilderTask(memory, creep);
+  const comm = getComm();
 
   if (task === BUILDER_GATHER_TASK) {
+    comm?.say(creep, "gather");
+
     // Find valid energy sources (containers and storage only, NOT spawns/extensions/towers)
     const energySources = creep.room.find(FIND_STRUCTURES, {
       filter: isValidEnergySource
@@ -672,6 +721,8 @@ function runBuilder(creep: ManagedCreep): string {
   }
 
   if (task === BUILDER_BUILD_TASK) {
+    comm?.say(creep, "build");
+
     const sites = creep.room.find(FIND_CONSTRUCTION_SITES) as ConstructionSite[];
     const site = sites.length > 0 ? (creep.pos.findClosestByPath(sites) ?? sites[0]) : null;
 
@@ -687,6 +738,8 @@ function runBuilder(creep: ManagedCreep): string {
   }
 
   // Maintain (repair/upgrade) fallback
+  comm?.say(creep, "repair");
+
   const repairTargets = creep.room.find(FIND_STRUCTURES, {
     filter: (structure: AnyStructure) => {
       if (!("hits" in structure) || typeof structure.hits !== "number") {
@@ -762,8 +815,11 @@ function runRemoteMiner(creep: ManagedCreep): string {
   const memory = creep.memory as RemoteMinerMemory;
   const task = ensureRemoteMinerTask(memory);
   ensureRemoteAssignments(memory, creep);
+  const comm = getComm();
 
   if (task === REMOTE_TRAVEL_TASK) {
+    comm?.say(creep, "travel");
+
     if (memory.targetRoom && creep.room.name !== memory.targetRoom) {
       creep.moveTo(
         { pos: { x: 25, y: 25, roomName: memory.targetRoom } as unknown as RoomPosition },
@@ -776,8 +832,11 @@ function runRemoteMiner(creep: ManagedCreep): string {
   }
 
   if (memory.task === REMOTE_MINE_TASK) {
+    comm?.say(creep, "harvest");
+
     if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
       memory.task = REMOTE_RETURN_TASK;
+      comm?.say(creep, "full");
       return REMOTE_RETURN_TASK;
     }
 
@@ -791,6 +850,8 @@ function runRemoteMiner(creep: ManagedCreep): string {
 
     return REMOTE_MINE_TASK;
   }
+
+  comm?.say(creep, "deliver");
 
   if (memory.homeRoom && creep.room.name !== memory.homeRoom) {
     creep.moveTo({ pos: { x: 25, y: 25, roomName: memory.homeRoom } as unknown as RoomPosition }, { reusePath: 50 });
@@ -851,6 +912,7 @@ function runRemoteMiner(creep: ManagedCreep): string {
  */
 function runStationaryHarvester(creep: ManagedCreep): string {
   const memory = creep.memory as StationaryHarvesterMemory;
+  const comm = getComm();
 
   // Find or remember assigned source
   if (!memory.sourceId) {
@@ -885,9 +947,12 @@ function runStationaryHarvester(creep: ManagedCreep): string {
 
   const isNear = creep.pos.inRangeTo(source, 1);
   if (!isNear) {
+    comm?.say(creep, "travel");
     creep.moveTo(source, { range: 1, reusePath: 50 });
     return STATIONARY_HARVEST_TASK;
   }
+
+  comm?.say(creep, "harvest");
 
   // Harvest energy
   const harvestResult = creep.harvest(source);
@@ -958,8 +1023,11 @@ function ensureHaulerTask(memory: HaulerMemory, creep: CreepLike): HaulerTask {
 function runHauler(creep: ManagedCreep): string {
   const memory = creep.memory as HaulerMemory;
   const task = ensureHaulerTask(memory, creep);
+  const comm = getComm();
 
   if (task === HAULER_PICKUP_TASK) {
+    comm?.say(creep, "pickup");
+
     // Priority: Pick up from containers near sources
     const containers = creep.room.find(FIND_STRUCTURES, {
       filter: s =>
@@ -992,6 +1060,8 @@ function runHauler(creep: ManagedCreep): string {
   }
 
   // HAULER_DELIVER_TASK: Priority-based delivery
+  comm?.say(creep, "deliver");
+
   // Priority 1: Spawns and extensions (critical)
   const criticalTargets = creep.room.find(FIND_STRUCTURES, {
     filter: (structure: AnyStructure) =>

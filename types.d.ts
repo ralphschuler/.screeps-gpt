@@ -1,6 +1,7 @@
 import type { SystemReport } from "./src/shared/contracts";
 import type { ColonyManagerMemory } from "./src/runtime/planning/ColonyManager";
 import type { ProfilerMemory } from "./src/shared/profiler-types";
+import type { CommunicationVerbosity } from "./src/runtime/behavior/CreepCommunicationManager";
 
 declare global {
   interface Memory {
@@ -23,6 +24,10 @@ declare global {
     creepCounter?: number;
     experimentalFeatures?: {
       taskSystem?: boolean;
+    };
+    creepCommunication?: {
+      verbosity?: CommunicationVerbosity;
+      enableRoomVisuals?: boolean;
     };
     colony?: ColonyManagerMemory;
     /**
