@@ -234,8 +234,14 @@ export class TaskManager {
       }
     });
 
-    for (const structure of structures.slice(0, 3)) {
-      // Limit repair tasks
+    // Prioritize roads over other structures for repair
+    const roads = structures.filter(s => s.structureType === STRUCTURE_ROAD);
+    const otherStructures = structures.filter(s => s.structureType !== STRUCTURE_ROAD);
+
+    // Prioritize roads, then other structures
+    const prioritized = [...roads.slice(0, 2), ...otherStructures.slice(0, 1)];
+
+    for (const structure of prioritized) {
       const existingTask = Array.from(this.tasks.values()).find(t => {
         if (t.status === "COMPLETE" || !(t.task instanceof RepairAction)) {
           return false;
@@ -245,7 +251,9 @@ export class TaskManager {
 
       if (!existingTask) {
         const task = this.configureTaskAction(new RepairAction(structure.id));
-        const request = new TaskRequest(this.getNextTaskId(), task, TaskPriority.LOW, Game.time + 50);
+        // Roads get normal priority, other structures get low priority
+        const priority = structure.structureType === STRUCTURE_ROAD ? TaskPriority.NORMAL : TaskPriority.LOW;
+        const request = new TaskRequest(this.getNextTaskId(), task, priority, Game.time + 50);
         this.tasks.set(request.id, request);
       }
     }

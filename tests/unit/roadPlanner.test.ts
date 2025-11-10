@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { RoadPlanner } from "@runtime/infrastructure/RoadPlanner";
+import { TrafficManager } from "@runtime/infrastructure/TrafficManager";
 import type { GameContext, RoomLike } from "@runtime/types/GameContext";
 
 describe("RoadPlanner", () => {
@@ -15,6 +16,21 @@ describe("RoadPlanner", () => {
       spawns: {},
       rooms: {}
     };
+
+    // Mock RoomPosition constructor for tests that use TrafficManager
+    (
+      global as unknown as { RoomPosition?: new (x: number, y: number, roomName: string) => RoomPosition }
+    ).RoomPosition = class RoomPosition {
+      public x: number;
+      public y: number;
+      public roomName: string;
+
+      public constructor(x: number, y: number, roomName: string) {
+        this.x = x;
+        this.y = y;
+        this.roomName = roomName;
+      }
+    } as unknown as new (x: number, y: number, roomName: string) => RoomPosition;
   });
 
   describe("Road planning between positions", () => {
@@ -339,6 +355,186 @@ describe("RoadPlanner", () => {
       const uniquePositions = new Set(calls.map(call => `${call[0]},${call[1]}`));
 
       expect(uniquePositions.size).toBe(calls.length);
+    });
+  });
+
+  describe("Road maintenance", () => {
+    it("should identify roads needing repair", () => {
+      const road1: StructureRoad = {
+        id: "road1" as Id<StructureRoad>,
+        structureType: STRUCTURE_ROAD,
+        pos: { x: 10, y: 10 } as RoomPosition,
+        hits: 2000,
+        hitsMax: 5000
+      } as StructureRoad;
+
+      const road2: StructureRoad = {
+        id: "road2" as Id<StructureRoad>,
+        structureType: STRUCTURE_ROAD,
+        pos: { x: 11, y: 11 } as RoomPosition,
+        hits: 4500,
+        hitsMax: 5000
+      } as StructureRoad;
+
+      const mockRoom: RoomLike = {
+        name: "W0N0",
+        find: (type: FindConstant) => {
+          if (type === FIND_STRUCTURES) {
+            return [road1, road2];
+          }
+          return [];
+        }
+      };
+
+      const damagedRoads = roadPlanner.identifyRepairNeeds(mockRoom, 0.8);
+
+      expect(damagedRoads).toHaveLength(1);
+      expect(damagedRoads[0].id).toBe("road1");
+    });
+
+    it("should use custom health threshold", () => {
+      const road: StructureRoad = {
+        id: "road1" as Id<StructureRoad>,
+        structureType: STRUCTURE_ROAD,
+        pos: { x: 10, y: 10 } as RoomPosition,
+        hits: 3000,
+        hitsMax: 5000
+      } as StructureRoad;
+
+      const mockRoom: RoomLike = {
+        name: "W0N0",
+        find: () => [road]
+      };
+
+      const damagedRoads = roadPlanner.identifyRepairNeeds(mockRoom, 0.5);
+
+      expect(damagedRoads).toHaveLength(0); // 60% health is above 50% threshold
+    });
+  });
+
+  describe("Traffic-based road prioritization", () => {
+    it("should prioritize repairs by damage when no traffic manager", () => {
+      const road1: StructureRoad = {
+        id: "road1" as Id<StructureRoad>,
+        structureType: STRUCTURE_ROAD,
+        pos: { x: 10, y: 10 } as RoomPosition,
+        hits: 2000,
+        hitsMax: 5000
+      } as StructureRoad;
+
+      const road2: StructureRoad = {
+        id: "road2" as Id<StructureRoad>,
+        structureType: STRUCTURE_ROAD,
+        pos: { x: 11, y: 11 } as RoomPosition,
+        hits: 1000,
+        hitsMax: 5000
+      } as StructureRoad;
+
+      const prioritized = roadPlanner.prioritizeRepairs([road1, road2]);
+
+      expect(prioritized[0].id).toBe("road2"); // More damaged first
+      expect(prioritized[1].id).toBe("road1");
+    });
+
+    it("should prioritize repairs by traffic when traffic manager available", () => {
+      const trafficManager = new TrafficManager({ enableTrafficAnalysis: true });
+
+      // Record more traffic at road1
+      const pos1 = { roomName: "W0N0", x: 10, y: 10 } as RoomPosition;
+      const pos2 = { roomName: "W0N0", x: 11, y: 11 } as RoomPosition;
+
+      for (let i = 0; i < 50; i++) trafficManager.recordMovement(pos1);
+      for (let i = 0; i < 10; i++) trafficManager.recordMovement(pos2);
+
+      roadPlanner.setTrafficManager(trafficManager);
+
+      const road1: StructureRoad = {
+        id: "road1" as Id<StructureRoad>,
+        structureType: STRUCTURE_ROAD,
+        pos: pos1,
+        hits: 2000,
+        hitsMax: 5000
+      } as StructureRoad;
+
+      const road2: StructureRoad = {
+        id: "road2" as Id<StructureRoad>,
+        structureType: STRUCTURE_ROAD,
+        pos: pos2,
+        hits: 1000,
+        hitsMax: 5000
+      } as StructureRoad;
+
+      const prioritized = roadPlanner.prioritizeRepairs([road1, road2]);
+
+      expect(prioritized[0].id).toBe("road1"); // Higher traffic first despite less damage
+      expect(prioritized[1].id).toBe("road2");
+    });
+
+    it("should plan roads from high-traffic areas", () => {
+      const trafficManager = new TrafficManager({ enableTrafficAnalysis: true });
+
+      const pos = { roomName: "W0N0", x: 25, y: 25 } as RoomPosition;
+      for (let i = 0; i < 15; i++) trafficManager.recordMovement(pos);
+
+      roadPlanner.setTrafficManager(trafficManager);
+
+      const mockRoom: RoomLike = {
+        name: "W0N0"
+      };
+
+      const plans = roadPlanner.planRoadsFromTraffic(mockRoom, 10);
+
+      expect(plans).toHaveLength(1);
+      expect(plans[0].pos.x).toBe(25);
+      expect(plans[0].pos.y).toBe(25);
+      expect(plans[0].priority).toBe(15);
+    });
+
+    it("should filter traffic plans by room", () => {
+      const trafficManager = new TrafficManager({ enableTrafficAnalysis: true });
+
+      const pos1 = { roomName: "W0N0", x: 25, y: 25 } as RoomPosition;
+      const pos2 = { roomName: "W1N1", x: 25, y: 25 } as RoomPosition;
+
+      for (let i = 0; i < 15; i++) trafficManager.recordMovement(pos1);
+      for (let i = 0; i < 20; i++) trafficManager.recordMovement(pos2);
+
+      roadPlanner.setTrafficManager(trafficManager);
+
+      const mockRoom: RoomLike = {
+        name: "W0N0"
+      };
+
+      const plans = roadPlanner.planRoadsFromTraffic(mockRoom, 10);
+
+      expect(plans).toHaveLength(1);
+      expect(plans[0].roomName).toBe("W0N0");
+    });
+  });
+
+  describe("Priority-based construction", () => {
+    it("should create road sites in priority order", () => {
+      const mockRoom: RoomLike = {
+        name: "W0N0",
+        find: () => [],
+        createConstructionSite: vi.fn(() => OK),
+        getTerrain: vi.fn(() => ({
+          get: () => 0
+        })) as () => RoomTerrain
+      };
+
+      const terrain = mockRoom.getTerrain();
+
+      const plans = [
+        { pos: { x: 10, y: 10 }, roomName: "W0N0", priority: 5 },
+        { pos: { x: 11, y: 11 }, roomName: "W0N0", priority: 20 },
+        { pos: { x: 12, y: 12 }, roomName: "W0N0", priority: 10 }
+      ];
+
+      roadPlanner.createRoadSites(mockRoom, plans, terrain);
+
+      // Should create highest priority first
+      expect(mockRoom.createConstructionSite).toHaveBeenCalledWith(11, 11, STRUCTURE_ROAD);
     });
   });
 });
