@@ -1,6 +1,7 @@
 import type { BehaviorSummary } from "@shared/contracts";
 import type { CreepLike, GameContext, SpawnLike } from "@runtime/types/GameContext";
 import { TaskManager } from "@runtime/tasks";
+import { PathfindingManager } from "@runtime/pathfinding";
 import { profile } from "@profiler";
 
 type RoleName = "harvester" | "upgrader" | "builder" | "remoteMiner" | "stationaryHarvester" | "hauler";
@@ -177,6 +178,7 @@ interface BehaviorControllerOptions {
   cpuSafetyMargin?: number;
   maxCpuPerCreep?: number;
   useTaskSystem?: boolean;
+  pathfindingProvider?: "default" | "cartographer";
 }
 
 /**
@@ -188,6 +190,7 @@ interface BehaviorControllerOptions {
 export class BehaviorController {
   private readonly options: Required<BehaviorControllerOptions>;
   private readonly taskManager: TaskManager;
+  private readonly pathfindingManager: PathfindingManager;
   private readonly logger: Pick<Console, "log" | "warn">;
 
   public constructor(options: BehaviorControllerOptions = {}, logger: Pick<Console, "log" | "warn"> = console) {
@@ -195,12 +198,25 @@ export class BehaviorController {
     this.options = {
       cpuSafetyMargin: options.cpuSafetyMargin ?? 0.85,
       maxCpuPerCreep: options.maxCpuPerCreep ?? 1.5,
-      useTaskSystem: options.useTaskSystem ?? true
+      useTaskSystem: options.useTaskSystem ?? true,
+      pathfindingProvider: options.pathfindingProvider ?? "default"
     };
     this.taskManager = new TaskManager({
       cpuThreshold: this.options.cpuSafetyMargin,
+      pathfindingProvider: this.options.pathfindingProvider,
       logger: this.logger
     });
+    this.pathfindingManager = new PathfindingManager({
+      provider: this.options.pathfindingProvider,
+      logger: this.logger
+    });
+  }
+
+  /**
+   * Get the pathfinding manager for use in role functions
+   */
+  private getPathfindingManager(): PathfindingManager {
+    return this.pathfindingManager;
   }
 
   /**

@@ -5,6 +5,7 @@ import {
   MinionHasEnergy,
   MinionHasFreeCapacity
 } from "./TaskPrerequisite";
+import type { PathfindingManager } from "@runtime/pathfinding";
 
 /**
  * Represents a specific action to be performed by a creep.
@@ -14,6 +15,16 @@ export abstract class TaskAction {
   /** Prerequisites that must be met before executing this action */
   public abstract prereqs: TaskPrerequisite[];
 
+  /** Optional pathfinding manager for advanced pathfinding */
+  protected pathfindingManager?: PathfindingManager;
+
+  /**
+   * Set the pathfinding manager for this task action
+   */
+  public setPathfindingManager(manager: PathfindingManager): void {
+    this.pathfindingManager = manager;
+  }
+
   /**
    * Execute the action with the given creep
    * @returns true if action is complete, false if it should continue
@@ -22,11 +33,16 @@ export abstract class TaskAction {
 
   /**
    * Move creep towards the action target if needed
+   * Uses pathfinding manager if available, otherwise falls back to default creep.moveTo
    */
   protected moveToTarget(creep: Creep, target: RoomPosition | { pos: RoomPosition }, range = 1): void {
     const targetPos = target instanceof RoomPosition ? target : target.pos;
     if (creep.pos.getRangeTo(targetPos) > range) {
-      creep.moveTo(targetPos, { range, reusePath: 5 });
+      if (this.pathfindingManager) {
+        this.pathfindingManager.moveTo(creep, targetPos, { range, reusePath: 5 });
+      } else {
+        creep.moveTo(targetPos, { range, reusePath: 5 });
+      }
     }
   }
 }
