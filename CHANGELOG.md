@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.37.3] - 2025-11-10
+
 ### Added
 
 - **Jon Winsley Screeps Blog Analysis**: Comprehensive review of 29 blog posts documenting real-world Screeps development patterns
