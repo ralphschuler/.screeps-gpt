@@ -68,6 +68,7 @@ function isSpecialProtocol(link: string): boolean {
     link.startsWith("mailto:") ||
     link.startsWith("tel:") ||
     link.startsWith("javascript:") ||
+    link.startsWith("vbscript:") ||
     link.startsWith("data:") ||
     link.startsWith("#")
   );
