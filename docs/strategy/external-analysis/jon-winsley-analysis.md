@@ -191,7 +191,7 @@ abstract class Objective {
 
 3. **Simplified Assignment Logic**
    - Reduce complexity in capability matching
-   - Implement closer-idle-creep assignment
+   - Implement closest-idle-creep assignment
    - Generate sub-tasks for prerequisites automatically
 
 **Recommended Implementation**:
