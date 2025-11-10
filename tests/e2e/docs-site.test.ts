@@ -296,4 +296,97 @@ describe("Documentation Site E2E Tests", () => {
       expect(duration).toBeLessThan(10000);
     }, 15000);
   });
+
+  describe("Search Functionality", () => {
+    it("should have functional search index (search.xml)", async () => {
+      if (shouldSkip) return;
+
+      const searchUrl = new URL("search.xml", DOCS_SITE_URL).toString();
+      const result = await fetchWithTimeout(searchUrl);
+
+      expect(result.status).toBe(200);
+      expect(result.headers.get("content-type")).toMatch(/xml/);
+
+      // Validate XML structure
+      expect(result.body).toContain("<?xml");
+      expect(result.body.length).toBeGreaterThan(100);
+
+      // Check for content in search index
+      expect(result.body).toContain("<entry>");
+    }, 15000);
+
+    it("should have search index with documentation content", async () => {
+      if (shouldSkip) return;
+
+      const searchUrl = new URL("search.xml", DOCS_SITE_URL).toString();
+      const result = await fetchWithTimeout(searchUrl);
+
+      // Should contain key documentation terms
+      const lowerBody = result.body.toLowerCase();
+      expect(lowerBody).toContain("screeps");
+    }, 15000);
+  });
+
+  describe("Mobile Responsiveness", () => {
+    it("should have viewport meta tag for mobile", async () => {
+      if (shouldSkip) return;
+
+      const result = await fetchWithTimeout(DOCS_SITE_URL);
+
+      // Check for viewport meta tag
+      const hasViewport = result.body.includes('name="viewport"');
+      expect(hasViewport).toBe(true);
+
+      // Verify it includes mobile-friendly settings
+      const viewportMatch = result.body.match(/<meta\s+name="viewport"\s+content="([^"]+)"/);
+      if (viewportMatch) {
+        const content = viewportMatch[1];
+        expect(content).toContain("width=device-width");
+      }
+    }, 15000);
+
+    it("should have responsive CSS", async () => {
+      if (shouldSkip) return;
+
+      const homepage = await fetchWithTimeout(DOCS_SITE_URL);
+
+      // Extract first CSS link
+      const cssMatch = homepage.body.match(/href=["']([^"']+\.css)["']/);
+      if (cssMatch) {
+        const cssUrl = new URL(cssMatch[1], DOCS_SITE_URL).toString();
+        const cssResult = await fetchWithTimeout(cssUrl);
+
+        // Check for media queries (basic responsiveness indicator)
+        const hasMediaQueries =
+          cssResult.body.includes("@media") ||
+          cssResult.body.includes("max-width") ||
+          cssResult.body.includes("min-width");
+        expect(hasMediaQueries).toBe(true);
+      }
+    }, 15000);
+
+    it("should not have desktop-only width constraints", async () => {
+      if (shouldSkip) return;
+
+      const result = await fetchWithTimeout(DOCS_SITE_URL);
+
+      // Should not have fixed width that would break mobile
+      const hasFixedDesktopWidth = /width:\s*\d{4,}px/i.test(result.body);
+      expect(hasFixedDesktopWidth).toBe(false);
+    }, 15000);
+  });
+
+  describe("RSS Feed", () => {
+    it("should have functional RSS/Atom feed", async () => {
+      if (shouldSkip) return;
+
+      const atomUrl = new URL("atom.xml", DOCS_SITE_URL).toString();
+      const result = await fetchWithTimeout(atomUrl);
+
+      expect(result.status).toBe(200);
+      expect(result.body).toContain("<?xml");
+      expect(result.body).toContain("feed");
+      expect(result.body).toContain("Screeps GPT");
+    }, 15000);
+  });
 });
