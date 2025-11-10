@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.44.0] - 2025-11-10
+
 ### Added
 
 - **Bootstrap Phase**: Implemented automated first-room resource optimization with harvester-focused spawning
