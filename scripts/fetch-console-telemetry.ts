@@ -65,8 +65,6 @@ async function executeConsoleCommand(
       await new Promise(resolve => setTimeout(resolve, waitTime));
     }
   }
-
-  throw new Error("Failed after all retry attempts");
 }
 
 /**

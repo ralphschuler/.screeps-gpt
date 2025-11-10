@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // Mock ScreepsAPI
 const mockConsoleMethod = vi.fn();
@@ -12,11 +12,19 @@ vi.mock("screeps-api", () => ({
   ScreepsAPI: MockScreepsAPI
 }));
 
+const originalEnv = process.env;
+
 describe("Console Telemetry with Chunked Queries", () => {
   beforeEach(() => {
+    vi.resetModules();
     vi.clearAllMocks();
+    process.env = { ...originalEnv };
     process.env.SCREEPS_TOKEN = "test-token";
     process.env.SCREEPS_SHARD = "shard3";
+  });
+
+  afterEach(() => {
+    process.env = originalEnv;
   });
 
   describe("Chunked query strategy", () => {
