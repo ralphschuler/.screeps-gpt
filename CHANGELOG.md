@@ -5,6 +5,20 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Added
+
+- **Bootstrap Phase**: Implemented automated first-room resource optimization with harvester-focused spawning
+  - Added `BootstrapPhaseManager` class for bootstrap phase state management
+  - Integrated bootstrap logic with Kernel and BehaviorController
+  - Adjusts role minimums during bootstrap phase (6 harvesters, 1 upgrader, 0 builders = 80%+ harvesters)
+  - Automatically activates for new rooms with controller level < 2
+  - Exits when controller level 2 reached OR stable infrastructure (4+ harvesters, 300+ energy)
+  - Tracks bootstrap state in Memory with persistence across code reloads
+  - Configurable completion criteria via `BootstrapConfig`
+  - Comprehensive documentation in `docs/runtime/bootstrap.md`
+  - 37 unit tests validating bootstrap activation, completion, role minimums, and integration
+  - Resolves #530: Implement bootstrap phase for optimal first-room resource utilization
+
 ## [0.43.1] - 2025-11-10
 
 ### Fixed
