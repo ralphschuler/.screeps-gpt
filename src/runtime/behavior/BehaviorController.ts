@@ -1,7 +1,6 @@
 import type { BehaviorSummary } from "@shared/contracts";
 import type { CreepLike, GameContext, SpawnLike } from "@runtime/types/GameContext";
 import { TaskManager } from "@runtime/tasks";
-import { PathfindingManager } from "@runtime/pathfinding";
 import { profile } from "@profiler";
 
 type RoleName = "harvester" | "upgrader" | "builder" | "remoteMiner" | "stationaryHarvester" | "hauler";
@@ -190,7 +189,6 @@ interface BehaviorControllerOptions {
 export class BehaviorController {
   private readonly options: Required<BehaviorControllerOptions>;
   private readonly taskManager: TaskManager;
-  private readonly pathfindingManager: PathfindingManager;
   private readonly logger: Pick<Console, "log" | "warn">;
 
   public constructor(options: BehaviorControllerOptions = {}, logger: Pick<Console, "log" | "warn"> = console) {
@@ -206,17 +204,6 @@ export class BehaviorController {
       pathfindingProvider: this.options.pathfindingProvider,
       logger: this.logger
     });
-    this.pathfindingManager = new PathfindingManager({
-      provider: this.options.pathfindingProvider,
-      logger: this.logger
-    });
-  }
-
-  /**
-   * Get the pathfinding manager for use in role functions
-   */
-  private getPathfindingManager(): PathfindingManager {
-    return this.pathfindingManager;
   }
 
   /**
