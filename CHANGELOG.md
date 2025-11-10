@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.43.1] - 2025-11-10
+
 ### Fixed
 
 - **Console Telemetry Fallback**: Fixed "expression size too large" error by implementing chunked query strategy

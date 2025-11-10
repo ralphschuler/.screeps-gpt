@@ -65,7 +65,7 @@ async function executeConsoleCommand(
       await new Promise(resolve => setTimeout(resolve, waitTime));
     }
   }
-  throw new Error('Unexpected: No response after retries');
+  throw new Error("Unexpected: No response after retries");
 }
 
 /**
