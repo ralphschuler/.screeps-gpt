@@ -273,7 +273,7 @@ npm run test:unit -- bootstrapPhaseManager.test.ts
 
 ## Version History
 
-- **v0.43.3**: Bootstrap phase implementation
+- **v0.43.2**: Bootstrap phase implementation
   - Automated first-room resource optimization
   - Harvester prioritization during early game
   - Controller level and stability-based completion criteria
