@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.40.0] - 2025-11-10
+
 ### Added
 
 - **Pathfinding Abstraction Layer**: Integrated screeps-cartographer for advanced pathfinding optimization
