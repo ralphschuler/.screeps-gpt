@@ -14,6 +14,7 @@ import { PixelGenerator } from "@runtime/metrics/PixelGenerator";
 import { RespawnManager } from "@runtime/respawn/RespawnManager";
 import { ConstructionManager } from "@runtime/planning/ConstructionManager";
 import { RoomVisualManager } from "@runtime/visuals/RoomVisualManager";
+import { BootstrapPhaseManager } from "./BootstrapPhaseManager";
 import type { GameContext } from "@runtime/types/GameContext";
 import { profile } from "@profiler";
 
@@ -31,6 +32,7 @@ export interface KernelConfig {
   respawnManager?: RespawnManager;
   constructionManager?: ConstructionManager;
   visualManager?: RoomVisualManager;
+  bootstrapManager?: BootstrapPhaseManager;
   repositorySignalProvider?: () => RepositorySignal | undefined;
   logger?: Pick<Console, "log" | "warn">;
   cpuEmergencyThreshold?: number;
@@ -59,6 +61,7 @@ export class Kernel {
   private readonly respawnManager: RespawnManager;
   private readonly constructionManager: ConstructionManager;
   private readonly visualManager: RoomVisualManager;
+  private readonly bootstrapManager: BootstrapPhaseManager;
   private readonly repositorySignalProvider?: () => RepositorySignal | undefined;
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly cpuEmergencyThreshold: number;
@@ -81,6 +84,7 @@ export class Kernel {
     this.evaluator = config.evaluator ?? new SystemEvaluator({}, this.logger);
     this.respawnManager = config.respawnManager ?? new RespawnManager(this.logger);
     this.constructionManager = config.constructionManager ?? new ConstructionManager(this.logger);
+    this.bootstrapManager = config.bootstrapManager ?? new BootstrapPhaseManager({}, this.logger);
     this.enableGarbageCollection = config.enableGarbageCollection ?? true;
     this.garbageCollectionInterval = config.garbageCollectionInterval ?? 10;
     this.enableSelfHealing = config.enableSelfHealing ?? true;
@@ -231,7 +235,15 @@ export class Kernel {
       return;
     }
 
-    const behaviorSummary = this.behavior.execute(game, memory, roleCounts);
+    // Check and manage bootstrap phase
+    const bootstrapStatus = this.bootstrapManager.checkBootstrapStatus(game, memory);
+    if (bootstrapStatus.shouldTransition && bootstrapStatus.reason) {
+      this.bootstrapManager.completeBootstrap(game, memory, bootstrapStatus.reason);
+    }
+
+    // Get bootstrap role minimums from manager if bootstrap is active
+    const bootstrapMinimums = this.bootstrapManager.getBootstrapRoleMinimums(bootstrapStatus.isActive);
+    const behaviorSummary = this.behavior.execute(game, memory, roleCounts, bootstrapMinimums);
     const snapshot = this.tracker.end(game, behaviorSummary);
     this.statsCollector.collect(game, memory, snapshot);
     const result = this.evaluator.evaluateAndStore(memory, snapshot, repository, memoryUtilization);

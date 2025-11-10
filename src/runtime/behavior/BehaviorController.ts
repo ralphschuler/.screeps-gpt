@@ -218,8 +218,14 @@ export class BehaviorController {
   /**
    * Run a full behaviour tick and return a summary of executed actions.
    * Implements CPU budget management to prevent script execution timeouts.
+   * @param bootstrapRoleMinimums - Optional role minimums to override during bootstrap phase
    */
-  public execute(game: GameContext, memory: Memory, roleCounts: Record<string, number>): BehaviorSummary {
+  public execute(
+    game: GameContext,
+    memory: Memory,
+    roleCounts: Record<string, number>,
+    bootstrapRoleMinimums?: Partial<Record<RoleName, number>>
+  ): BehaviorSummary {
     // Initialize creep counter if not present
     if (typeof memory.creepCounter !== "number") {
       memory.creepCounter = 0;
@@ -239,7 +245,7 @@ export class BehaviorController {
     this.communicationManager.resetTick(game.time);
 
     const spawned: string[] = [];
-    this.ensureRoleMinimums(game, memory, roleCounts, spawned);
+    this.ensureRoleMinimums(game, memory, roleCounts, spawned, bootstrapRoleMinimums ?? {});
 
     // Use task system if enabled, otherwise use legacy role-based system
     const result = this.options.useTaskSystem
@@ -353,7 +359,8 @@ export class BehaviorController {
     game: GameContext,
     memory: Memory,
     roleCounts: Record<string, number>,
-    spawned: string[]
+    spawned: string[],
+    bootstrapMinimums: Partial<Record<RoleName, number>>
   ): void {
     // Check CPU budget before spawn operations
     const cpuBudget = game.cpu.limit * this.options.cpuSafetyMargin;
@@ -370,7 +377,9 @@ export class BehaviorController {
 
     for (const [role, definition] of Object.entries(ROLE_DEFINITIONS)) {
       const current = roleCounts[role] ?? 0;
-      if (current >= definition.minimum) {
+      const targetMinimum = bootstrapMinimums[role as RoleName] ?? definition.minimum;
+
+      if (current >= targetMinimum) {
         continue;
       }
 
