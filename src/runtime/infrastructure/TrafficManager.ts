@@ -21,10 +21,19 @@ export interface SerializedMovementRequest {
 }
 
 /**
+ * Traffic data for a position (for analysis)
+ */
+export interface TrafficData {
+  count: number;
+  lastUpdated: number;
+}
+
+/**
  * Serialized traffic manager state for Memory persistence
  */
 export interface TrafficManagerMemory {
   movementRequests: Record<string, SerializedMovementRequest>;
+  trafficData?: Record<string, TrafficData>;
 }
 
 /**
@@ -35,6 +44,12 @@ export interface TrafficManagerConfig {
   logger?: Pick<Console, "log" | "warn">;
   /** Optional Memory reference for persistence */
   memory?: TrafficManagerMemory;
+  /** Enable traffic analysis (default: true) */
+  enableTrafficAnalysis?: boolean;
+  /** Traffic data decay rate per tick (default: 0.98) */
+  trafficDecayRate?: number;
+  /** Minimum traffic count before cleanup (default: 1) */
+  trafficCleanupThreshold?: number;
 }
 
 /**
@@ -51,10 +66,17 @@ export class TrafficManager {
   private readonly movementRequests: Map<string, MovementRequest> = new Map();
   private readonly positionReservations: Map<string, string> = new Map(); // pos key -> creep name
   private readonly memoryRef?: TrafficManagerMemory;
+  private readonly trafficData: Map<string, TrafficData> = new Map(); // pos key -> traffic count
+  private readonly enableTrafficAnalysis: boolean;
+  private readonly trafficDecayRate: number;
+  private readonly trafficCleanupThreshold: number;
 
   public constructor(config: TrafficManagerConfig = {}) {
     this.logger = config.logger ?? console;
     this.memoryRef = config.memory;
+    this.enableTrafficAnalysis = config.enableTrafficAnalysis ?? true;
+    this.trafficDecayRate = config.trafficDecayRate ?? 0.98;
+    this.trafficCleanupThreshold = config.trafficCleanupThreshold ?? 1;
 
     // Load state from Memory if provided
     if (this.memoryRef) {
@@ -82,6 +104,13 @@ export class TrafficManager {
         this.movementRequests.set(creepName, request);
       }
     }
+
+    // Load traffic data if available
+    if (this.memoryRef.trafficData) {
+      for (const [posKey, data] of Object.entries(this.memoryRef.trafficData)) {
+        this.trafficData.set(posKey, data);
+      }
+    }
   }
 
   /**
@@ -101,6 +130,14 @@ export class TrafficManager {
           roomName: request.destination.roomName
         }
       };
+    }
+
+    // Save traffic data
+    if (this.enableTrafficAnalysis) {
+      this.memoryRef.trafficData = {};
+      for (const [posKey, data] of this.trafficData.entries()) {
+        this.memoryRef.trafficData[posKey] = data;
+      }
     }
   }
 
@@ -220,6 +257,11 @@ export class TrafficManager {
     this.positionReservations.set(posKey, creep.name);
     const result = creep.move(path[0].direction);
 
+    // Record traffic if movement was successful
+    if (result === OK || result === ERR_TIRED) {
+      this.recordMovement(nextPos);
+    }
+
     return {
       moved: result === OK || result === ERR_TIRED,
       collisionAvoided: false
@@ -272,5 +314,100 @@ export class TrafficManager {
         this.movementRequests.delete(creepName);
       }
     }
+  }
+
+  /**
+   * Record movement at a position for traffic analysis
+   */
+  public recordMovement(pos: RoomPosition): void {
+    if (!this.enableTrafficAnalysis) {
+      return;
+    }
+
+    const posKey = this.getPositionKey(pos);
+    const existing = this.trafficData.get(posKey);
+
+    if (existing) {
+      this.trafficData.set(posKey, {
+        count: existing.count + 1,
+        lastUpdated: Game.time
+      });
+    } else {
+      this.trafficData.set(posKey, {
+        count: 1,
+        lastUpdated: Game.time
+      });
+    }
+  }
+
+  /**
+   * Apply decay to traffic data (call periodically to fade old traffic patterns)
+   */
+  public applyTrafficDecay(): void {
+    if (!this.enableTrafficAnalysis) {
+      return;
+    }
+
+    for (const [posKey, data] of this.trafficData.entries()) {
+      const decayedCount = data.count * this.trafficDecayRate;
+
+      if (decayedCount < this.trafficCleanupThreshold) {
+        this.trafficData.delete(posKey);
+      } else {
+        this.trafficData.set(posKey, {
+          count: decayedCount,
+          lastUpdated: data.lastUpdated
+        });
+      }
+    }
+  }
+
+  /**
+   * Get high-traffic positions above a threshold
+   * @param threshold Minimum traffic count to be considered high-traffic
+   * @returns Array of positions with their traffic counts
+   */
+  public getHighTrafficPositions(threshold: number): Array<{ pos: RoomPosition; count: number }> {
+    if (!this.enableTrafficAnalysis) {
+      return [];
+    }
+
+    const result: Array<{ pos: RoomPosition; count: number }> = [];
+
+    for (const [posKey, data] of this.trafficData.entries()) {
+      if (data.count >= threshold) {
+        // Parse key format: "roomName:x:y"
+        const parts = posKey.split(":");
+        const roomName = parts[0];
+        const x = Number(parts[1]);
+        const y = Number(parts[2]);
+        result.push({
+          pos: new RoomPosition(x, y, roomName),
+          count: data.count
+        });
+      }
+    }
+
+    // Sort by traffic count descending
+    return result.sort((a, b) => b.count - a.count);
+  }
+
+  /**
+   * Get traffic data for a specific position
+   */
+  public getTrafficAt(pos: RoomPosition): number {
+    if (!this.enableTrafficAnalysis) {
+      return 0;
+    }
+
+    const posKey = this.getPositionKey(pos);
+    return this.trafficData.get(posKey)?.count ?? 0;
+  }
+
+  /**
+   * Get total number of tracked positions
+   */
+  public getTrackedPositionCount(): number {
+    return this.trafficData.size;
   }
 }

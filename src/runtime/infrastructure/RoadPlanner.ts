@@ -1,5 +1,6 @@
 import type { GameContext, RoomLike } from "@runtime/types/GameContext";
 import { profile } from "@profiler";
+import type { TrafficManager } from "./TrafficManager";
 
 /**
  * Road placement plan
@@ -7,16 +8,19 @@ import { profile } from "@profiler";
 interface RoadPlan {
   pos: { x: number; y: number };
   roomName: string;
+  priority?: number; // Priority based on traffic
 }
 
 /**
  * Manages automatic road placement based on pathfinding results.
  * Creates roads along frequently traveled paths to reduce creep fatigue.
+ * Integrates with TrafficManager for traffic-based prioritization.
  */
 @profile
 export class RoadPlanner {
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly maxRoadsPerTick: number;
+  private trafficManager?: TrafficManager;
 
   public constructor(
     logger: Pick<Console, "log" | "warn"> = console,
@@ -24,6 +28,13 @@ export class RoadPlanner {
   ) {
     this.logger = logger;
     this.maxRoadsPerTick = maxRoadsPerTick;
+  }
+
+  /**
+   * Set traffic manager for traffic-based road prioritization
+   */
+  public setTrafficManager(trafficManager: TrafficManager): void {
+    this.trafficManager = trafficManager;
   }
 
   /**
@@ -99,11 +110,14 @@ export class RoadPlanner {
     let created = 0;
     let failed = 0;
 
+    // Sort plans by priority if available (highest priority first)
+    const sortedPlans = [...plans].sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+
     // Get existing structures and construction sites
     const existingStructures = room.find(FIND_STRUCTURES) as Structure[];
     const constructionSites = room.find(FIND_CONSTRUCTION_SITES) as ConstructionSite[];
 
-    for (const plan of plans) {
+    for (const plan of sortedPlans) {
       if (created >= this.maxRoadsPerTick) {
         break;
       }
@@ -131,7 +145,10 @@ export class RoadPlanner {
 
       if (result === OK) {
         created++;
-        this.logger.log?.(`[RoadPlanner] Created road site at ${room.name} (${plan.pos.x},${plan.pos.y})`);
+        const priorityStr = plan.priority ? ` (priority: ${plan.priority.toFixed(1)})` : "";
+        this.logger.log?.(
+          `[RoadPlanner] Created road site at ${room.name} (${plan.pos.x},${plan.pos.y})${priorityStr}`
+        );
       } else if (result !== ERR_FULL && result !== ERR_INVALID_TARGET) {
         failed++;
         this.logger.warn?.(
@@ -163,5 +180,71 @@ export class RoadPlanner {
     const plans = Array.from(uniquePlans.values());
 
     return this.createRoadSites(room, plans, terrain);
+  }
+
+  /**
+   * Identify roads needing repair in a room
+   * @param room Room to check for damaged roads
+   * @param healthThreshold Percentage of max hits below which road needs repair (default: 0.8)
+   * @returns Array of roads needing repair
+   */
+  public identifyRepairNeeds(room: RoomLike, healthThreshold: number = 0.8): StructureRoad[] {
+    const structures = room.find(FIND_STRUCTURES) as Structure[];
+    return structures.filter((s): s is StructureRoad => {
+      return s.structureType === STRUCTURE_ROAD && s.hits < s.hitsMax * healthThreshold;
+    });
+  }
+
+  /**
+   * Prioritize road repairs based on traffic data
+   * @param roads Roads to prioritize
+   * @returns Sorted array with high-traffic roads first
+   */
+  public prioritizeRepairs(roads: StructureRoad[]): StructureRoad[] {
+    if (!this.trafficManager) {
+      // No traffic data available, sort by hits (most damaged first)
+      return roads.sort((a, b) => a.hits / a.hitsMax - b.hits / b.hitsMax);
+    }
+
+    // Sort by traffic count (high to low), then by damage (low to high)
+    return roads.sort((a, b) => {
+      const trafficA = this.trafficManager!.getTrafficAt(a.pos);
+      const trafficB = this.trafficManager!.getTrafficAt(b.pos);
+
+      if (trafficB !== trafficA) {
+        return trafficB - trafficA; // Higher traffic first
+      }
+
+      // If traffic is equal, prioritize more damaged roads
+      return a.hits / a.hitsMax - b.hits / b.hitsMax;
+    });
+  }
+
+  /**
+   * Plan roads based on high-traffic areas
+   * @param room Room to plan roads for
+   * @param trafficThreshold Minimum traffic count to warrant a road
+   * @returns Array of road plans for high-traffic positions
+   */
+  public planRoadsFromTraffic(room: RoomLike, trafficThreshold: number = 10): RoadPlan[] {
+    if (!this.trafficManager) {
+      return [];
+    }
+
+    const highTrafficPositions = this.trafficManager.getHighTrafficPositions(trafficThreshold);
+    const plans: RoadPlan[] = [];
+
+    for (const { pos, count } of highTrafficPositions) {
+      // Only plan roads in the specified room
+      if (pos.roomName === room.name) {
+        plans.push({
+          pos: { x: pos.x, y: pos.y },
+          roomName: pos.roomName,
+          priority: count
+        });
+      }
+    }
+
+    return plans;
   }
 }
