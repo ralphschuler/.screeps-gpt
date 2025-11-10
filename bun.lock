@@ -1,6 +1,5 @@
 {
   "lockfileVersion": 1,
-  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "screeps-gpt",
@@ -45,6 +44,67 @@
         "typescript": "^5.4.3",
         "vitest": "^4.0.1",
         "yaml": "^2.8.1",
+      },
+    },
+    "packages/actions": {
+      "name": "@ralphschuler/screeps-gpt-actions",
+      "version": "0.45.4",
+    },
+    "packages/bot": {
+      "name": "@ralphschuler/screeps-gpt-bot",
+      "version": "0.45.4",
+      "dependencies": {
+        "screeps-cartographer": "^1.8.13",
+      },
+      "devDependencies": {
+        "@types/screeps": "^3.3.8",
+        "bun-plugin-screeps": "^1.0.0",
+        "esbuild": "^0.25.11",
+        "typescript": "^5.4.3",
+      },
+    },
+    "packages/console": {
+      "name": "@ralphschuler/screeps-gpt-console",
+      "version": "0.45.4",
+    },
+    "packages/docs": {
+      "name": "@ralphschuler/screeps-gpt-docs",
+      "version": "0.45.4",
+      "dependencies": {
+        "hexo": "^8.0.0",
+        "hexo-generator-archive": "^2.0.0",
+        "hexo-generator-category": "^2.0.0",
+        "hexo-generator-feed": "^3.0.0",
+        "hexo-generator-index": "^4.0.0",
+        "hexo-generator-search": "^2.4.3",
+        "hexo-generator-tag": "^2.0.0",
+        "hexo-renderer-ejs": "^2.0.0",
+        "hexo-renderer-marked": "^7.0.1",
+        "hexo-renderer-stylus": "^3.0.1",
+        "hexo-server": "^3.0.0",
+        "marked": "^16.4.1",
+      },
+    },
+    "packages/utilities": {
+      "name": "@ralphschuler/screeps-gpt-utilities",
+      "version": "0.45.4",
+      "dependencies": {
+        "hexo": "^8.0.0",
+        "marked": "^16.4.1",
+        "node-fetch": "^3.3.2",
+        "nodemailer": "^7.0.10",
+        "screeps-api": "^1.16.1",
+        "semver": "^7.7.3",
+        "yaml": "^2.8.1",
+        "zod": "^4.1.12",
+      },
+      "devDependencies": {
+        "@types/node": "^24.9.1",
+        "@types/node-fetch": "^2.6.13",
+        "@types/nodemailer": "^7.0.3",
+        "@types/semver": "^7.5.8",
+        "tsx": "^4.20.6",
+        "typescript": "^5.4.3",
       },
     },
   },
@@ -249,6 +309,16 @@
     "@oven/bun-windows-x64": ["@oven/bun-windows-x64@1.3.1", "", { "os": "win32", "cpu": "x64" }, "sha512-xdUjOZRq6PwPbbz4/F2QEMLBZwintGp7AS50cWxgkHnyp7Omz5eJfV6/vWtN4qwZIyR3V3DT/2oXsY1+7p3rtg=="],
 
     "@oven/bun-windows-x64-baseline": ["@oven/bun-windows-x64-baseline@1.3.1", "", { "os": "win32", "cpu": "x64" }, "sha512-dcA+Kj7hGFrY3G8NWyYf3Lj3/GMViknpttWUf5pI6p6RphltZaoDu0lY5Lr71PkMdRZTwL2NnZopa/x/NWCdKA=="],
+
+    "@ralphschuler/screeps-gpt-actions": ["@ralphschuler/screeps-gpt-actions@workspace:packages/actions"],
+
+    "@ralphschuler/screeps-gpt-bot": ["@ralphschuler/screeps-gpt-bot@workspace:packages/bot"],
+
+    "@ralphschuler/screeps-gpt-console": ["@ralphschuler/screeps-gpt-console@workspace:packages/console"],
+
+    "@ralphschuler/screeps-gpt-docs": ["@ralphschuler/screeps-gpt-docs@workspace:packages/docs"],
+
+    "@ralphschuler/screeps-gpt-utilities": ["@ralphschuler/screeps-gpt-utilities@workspace:packages/utilities"],
 
     "@rollup/rollup-android-arm-eabi": ["@rollup/rollup-android-arm-eabi@4.52.5", "", { "os": "android", "cpu": "arm" }, "sha512-8c1vW4ocv3UOMp9K+gToY5zL2XiiVw3k7f1ksf4yO1FlDFQ1C2u72iACFnSOceJFsWskc2WZNqeRhFRPzv+wtQ=="],
 

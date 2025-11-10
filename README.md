@@ -55,6 +55,34 @@ GitHub Actions workflows that orchestrate specialized Copilot agents for differe
 
 See [Automation Overview](docs/automation/overview.md) for complete workflow documentation.
 
+## Repository Structure
+
+The repository is organized as a monorepo with clear package boundaries:
+
+```
+/
+  /packages
+    /bot           # Core Screeps AI implementation
+    /docs          # Hexo documentation site
+    /utilities     # Build tooling and deployment scripts
+    /actions       # GitHub composite actions (placeholder)
+    /console       # Screeps console integration (placeholder)
+  /.github         # GitHub workflows, actions, configs
+  /reports         # CI/CD reports and artifacts
+  /tests           # Test suites (unit, e2e, regression)
+  package.json     # Root workspace configuration
+```
+
+**Package Details:**
+
+- **`packages/bot/`** - Game runtime code, behaviors, memory management, and AI logic
+- **`packages/docs/`** - Documentation site built with Hexo (source, themes, config)
+- **`packages/utilities/`** - Build scripts, deployment tools, monitoring utilities
+- **`packages/actions/`** - Reusable GitHub Actions components (future)
+- **`packages/console/`** - Screeps console customizations (future)
+
+All packages share a common root configuration for TypeScript, ESLint, and testing, while maintaining independent `package.json` files for isolated dependency management.
+
 ## Quick Start
 
 ### Prerequisites

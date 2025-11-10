@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { writeFile, mkdir, rm } from "node:fs/promises";
 import { resolve } from "node:path";
-import { checkProfilerHealth } from "../../scripts/check-profiler-health";
-import type { ProfilerSnapshot } from "../../src/shared/profiler-types";
+import { checkProfilerHealth } from "../../packages/utilities/scripts/check-profiler-health";
+import type { ProfilerSnapshot } from "../../packages/bot/src/shared/profiler-types";
 
 const testDir = resolve("test-reports", "profiler");
 const testFile = resolve(testDir, "latest.json");

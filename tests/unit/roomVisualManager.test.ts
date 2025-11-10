@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { RoomVisualManager } from "../../src/runtime/visuals/RoomVisualManager";
+import { RoomVisualManager } from "../../packages/bot/src/runtime/visuals/RoomVisualManager";
 
 describe("RoomVisualManager", () => {
   let mockGame: ReturnType<typeof createMockGame>;

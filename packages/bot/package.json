@@ -1,0 +1,24 @@
+{
+  "name": "@ralphschuler/screeps-gpt-bot",
+  "version": "0.45.4",
+  "description": "Core Screeps AI implementation",
+  "license": "MIT",
+  "author": "OpenAI Automations",
+  "type": "module",
+  "main": "dist/main.js",
+  "screeps_bot": true,
+  "files": [
+    "dist/main.js",
+    "dist/main.js.map",
+    "src"
+  ],
+  "dependencies": {
+    "screeps-cartographer": "^1.8.13"
+  },
+  "devDependencies": {
+    "@types/screeps": "^3.3.8",
+    "bun-plugin-screeps": "^1.0.0",
+    "esbuild": "^0.25.11",
+    "typescript": "^5.4.3"
+  }
+}

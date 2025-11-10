@@ -1,0 +1,8 @@
+{
+  "name": "@ralphschuler/screeps-gpt-actions",
+  "version": "0.45.4",
+  "description": "GitHub Actions composite actions and workflow components",
+  "license": "MIT",
+  "author": "OpenAI Automations",
+  "type": "module"
+}

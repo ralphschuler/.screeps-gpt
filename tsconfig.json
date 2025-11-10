@@ -19,12 +19,12 @@
     "sourceMap": true,
     "types": ["@types/screeps"],
     "paths": {
-      "@runtime/*": ["src/runtime/*"],
-      "@ai/*": ["src/ai/*"],
-      "@shared/*": ["src/shared/*"],
-      "@profiler": ["src/profiler"]
+      "@runtime/*": ["packages/bot/src/runtime/*"],
+      "@ai/*": ["packages/bot/src/ai/*"],
+      "@shared/*": ["packages/bot/src/shared/*"],
+      "@profiler": ["packages/bot/src/profiler"]
     }
   },
-  "include": ["src", "scripts", "tests", "types.d.ts"],
+  "include": ["packages/*/src", "packages/*/scripts", "tests", "types.d.ts"],
   "exclude": ["node_modules", "dist", "build"]
 }

@@ -24,10 +24,10 @@ const rootDir = dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   resolve: {
     alias: {
-      "@runtime": resolve(rootDir, "src/runtime"),
-      "@shared": resolve(rootDir, "src/shared"),
-      "@ai": resolve(rootDir, "src/ai"),
-      "@profiler": resolve(rootDir, "src/profiler")
+      "@runtime": resolve(rootDir, "packages/bot/src/runtime"),
+      "@shared": resolve(rootDir, "packages/bot/src/shared"),
+      "@ai": resolve(rootDir, "packages/bot/src/ai"),
+      "@profiler": resolve(rootDir, "packages/bot/src/profiler")
     }
   },
   define: {

@@ -10,7 +10,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { BasePlanner } from "../../src/runtime/planning/BasePlanner";
+import { BasePlanner } from "../../packages/bot/src/runtime/planning/BasePlanner";
 import {
   createMockTerrain,
   createMockTerrainWithWalls,

@@ -5,8 +5,8 @@ import {
   formatPTRTrendReport,
   formatEvaluationTrendReport,
   type SystemEvaluationReport
-} from "../../scripts/lib/report-comparison";
-import type { PTRStatsSnapshot } from "../../scripts/check-ptr-alerts";
+} from "../../packages/utilities/scripts/lib/report-comparison";
+import type { PTRStatsSnapshot } from "../../packages/utilities/scripts/check-ptr-alerts";
 
 describe("report-comparison", () => {
   describe("comparePTRStats", () => {
