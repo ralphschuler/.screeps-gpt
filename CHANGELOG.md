@@ -5,6 +5,15 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Fixed
+
+- **Console Output TypeError**: Fixed "Cannot convert object to primitive value" error in MemoryValidator
+  - Changed from `result.error.message` to `JSON.stringify(result.error.issues)` for proper Zod error serialization
+  - Zod error objects lack a simple `message` property, causing primitive conversion errors in Screeps console
+  - Added comprehensive regression test suite (`tests/regression/console-output-type-error.test.ts`) with 6 test cases
+  - Ensures all console logging properly handles complex objects without type conversion errors
+  - Resolves console errors reported via email from noreply@screeps.com (2025-11-07)
+
 ## [0.37.3] - 2025-11-10
 
 ### Added
