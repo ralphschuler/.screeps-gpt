@@ -71,7 +71,7 @@ export class MemoryValidator {
   public static validateStats(stats: unknown): Memory["stats"] | null {
     const result = MemoryStatsSchema.safeParse(stats);
     if (!result.success) {
-      console.log(`[MemoryValidator] Invalid Memory.stats structure: ${result.error.message}`);
+      console.log(`[MemoryValidator] Invalid Memory.stats structure: ${JSON.stringify(result.error.issues)}`);
       return null;
     }
     return result.data;
