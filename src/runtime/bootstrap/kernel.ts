@@ -14,6 +14,7 @@ import { PixelGenerator } from "@runtime/metrics/PixelGenerator";
 import { RespawnManager } from "@runtime/respawn/RespawnManager";
 import { ConstructionManager } from "@runtime/planning/ConstructionManager";
 import { RoomVisualManager } from "@runtime/visuals/RoomVisualManager";
+import { InfrastructureManager } from "@runtime/infrastructure/InfrastructureManager";
 import { BootstrapPhaseManager } from "./BootstrapPhaseManager";
 import type { GameContext } from "@runtime/types/GameContext";
 import { profile } from "@profiler";
@@ -32,6 +33,7 @@ export interface KernelConfig {
   respawnManager?: RespawnManager;
   constructionManager?: ConstructionManager;
   visualManager?: RoomVisualManager;
+  infrastructureManager?: InfrastructureManager;
   bootstrapManager?: BootstrapPhaseManager;
   repositorySignalProvider?: () => RepositorySignal | undefined;
   logger?: Pick<Console, "log" | "warn">;
@@ -61,6 +63,7 @@ export class Kernel {
   private readonly respawnManager: RespawnManager;
   private readonly constructionManager: ConstructionManager;
   private readonly visualManager: RoomVisualManager;
+  private readonly infrastructureManager: InfrastructureManager;
   private readonly bootstrapManager: BootstrapPhaseManager;
   private readonly repositorySignalProvider?: () => RepositorySignal | undefined;
   private readonly logger: Pick<Console, "log" | "warn">;
@@ -84,6 +87,15 @@ export class Kernel {
     this.evaluator = config.evaluator ?? new SystemEvaluator({}, this.logger);
     this.respawnManager = config.respawnManager ?? new RespawnManager(this.logger);
     this.constructionManager = config.constructionManager ?? new ConstructionManager(this.logger);
+    this.infrastructureManager =
+      config.infrastructureManager ??
+      new InfrastructureManager({
+        logger: this.logger,
+        memory:
+          typeof Memory !== "undefined" && Memory.infrastructure
+            ? (Memory.infrastructure as Parameters<typeof InfrastructureManager>[0]["memory"])
+            : undefined
+      });
     this.bootstrapManager = config.bootstrapManager ?? new BootstrapPhaseManager({}, this.logger);
     this.enableGarbageCollection = config.enableGarbageCollection ?? true;
     this.garbageCollectionInterval = config.garbageCollectionInterval ?? 10;
@@ -239,6 +251,25 @@ export class Kernel {
     const bootstrapStatus = this.bootstrapManager.checkBootstrapStatus(game, memory);
     if (bootstrapStatus.shouldTransition && bootstrapStatus.reason) {
       this.bootstrapManager.completeBootstrap(game, memory, bootstrapStatus.reason);
+    }
+
+    // Run infrastructure management (roads, traffic)
+    this.infrastructureManager.run(game);
+
+    // CPU guard after infrastructure management
+    if (game.cpu.getUsed() > game.cpu.limit * this.cpuEmergencyThreshold) {
+      this.logger.warn?.(
+        `CPU threshold exceeded after infrastructure management (${game.cpu.getUsed().toFixed(2)}/${game.cpu.limit}), ` +
+          `aborting behavior execution`
+      );
+      const snapshot = this.tracker.end(game, {
+        processedCreeps: 0,
+        spawnedCreeps: [],
+        tasksExecuted: {}
+      });
+      this.statsCollector.collect(game, memory, snapshot);
+      this.evaluator.evaluateAndStore(memory, snapshot, repository, memoryUtilization);
+      return;
     }
 
     // Get bootstrap role minimums from manager if bootstrap is active
