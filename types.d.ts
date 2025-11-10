@@ -21,6 +21,16 @@ declare global {
       lastSpawnLostTick?: number;
       respawnRequested: boolean;
     };
+    /**
+     * Bootstrap phase tracking for first-room resource optimization.
+     * Tracks whether the room is in bootstrap mode and when it was initiated.
+     * @see src/runtime/bootstrap/BootstrapPhaseManager.ts
+     */
+    bootstrap?: {
+      isActive: boolean;
+      startedAt?: number;
+      completedAt?: number;
+    };
     creepCounter?: number;
     experimentalFeatures?: {
       taskSystem?: boolean;

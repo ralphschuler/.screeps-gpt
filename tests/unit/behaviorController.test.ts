@@ -1086,4 +1086,88 @@ describe("BehaviorController", () => {
       expect(transfer).toHaveBeenCalledWith(spawn, RESOURCE_ENERGY);
     });
   });
+
+  describe("bootstrap phase integration", () => {
+    it("should spawn more harvesters during bootstrap phase", () => {
+      const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
+      const game = createGameContext({ time: 100, hasSpawns: true });
+      const memory = {} as Memory;
+      const roleCounts = {};
+
+      // Execute with bootstrap phase active
+      const result = controller.execute(game, memory, roleCounts, true);
+
+      // Should spawn harvesters prioritized (6 harvesters, 1 upgrader, 0 builders)
+      const harvesterSpawns = result.spawnedCreeps.filter(name => name.startsWith("harvester-"));
+      const upgraderSpawns = result.spawnedCreeps.filter(name => name.startsWith("upgrader-"));
+      const builderSpawns = result.spawnedCreeps.filter(name => name.startsWith("builder-"));
+
+      expect(harvesterSpawns.length).toBeGreaterThan(0);
+      expect(upgraderSpawns.length).toBeLessThanOrEqual(1);
+      expect(builderSpawns.length).toBe(0);
+    });
+
+    it("should spawn normal role distribution when bootstrap is not active", () => {
+      const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
+      const game = createGameContext({ time: 100, hasSpawns: true });
+      const memory = {} as Memory;
+      const roleCounts = {};
+
+      // Execute without bootstrap phase (normal operation)
+      const result = controller.execute(game, memory, roleCounts, false);
+
+      // Should spawn at least one creep with normal minimums (default is 4 harvesters)
+      // Note: Mock spawn can only spawn one creep per tick
+      expect(result.spawnedCreeps.length).toBeGreaterThan(0);
+
+      // First spawned should be harvester (highest priority, below minimum)
+      const firstSpawn = result.spawnedCreeps[0];
+      expect(firstSpawn).toContain("harvester-");
+    });
+
+    it("should respect bootstrap minimums when partially staffed", () => {
+      const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
+      const game = createGameContext({ time: 100, hasSpawns: true });
+      const memory = {} as Memory;
+      const roleCounts = { harvester: 3, upgrader: 0, builder: 0 };
+
+      // Execute with bootstrap phase active and some harvesters already present
+      const result = controller.execute(game, memory, roleCounts, true);
+
+      // Should spawn to reach bootstrap minimums (6 harvesters total)
+      const harvesterSpawns = result.spawnedCreeps.filter(name => name.startsWith("harvester-"));
+      expect(harvesterSpawns.length).toBeGreaterThanOrEqual(1);
+      expect(harvesterSpawns.length).toBeLessThanOrEqual(3); // Fill gap to 6
+    });
+
+    it("should not spawn additional creeps when bootstrap minimums are met", () => {
+      const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
+      const game = createGameContext({ time: 100, hasSpawns: true });
+      const memory = {} as Memory;
+      const roleCounts = { harvester: 6, upgrader: 1, builder: 0 };
+
+      // Execute with bootstrap phase active but minimums already met
+      const result = controller.execute(game, memory, roleCounts, true);
+
+      // Should not spawn any new creeps
+      expect(result.spawnedCreeps.length).toBe(0);
+    });
+
+    it("should default to normal operation when bootstrap flag is undefined", () => {
+      const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
+      const game = createGameContext({ time: 100, hasSpawns: true });
+      const memory = {} as Memory;
+      const roleCounts = {};
+
+      // Execute without specifying bootstrap flag (should default to false)
+      const result = controller.execute(game, memory, roleCounts);
+
+      // Should spawn at least one creep with normal minimums
+      expect(result.spawnedCreeps.length).toBeGreaterThan(0);
+
+      // First spawned should be harvester (highest priority, below minimum)
+      const firstSpawn = result.spawnedCreeps[0];
+      expect(firstSpawn).toContain("harvester-");
+    });
+  });
 });
