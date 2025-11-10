@@ -7,10 +7,9 @@ on:
       - main
     paths:
       - "docs-build/**"
-      - "source/**"
-      - "_config.yml"
-      - "scripts/build-hexo-site.ts"
-      - "scripts/validate-docs-links.ts"
+      - "packages/docs/**"
+      - "packages/utilities/scripts/build-hexo-site.ts"
+      - "packages/utilities/scripts/validate-docs-links.ts"
       - "tests/unit/build-hexo-site.test.ts"
       - "tests/regression/hexo-documentation-build.test.ts"
       - "tests/regression/documentation-workflow.test.ts"

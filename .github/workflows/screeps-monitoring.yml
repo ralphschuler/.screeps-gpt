@@ -66,13 +66,13 @@ jobs:
           SCREEPS_PORT: ${{ secrets.SCREEPS_PORT }}
           SCREEPS_PROTOCOL: ${{ secrets.SCREEPS_PROTOCOL }}
         run: |
-          npx tsx scripts/fetch-profiler-console.ts || \
+          npx tsx packages/utilities/scripts/fetch-profiler-console.ts || \
             echo "Profiler data fetch failed (may not be enabled)"
 
       - name: Validate profiler health
         if: always()
         run: |
-          npx tsx scripts/check-profiler-health.ts || \
+          npx tsx packages/utilities/scripts/check-profiler-health.ts || \
             echo "::warning::Profiler health check failed or has warnings"
         continue-on-error: true
 
@@ -80,7 +80,7 @@ jobs:
         id: collect_snapshot
         if: success()
         run: |
-          npx tsx scripts/collect-bot-snapshot.ts || \
+          npx tsx packages/utilities/scripts/collect-bot-snapshot.ts || \
             echo "::warning::Snapshot collection failed (stats may not \
             be available)"
         continue-on-error: true
@@ -98,7 +98,7 @@ jobs:
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           SMTP_FROM: ${{ secrets.SMTP_FROM }}
         run: |
-          npx tsx scripts/check-ptr-alerts.ts
+          npx tsx packages/utilities/scripts/check-ptr-alerts.ts
 
       - name: Upload monitoring report
         if: always()
