@@ -105,3 +105,14 @@ jobs:
           DOCS_SITE_URL: https://nyphon.de/.screeps-gpt/
           RUN_DOCS_SITE_TESTS: true
         run: bun run test:e2e tests/e2e/docs-site.test.ts
+
+      - name: Report deployment failure
+        if: failure()
+        uses: ./.github/actions/send-push-notification
+        with:
+          push-token: ${{ secrets.PUSH_TOKEN }}
+          title: "Documentation Deployment Failed"
+          body: >-
+            Documentation site validation failed after deployment to
+            https://nyphon.de/.screeps-gpt/
+          priority: "4"

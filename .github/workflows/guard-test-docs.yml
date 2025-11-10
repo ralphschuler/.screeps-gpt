@@ -10,9 +10,11 @@ on:
       - "source/**"
       - "_config.yml"
       - "scripts/build-hexo-site.ts"
+      - "scripts/validate-docs-links.ts"
       - "tests/unit/build-hexo-site.test.ts"
       - "tests/regression/hexo-documentation-build.test.ts"
       - "tests/regression/documentation-workflow.test.ts"
+      - "tests/e2e/docs-site.test.ts"
       - ".github/workflows/docs-pages.yml"
       - ".github/workflows/guard-test-docs.yml"
 
@@ -51,6 +53,11 @@ jobs:
 
       - name: Documentation tests
         run: bun run test:docs
+
+      - name: Validate documentation links
+        run: >-
+          bun run validate:docs-links ||
+          echo "::warning::Found broken links in documentation (non-blocking)"
 
       - name: Verify documentation builds successfully
         run: |
