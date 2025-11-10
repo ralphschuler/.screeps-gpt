@@ -5,6 +5,18 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Fixed
+
+- **Console Telemetry Fallback**: Fixed "expression size too large" error by implementing chunked query strategy
+  - Split single large console command into 5 smaller, focused queries (CPU, GCL, rooms, creeps, resources)
+  - Each query limited to 1000-1200 characters to stay within Screeps API limits
+  - Added retry logic with exponential backoff (3 attempts, 1s/2s/4s delays)
+  - Added expression size validation before sending commands to API
+  - Restored monitoring resilience when Stats API returns empty data
+  - Added comprehensive test suite (`tests/unit/fetch-console-telemetry.test.ts`) with 9 test cases
+  - Resolves #526: Console fallback "expression size too large" error
+  - Related to #523: PTR telemetry blackout requiring console fallback
+
 ## [0.40.0] - 2025-11-10
 
 ### Added

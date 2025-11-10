@@ -37,8 +37,52 @@ interface ConsoleResponse {
 }
 
 /**
- * Fetch telemetry data directly from bot console
+ * Execute a console command with retry logic
+ */
+async function executeConsoleCommand(
+  api: ScreepsAPI,
+  command: string,
+  shard: string,
+  retries = 3,
+  delayMs = 1000
+): Promise<string> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const response = (await api.console(command, shard)) as ConsoleResponse;
+
+      if (!response.ok) {
+        throw new Error(response.error || "Console command failed");
+      }
+
+      return response.data;
+    } catch (error) {
+      if (attempt === retries) {
+        throw error;
+      }
+
+      const waitTime = delayMs * Math.pow(2, attempt - 1); // Exponential backoff
+      console.log(`  Retry ${attempt}/${retries} after ${waitTime}ms...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+  }
+
+  throw new Error("Failed after all retry attempts");
+}
+
+/**
+ * Validate expression size before sending to API
+ */
+function validateExpressionSize(expression: string, maxSize = 1000): void {
+  if (expression.length > maxSize) {
+    throw new Error(`Expression size (${expression.length} chars) exceeds limit (${maxSize} chars)`);
+  }
+}
+
+/**
+ * Fetch telemetry data directly from bot console using chunked queries
  * This serves as a fallback when the Stats API is unavailable
+ *
+ * Uses multiple smaller console commands to avoid "expression size too large" errors
  */
 async function fetchConsoleTelemetry(): Promise<ConsoleTelemetry> {
   const token = process.env.SCREEPS_TOKEN;
@@ -54,61 +98,55 @@ async function fetchConsoleTelemetry(): Promise<ConsoleTelemetry> {
 
   const api = new ScreepsAPI({ token, hostname, protocol, port, path });
 
-  // Construct console command to extract telemetry
-  const telemetryCommand = `
-    (function() {
-      const result = {
-        cpu: {
-          used: Game.cpu.getUsed(),
-          limit: Game.cpu.limit,
-          bucket: Game.cpu.bucket
-        },
-        gcl: {
-          level: Game.gcl.level,
-          progress: Game.gcl.progress,
-          progressTotal: Game.gcl.progressTotal
-        },
-        rooms: Object.values(Game.rooms)
-          .filter(r => r.controller && r.controller.my)
-          .map(r => ({
-            name: r.name,
-            rcl: r.controller.level,
-            energy: r.energyAvailable,
-            energyCapacity: r.energyCapacityAvailable,
-            storage: r.storage ? r.storage.store.energy : undefined
-          })),
-        creeps: {
-          total: Object.keys(Game.creeps).length,
-          byRole: Object.values(Game.creeps).reduce((acc: Record<string, number>, c) => {
-            const role = c.memory.role || 'unknown';
-            acc[role] = (acc[role] || 0) + 1;
-            return acc;
-          }, {} as Record<string, number>)
-        },
-        resources: {
-          energy: Object.values(Game.rooms)
-            .filter(r => r.controller && r.controller.my && r.storage)
-            .reduce((sum, r) => sum + (r.storage ? r.storage.store.energy : 0), 0)
-        }
-      };
-      return JSON.stringify(result);
-    })()
-  `.trim();
-
   console.log(`Fetching console telemetry from ${hostname} shard ${shard}...`);
+  console.log(`Using chunked queries to avoid expression size limits`);
 
   try {
-    // Execute console command
-    const response = (await api.console(telemetryCommand, shard)) as ConsoleResponse;
+    // Query 1: CPU metrics
+    const cpuCommand = `JSON.stringify({used:Game.cpu.getUsed(),limit:Game.cpu.limit,bucket:Game.cpu.bucket})`;
+    validateExpressionSize(cpuCommand);
+    console.log(`  Fetching CPU metrics...`);
+    const cpuData = await executeConsoleCommand(api, cpuCommand, shard);
+    const cpu = JSON.parse(cpuData);
 
-    if (!response.ok) {
-      throw new Error(response.error || "Console command failed");
-    }
+    // Query 2: GCL metrics
+    const gclCommand = `JSON.stringify({level:Game.gcl.level,progress:Game.gcl.progress,progressTotal:Game.gcl.progressTotal})`;
+    validateExpressionSize(gclCommand);
+    console.log(`  Fetching GCL metrics...`);
+    const gclData = await executeConsoleCommand(api, gclCommand, shard);
+    const gcl = JSON.parse(gclData);
 
-    // Parse the response data
-    const telemetry = JSON.parse(response.data) as ConsoleTelemetry;
+    // Query 3: Room summary
+    const roomsCommand = `JSON.stringify(Object.values(Game.rooms).filter(r=>r.controller&&r.controller.my).map(r=>({name:r.name,rcl:r.controller.level,energy:r.energyAvailable,energyCapacity:r.energyCapacityAvailable,storage:r.storage?r.storage.store.energy:undefined})))`;
+    validateExpressionSize(roomsCommand, 1200); // Slightly larger limit for rooms
+    console.log(`  Fetching room data...`);
+    const roomsData = await executeConsoleCommand(api, roomsCommand, shard);
+    const rooms = JSON.parse(roomsData);
 
-    console.log(`✓ Console telemetry collected successfully`);
+    // Query 4: Creep statistics
+    const creepsCommand = `JSON.stringify({total:Object.keys(Game.creeps).length,byRole:Object.values(Game.creeps).reduce((a,c)=>{const r=c.memory.role||'unknown';a[r]=(a[r]||0)+1;return a},{})})`;
+    validateExpressionSize(creepsCommand, 1200); // Slightly larger limit for creeps
+    console.log(`  Fetching creep statistics...`);
+    const creepsData = await executeConsoleCommand(api, creepsCommand, shard);
+    const creeps = JSON.parse(creepsData);
+
+    // Query 5: Resource summary
+    const resourcesCommand = `JSON.stringify({energy:Object.values(Game.rooms).filter(r=>r.controller&&r.controller.my&&r.storage).reduce((s,r)=>s+(r.storage?r.storage.store.energy:0),0)})`;
+    validateExpressionSize(resourcesCommand);
+    console.log(`  Fetching resource summary...`);
+    const resourcesData = await executeConsoleCommand(api, resourcesCommand, shard);
+    const resources = JSON.parse(resourcesData);
+
+    // Combine all results
+    const telemetry: ConsoleTelemetry = {
+      cpu,
+      gcl,
+      rooms,
+      creeps,
+      resources
+    };
+
+    console.log(`✓ Console telemetry collected successfully (5 chunked queries)`);
     console.log(`  CPU: ${telemetry.cpu.used.toFixed(2)}/${telemetry.cpu.limit} (bucket: ${telemetry.cpu.bucket})`);
     console.log(`  GCL: ${telemetry.gcl.level} (${telemetry.gcl.progress}/${telemetry.gcl.progressTotal})`);
     console.log(`  Rooms: ${telemetry.rooms.length} controlled`);
