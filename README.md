@@ -158,6 +158,14 @@ Multiple specialized Copilot agents collaborate on different aspects of developm
 - **Regression Testing**: Comprehensive test suites prevent quality degradation
 - **Coverage Tracking**: Ensure critical code paths remain tested
 
+### 👁️ Visual Debugging & Communication
+
+- **Creep Communication**: Emoji-based visual feedback for creep actions via `creep.say()`
+- **Configurable Verbosity**: Four levels from disabled to verbose for different debugging needs
+- **Room Visuals**: Optional task goal visualization with lines and circles
+- **Runtime Configuration**: Toggle communication settings in-game without redeployment
+- **CPU-Aware**: Built-in CPU budget management (<1% overhead with default settings)
+
 ### 📚 Documentation-First Approach
 
 - **Auto-generated Docs Site**: GitHub Pages site built from markdown documentation
@@ -176,6 +184,7 @@ Multiple specialized Copilot agents collaborate on different aspects of developm
 
 - **[Automation Overview](docs/automation/overview.md)** - Complete workflow documentation
 - **[Runtime Architecture](docs/getting-started.md#runtime-architecture)** - Bot component overview
+- **[Creep Communication System](docs/runtime/creep-communication.md)** - Visual feedback and debugging
 - **[Docker Development](docs/operations/docker-guide.md)** - Containerized development guide
 - **[Deployment](docs/operations/deployment-troubleshooting.md)** - Deployment and troubleshooting
 
