@@ -117,6 +117,58 @@
 - [ ] Review Screeps Quorum automation patterns for scalable role orchestration.
 - [ ] Design PTR stat baselines so the monitor can score trends automatically.
 
+### Jon Winsley Blog Analysis Implementation (2025-11-10)
+
+**High Priority - Performance & CPU Optimization** (Related: #392, #426, #494, #495):
+
+- [ ] Implement CPU bucket-aware scheduling for expensive operations
+- [ ] Add profiler integration across all managers with per-module tracking
+- [ ] Create CPU usage dashboard using RoomVisuals
+- [ ] Review and simplify over-engineered abstractions (apply "Great Purge" philosophy)
+- [ ] Implement proactive CPU timeout monitoring and alerting
+
+**High Priority - Task Management Enhancement** (Related: #478):
+
+- [ ] Evaluate Objective-based architecture vs. current centralized task system
+- [ ] Implement operational mode switching (DISABLED/MINIMAL/NORMAL/PRIORITY) for managers
+- [ ] Add dynamic priority adjustment based on room state (RCL, threats, resources)
+- [ ] Create simplified task assignment algorithm (closest idle creep with capability match)
+
+**High Priority - Memory Optimization** (Related: #487, #494):
+
+- [ ] Implement decorator-based caching pattern (separate Memory vs. heap storage)
+- [ ] Clearly separate persistent state (Memory) from ephemeral state (heap)
+- [ ] Review serialization patterns for efficiency (store IDs not objects)
+- [ ] Add automated cache invalidation logic
+
+**Medium Priority - Monitoring & Analytics** (Related: #496, #468):
+
+- [ ] Implement RoomVisuals dashboards for real-time metrics
+- [ ] Create damage report analysis pattern for post-mortem debugging
+- [ ] Add Grafana integration for historical metrics and trend analysis
+- [ ] Implement post-mortem template for operational failures
+
+**Medium Priority - Logistics Optimization** (Related: #493):
+
+- [ ] Separate short-range and long-range hauling responsibilities
+- [ ] Implement central storage hub for extension/spawn refilling
+- [ ] Add spawn uptime monitoring and alerting
+- [ ] Optimize energy delivery timing to prevent spawn starvation
+
+**Medium Priority - Remote Mining Architecture**:
+
+- [ ] Implement Office/Territory hierarchical organization model
+- [ ] Create dedicated miner/hauler roles with optimized body parts
+- [ ] Add automated site selection based on resource/terrain scoring
+- [ ] Implement defense protocols for vulnerable remote rooms
+
+**Lower Priority - Strategic Planning**:
+
+- [ ] Implement strategic phase detection (Early/Infrastructure/Expansion/Optimization)
+- [ ] Add threat-responsive strategy switching
+- [ ] Create resource-aware task allocation system
+- [ ] Implement "questioning everything" architecture review process
+
 ## In Progress
 
 - [ ] Measure Copilot-driven change quality and feed outcomes into system evaluation reports.

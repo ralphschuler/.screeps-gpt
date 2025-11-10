@@ -55,6 +55,9 @@ For a complete setup guide, see the **[Getting Started Guide](getting-started.md
   - [Phase 3: Economy Expansion](strategy/phases/03-economy-expansion.md) - Terminal, labs, market, and factory automation
   - [Phase 4: Multi-Room Management](strategy/phases/04-multi-room.md) - Empire coordination and colonization
   - [Phase 5: Advanced Combat & Multi-Shard](strategy/phases/05-advanced-combat.md) - Military operations and cross-shard presence
+- **External Analysis & Inspiration**:
+  - [Jon Winsley Blog Analysis](strategy/external-analysis/jon-winsley-analysis.md) - Real-world Screeps development patterns, CPU optimization, and task management insights
+  - [Screeps Quorum Analysis](strategy/external-analysis/screeps-quorum-analysis.md) - Community-driven architecture and governance patterns
 
 ### Operations & Monitoring
 
