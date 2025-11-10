@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.39.1] - 2025-11-10
+
 ### Fixed
 
 - **Console Output TypeError**: Fixed "Cannot convert object to primitive value" error in MemoryValidator
