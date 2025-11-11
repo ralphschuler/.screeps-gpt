@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.47.1] - 2025-11-11
+
 ### Changed
 
 - **Monorepo Restructuring**: Reorganized repository into packages-based monorepo structure
