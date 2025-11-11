@@ -31,8 +31,10 @@ jobs:
         with:
           path: dist
           key: >-
-            build-${{ runner.os }}-${{ hashFiles('src/**/*',
-            'scripts/build.ts', 'tsconfig.json', 'bun.lock') }}
+            build-${{ runner.os }}-${{
+            hashFiles('packages/bot/src/**/*',
+            'packages/utilities/scripts/build.ts',
+            'tsconfig.json', 'bun.lock') }}
           restore-keys: |
             build-${{ runner.os }}-
       - name: Build AI

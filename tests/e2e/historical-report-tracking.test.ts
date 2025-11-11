@@ -1,9 +1,18 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { existsSync, mkdirSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
-import { saveReport, loadLatestReport, listReports, applyRetentionPolicy } from "../../scripts/lib/report-storage";
-import { comparePTRStats, compareEvaluations, type SystemEvaluationReport } from "../../scripts/lib/report-comparison";
-import type { PTRStatsSnapshot } from "../../scripts/check-ptr-alerts";
+import {
+  saveReport,
+  loadLatestReport,
+  listReports,
+  applyRetentionPolicy
+} from "../../packages/utilities/scripts/lib/report-storage";
+import {
+  comparePTRStats,
+  compareEvaluations,
+  type SystemEvaluationReport
+} from "../../packages/utilities/scripts/lib/report-comparison";
+import type { PTRStatsSnapshot } from "../../packages/utilities/scripts/check-ptr-alerts";
 
 const TEST_REPORTS_DIR = resolve("test-e2e-reports-temp");
 

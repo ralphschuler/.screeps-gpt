@@ -1,6 +1,5 @@
 {
   "lockfileVersion": 1,
-  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "screeps-gpt",
@@ -8,6 +7,7 @@
         "node-fetch": "^3.3.2",
         "nodemailer": "^7.0.10",
         "screeps-api": "^1.16.1",
+        "screeps-cartographer": "^1.8.13",
         "semver": "^7.7.3",
         "zod": "^4.1.12",
       },
@@ -44,6 +44,67 @@
         "typescript": "^5.4.3",
         "vitest": "^4.0.1",
         "yaml": "^2.8.1",
+      },
+    },
+    "packages/actions": {
+      "name": "@ralphschuler/screeps-gpt-actions",
+      "version": "0.45.4",
+    },
+    "packages/bot": {
+      "name": "@ralphschuler/screeps-gpt-bot",
+      "version": "0.45.4",
+      "dependencies": {
+        "screeps-cartographer": "^1.8.13",
+      },
+      "devDependencies": {
+        "@types/screeps": "^3.3.8",
+        "bun-plugin-screeps": "^1.0.0",
+        "esbuild": "^0.25.11",
+        "typescript": "^5.4.3",
+      },
+    },
+    "packages/console": {
+      "name": "@ralphschuler/screeps-gpt-console",
+      "version": "0.45.4",
+    },
+    "packages/docs": {
+      "name": "@ralphschuler/screeps-gpt-docs",
+      "version": "0.45.4",
+      "dependencies": {
+        "hexo": "^8.0.0",
+        "hexo-generator-archive": "^2.0.0",
+        "hexo-generator-category": "^2.0.0",
+        "hexo-generator-feed": "^3.0.0",
+        "hexo-generator-index": "^4.0.0",
+        "hexo-generator-search": "^2.4.3",
+        "hexo-generator-tag": "^2.0.0",
+        "hexo-renderer-ejs": "^2.0.0",
+        "hexo-renderer-marked": "^7.0.1",
+        "hexo-renderer-stylus": "^3.0.1",
+        "hexo-server": "^3.0.0",
+        "marked": "^16.4.1",
+      },
+    },
+    "packages/utilities": {
+      "name": "@ralphschuler/screeps-gpt-utilities",
+      "version": "0.45.4",
+      "dependencies": {
+        "hexo": "^8.0.0",
+        "marked": "^16.4.1",
+        "node-fetch": "^3.3.2",
+        "nodemailer": "^7.0.10",
+        "screeps-api": "^1.16.1",
+        "semver": "^7.7.3",
+        "yaml": "^2.8.1",
+        "zod": "^4.1.12",
+      },
+      "devDependencies": {
+        "@types/node": "^24.9.1",
+        "@types/node-fetch": "^2.6.13",
+        "@types/nodemailer": "^7.0.3",
+        "@types/semver": "^7.5.8",
+        "tsx": "^4.20.6",
+        "typescript": "^5.4.3",
       },
     },
   },
@@ -248,6 +309,16 @@
     "@oven/bun-windows-x64": ["@oven/bun-windows-x64@1.3.1", "", { "os": "win32", "cpu": "x64" }, "sha512-xdUjOZRq6PwPbbz4/F2QEMLBZwintGp7AS50cWxgkHnyp7Omz5eJfV6/vWtN4qwZIyR3V3DT/2oXsY1+7p3rtg=="],
 
     "@oven/bun-windows-x64-baseline": ["@oven/bun-windows-x64-baseline@1.3.1", "", { "os": "win32", "cpu": "x64" }, "sha512-dcA+Kj7hGFrY3G8NWyYf3Lj3/GMViknpttWUf5pI6p6RphltZaoDu0lY5Lr71PkMdRZTwL2NnZopa/x/NWCdKA=="],
+
+    "@ralphschuler/screeps-gpt-actions": ["@ralphschuler/screeps-gpt-actions@workspace:packages/actions"],
+
+    "@ralphschuler/screeps-gpt-bot": ["@ralphschuler/screeps-gpt-bot@workspace:packages/bot"],
+
+    "@ralphschuler/screeps-gpt-console": ["@ralphschuler/screeps-gpt-console@workspace:packages/console"],
+
+    "@ralphschuler/screeps-gpt-docs": ["@ralphschuler/screeps-gpt-docs@workspace:packages/docs"],
+
+    "@ralphschuler/screeps-gpt-utilities": ["@ralphschuler/screeps-gpt-utilities@workspace:packages/utilities"],
 
     "@rollup/rollup-android-arm-eabi": ["@rollup/rollup-android-arm-eabi@4.52.5", "", { "os": "android", "cpu": "arm" }, "sha512-8c1vW4ocv3UOMp9K+gToY5zL2XiiVw3k7f1ksf4yO1FlDFQ1C2u72iACFnSOceJFsWskc2WZNqeRhFRPzv+wtQ=="],
 
@@ -548,6 +619,8 @@
     "concat-map": ["concat-map@0.0.1", "", {}, "sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg=="],
 
     "connect": ["connect@3.7.0", "", { "dependencies": { "debug": "2.6.9", "finalhandler": "1.1.2", "parseurl": "~1.3.3", "utils-merge": "1.0.1" } }, "sha512-ZqRXc+tZukToSNmh5C2iWMSoV3X1YUcPbqEM4DkEG5tNQXrQUZCNVGGv3IuicnkMtPfGf3Xtp8WCXs295iQ1pQ=="],
+
+    "core-js": ["core-js@3.46.0", "", {}, "sha512-vDMm9B0xnqqZ8uSBpZ8sNtRtOdmfShrvT6h2TuQGLs0Is+cR0DYbj/KWP6ALVNbWPpqA/qPLoOuppJN07humpA=="],
 
     "cross-spawn": ["cross-spawn@7.0.6", "", { "dependencies": { "path-key": "^3.1.0", "shebang-command": "^2.0.0", "which": "^2.0.1" } }, "sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA=="],
 
@@ -1125,6 +1198,10 @@
 
     "screeps-api": ["screeps-api@1.16.1", "", { "dependencies": { "axios": "^0.28.0", "commander": "^7.2.0", "debug": "^4.1.1", "ws": "^7.4.4", "yamljs": "^0.3.0" }, "optionalDependencies": { "bufferutil": "^4.0.1", "utf-8-validate": "^5.0.2" }, "bin": { "screeps-api": "bin/screeps-api.js" } }, "sha512-VwgibYPCFXaRlNdFrC188s6juKdAbMIeLy6oRa030IRSUuIZFpe7m4NHzMxLC30qq3cZejdlOedXXthOnNkggA=="],
 
+    "screeps-cartographer": ["screeps-cartographer@1.8.13", "", { "dependencies": { "screeps-utf15": "^1.0.1", "ts-polyfill": "^3.8.2" } }, "sha512-zOGDAosHuOfItpIvqOY8H37BBbUpZUqCtNKbsYYm9VD7C94iGEIZ587qcFjHOOqEiy0P1Pj5iO32TgO6mZ3X1A=="],
+
+    "screeps-utf15": ["screeps-utf15@1.0.1", "", {}, "sha512-0KTHWUeHsItaVBLG3GMlREeX/L88XTHpB07IOZauuPn1YQxZNZAeUhOoL1QX3EoOkPsXafMa2mAMEnD2QveSGw=="],
+
     "semver": ["semver@7.7.3", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-SdsKMrI9TdgjdweUSR9MweHA4EJ8YxHn8DFaDisvhVlUOe4BF1tLD7GAj0lIqWVl+dPb/rExr0Btby5loQm20Q=="],
 
     "send": ["send@0.19.0", "", { "dependencies": { "debug": "2.6.9", "depd": "2.0.0", "destroy": "1.2.0", "encodeurl": "~1.0.2", "escape-html": "~1.0.3", "etag": "~1.8.1", "fresh": "0.5.2", "http-errors": "2.0.0", "mime": "1.6.0", "ms": "2.1.3", "on-finished": "2.4.1", "range-parser": "~1.2.1", "statuses": "2.0.1" } }, "sha512-dW41u5VfLXu8SJh5bwRmyYUbAoSB3c9uQh6L8h/KtsFREPWpbX1lrljJo186Jc4nmci/sGUZ9a0a0J2zgfq2hw=="],
@@ -1230,6 +1307,8 @@
     "tr46": ["tr46@5.1.1", "", { "dependencies": { "punycode": "^2.3.1" } }, "sha512-hdF5ZgjTqgAntKkklYw0R03MG2x/bSzTtkxmIRw/sTNV8YXsCJ1tfLAX23lhxhHJlEf3CRCOCGGWw3vI3GaSPw=="],
 
     "ts-api-utils": ["ts-api-utils@2.1.0", "", { "peerDependencies": { "typescript": ">=4.8.4" } }, "sha512-CUgTZL1irw8u29bzrOD/nH85jqyc74D6SshFgujOIA7osm2Rz7dYH77agkx7H4FBNxDq7Cjf+IjaX/8zwFW+ZQ=="],
+
+    "ts-polyfill": ["ts-polyfill@3.8.2", "", { "dependencies": { "core-js": "^3.6.4" } }, "sha512-x0M4kx+FObO88sedZ1zld+YX+GvcgaYSVnHspNftI4GRT86FTBy41O89ztKfvue0XtaKpb8WBpPZsh82hy3Ncw=="],
 
     "tsconfig-paths": ["tsconfig-paths@3.15.0", "", { "dependencies": { "@types/json5": "^0.0.29", "json5": "^1.0.2", "minimist": "^1.2.6", "strip-bom": "^3.0.0" } }, "sha512-2Ac2RgzDe/cn48GvOe3M+o82pEFewD3UPbyoUHHdKasHwJKjds4fLXWf/Ux5kATBKN20oaFGu+jbElp1pos0mg=="],
 

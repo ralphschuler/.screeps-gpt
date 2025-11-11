@@ -55,6 +55,34 @@ GitHub Actions workflows that orchestrate specialized Copilot agents for differe
 
 See [Automation Overview](docs/automation/overview.md) for complete workflow documentation.
 
+## Repository Structure
+
+The repository is organized as a monorepo with clear package boundaries:
+
+```
+/
+  /packages
+    /bot           # Core Screeps AI implementation
+    /docs          # Hexo documentation site
+    /utilities     # Build tooling and deployment scripts
+    /actions       # GitHub composite actions (placeholder)
+    /console       # Screeps console integration (placeholder)
+  /.github         # GitHub workflows, actions, configs
+  /reports         # CI/CD reports and artifacts
+  /tests           # Test suites (unit, e2e, regression)
+  package.json     # Root workspace configuration
+```
+
+**Package Details:**
+
+- **`packages/bot/`** - Game runtime code, behaviors, memory management, and AI logic
+- **`packages/docs/`** - Documentation site built with Hexo (source, themes, config)
+- **`packages/utilities/`** - Build scripts, deployment tools, monitoring utilities
+- **`packages/actions/`** - Reusable GitHub Actions components (future)
+- **`packages/console/`** - Screeps console customizations (future)
+
+All packages share a common root configuration for TypeScript, ESLint, and testing, while maintaining independent `package.json` files for isolated dependency management.
+
 ## Quick Start
 
 ### Prerequisites
@@ -158,6 +186,14 @@ Multiple specialized Copilot agents collaborate on different aspects of developm
 - **Regression Testing**: Comprehensive test suites prevent quality degradation
 - **Coverage Tracking**: Ensure critical code paths remain tested
 
+### 👁️ Visual Debugging & Communication
+
+- **Creep Communication**: Emoji-based visual feedback for creep actions via `creep.say()`
+- **Configurable Verbosity**: Four levels from disabled to verbose for different debugging needs
+- **Room Visuals**: Optional task goal visualization with lines and circles
+- **Runtime Configuration**: Toggle communication settings in-game without redeployment
+- **CPU-Aware**: Built-in CPU budget management (<1% overhead with default settings)
+
 ### 📚 Documentation-First Approach
 
 - **Auto-generated Docs Site**: GitHub Pages site built from markdown documentation
@@ -176,6 +212,7 @@ Multiple specialized Copilot agents collaborate on different aspects of developm
 
 - **[Automation Overview](docs/automation/overview.md)** - Complete workflow documentation
 - **[Runtime Architecture](docs/getting-started.md#runtime-architecture)** - Bot component overview
+- **[Creep Communication System](docs/runtime/creep-communication.md)** - Visual feedback and debugging
 - **[Docker Development](docs/operations/docker-guide.md)** - Containerized development guide
 - **[Deployment](docs/operations/deployment-troubleshooting.md)** - Deployment and troubleshooting
 

@@ -5,6 +5,82 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Changed
+
+- **Monorepo Restructuring**: Reorganized repository into packages-based monorepo structure
+  - Created `/packages` directory with bot, docs, utilities, actions, and console packages
+  - Migrated `src/` to `packages/bot/src/` for core Screeps AI implementation
+  - Migrated `scripts/` to `packages/utilities/scripts/` for build tooling and utilities
+  - Migrated `docs/`, `source/`, `themes/`, `_config.yml` to `packages/docs/` for documentation site
+  - Configured Bun workspaces in root `package.json` for monorepo dependency management
+  - Updated TypeScript path aliases to reference new package locations
+  - Updated ESLint configuration to lint new package structure
+  - Updated vitest configuration for new source paths
+  - Updated all GitHub workflows to reference new package paths
+  - Updated all import paths in tests and utilities
+  - All 580 tests passing, lint passing, build working
+  - Improved code organization with clear package boundaries
+  - Enables independent package versioning and deployment
+  - Better separation of concerns across codebase
+  - Resolves #[issue-number]: Restructure repository into monorepo with packages organization
+
+## [0.44.0] - 2025-11-10
+
+### Added
+
+- **Bootstrap Phase**: Implemented automated first-room resource optimization with harvester-focused spawning
+  - Added `BootstrapPhaseManager` class for bootstrap phase state management
+  - Integrated bootstrap logic with Kernel and BehaviorController
+  - Adjusts role minimums during bootstrap phase (6 harvesters, 1 upgrader, 0 builders = 80%+ harvesters)
+  - Automatically activates for new rooms with controller level < 2
+  - Exits when controller level 2 reached OR stable infrastructure (4+ harvesters, 300+ energy)
+  - Tracks bootstrap state in Memory with persistence across code reloads
+  - Configurable completion criteria via `BootstrapConfig`
+  - Comprehensive documentation in `docs/runtime/bootstrap.md`
+  - 37 unit tests validating bootstrap activation, completion, role minimums, and integration
+  - Resolves #530: Implement bootstrap phase for optimal first-room resource utilization
+- **Operational Milestones Documentation**: Created `docs/operations/milestones.md` for tracking progression achievements
+  - Documented E46S58 controller level 2 upgrade milestone (2025-11-08, shard3)
+  - Established milestone tracking framework for controller upgrades, territorial expansion, and infrastructure development
+  - Includes automation recommendations for future milestone detection
+  - Related to #533: Monitoring verification for controller upgrade detection
+
+## [0.43.1] - 2025-11-10
+
+### Fixed
+
+- **Console Telemetry Fallback**: Fixed "expression size too large" error by implementing chunked query strategy
+  - Split single large console command into 5 smaller, focused queries (CPU, GCL, rooms, creeps, resources)
+  - Each query limited to 1000-1200 characters to stay within Screeps API limits
+  - Added retry logic with exponential backoff (3 attempts, 1s/2s/4s delays)
+  - Added expression size validation before sending commands to API
+  - Restored monitoring resilience when Stats API returns empty data
+  - Added comprehensive test suite (`tests/unit/fetch-console-telemetry.test.ts`) with 9 test cases
+  - Resolves #526: Console fallback "expression size too large" error
+  - Related to #523: PTR telemetry blackout requiring console fallback
+
+## [0.40.0] - 2025-11-10
+
+### Added
+
+- **Pathfinding Abstraction Layer**: Integrated screeps-cartographer for advanced pathfinding optimization
+  - Created `PathfindingProvider` interface for flexible pathfinding implementations
+  - Implemented `DefaultPathfinder` using native Screeps PathFinder (baseline)
+  - Implemented `CartographerPathfinder` using screeps-cartographer library
+  - Added `PathfindingManager` with configuration system to toggle between providers
+  - Integrated with TaskManager and TaskAction for task-based movement
+  - Added `pathfindingProvider` configuration option to BehaviorController and TaskManager
+  - Maintains backward compatibility with native pathfinding as default
+  - Comprehensive documentation in `docs/runtime/pathfinding.md`
+  - 14 unit tests covering provider selection, configuration, and behavior
+  - Build size increased from 579.6kb to 713.2kb (+134kb for screeps-cartographer)
+  - No security vulnerabilities detected in new dependency
+  - Provides foundation for CPU-efficient pathfinding with caching and optimization
+  - Task system automatically uses configured pathfinding provider
+  - Test infrastructure updated to properly mock screeps-cartographer (Game, Memory, PathFinder globals)
+  - All 506 existing tests continue to pass
+  - Addresses #533: screeps-cartographer integration for advanced pathfinding
+
 ## [0.39.1] - 2025-11-10
 
 ### Fixed

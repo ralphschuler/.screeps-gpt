@@ -5,7 +5,7 @@
  * and Room structures used across multiple test files.
  */
 
-import type { RoomLike } from "../../src/runtime/types/GameContext";
+import type { RoomLike } from "../../packages/bot/src/runtime/types/GameContext";
 
 // Screeps constants for testing
 const TERRAIN_MASK_WALL = 1;

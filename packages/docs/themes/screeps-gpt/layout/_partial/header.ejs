@@ -1,0 +1,13 @@
+<header>
+  <div class="container">
+    <h1><a href="<%- url_for('/') %>"><%= config.title %></a></h1>
+    <nav>
+      <% for (let label in theme.menu) { %>
+        <a href="<%- url_for(theme.menu[label]) %>"
+           <% if (is_current(theme.menu[label])) { %>class="active"<% } %>>
+          <%= label %>
+        </a>
+      <% } %>
+    </nav>
+  </div>
+</header>

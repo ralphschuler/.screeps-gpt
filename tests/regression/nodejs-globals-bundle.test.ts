@@ -10,7 +10,7 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { readFile, writeFile, unlink, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
-import { buildProject } from "../../scripts/lib/buildProject";
+import { buildProject } from "../../packages/utilities/scripts/lib/buildProject";
 
 const LOCK_FILE = resolve("dist", ".test-lock");
 

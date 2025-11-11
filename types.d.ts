@@ -1,6 +1,7 @@
 import type { SystemReport } from "./src/shared/contracts";
 import type { ColonyManagerMemory } from "./src/runtime/planning/ColonyManager";
 import type { ProfilerMemory } from "./src/shared/profiler-types";
+import type { CommunicationVerbosity } from "./src/runtime/behavior/CreepCommunicationManager";
 
 declare global {
   interface Memory {
@@ -20,9 +21,23 @@ declare global {
       lastSpawnLostTick?: number;
       respawnRequested: boolean;
     };
+    /**
+     * Bootstrap phase tracking for first-room resource optimization.
+     * Tracks whether the room is in bootstrap mode and when it was initiated.
+     * @see src/runtime/bootstrap/BootstrapPhaseManager.ts
+     */
+    bootstrap?: {
+      isActive: boolean;
+      startedAt?: number;
+      completedAt?: number;
+    };
     creepCounter?: number;
     experimentalFeatures?: {
       taskSystem?: boolean;
+    };
+    creepCommunication?: {
+      verbosity?: CommunicationVerbosity;
+      enableRoomVisuals?: boolean;
     };
     colony?: ColonyManagerMemory;
     /**
