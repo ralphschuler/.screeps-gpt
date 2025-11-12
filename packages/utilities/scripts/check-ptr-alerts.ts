@@ -225,6 +225,43 @@ async function main(): Promise<void> {
   // Analyze for alert conditions
   const alerts = analyzePTRStats(snapshot);
 
+  // Check bot health status for graduated outage detection
+  const healthCheckPath = resolve("reports", "monitoring", "health-check-latest.json");
+  if (existsSync(healthCheckPath)) {
+    try {
+      const healthContent = readFileSync(healthCheckPath, "utf-8");
+      const healthCheck = JSON.parse(healthContent) as {
+        bot_alive: boolean;
+        health_status: string;
+        alert_level: string;
+        alert_message: string | null;
+        consecutive_failures: number;
+        minutes_since_last_success: number | null;
+      };
+
+      // Add bot health alerts based on graduated detection
+      if (healthCheck.alert_level === "critical") {
+        alerts.push({
+          type: "bot_outage_critical",
+          severity: "critical",
+          message:
+            healthCheck.alert_message ||
+            `Bot unresponsive for ${healthCheck.minutes_since_last_success || "unknown"} minutes - CRITICAL`
+        });
+      } else if (healthCheck.alert_level === "high") {
+        alerts.push({
+          type: "bot_outage_high",
+          severity: "high",
+          message:
+            healthCheck.alert_message ||
+            `Bot unresponsive for ${healthCheck.minutes_since_last_success || "unknown"} minutes - HIGH priority`
+        });
+      }
+    } catch (error) {
+      console.warn("Failed to read or parse health check results:", error);
+    }
+  }
+
   // Send push notifications and email notifications for critical and high severity alerts
   for (const alert of alerts) {
     if (alert.severity === "critical" || alert.severity === "high") {
