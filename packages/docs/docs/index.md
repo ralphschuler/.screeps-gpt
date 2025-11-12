@@ -33,7 +33,6 @@ For a complete setup guide, see the **[Getting Started Guide](getting-started.md
 
 - [Agent Guidelines](../AGENTS.md) - Comprehensive rules and knowledge base for GitHub Copilot and automation agents
 - [Automation Overview](automation/overview.md)
-- [Spec-Kit Workflow Guide](automation/spec-kit-workflow.md) - Specification-driven development with plan generation and refinement
 - [Label System Guide](automation/label-system.md) - Standardized labeling system for issue and PR management
 - [Semantic Versioning Guide](automation/semantic-versioning-guide.md) - Conventional commits and automated version bumping
 - [Push Notifications Guide](automation/push-notifications.md) - Real-time alerts for critical repository and Screeps bot events

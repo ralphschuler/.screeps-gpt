@@ -149,7 +149,6 @@ jobs:
 - `copilot-todo-daily.yml` (45 min)
 - `copilot-ci-autofix.yml` (45 min)
 - `copilot-email-triage.yml` (45 min)
-- `copilot-speckit.yml` (45 min)
 - `copilot-changelog-to-blog.yml` (45 min)
 - `screeps-monitoring.yml` (45 min) - Comprehensive strategic analysis with PTR telemetry collection
 

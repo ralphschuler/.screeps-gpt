@@ -91,7 +91,6 @@ describe("Copilot-Exec Backward Compatibility", () => {
     { file: "copilot-todo-pr.yml", agent: "copilot-dev-agent" },
     { file: "screeps-monitoring.yml", agent: "copilot-exec" },
     { file: "copilot-todo-daily.yml", agent: "copilot-exec" },
-    { file: "copilot-speckit.yml", agent: "copilot-exec" },
     { file: "copilot-ci-autofix.yml", agent: "copilot-ci-autofix-agent" }
   ];
 
