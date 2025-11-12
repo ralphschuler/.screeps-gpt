@@ -81,6 +81,7 @@ jobs:
       - name: Build and deploy
         id: deploy
         env:
+          PROFILER_ENABLED: ${{ vars.PROFILER_ENABLED || 'true' }}
           SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
           SCREEPS_HOST: ${{ vars.SCREEPS_HOST }}
           SCREEPS_PORT: ${{ vars.SCREEPS_PORT }}
