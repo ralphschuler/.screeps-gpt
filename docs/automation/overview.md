@@ -544,15 +544,19 @@ Quality checks are split into separate guard workflows for better granularity an
 - Trigger: Issues opened or reopened.
 - Behaviour: Copilot performs comprehensive context-aware triage by:
   - Fetching all existing open issues for duplicate detection and relationship analysis
+  - **Gathering code context** by searching for related files in `.github/workflows/`, `.github/actions/`, `src/`, `tests/` directories
+  - **Cross-referencing issues** to find related open and closed issues with similar keywords or technical context
+  - **Cross-referencing pull requests** to find related PRs that touch similar code or address related problems
   - Detecting and handling duplicate issues automatically (comments on both issues, closes duplicate with "duplicate" reason)
   - Identifying related issues, sub-tasks, and parent-child relationships
   - Reformulating title and description to clearly outline required changes and expectations
+  - Including discovered context in reformulated body: "Related Code", "Related Issues", "Related PRs" sections
   - Applying appropriate labels based on content analysis (**excludes automatic Todo labeling** per issue #78)
   - Linking related issues in the reformulated description
   - Establishing sub-issue connections via GitHub CLI when parent-child relationships are detected
-  - Adding a single triage comment with summary and recommendations (avoids redundant comments)
+  - Adding a single triage comment with summary, discovered context, and recommendations (avoids redundant comments)
 - Permissions: Uses the default `GITHUB_TOKEN` with `issues: write` to edit issue metadata, add comments, and close duplicates.
-- Integration: Uses GitHub MCP server for querying all issues and performing relationship analysis.
+- Integration: Uses GitHub MCP server for querying issues, searching code, and performing relationship analysis.
 - Action Enforcement: Mandatory reformulation, labeling, and triage comments with failure handling for API issues.
 
 ## Copilot Todo Automation (`copilot-todo-pr.yml`)
