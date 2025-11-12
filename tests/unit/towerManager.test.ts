@@ -365,4 +365,223 @@ describe("TowerManager", () => {
       expect(actions.repair).toBe(0);
     });
   });
+
+  describe("Wall upgrade stage integration", () => {
+    it("should not repair walls that meet current RCL stage target", () => {
+      const tower: StructureTower = {
+        id: "tower1" as Id<StructureTower>,
+        structureType: STRUCTURE_TOWER,
+        pos: {
+          x: 25,
+          y: 25,
+          getRangeTo: vi.fn(),
+          findClosestByRange: vi.fn()
+        } as unknown as RoomPosition,
+        attack: vi.fn(() => OK),
+        heal: vi.fn(() => OK),
+        repair: vi.fn(() => OK)
+      } as unknown as StructureTower;
+
+      const wallAtTarget: StructureWall = {
+        id: "wall1" as Id<StructureWall>,
+        structureType: STRUCTURE_WALL,
+        hits: 100_000, // At target for RCL 4
+        hitsMax: 300_000_000
+      } as StructureWall;
+
+      const mockRoom: RoomLike = {
+        name: "W0N0",
+        controller: { level: 4 } as StructureController,
+        find: (type: FindConstant, opts?: FilterOptions<FIND_STRUCTURES>) => {
+          if (type === FIND_MY_STRUCTURES) {
+            return [tower];
+          }
+          if (type === FIND_HOSTILE_CREEPS) {
+            return [];
+          }
+          if (type === FIND_MY_CREEPS) {
+            return [];
+          }
+          if (type === FIND_STRUCTURES && opts?.filter) {
+            return [wallAtTarget].filter(opts.filter as (s: Structure) => boolean);
+          }
+          return [];
+        }
+      };
+
+      const actions = towerManager.run(mockRoom);
+
+      expect(tower.repair).not.toHaveBeenCalled();
+      expect(actions.repair).toBe(0);
+    });
+
+    it("should repair walls below current RCL stage target", () => {
+      const tower: StructureTower = {
+        id: "tower1" as Id<StructureTower>,
+        structureType: STRUCTURE_TOWER,
+        pos: {
+          x: 25,
+          y: 25,
+          getRangeTo: vi.fn(),
+          findClosestByRange: vi.fn(() => null)
+        } as unknown as RoomPosition,
+        attack: vi.fn(() => OK),
+        heal: vi.fn(() => OK),
+        repair: vi.fn(() => OK)
+      } as unknown as StructureTower;
+
+      const wallBelowTarget: StructureWall = {
+        id: "wall1" as Id<StructureWall>,
+        structureType: STRUCTURE_WALL,
+        hits: 50_000, // Below target for RCL 4 (100,000)
+        hitsMax: 300_000_000
+      } as StructureWall;
+
+      const mockRoom: RoomLike = {
+        name: "W0N0",
+        controller: { level: 4 } as StructureController,
+        find: (type: FindConstant, opts?: FilterOptions<FIND_STRUCTURES>) => {
+          if (type === FIND_MY_STRUCTURES) {
+            return [tower];
+          }
+          if (type === FIND_HOSTILE_CREEPS) {
+            return [];
+          }
+          if (type === FIND_MY_CREEPS) {
+            return [];
+          }
+          if (type === FIND_STRUCTURES && opts?.filter) {
+            return [wallBelowTarget].filter(opts.filter as (s: Structure) => boolean);
+          }
+          return [];
+        }
+      };
+
+      const actions = towerManager.run(mockRoom);
+
+      expect(tower.repair).toHaveBeenCalledWith(wallBelowTarget);
+      expect(actions.repair).toBe(1);
+    });
+
+    it("should not repair ramparts that meet current RCL stage target", () => {
+      const tower: StructureTower = {
+        id: "tower1" as Id<StructureTower>,
+        structureType: STRUCTURE_TOWER,
+        pos: {
+          x: 25,
+          y: 25,
+          getRangeTo: vi.fn(),
+          findClosestByRange: vi.fn()
+        } as unknown as RoomPosition,
+        attack: vi.fn(() => OK),
+        heal: vi.fn(() => OK),
+        repair: vi.fn(() => OK)
+      } as unknown as StructureTower;
+
+      const rampartAboveTarget: StructureRampart = {
+        id: "rampart1" as Id<StructureRampart>,
+        structureType: STRUCTURE_RAMPART,
+        hits: 150_000, // Above target for RCL 4 (100,000)
+        hitsMax: 300_000_000
+      } as StructureRampart;
+
+      const mockRoom: RoomLike = {
+        name: "W0N0",
+        controller: { level: 4 } as StructureController,
+        find: (type: FindConstant, opts?: FilterOptions<FIND_STRUCTURES>) => {
+          if (type === FIND_MY_STRUCTURES) {
+            return [tower];
+          }
+          if (type === FIND_HOSTILE_CREEPS) {
+            return [];
+          }
+          if (type === FIND_MY_CREEPS) {
+            return [];
+          }
+          if (type === FIND_STRUCTURES && opts?.filter) {
+            return [rampartAboveTarget].filter(opts.filter as (s: Structure) => boolean);
+          }
+          return [];
+        }
+      };
+
+      const actions = towerManager.run(mockRoom);
+
+      expect(tower.repair).not.toHaveBeenCalled();
+      expect(actions.repair).toBe(0);
+    });
+
+    it("should adapt repair targets when RCL changes", () => {
+      const tower: StructureTower = {
+        id: "tower1" as Id<StructureTower>,
+        structureType: STRUCTURE_TOWER,
+        pos: {
+          x: 25,
+          y: 25,
+          getRangeTo: vi.fn(),
+          findClosestByRange: vi.fn(() => null)
+        } as unknown as RoomPosition,
+        attack: vi.fn(() => OK),
+        heal: vi.fn(() => OK),
+        repair: vi.fn(() => OK)
+      } as unknown as StructureTower;
+
+      const wall: StructureWall = {
+        id: "wall1" as Id<StructureWall>,
+        structureType: STRUCTURE_WALL,
+        hits: 50_000, // At target for RCL 3, below for RCL 4
+        hitsMax: 300_000_000
+      } as StructureWall;
+
+      // At RCL 3, wall meets target (50,000)
+      const mockRoomRCL3: RoomLike = {
+        name: "W0N0",
+        controller: { level: 3 } as StructureController,
+        find: (type: FindConstant, opts?: FilterOptions<FIND_STRUCTURES>) => {
+          if (type === FIND_MY_STRUCTURES) {
+            return [tower];
+          }
+          if (type === FIND_HOSTILE_CREEPS) {
+            return [];
+          }
+          if (type === FIND_MY_CREEPS) {
+            return [];
+          }
+          if (type === FIND_STRUCTURES && opts?.filter) {
+            return [wall].filter(opts.filter as (s: Structure) => boolean);
+          }
+          return [];
+        }
+      };
+
+      const actionsRCL3 = towerManager.run(mockRoomRCL3);
+      expect(actionsRCL3.repair).toBe(0);
+
+      // At RCL 4, same wall needs repair (target is 100,000)
+      const mockRoomRCL4: RoomLike = {
+        name: "W0N0",
+        controller: { level: 4 } as StructureController,
+        find: (type: FindConstant, opts?: FilterOptions<FIND_STRUCTURES>) => {
+          if (type === FIND_MY_STRUCTURES) {
+            return [tower];
+          }
+          if (type === FIND_HOSTILE_CREEPS) {
+            return [];
+          }
+          if (type === FIND_MY_CREEPS) {
+            return [];
+          }
+          if (type === FIND_STRUCTURES && opts?.filter) {
+            return [wall].filter(opts.filter as (s: Structure) => boolean);
+          }
+          return [];
+        }
+      };
+
+      tower.repair = vi.fn(() => OK); // Reset mock
+      const actionsRCL4 = towerManager.run(mockRoomRCL4);
+      expect(tower.repair).toHaveBeenCalledWith(wall);
+      expect(actionsRCL4.repair).toBe(1);
+    });
+  });
 });
