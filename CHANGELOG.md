@@ -17,6 +17,15 @@ All notable changes to this project are documented here. This changelog now main
   - Implements automated detection of empty stats within 15 minutes
   - Prevents recurrence of issues #523, #331, #345 through proactive monitoring
   - Resolves #550: PTR telemetry blackout regression - empty stats data despite successful deployments
+## [0.50.0] - 2025-11-12
+
+### Added
+
+- **Builder Wall Maintenance**: Builder role now repairs walls and ramparts to configurable target HP thresholds
+  - Added `WALL_TARGET_HP` constant (100,000 HP) for wall repair threshold
+  - Added `RAMPART_TARGET_HP` constant (50,000 HP) for rampart repair threshold
+  - Modified builder repair filter to include walls/ramparts below target HP
+  - Fixes #644: Builder role now maintains defensive structures
 
 ## [0.48.0] - 2025-11-12
 
