@@ -1,0 +1,240 @@
+---
+name: Deprecation Check
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "packages/**/*.ts"
+      - "src/**/*.ts"
+      - ".github/labels.yml"
+  push:
+    branches: [main]
+    paths:
+      - "packages/**/*.ts"
+      - "src/**/*.ts"
+      - ".github/labels.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: guard-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-deprecated-usage:
+    name: Check Deprecated API Usage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.1
+
+      - name: Install dependencies
+        run: bun install --no-optional
+
+      - name: Run ESLint with deprecation checks
+        id: lint
+        run: |
+          echo "Running ESLint to detect deprecated API usage..."
+          bun run lint 2>&1 | tee eslint-output.txt
+          exit_code=${PIPESTATUS[0]}
+
+          # Check if there are any deprecation warnings
+          if grep -q "@typescript-eslint/no-deprecated" \
+            eslint-output.txt; then
+            echo "deprecation_warnings=true" >> $GITHUB_OUTPUT
+            echo "⚠️ Deprecated API usage detected"
+          else
+            echo "deprecation_warnings=false" >> $GITHUB_OUTPUT
+            echo "✅ No deprecated API usage detected"
+          fi
+
+          exit $exit_code
+        continue-on-error: true
+
+      - name: Search for deprecated features in code
+        id: search
+        run: |
+          echo "Searching for @deprecated tags and usage..."
+
+          # Find all @deprecated tags
+          echo "## Deprecated Features" > deprecation-report.md
+          echo "" >> deprecation-report.md
+
+          deprecated_count=0
+
+          if grep -r "@deprecated" packages/ src/ \
+            --include="*.ts" -n -A 3 > /dev/null 2>&1; then
+            echo "### @deprecated Tags" \
+              >> deprecation-report.md
+            echo "" >> deprecation-report.md
+            echo '```' >> deprecation-report.md
+            grep -r "@deprecated" packages/ src/ \
+              --include="*.ts" -n -A 3 2>/dev/null || true
+            grep -r "@deprecated" packages/ src/ \
+              --include="*.ts" -n -A 3 \
+              >> deprecation-report.md 2>/dev/null || true
+            echo '```' >> deprecation-report.md
+            echo "" >> deprecation-report.md
+            deprecated_count=$(grep -r "@deprecated" \
+              packages/ src/ --include="*.ts" \
+              2>/dev/null | wc -l || echo "0")
+          else
+            echo "No @deprecated tags found." \
+              >> deprecation-report.md
+          fi
+
+          # Check for deprecated label usage in workflows
+          echo "### Deprecated Label Usage" \
+            >> deprecation-report.md
+          echo "" >> deprecation-report.md
+
+          pattern="labels:.*\(bug\|enhancement\|severity/\)"
+          if grep -r "$pattern" .github/workflows/ \
+            --include="*.yml" --include="*.yaml" \
+            -n > /dev/null 2>&1; then
+            echo "⚠️ Found deprecated label usage:" \
+              >> deprecation-report.md
+            echo '```' >> deprecation-report.md
+            grep -r "$pattern" .github/workflows/ \
+              --include="*.yml" --include="*.yaml" -n \
+              >> deprecation-report.md 2>/dev/null || true
+            echo '```' >> deprecation-report.md
+          else
+            echo "✅ No deprecated label usage found." \
+              >> deprecation-report.md
+          fi
+
+          echo "" >> deprecation-report.md
+          echo "**Total @deprecated tags**: $deprecated_count" \
+            >> deprecation-report.md
+
+          cat deprecation-report.md
+          echo "deprecated_count=$deprecated_count" \
+            >> $GITHUB_OUTPUT
+
+      - name: Check for new deprecated API usage in PR
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "Checking if PR introduces new deprecated usage..."
+
+          # Report if deprecation warnings exist
+          if [ "${{ steps.lint.outputs.deprecation_warnings }}" \
+            == "true" ]; then
+            echo "::warning::This PR may introduce new usage"
+            echo "::warning::of deprecated APIs."
+            echo "::warning::Please review ESLint output."
+          fi
+
+      - name: Comment on PR with deprecation report
+        if: >
+          github.event_name == 'pull_request' &&
+          steps.search.outputs.deprecated_count > 0
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync(
+              'deprecation-report.md',
+              'utf8'
+            );
+
+            const repoUrl = 'https://github.com/' +
+              '${{ github.repository }}';
+            const policyUrl = repoUrl +
+              '/blob/main/docs/development/deprecation-policy.md';
+            const registryUrl = repoUrl +
+              '/blob/main/docs/development/deprecation-registry.md';
+
+            const comment = `## 🔔 Deprecation Check Report
+
+            ${report}
+
+            ### Guidelines
+            - Review [Deprecation Policy](${policyUrl})
+            - Check [Deprecation Registry](${registryUrl})
+            - Ensure deprecated features have migration paths
+            - Avoid introducing new usage of deprecated APIs
+
+            ---
+            *Automatically generated by deprecation workflow.*`;
+
+            // Find existing comment
+            const { data: comments } =
+              await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('Deprecation Check Report')
+            );
+
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }
+
+      - name: Upload deprecation report
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: deprecation-report
+          path: |
+            deprecation-report.md
+            eslint-output.txt
+          retention-days: 30
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Deprecation Check Summary" \
+            >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.lint.outputs.deprecation_warnings }}" \
+            == "true" ]; then
+            echo "⚠️ **Warnings detected**" \
+              >> $GITHUB_STEP_SUMMARY
+            echo "Review ESLint output" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ **No warnings**" >> $GITHUB_STEP_SUMMARY
+            echo "Code is clean" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Deprecated features found**: " \
+            "${{ steps.search.outputs.deprecated_count }}" \
+            >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          repoUrl="https://github.com/${{ github.repository }}"
+          policyUrl="$repoUrl/blob/main/docs/development"
+          policyUrl="$policyUrl/deprecation-policy.md"
+          echo "See [Deprecation Policy]($policyUrl)" \
+            >> $GITHUB_STEP_SUMMARY
