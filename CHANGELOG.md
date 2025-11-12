@@ -5,6 +5,19 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Removed
+
+- **Spec-Kit Workflow System**: Removed unused specification-driven development workflow infrastructure
+  - Deleted workflow file `.github/workflows/copilot-speckit.yml`
+  - Deleted prompt templates `.github/copilot/prompts/speckit-plan` and `speckit-refine`
+  - Deleted documentation `docs/automation/spec-kit-workflow.md` from all documentation locations
+  - Removed `speckit` label definition from `.github/labels.yml`
+  - Removed all spec-kit references from automation documentation
+  - Deleted regression test `tests/regression/speckit-workflow-structure.test.js`
+  - Repository has standardized on Todo automation workflow for implementations
+  - Reduces maintenance burden and simplifies automation surface area
+  - Resolves #557: Remove unused spec-kit workflow and documentation
+
 ## [0.51.3] - 2025-11-12
 
 ### Added

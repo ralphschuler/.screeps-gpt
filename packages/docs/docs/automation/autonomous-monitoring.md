@@ -305,7 +305,6 @@ The consolidation provides:
 Issues created by the monitoring workflow can trigger:
 
 - **Copilot Todo Automation** when labeled with `Todo`
-- **Copilot Spec-Kit** for detailed implementation planning when labeled with `speckit`
 - **CI Autofix** if monitoring identifies workflow failures
 
 ### Data Flow

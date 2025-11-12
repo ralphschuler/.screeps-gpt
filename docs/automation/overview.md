@@ -588,19 +588,6 @@ Quality checks are split into separate guard workflows for better granularity an
 - Concurrency: Single execution at a time via `copilot-todo-daily` concurrency group.
 - Action Enforcement: Mandatory actionability validation with explicit criteria, comprehensive dependency analysis, and professional explanatory comments for all label assignments.
 
-## Copilot Spec-Kit (`copilot-speckit.yml`)
-
-- Trigger: Issues labelled `speckit` OR issue comments starting with `@speckit`.
-- Behaviour: Implements specification-driven development workflow by:
-  - **Plan Generation** (on `speckit` label): Analyzes the issue and creates a detailed implementation plan following spec-kit principles, posts plan as an issue comment with clear sections (Problem Statement, Solution Overview, Implementation Steps, Acceptance Criteria, Dependencies, Risk Assessment)
-  - **Plan Refinement** (on `@speckit` comment): Updates the existing plan based on user feedback, maintaining structure while incorporating improvements, tracks changes through revision history
-  - **Plan Finalization** (on `@speckit finalize` comment): Reviews the plan for completeness, applies final improvements, adds the `Todo` label to trigger automated implementation, and posts confirmation comment
-- Permissions: Uses the default `GITHUB_TOKEN` with `issues: write` for commenting and label management.
-- Integration: Works seamlessly with Copilot Todo automation - finalized plans are automatically picked up for implementation when the `Todo` label is applied.
-- Workflow Purpose: Provides a structured planning phase before implementation, allowing stakeholders to review and refine specifications before code changes are made.
-- Action Enforcement: Mandatory comprehensive planning, actionable specifications aligned with repository conventions, proper comment editing (no duplicates), and clear revision tracking.
-- Documentation: See [Spec-Kit Workflow Guide](./spec-kit-workflow.md) for detailed usage instructions, examples, and best practices.
-
 ## Copilot Email Triage (`copilot-email-triage.yml`)
 
 - Trigger: `repository_dispatch` events with `event_type` set to `copilot_email_triage`.
