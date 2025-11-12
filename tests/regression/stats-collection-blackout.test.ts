@@ -26,9 +26,7 @@ describe("Regression: Stats Collection Blackout (#550, #523)", () => {
       cpu: {
         getUsed: () => 5.0,
         limit: 100,
-        bucket: 9500,
-        tickLimit: 500,
-        shardLimits: {}
+        bucket: 9500
       },
       creeps: {},
       spawns: {},
