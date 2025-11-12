@@ -4,7 +4,7 @@ import { TaskManager } from "@runtime/tasks";
 import { profile } from "@profiler";
 import { CreepCommunicationManager } from "./CreepCommunicationManager";
 
-type RoleName = "harvester" | "upgrader" | "builder" | "remoteMiner" | "stationaryHarvester" | "hauler";
+type RoleName = "harvester" | "upgrader" | "builder" | "remoteMiner" | "stationaryHarvester" | "hauler" | "repairer";
 
 interface BaseCreepMemory extends CreepMemory {
   role: RoleName;
@@ -29,6 +29,7 @@ const BUILDER_VERSION = 1;
 const REMOTE_MINER_VERSION = 1;
 const STATIONARY_HARVESTER_VERSION = 1;
 const HAULER_VERSION = 1;
+const REPAIRER_VERSION = 1;
 
 const HARVEST_TASK = "harvest" as const;
 const DELIVER_TASK = "deliver" as const;
@@ -43,6 +44,8 @@ const REMOTE_RETURN_TASK = "return" as const;
 const STATIONARY_HARVEST_TASK = "stationaryHarvest" as const;
 const HAULER_PICKUP_TASK = "pickup" as const;
 const HAULER_DELIVER_TASK = "haulerDeliver" as const;
+const REPAIRER_GATHER_TASK = "repairerGather" as const;
+const REPAIRER_REPAIR_TASK = "repair" as const;
 
 // Target HP thresholds for defensive structures
 const WALL_TARGET_HP = 100_000;
@@ -54,6 +57,7 @@ type BuilderTask = typeof BUILDER_GATHER_TASK | typeof BUILDER_BUILD_TASK | type
 type RemoteMinerTask = typeof REMOTE_TRAVEL_TASK | typeof REMOTE_MINE_TASK | typeof REMOTE_RETURN_TASK;
 type StationaryHarvesterTask = typeof STATIONARY_HARVEST_TASK;
 type HaulerTask = typeof HAULER_PICKUP_TASK | typeof HAULER_DELIVER_TASK;
+type RepairerTask = typeof REPAIRER_GATHER_TASK | typeof REPAIRER_REPAIR_TASK;
 
 interface HarvesterMemory extends BaseCreepMemory {
   task: HarvesterTask;
@@ -82,6 +86,10 @@ interface StationaryHarvesterMemory extends BaseCreepMemory {
 
 interface HaulerMemory extends BaseCreepMemory {
   task: HaulerTask;
+}
+
+interface RepairerMemory extends BaseCreepMemory {
+  task: RepairerTask;
 }
 
 /**
@@ -175,6 +183,17 @@ const ROLE_DEFINITIONS: Record<RoleName, RoleDefinition> = {
         version: HAULER_VERSION
       }) satisfies HaulerMemory,
     run: (creep: ManagedCreep) => runHauler(creep)
+  },
+  repairer: {
+    minimum: 0,
+    body: [WORK, WORK, CARRY, MOVE, MOVE],
+    memory: () =>
+      ({
+        role: "repairer",
+        task: REPAIRER_GATHER_TASK,
+        version: REPAIRER_VERSION
+      }) satisfies RepairerMemory,
+    run: (creep: ManagedCreep) => runRepairer(creep)
   }
 };
 
@@ -359,6 +378,65 @@ export class BehaviorController {
     };
   }
 
+  /**
+   * Calculates dynamic role minimums based on room infrastructure.
+   *
+   * When containers exist near energy sources, the system transitions to a more
+   * efficient harvesting model:
+   * - Stationary harvesters: 1 per source with adjacent container
+   * - Haulers: 2 per room (transport energy from containers)
+   * - Repairers: 1 per room (maintain infrastructure)
+   * - Regular harvesters: reduced from 4 to 2
+   *
+   * @param game - The game context
+   * @returns Adjusted role minimums for the current room state
+   */
+  private calculateDynamicRoleMinimums(game: GameContext): Partial<Record<RoleName, number>> {
+    const adjustedMinimums: Partial<Record<RoleName, number>> = {};
+
+    // Count sources with adjacent containers across all controlled rooms
+    let totalSourcesWithContainers = 0;
+    let controlledRoomCount = 0;
+
+    for (const room of Object.values(game.rooms)) {
+      if (!room.controller?.my) {
+        continue;
+      }
+
+      controlledRoomCount++;
+
+      // Find all sources in the room
+      const sources = room.find(FIND_SOURCES);
+
+      for (const source of sources) {
+        // Check for containers adjacent to this source
+        const nearbyStructures = source.pos.findInRange(FIND_STRUCTURES, 1);
+        const hasContainer = nearbyStructures.some(s => s.structureType === STRUCTURE_CONTAINER);
+
+        if (hasContainer) {
+          totalSourcesWithContainers++;
+        }
+      }
+    }
+
+    // If we have containers near sources, transition to container-based economy
+    if (totalSourcesWithContainers > 0 && controlledRoomCount > 0) {
+      // Spawn 1 stationary harvester per source with container
+      adjustedMinimums.stationaryHarvester = totalSourcesWithContainers;
+
+      // Spawn 2 haulers per controlled room
+      adjustedMinimums.hauler = controlledRoomCount * 2;
+
+      // Spawn 1 repairer per controlled room
+      adjustedMinimums.repairer = controlledRoomCount;
+
+      // Reduce regular harvesters from 4 to 2
+      adjustedMinimums.harvester = 2;
+    }
+
+    return adjustedMinimums;
+  }
+
   private ensureRoleMinimums(
     game: GameContext,
     memory: Memory,
@@ -379,9 +457,13 @@ export class BehaviorController {
     // Validate spawn health on each tick
     this.validateSpawnHealth(game.spawns, game.creeps, game.time, memory);
 
+    // Detect containers near sources and adjust role minimums dynamically
+    const adjustedMinimums = this.calculateDynamicRoleMinimums(game);
+
     for (const [role, definition] of Object.entries(ROLE_DEFINITIONS)) {
       const current = roleCounts[role] ?? 0;
-      const targetMinimum = bootstrapMinimums[role as RoleName] ?? definition.minimum;
+      const dynamicMinimum = adjustedMinimums[role as RoleName] ?? definition.minimum;
+      const targetMinimum = bootstrapMinimums[role as RoleName] ?? dynamicMinimum;
 
       if (current >= targetMinimum) {
         continue;
@@ -1138,4 +1220,175 @@ function runHauler(creep: ManagedCreep): string {
   }
 
   return HAULER_DELIVER_TASK;
+}
+
+/**
+ * Ensures the repairer creep's task state is consistent with its energy store.
+ *
+ * If the current task is invalid, sets it to gather. Transitions from gather to repair
+ * when the creep's energy store is full, and from repair to gather when empty.
+ *
+ * @param memory - The repairer's memory object, containing the current task.
+ * @param creep - The repairer creep instance.
+ * @returns The updated repairer task.
+ */
+function ensureRepairerTask(memory: RepairerMemory, creep: CreepLike): RepairerTask {
+  if (memory.task !== REPAIRER_GATHER_TASK && memory.task !== REPAIRER_REPAIR_TASK) {
+    memory.task = REPAIRER_GATHER_TASK;
+    return memory.task;
+  }
+
+  if (memory.task === REPAIRER_GATHER_TASK && creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+    memory.task = REPAIRER_REPAIR_TASK;
+  } else if (memory.task === REPAIRER_REPAIR_TASK && creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+    memory.task = REPAIRER_GATHER_TASK;
+  }
+
+  return memory.task;
+}
+
+/**
+ * Executes the behavior logic for a repairer creep.
+ *
+ * Repairers are responsible for maintaining structures in the room. They gather energy
+ * from containers or storage, then repair structures with priority given to:
+ *   1. Roads and containers (infrastructure)
+ *   2. Other structures (excluding walls and ramparts above target HP)
+ *
+ * When in gather mode, the repairer seeks out containers with energy (priority) or
+ * storage, withdrawing energy as appropriate. When in repair mode, the repairer
+ * identifies and repairs damaged structures following the priority order above.
+ *
+ * The function manages the repairer's task state (gather or repair) and moves the creep
+ * accordingly.
+ *
+ * @param creep - The repairer creep to run behavior for.
+ * @returns The current repairer task ("repairerGather" or "repair") as a string.
+ */
+function runRepairer(creep: ManagedCreep): string {
+  const memory = creep.memory as RepairerMemory;
+  const task = ensureRepairerTask(memory, creep);
+  const comm = getComm();
+
+  if (task === REPAIRER_GATHER_TASK) {
+    comm?.say(creep, "gather");
+
+    // Find valid energy sources (containers and storage only, NOT spawns/extensions/towers)
+    const energySources = creep.room.find(FIND_STRUCTURES, {
+      filter: isValidEnergySource
+    }) as AnyStoreStructure[];
+
+    const target = energySources.length > 0 ? (creep.pos.findClosestByPath(energySources) ?? energySources[0]) : null;
+    if (target) {
+      const result = creep.withdraw(target, RESOURCE_ENERGY);
+      if (result === ERR_NOT_IN_RANGE) {
+        creep.moveTo(target, { range: 1, reusePath: 30 });
+      }
+      return REPAIRER_GATHER_TASK;
+    }
+
+    // Fallback: Check for dropped energy
+    const droppedEnergy = creep.room.find(FIND_DROPPED_RESOURCES, {
+      filter: r => r.resourceType === RESOURCE_ENERGY && r.amount > 50
+    }) as Resource[];
+
+    if (droppedEnergy.length > 0) {
+      const closest = creep.pos.findClosestByPath(droppedEnergy);
+      const droppedTarget = closest ?? droppedEnergy[0];
+      const result = creep.pickup(droppedTarget);
+      if (result === ERR_NOT_IN_RANGE) {
+        creep.moveTo(droppedTarget, { range: 1, reusePath: 30 });
+      }
+      return REPAIRER_GATHER_TASK;
+    }
+
+    // Fallback: Harvest from sources directly if no other options
+    const sources = creep.room.find(FIND_SOURCES_ACTIVE) as Source[];
+    const source = sources.length > 0 ? (creep.pos.findClosestByPath(sources) ?? sources[0]) : null;
+    if (source) {
+      const harvestResult = creep.harvest(source);
+      if (harvestResult === ERR_NOT_IN_RANGE) {
+        creep.moveTo(source, { range: 1, reusePath: 30 });
+      }
+    }
+
+    return REPAIRER_GATHER_TASK;
+  }
+
+  // REPAIRER_REPAIR_TASK
+  comm?.say(creep, "repair");
+
+  // Priority 1: Roads and containers (infrastructure)
+  const infrastructureTargets = creep.room.find(FIND_STRUCTURES, {
+    filter: (structure: AnyStructure) => {
+      if (!("hits" in structure) || typeof structure.hits !== "number") {
+        return false;
+      }
+
+      // Prioritize roads and containers
+      if (structure.structureType === STRUCTURE_ROAD || structure.structureType === STRUCTURE_CONTAINER) {
+        return structure.hits < structure.hitsMax;
+      }
+
+      return false;
+    }
+  }) as Structure[];
+
+  if (infrastructureTargets.length > 0) {
+    const target =
+      infrastructureTargets.length > 0
+        ? (creep.pos.findClosestByPath(infrastructureTargets) ?? infrastructureTargets[0])
+        : null;
+    if (target) {
+      const result = creep.repair(target);
+      if (result === ERR_NOT_IN_RANGE) {
+        creep.moveTo(target, { range: 3, reusePath: 30 });
+      }
+      return REPAIRER_REPAIR_TASK;
+    }
+  }
+
+  // Priority 2: Other structures (excluding walls and ramparts)
+  const repairTargets = creep.room.find(FIND_STRUCTURES, {
+    filter: (structure: AnyStructure) => {
+      if (!("hits" in structure) || typeof structure.hits !== "number") {
+        return false;
+      }
+
+      // Skip infrastructure (already handled above)
+      if (structure.structureType === STRUCTURE_ROAD || structure.structureType === STRUCTURE_CONTAINER) {
+        return false;
+      }
+
+      if (structure.structureType === STRUCTURE_WALL) {
+        return structure.hits < WALL_TARGET_HP;
+      }
+
+      if (structure.structureType === STRUCTURE_RAMPART) {
+        return structure.hits < RAMPART_TARGET_HP;
+      }
+
+      return structure.hits < structure.hitsMax;
+    }
+  }) as Structure[];
+
+  const target = repairTargets.length > 0 ? (creep.pos.findClosestByPath(repairTargets) ?? repairTargets[0]) : null;
+  if (target) {
+    const result = creep.repair(target);
+    if (result === ERR_NOT_IN_RANGE) {
+      creep.moveTo(target, { range: 3, reusePath: 30 });
+    }
+    return REPAIRER_REPAIR_TASK;
+  }
+
+  // No repairs needed, idle or upgrade controller as fallback
+  const controller = creep.room.controller;
+  if (controller) {
+    const upgrade = creep.upgradeController(controller);
+    if (upgrade === ERR_NOT_IN_RANGE) {
+      creep.moveTo(controller, { range: 3, reusePath: 30 });
+    }
+  }
+
+  return REPAIRER_REPAIR_TASK;
 }
