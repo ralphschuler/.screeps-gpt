@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.54.0] - 2025-11-12
+
 ### Added
 
 - **Container-Based Harvesting Automation**: Implemented dynamic role adjustment system that transitions to efficient container-based economy when infrastructure is ready
