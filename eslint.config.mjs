@@ -60,6 +60,9 @@ export default [
       "@typescript-eslint/no-use-before-define": ["error", { functions: false }],
       "@typescript-eslint/consistent-type-definitions": ["error", "interface"],
 
+      // Deprecation detection rules
+      "@typescript-eslint/no-deprecated": "warn",
+
       // Prettier integration (disable conflicting rules)
       ...prettierConfig.rules
     }

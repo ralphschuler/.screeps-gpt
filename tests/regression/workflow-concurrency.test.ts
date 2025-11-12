@@ -12,6 +12,7 @@ describe("Workflow concurrency controls", () => {
     // Guard workflows
     "guard-build.yml",
     "guard-coverage.yml",
+    "guard-deprecation.yml",
     "guard-format.yml",
     "guard-lint.yml",
     "guard-security-audit.yml",
