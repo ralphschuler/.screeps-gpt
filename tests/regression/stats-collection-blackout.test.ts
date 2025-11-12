@@ -42,10 +42,7 @@ describe("Regression: Stats Collection Blackout (#550, #523)", () => {
             my: true
           }
         }
-      },
-      flags: {},
-      structures: {},
-      constructionSites: {}
+      }
     } as GameContext;
   });
 
