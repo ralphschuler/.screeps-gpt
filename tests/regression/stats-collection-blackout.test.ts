@@ -1,14 +1,13 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { Kernel } from "@runtime/bootstrap/kernel";
 import type { GameContext } from "@runtime/types/GameContext";
-import type { PerformanceSnapshot } from "@shared/contracts";
 
 /**
  * Regression test for issue #550 (and #523, #331, #345)
- * 
+ *
  * Ensures Memory.stats is consistently populated on every kernel execution,
  * preventing telemetry blackout regressions where /api/user/stats returns empty data.
- * 
+ *
  * Root Cause: Memory.stats must be written on EVERY tick for the Screeps API
  * to sync it to /api/user/stats endpoint. If stats collection is skipped for
  * any reason (CPU timeout, early return, exception), telemetry goes dark.
@@ -167,14 +166,13 @@ describe("Regression: Stats Collection Blackout (#550, #523)", () => {
     const kernel = new Kernel();
 
     // Execute multiple ticks
-    const tickStats: PerformanceSnapshot[] = [];
     for (let i = 0; i < 5; i++) {
       game.time = 12345 + i;
       kernel.run(game, memory);
 
       expect(memory.stats).toBeDefined();
       expect(memory.stats?.time).toBe(game.time);
-      
+
       // Verify structure consistency
       expect(memory.stats?.cpu).toBeDefined();
       expect(memory.stats?.rooms).toBeDefined();

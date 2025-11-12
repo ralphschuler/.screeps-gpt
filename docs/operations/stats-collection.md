@@ -240,7 +240,7 @@ if (game.gcl) {
 The stats collection system has experienced multiple telemetry blackout regressions where the `/api/user/stats` endpoint returns empty data (`{"ok": 1, "stats": {}}`), despite the bot running successfully. This has occurred in:
 
 - **Issue #331** - Initial telemetry blackout (closed 2025-11-06)
-- **Issue #345** - Second occurrence (closed 2025-11-06)  
+- **Issue #345** - Second occurrence (closed 2025-11-06)
 - **Issue #523** - Third regression (closed 2025-11-09)
 - **Issue #550** - Fourth regression (2025-11-08) - **CURRENT**
 
@@ -275,11 +275,13 @@ New script `scripts/validate-telemetry-health.ts` validates:
 - Fallback activation status
 
 **Usage:**
+
 ```bash
 npx tsx scripts/validate-telemetry-health.ts
 ```
 
 **Integration:**
+
 - Monitoring workflow runs health check every 30 minutes
 - Deployment workflow validates telemetry 5 minutes post-deploy
 - Health check fails if availability < 90%
@@ -311,6 +313,7 @@ New test suite `tests/regression/stats-collection-blackout.test.ts` validates:
 - Stats maintain consistent format across ticks
 
 **Run tests:**
+
 ```bash
 npm run test:regression -- stats-collection-blackout
 ```
@@ -324,6 +327,7 @@ Multi-source fallback strategy prevents single-point-of-failure:
 3. **Failure**: Comprehensive diagnostic snapshot
 
 **Implementation:**
+
 ```bash
 npx tsx scripts/fetch-resilient-telemetry.ts
 ```
@@ -334,12 +338,12 @@ The script automatically tries all sources and marks which was used.
 
 **Automated Detection Criteria:**
 
-| Condition | Threshold | Action |
-|-----------|-----------|--------|
-| Empty stats detected | 1 occurrence | Create monitoring issue |
-| Stats age > 6 hours | Stale data | Warning logged |
-| Availability < 90% | Health check | Workflow failure |
-| Both sources fail | Infrastructure | Critical alert |
+| Condition            | Threshold      | Action                  |
+| -------------------- | -------------- | ----------------------- |
+| Empty stats detected | 1 occurrence   | Create monitoring issue |
+| Stats age > 6 hours  | Stale data     | Warning logged          |
+| Availability < 90%   | Health check   | Workflow failure        |
+| Both sources fail    | Infrastructure | Critical alert          |
 
 **Manual Detection:**
 
@@ -356,23 +360,27 @@ curl -H "X-Token: $SCREEPS_TOKEN" \
 **If telemetry blackout detected:**
 
 1. **Verify bot is running:**
+
    ```javascript
    // In Screeps console
-   JSON.stringify(Memory.stats)
+   JSON.stringify(Memory.stats);
    ```
 
 2. **Check stats collection:**
+
    ```javascript
    // Should show current tick data
-   Object.keys(Memory.stats || {})
+   Object.keys(Memory.stats || {});
    ```
 
 3. **Use console fallback:**
+
    ```bash
    npx tsx scripts/fetch-console-telemetry.ts
    ```
 
 4. **Validate health:**
+
    ```bash
    npx tsx scripts/validate-telemetry-health.ts
    ```
