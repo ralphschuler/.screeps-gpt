@@ -28,6 +28,7 @@ Without explicit timeouts, GitHub Actions workflows default to a **360-minute (6
 #### Fast Operations (5-15 minutes)
 
 **Use Cases:**
+
 - Linting and formatting checks
 - YAML validation
 - Quick guard workflows
@@ -36,6 +37,7 @@ Without explicit timeouts, GitHub Actions workflows default to a **360-minute (6
 - Label synchronization
 
 **Example:**
+
 ```yaml
 jobs:
   lint:
@@ -46,6 +48,7 @@ jobs:
 ```
 
 **Applicable Workflows:**
+
 - `guard-lint.yml` (15 min)
 - `guard-format.yml` (15 min)
 - `guard-yaml-lint.yml` (15 min)
@@ -56,6 +59,7 @@ jobs:
 #### Standard Operations (15-30 minutes)
 
 **Use Cases:**
+
 - Build validation
 - Unit test suites
 - Documentation builds
@@ -64,6 +68,7 @@ jobs:
 - Post-merge releases
 
 **Example:**
+
 ```yaml
 jobs:
   build:
@@ -74,6 +79,7 @@ jobs:
 ```
 
 **Applicable Workflows:**
+
 - `guard-build.yml` (15 min)
 - `guard-test-unit.yml` (15 min)
 - `guard-test-e2e.yml` (15 min)
@@ -91,11 +97,13 @@ jobs:
 #### Deployment Operations (10-15 minutes)
 
 **Use Cases:**
+
 - Deployment to production
 - Package publishing
 - Dependency auto-merge
 
 **Example:**
+
 ```yaml
 jobs:
   deploy:
@@ -106,6 +114,7 @@ jobs:
 ```
 
 **Applicable Workflows:**
+
 - `deploy.yml` (10 min)
 - `publish-package.yml` (10 min)
 - `dependabot-automerge.yml` (10 min)
@@ -113,6 +122,7 @@ jobs:
 #### Complex Operations (30-45 minutes)
 
 **Use Cases:**
+
 - Copilot-powered analysis
 - AI-driven automation
 - Issue triage and reformulation
@@ -121,6 +131,7 @@ jobs:
 - Comprehensive telemetry collection
 
 **Example:**
+
 ```yaml
 jobs:
   analyze:
@@ -131,6 +142,7 @@ jobs:
 ```
 
 **Applicable Workflows:**
+
 - `copilot-review.yml` (45 min)
 - `copilot-issue-triage.yml` (45 min)
 - `copilot-todo-pr.yml` (45 min)
@@ -151,7 +163,7 @@ Always add `timeout-minutes` at the job level, not the workflow level:
 jobs:
   my-job:
     runs-on: ubuntu-latest
-    timeout-minutes: 15  # ✅ Correct
+    timeout-minutes: 15 # ✅ Correct
     steps:
       - name: Step 1
         run: echo "example"
@@ -165,14 +177,14 @@ Each job should have its own appropriate timeout:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 15  # Build needs 15 minutes
+    timeout-minutes: 15 # Build needs 15 minutes
     steps:
       # ... build steps
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 10  # Deploy needs 10 minutes
+    timeout-minutes: 10 # Deploy needs 10 minutes
     steps:
       # ... deploy steps
 ```
@@ -186,7 +198,7 @@ jobs:
   conditional-job:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
-    timeout-minutes: 15  # ✅ Still required
+    timeout-minutes: 15 # ✅ Still required
     steps:
       # ... steps
 ```
@@ -216,6 +228,7 @@ gh run view <run-id> --log
 #### Adjusting Timeouts
 
 Timeouts may need adjustment based on:
+
 - Workflow evolution (new steps added)
 - Repository growth (larger codebases)
 - Dependency updates (slower/faster operations)
@@ -263,7 +276,7 @@ concurrency:
 jobs:
   my-job:
     runs-on: ubuntu-latest
-    timeout-minutes: 15  # ⚠️ REQUIRED: Set appropriate value
+    timeout-minutes: 15 # ⚠️ REQUIRED: Set appropriate value
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -308,6 +321,7 @@ If a workflow hangs despite timeout configuration:
 ### Maintenance
 
 This document should be updated when:
+
 - New workflow types are introduced
 - Timeout patterns change
 - Best practices evolve
