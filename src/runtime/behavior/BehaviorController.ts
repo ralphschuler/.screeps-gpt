@@ -97,16 +97,17 @@ interface RepairerMemory extends BaseCreepMemory {
  * Valid sources include containers and storage, but NOT spawns, extensions, or towers.
  *
  * @param structure - The structure to check
+ * @param minEnergy - Minimum energy threshold (default: 0)
  * @returns true if the structure is a valid energy source for withdrawal
  */
-function isValidEnergySource(structure: AnyStructure): boolean {
+function isValidEnergySource(structure: AnyStructure, minEnergy: number = 0): boolean {
   // Only containers and storage are valid withdrawal sources
   if (structure.structureType !== STRUCTURE_CONTAINER && structure.structureType !== STRUCTURE_STORAGE) {
     return false;
   }
 
   const store = structure as AnyStoreStructure;
-  return store.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
+  return store.store.getUsedCapacity(RESOURCE_ENERGY) > minEnergy;
 }
 
 /**
@@ -574,6 +575,21 @@ export class BehaviorController {
  */
 function getComm(): CreepCommunicationManager | null {
   return communicationManager;
+}
+
+/**
+ * Helper function to find the closest target by path or fall back to the first target.
+ * Reduces code duplication throughout the file.
+ *
+ * @param creep - The creep to find a path from
+ * @param targets - Array of potential targets
+ * @returns The closest target by path, or the first target if pathfinding fails, or null if no targets
+ */
+function findClosestOrFirst<T extends _HasRoomPosition>(creep: CreepLike, targets: T[]): T | null {
+  if (targets.length === 0) {
+    return null;
+  }
+  return creep.pos.findClosestByPath(targets) ?? targets[0];
 }
 
 function ensureHarvesterTask(memory: HarvesterMemory, creep: CreepLike): HarvesterTask {
@@ -1275,10 +1291,10 @@ function runRepairer(creep: ManagedCreep): string {
 
     // Find valid energy sources (containers and storage only, NOT spawns/extensions/towers)
     const energySources = creep.room.find(FIND_STRUCTURES, {
-      filter: isValidEnergySource
+      filter: s => isValidEnergySource(s, 50)
     }) as AnyStoreStructure[];
 
-    const target = energySources.length > 0 ? (creep.pos.findClosestByPath(energySources) ?? energySources[0]) : null;
+    const target = findClosestOrFirst(creep, energySources);
     if (target) {
       const result = creep.withdraw(target, RESOURCE_ENERGY);
       if (result === ERR_NOT_IN_RANGE) {
@@ -1292,9 +1308,8 @@ function runRepairer(creep: ManagedCreep): string {
       filter: r => r.resourceType === RESOURCE_ENERGY && r.amount > 50
     }) as Resource[];
 
-    if (droppedEnergy.length > 0) {
-      const closest = creep.pos.findClosestByPath(droppedEnergy);
-      const droppedTarget = closest ?? droppedEnergy[0];
+    const droppedTarget = findClosestOrFirst(creep, droppedEnergy);
+    if (droppedTarget) {
       const result = creep.pickup(droppedTarget);
       if (result === ERR_NOT_IN_RANGE) {
         creep.moveTo(droppedTarget, { range: 1, reusePath: 30 });
@@ -1304,7 +1319,7 @@ function runRepairer(creep: ManagedCreep): string {
 
     // Fallback: Harvest from sources directly if no other options
     const sources = creep.room.find(FIND_SOURCES_ACTIVE) as Source[];
-    const source = sources.length > 0 ? (creep.pos.findClosestByPath(sources) ?? sources[0]) : null;
+    const source = findClosestOrFirst(creep, sources);
     if (source) {
       const harvestResult = creep.harvest(source);
       if (harvestResult === ERR_NOT_IN_RANGE) {
@@ -1335,10 +1350,7 @@ function runRepairer(creep: ManagedCreep): string {
   }) as Structure[];
 
   if (infrastructureTargets.length > 0) {
-    const target =
-      infrastructureTargets.length > 0
-        ? (creep.pos.findClosestByPath(infrastructureTargets) ?? infrastructureTargets[0])
-        : null;
+    const target = creep.pos.findClosestByPath(infrastructureTargets) ?? infrastructureTargets[0];
     if (target) {
       const result = creep.repair(target);
       if (result === ERR_NOT_IN_RANGE) {
@@ -1372,7 +1384,7 @@ function runRepairer(creep: ManagedCreep): string {
     }
   }) as Structure[];
 
-  const target = repairTargets.length > 0 ? (creep.pos.findClosestByPath(repairTargets) ?? repairTargets[0]) : null;
+  const target = findClosestOrFirst(creep, repairTargets);
   if (target) {
     const result = creep.repair(target);
     if (result === ERR_NOT_IN_RANGE) {
