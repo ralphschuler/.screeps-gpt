@@ -17,7 +17,7 @@ This registry tracks all active deprecations in the repository. It provides a ce
 
 **Alternative**: Use `TaskManager` with task-based behavior patterns via `BehaviorController` with `useTaskSystem: true` (now default).
 
-**Migration Guide**: [docs/runtime/strategy/task-system-migration.md](../runtime/strategy/enabling-task-system.md)
+**Migration Guide**: [docs/runtime/strategy/enabling-task-system.md](../runtime/strategy/enabling-task-system.md)
 
 **Impact**:
 

@@ -128,7 +128,7 @@ All deprecated TypeScript/JavaScript code must use the `@deprecated` JSDoc tag w
  * @deprecated Since v0.50.0 - Role-based system is being replaced by task management system.
  * Use TaskManager with task-based behavior instead.
  * Will be removed in v1.0.0.
- * @see docs/runtime/strategy/task-system-migration.md
+ * @see docs/runtime/strategy/enabling-task-system.md
  */
 export function executeRoleBasedBehavior(creep: Creep): void {
   console.warn("[DEPRECATED] executeRoleBasedBehavior is deprecated. Migrate to TaskManager.");
@@ -200,7 +200,7 @@ All deprecations are tracked in `docs/development/deprecation-registry.md` with:
 - **Role-based Behavior System**: The legacy role-based system is deprecated in favor of the task management system
   - Alternative: Use `TaskManager` with task-based behavior patterns
   - Removal: v1.0.0
-  - Migration: See docs/runtime/strategy/task-system-migration.md
+  - Migration: See docs/runtime/strategy/enabling-task-system.md
 ```
 
 ## Communication Guidelines

@@ -17,7 +17,7 @@ All notable changes to this project are documented here. This changelog now main
   - Established 2-3 release cycle deprecation timeline for minor versions
   - Integrated deprecation tracking with CHANGELOG format
   - Provides clear upgrade paths and reduces technical debt accumulation
-  - Resolves #[issue_number]: Implement deprecation strategy and code lifecycle management system
+  - Resolves #556: Implement deprecation strategy and code lifecycle management system
 
 ## [0.51.1] - 2025-11-12
 

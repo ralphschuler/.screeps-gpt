@@ -78,7 +78,7 @@ Features marked for future removal, still functional but discouraged.
 - **Role-based Behavior System**: Legacy role system is deprecated in favor of task management
   - Alternative: Use `TaskManager` with task-based behavior patterns
   - Removal: v1.0.0
-  - Migration: docs/runtime/strategy/task-system-migration.md
+  - Migration: docs/runtime/strategy/enabling-task-system.md
 ```
 
 #### Removed
