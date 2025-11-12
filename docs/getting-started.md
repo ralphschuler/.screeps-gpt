@@ -470,6 +470,15 @@ Add the following GitHub Action secrets before enabling the workflows:
 | `COPILOT_TOKEN` (optional)       | Copilot workflows     | GitHub personal access token with Copilot Requests scope.       |
 | `PUSH_TOKEN` (optional)          | All workflows         | Push by Techulus API key for push notifications.                |
 
+### Repository Variables
+
+Configure these GitHub repository variables for build-time configuration:
+
+| Variable                      | Used by         | Description                                                                                                                |
+| ----------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `PROFILER_ENABLED` (optional) | Deploy workflow | Enable CPU profiler in production builds (default `true`). Set to `false` to disable CPU profiling and reduce bundle size. |
+| `EMAIL_NOTIFY_TO` (optional)  | Email workflows | Email address for critical deployment and monitoring notifications.                                                        |
+
 **Note on Authentication:** The Stats Monitor workflow now uses the Screeps API MCP server for direct server interaction. It supports both token-based (`SCREEPS_TOKEN`) and email/password authentication (`SCREEPS_EMAIL` + `SCREEPS_PASSWORD`). Token authentication is recommended for security.
 
 ## Push Notifications
