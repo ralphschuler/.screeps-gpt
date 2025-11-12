@@ -44,6 +44,21 @@ Follow this process:
    - Authenticate the GitHub CLI using the provided `GITHUB_TOKEN`/`GH_TOKEN`
    - Use the GitHub MCP server to fetch ALL open issues in the repository for context-aware analysis
    - Store the list of existing issues for duplicate detection and relationship analysis
+   - **Code Context Gathering:**
+     - Extract key technical terms, file names, and domain concepts from the issue title and body
+     - Use the GitHub MCP server `search_code` function to find related code in the repository
+     - Search for relevant files in key directories: `.github/workflows/`, `.github/actions/`, `src/`, `tests/`
+     - Note any related configuration files, implementation files, or test files
+   - **Issue Cross-Referencing:**
+     - Use the GitHub MCP server to search for related issues (both open and closed)
+     - Look for issues with similar keywords, labels, or technical context
+     - Identify issues in the same domain (automation, runtime, documentation, monitoring, etc.)
+     - Check for potential parent-child relationships or blocking dependencies
+   - **Pull Request Cross-Referencing:**
+     - Use the GitHub MCP server to search for related pull requests
+     - Look for PRs that touch related files or address similar problems
+     - Identify recent PRs that might have introduced related changes or regressions
+     - Note any open PRs that might conflict or align with this issue
 
 2. **Duplicate Detection**
    - Compare the new issue against all existing open issues to identify potential duplicates
@@ -73,6 +88,11 @@ Follow this process:
      - Similar technical areas (automation, runtime, documentation, monitoring)
      - Dependencies or blocking relationships
    - Link related issues in the reformulated body using GitHub's issue reference syntax (#123)
+   - **Include Context References:**
+     - List relevant code files discovered during context gathering
+     - Reference related pull requests that provide implementation context
+     - Note any recent changes in related areas that might be relevant
+     - Include links to related documentation or configuration files
 
 5. **Reformulate and Update**
    - Reformulate the issue with:
@@ -81,8 +101,10 @@ Follow this process:
        - **Problem/Requirement:** What needs to be addressed
        - **Proposed Changes:** Specific changes or implementation approach
        - **Acceptance Criteria:** Clear success conditions
-       - **Additional Context:** Any relevant technical details, constraints, or references
+       - **Related Code:** List relevant files, workflows, or modules discovered during context gathering
        - **Related Issues:** Links to related, parent, or blocking issues (if detected)
+       - **Related PRs:** Links to relevant pull requests that provide context or touch related areas
+       - **Additional Context:** Any relevant technical details, constraints, or references
    - Update the issue directly using `gh issue edit ${ISSUE_NUMBER}` with the reformulated title and body
    - IMPORTANT: Only update the issue description once - do not make redundant updates
 
@@ -105,6 +127,7 @@ Follow this process:
    - Add a SINGLE comment to the issue explaining:
      - The triage summary
      - Any detected relationships or related issues
+     - Key context discovered (relevant code files, related PRs, similar issues)
      - Recommendations for next steps
    - Do NOT add redundant comments if the issue description was the only update
 
@@ -127,6 +150,8 @@ Finish by printing minified JSON so the workflow log captures the triage:
   "is_duplicate": false,
   "duplicate_of": null,
   "related_issues": [123, 456],
+  "related_prs": [234, 567],
+  "related_code_files": ["path/to/file.ts", ...],
   "sub_tasks_detected": [789],
   "parent_issue_detected": null,
   "notes": "short triage summary"

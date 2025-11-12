@@ -5,6 +5,17 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Changed
+
+- **Issue Triage Enhancement**: Enhanced issue triage automation with comprehensive context gathering
+  - Added code context gathering using GitHub MCP `search_code` to find related files in `.github/`, `src/`, `tests/`
+  - Added issue cross-referencing to identify related open and closed issues
+  - Added PR cross-referencing to find related pull requests
+  - Enhanced reformulated issue body with new sections: "Related Code", "Related PRs"
+  - Updated triage comment to include discovered context
+  - Extended JSON output to include `related_prs` and `related_code_files` fields
+  - Resolves #639: Make issue triage automation check current code, issues, and pull requests
+
 ## [0.47.1] - 2025-11-11
 
 ### Changed
