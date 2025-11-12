@@ -5,6 +5,14 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Fixed
+
+- **StatsCollector Error Handling**: Added comprehensive error handling to prevent silent stats collection failures
+  - Wrapped main collection in try/catch to prevent exceptions from blocking Memory.stats writes
+  - Isolated room stats collection to prevent one bad room from breaking entire collection
+  - Added fallback mechanism to ensure Memory.stats always has valid structure with safe property access
+  - Resolves #658: Bot executes normally but Stats API returns empty data
+
 ## [0.54.0] - 2025-11-12
 
 ### Added
