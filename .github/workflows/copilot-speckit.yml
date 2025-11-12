@@ -24,6 +24,7 @@ jobs:
       github.event.action == 'labeled' &&
       github.event.label.name == 'speckit'
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
@@ -49,6 +50,7 @@ jobs:
       github.event.action == 'created' &&
       startsWith(github.event.comment.body, '@speckit')
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Check out repository
         uses: actions/checkout@v5

@@ -16,6 +16,7 @@ concurrency:
 jobs:
   test-e2e:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     env:
       SCREEPS_TEST_REALM: PTR
       SCREEPS_HOST: ptr.screeps.com
