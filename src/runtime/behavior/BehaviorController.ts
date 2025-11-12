@@ -44,6 +44,10 @@ const STATIONARY_HARVEST_TASK = "stationaryHarvest" as const;
 const HAULER_PICKUP_TASK = "pickup" as const;
 const HAULER_DELIVER_TASK = "haulerDeliver" as const;
 
+// Target HP thresholds for defensive structures
+const WALL_TARGET_HP = 100_000;
+const RAMPART_TARGET_HP = 50_000;
+
 type HarvesterTask = typeof HARVEST_TASK | typeof DELIVER_TASK | typeof UPGRADE_TASK;
 type UpgraderTask = typeof RECHARGE_TASK | typeof UPGRADE_TASK;
 type BuilderTask = typeof BUILDER_GATHER_TASK | typeof BUILDER_BUILD_TASK | typeof BUILDER_MAINTAIN_TASK;
@@ -755,8 +759,12 @@ function runBuilder(creep: ManagedCreep): string {
         return false;
       }
 
-      if (structure.structureType === STRUCTURE_WALL || structure.structureType === STRUCTURE_RAMPART) {
-        return false;
+      if (structure.structureType === STRUCTURE_WALL) {
+        return structure.hits < WALL_TARGET_HP;
+      }
+
+      if (structure.structureType === STRUCTURE_RAMPART) {
+        return structure.hits < RAMPART_TARGET_HP;
       }
 
       return structure.hits < structure.hitsMax;
