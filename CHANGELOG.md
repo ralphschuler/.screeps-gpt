@@ -5,6 +5,21 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Added
+
+- **Repairer Role**: Added dedicated repairer role for structure maintenance
+  - Repairers prioritize roads and containers (high-traffic infrastructure)
+  - Falls back to other structures (excluding walls/ramparts)
+  - Uses standard gather/repair task cycle pattern
+  - Dynamically spawned when containers exist in the room
+- **Dynamic Role Minimums**: Implemented infrastructure-based role spawning
+  - Automatically detects containers near energy sources
+  - Spawns stationary harvesters (1 per source with container)
+  - Spawns haulers (2 per room with containers)
+  - Spawns repairers (1 per room with containers)
+  - Reduces regular harvester minimum to 2 when stationary harvesters are active
+  - Resolves #646: Add repairer and hauler to the system also use the stationary harvesters as soon as we have containers near the energy source
+
 ## [0.48.0] - 2025-11-12
 
 ### Changed
