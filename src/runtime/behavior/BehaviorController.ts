@@ -3,6 +3,7 @@ import type { CreepLike, GameContext, SpawnLike } from "@runtime/types/GameConte
 import { TaskManager } from "@runtime/tasks";
 import { profile } from "@profiler";
 import { CreepCommunicationManager } from "./CreepCommunicationManager";
+import { EnergyPriorityManager } from "@runtime/energy";
 
 type RoleName = "harvester" | "upgrader" | "builder" | "remoteMiner" | "stationaryHarvester" | "hauler" | "repairer";
 
@@ -209,6 +210,9 @@ interface BehaviorControllerOptions {
 // Global communication manager instance for role functions to access
 let communicationManager: CreepCommunicationManager | null = null;
 
+// Global energy priority manager instance for role functions to access
+let energyPriorityManager: EnergyPriorityManager | null = null;
+
 /**
  * Coordinates spawning and per-tick behaviour execution for every registered role.
  * Uses priority-based task management system by default (v0.32.0+).
@@ -220,6 +224,7 @@ export class BehaviorController {
   private readonly taskManager: TaskManager;
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly communicationManager: CreepCommunicationManager;
+  private readonly energyPriorityManager: EnergyPriorityManager;
 
   public constructor(options: BehaviorControllerOptions = {}, logger: Pick<Console, "log" | "warn"> = console) {
     this.logger = logger;
@@ -237,6 +242,8 @@ export class BehaviorController {
     });
     this.communicationManager = new CreepCommunicationManager();
     communicationManager = this.communicationManager;
+    this.energyPriorityManager = new EnergyPriorityManager({}, this.logger);
+    energyPriorityManager = this.energyPriorityManager;
   }
 
   /**
@@ -578,6 +585,13 @@ function getComm(): CreepCommunicationManager | null {
 }
 
 /**
+ * Helper to get energy priority manager instance
+ */
+function getEnergyManager(): EnergyPriorityManager | null {
+  return energyPriorityManager;
+}
+
+/**
  * Helper function to find the closest target by path or fall back to the first target.
  * Reduces code duplication throughout the file.
  *
@@ -703,14 +717,17 @@ function runUpgrader(creep: ManagedCreep): string {
   const memory = creep.memory as UpgraderMemory;
   const task = ensureUpgraderTask(memory, creep);
   const comm = getComm();
+  const energyMgr = getEnergyManager();
 
   if (task === RECHARGE_TASK) {
     comm?.say(creep, "gather");
 
-    // Find valid energy sources (containers and storage only, NOT spawns/extensions/towers)
-    const energySources = creep.room.find(FIND_STRUCTURES, {
-      filter: isValidEnergySource
-    }) as AnyStoreStructure[];
+    // Use energy priority manager to get available sources (respecting reserves)
+    const energySources = energyMgr
+      ? energyMgr.getAvailableEnergySources(creep.room, 0, true)
+      : creep.room.find(FIND_STRUCTURES, {
+          filter: isValidEnergySource
+        });
 
     const target = energySources.length > 0 ? (creep.pos.findClosestByPath(energySources) ?? energySources[0]) : null;
     if (target) {
@@ -785,14 +802,17 @@ function runBuilder(creep: ManagedCreep): string {
   const memory = creep.memory as BuilderMemory;
   const task = ensureBuilderTask(memory, creep);
   const comm = getComm();
+  const energyMgr = getEnergyManager();
 
   if (task === BUILDER_GATHER_TASK) {
     comm?.say(creep, "gather");
 
-    // Find valid energy sources (containers and storage only, NOT spawns/extensions/towers)
-    const energySources = creep.room.find(FIND_STRUCTURES, {
-      filter: isValidEnergySource
-    }) as AnyStoreStructure[];
+    // Use energy priority manager to get available sources (respecting reserves)
+    const energySources = energyMgr
+      ? energyMgr.getAvailableEnergySources(creep.room, 0, true)
+      : creep.room.find(FIND_STRUCTURES, {
+          filter: isValidEnergySource
+        });
 
     const target = energySources.length > 0 ? (creep.pos.findClosestByPath(energySources) ?? energySources[0]) : null;
     if (target) {
@@ -1194,7 +1214,7 @@ function runHauler(creep: ManagedCreep): string {
     return HAULER_DELIVER_TASK;
   }
 
-  // Priority 2: Towers
+  // Priority 2: Towers (defense)
   const towers = creep.room.find(FIND_STRUCTURES, {
     filter: (structure: AnyStructure) => {
       if (structure.structureType !== STRUCTURE_TOWER) return false;
@@ -1206,7 +1226,7 @@ function runHauler(creep: ManagedCreep): string {
 
   if (towers.length > 0) {
     const closest = creep.pos.findClosestByPath(towers);
-    const target = closest !== null ? closest : towers[0];
+    const target = closest ?? towers[0];
     const result = creep.transfer(target, RESOURCE_ENERGY);
     if (result === ERR_NOT_IN_RANGE) {
       creep.moveTo(target, { range: 1, reusePath: 30 });
@@ -1214,7 +1234,30 @@ function runHauler(creep: ManagedCreep): string {
     return HAULER_DELIVER_TASK;
   }
 
-  // Priority 3: Storage
+  // Priority 3: Spawn-adjacent containers (spawn reserves)
+  const energyMgr = getEnergyManager();
+  if (energyMgr) {
+    const allContainers = creep.room.find(FIND_STRUCTURES, {
+      filter: s => s.structureType === STRUCTURE_CONTAINER
+    }) as StructureContainer[];
+
+    const spawnContainers = allContainers.filter(
+      container =>
+        energyMgr.isSpawnContainer(container, creep.room) && container.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+    );
+
+    if (spawnContainers.length > 0) {
+      const closest = creep.pos.findClosestByPath(spawnContainers);
+      const target = closest ?? spawnContainers[0];
+      const result = creep.transfer(target, RESOURCE_ENERGY);
+      if (result === ERR_NOT_IN_RANGE) {
+        creep.moveTo(target, { range: 1, reusePath: 30 });
+      }
+      return HAULER_DELIVER_TASK;
+    }
+  }
+
+  // Priority 4: Storage (surplus)
 
   const storage = creep.room.storage;
 
@@ -1285,14 +1328,17 @@ function runRepairer(creep: ManagedCreep): string {
   const memory = creep.memory as RepairerMemory;
   const task = ensureRepairerTask(memory, creep);
   const comm = getComm();
+  const energyMgr = getEnergyManager();
 
   if (task === REPAIRER_GATHER_TASK) {
     comm?.say(creep, "gather");
 
-    // Find valid energy sources (containers and storage only, NOT spawns/extensions/towers)
-    const energySources = creep.room.find(FIND_STRUCTURES, {
-      filter: s => isValidEnergySource(s, 50)
-    }) as AnyStoreStructure[];
+    // Use energy priority manager to get available sources (respecting reserves)
+    const energySources = energyMgr
+      ? energyMgr.getAvailableEnergySources(creep.room, 50, true)
+      : creep.room.find(FIND_STRUCTURES, {
+          filter: s => isValidEnergySource(s, 50)
+        });
 
     const target = findClosestOrFirst(creep, energySources);
     if (target) {
