@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.57.1] - 2025-11-12
+
 ### Fixed
 
 - **Task System CPU Starvation Prevention**: Implemented round-robin scheduling to ensure fair creep execution under CPU constraints
