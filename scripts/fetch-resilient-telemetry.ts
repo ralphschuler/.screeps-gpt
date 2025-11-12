@@ -101,7 +101,12 @@ async function fetchResilientTelemetry(): Promise<TelemetryResult> {
           const statsData = JSON.parse(statsContent);
 
           // Check if stats payload is empty
-          if (statsData.payload && statsData.payload.stats && Object.keys(statsData.payload.stats).length === 0) {
+          if (
+            statsData.payload?.stats &&
+            typeof statsData.payload.stats === "object" &&
+            statsData.payload.stats !== null &&
+            Object.keys(statsData.payload.stats).length === 0
+          ) {
             console.log("\n⚠️  IMPORTANT: Stats API returned empty data but bot is ACTIVE");
             console.log("   This indicates a stats collection issue in the bot code, NOT a bot lifecycle failure.");
             console.log("   The bot is executing normally but Memory.stats is not being populated.");
