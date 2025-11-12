@@ -209,11 +209,11 @@ function determineAlertLevel(
     return { level: "none", message: null };
   }
 
-  // If we don't have a last success time, alert immediately
+  // If we don't have a last success time, allow graceful initialization (first run)
   if (minutesSinceSuccess === null) {
     return {
-      level: "high",
-      message: "Bot health check failing (no successful ping history)"
+      level: "warning",
+      message: "Bot health check failing (first run - no successful ping history, graceful initialization)"
     };
   }
 

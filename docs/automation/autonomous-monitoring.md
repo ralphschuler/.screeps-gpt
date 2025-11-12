@@ -121,7 +121,7 @@ The workflow executes automated bot aliveness heartbeat monitoring with graduate
 
 **Multi-Stage Health Check:**
 
-The health check (`scripts/check-bot-health.ts`) performs graduated detection:
+The health check (`packages/utilities/scripts/check-bot-health.ts`) performs graduated detection:
 
 1. **Stage 1: PTR Stats Validation** (fast, cached)
    - Checks if `reports/screeps-stats/latest.json` contains recent game data
@@ -129,7 +129,7 @@ The health check (`scripts/check-bot-health.ts`) performs graduated detection:
    - If no stats → Proceed to Stage 2
 
 2. **Stage 2: Bot Aliveness Check** (world-status API, 1 minute timeout)
-   - Uses `scripts/check-bot-aliveness.ts` to query Screeps world-status API
+   - Uses `./scripts/check-bot-aliveness.ts` to query Screeps world-status API
    - Returns: `active`, `respawn_needed`, `spawn_placement_needed`, or `unknown`
    - If `active` → Bot is operational
    - If other status → Proceed to failure tracking
