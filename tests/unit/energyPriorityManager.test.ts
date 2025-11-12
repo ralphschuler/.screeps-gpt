@@ -33,7 +33,7 @@ function createMockRoom(config: {
       findInRange: vi.fn((type: FindConstant, range: number, opts?: { filter?: (s: unknown) => boolean }) => {
         if (type === FIND_STRUCTURES && range === 1) {
           const nearbyContainers = (config.containers ?? []).filter(c => {
-            const dist = Math.abs(c.x - s.x) + Math.abs(c.y - s.y);
+            const dist = Math.max(Math.abs(c.x - s.x), Math.abs(c.y - s.y));
             return dist <= 1;
           });
 

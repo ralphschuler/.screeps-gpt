@@ -56,7 +56,7 @@ export class EnergyPriorityManager {
 
   /**
    * Calculate energy needs for towers in the room.
-   * Returns the total amount of energy needed to fill all towers.
+   * Returns the total amount of energy needed to bring all towers to the minimum capacity threshold.
    */
   public getTowerEnergyNeeds(room: RoomLike): number {
     const towers = room.find(FIND_MY_STRUCTURES, {

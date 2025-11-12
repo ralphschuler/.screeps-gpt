@@ -1226,7 +1226,7 @@ function runHauler(creep: ManagedCreep): string {
 
   if (towers.length > 0) {
     const closest = creep.pos.findClosestByPath(towers);
-    const target = closest !== null ? closest : towers[0];
+    const target = closest ?? towers[0];
     const result = creep.transfer(target, RESOURCE_ENERGY);
     if (result === ERR_NOT_IN_RANGE) {
       creep.moveTo(target, { range: 1, reusePath: 30 });
@@ -1237,24 +1237,18 @@ function runHauler(creep: ManagedCreep): string {
   // Priority 3: Spawn-adjacent containers (spawn reserves)
   const energyMgr = getEnergyManager();
   if (energyMgr) {
-    const spawns = creep.room.find(FIND_MY_SPAWNS) as StructureSpawn[];
-    const spawnContainers: StructureContainer[] = [];
+    const allContainers = creep.room.find(FIND_STRUCTURES, {
+      filter: s => s.structureType === STRUCTURE_CONTAINER
+    }) as StructureContainer[];
 
-    for (const spawn of spawns) {
-      const nearbyContainers = spawn.pos.findInRange(FIND_STRUCTURES, 1, {
-        filter: s => s.structureType === STRUCTURE_CONTAINER
-      }) as StructureContainer[];
-
-      for (const container of nearbyContainers) {
-        if (container.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
-          spawnContainers.push(container);
-        }
-      }
-    }
+    const spawnContainers = allContainers.filter(
+      container =>
+        energyMgr.isSpawnContainer(container, creep.room) && container.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+    );
 
     if (spawnContainers.length > 0) {
       const closest = creep.pos.findClosestByPath(spawnContainers);
-      const target = closest !== null ? closest : spawnContainers[0];
+      const target = closest ?? spawnContainers[0];
       const result = creep.transfer(target, RESOURCE_ENERGY);
       if (result === ERR_NOT_IN_RANGE) {
         creep.moveTo(target, { range: 1, reusePath: 30 });
