@@ -120,16 +120,11 @@ export class StatsCollector {
 
       // Store stats in Memory for API access
       memory.stats = stats;
-
-      // Verify stats were written successfully
-      if (!memory.stats || typeof memory.stats !== "object") {
-        console.log("[StatsCollector] WARNING: Memory.stats was not written correctly");
-      }
     } catch (error) {
       console.log(`[StatsCollector] CRITICAL: Failed to collect stats: ${String(error)}`);
       // Ensure Memory.stats exists even if collection fails
-      memory.stats ??= {
-        time: game.time,
+      memory.stats = {
+        time: game?.time ?? 0,
         cpu: { used: 0, limit: 0, bucket: 0 },
         creeps: { count: 0 },
         rooms: { count: 0 }
