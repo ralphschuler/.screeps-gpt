@@ -6,12 +6,6 @@ import { describe, expect, it } from "vitest";
 describe("Builder Repair Priority System", () => {
   describe("structure priority ordering", () => {
     it("should prioritize spawns over other structures", () => {
-      const structures = [
-        { structureType: STRUCTURE_ROAD, hits: 1000, hitsMax: 5000 },
-        { structureType: STRUCTURE_SPAWN, hits: 2000, hitsMax: 5000 },
-        { structureType: STRUCTURE_EXTENSION, hits: 1500, hitsMax: 3000 }
-      ] as Structure[];
-
       // The spawn should be first priority, extension second, road third
       // based on the priority system: spawn=1, extension=2, road=6
       const expectedOrder = [STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_ROAD];
