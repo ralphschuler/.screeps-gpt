@@ -73,15 +73,46 @@ await reporter.flush();
 
 ### API-Side Stats Retrieval
 
-- Script: [`scripts/fetch-screeps-stats.mjs`](../../scripts/fetch-screeps-stats.mjs).
-- Endpoint: `/api/user/stats?interval=<value>` (default host `https://screeps.com`). Override with `SCREEPS_STATS_HOST` or
-  `SCREEPS_STATS_API` if needed.
-- Authentication: `SCREEPS_STATS_TOKEN` (falls back to `SCREEPS_TOKEN`). Store the secret in GitHub Actions settings.
-- Interval Parameter: `SCREEPS_STATS_INTERVAL` controls the statistics time window:
-  - `8` = 1 hour stats
-  - `180` = 1 day stats (24 hours, default)
-  - `1440` = 1 week stats (7 days)
-- Output: `reports/screeps-stats/latest.json` containing `{ fetchedAt, endpoint, payload }`.
+#### Resilient Telemetry Collection
+
+The monitoring system uses a resilient multi-source strategy to ensure comprehensive bot health visibility:
+
+**Primary Script:** [`scripts/fetch-resilient-telemetry.ts`](../../scripts/fetch-resilient-telemetry.ts)
+
+**Collection Strategy:**
+
+1. **Bot Aliveness Check** ([`scripts/check-bot-aliveness.ts`](../../scripts/check-bot-aliveness.ts))
+   - Endpoint: `/api/user/world-status`
+   - Returns: `"normal"` (active), `"lost"` (needs respawn), or `"empty"` (spawn placement needed)
+   - **CRITICAL**: This is the PRIMARY indicator of bot lifecycle health
+   - Independent of `Memory.stats` availability
+   - Output: `reports/copilot/bot-aliveness.json`
+
+2. **Primary Source: Stats API** ([`scripts/fetch-screeps-stats.mjs`](../../scripts/fetch-screeps-stats.mjs))
+   - Endpoint: `/api/user/stats?interval=<value>` (default host `https://screeps.com`)
+   - Authentication: `SCREEPS_STATS_TOKEN` (falls back to `SCREEPS_TOKEN`)
+   - Interval Parameter: `SCREEPS_STATS_INTERVAL` controls time window:
+     - `8` = 1 hour stats
+     - `180` = 1 day stats (24 hours, default)
+     - `1440` = 1 week stats (7 days)
+   - Provides historical performance data from `Memory.stats`
+   - Output: `reports/screeps-stats/latest.json`
+
+3. **Fallback Source: Console Telemetry** ([`scripts/fetch-console-telemetry.ts`](../../scripts/fetch-console-telemetry.ts))
+   - Activated when Stats API fails or returns empty data
+   - Executes console commands to collect real-time bot metrics
+   - Eliminates single-point-of-failure dependency
+   - Adds metadata: `fallback_activated: true`, `primary_source_failed: true`
+
+**Critical Distinction - Empty Stats vs Bot Failure:**
+
+The aliveness check enables proper diagnosis of monitoring issues:
+
+- **Bot Active + Empty Stats** = Stats collection bug in bot code (not lifecycle failure)
+- **Bot Lost/Empty + Empty Stats** = Genuine bot lifecycle issue requiring respawn
+- **Bot Active + Stats Available** = Normal operation
+
+This distinction prevents false "bot lifecycle failure" alerts when the bot is executing normally but `Memory.stats` is not populated.
 
 ## Copilot Analysis
 
