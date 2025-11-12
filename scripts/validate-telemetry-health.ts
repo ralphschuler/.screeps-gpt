@@ -108,14 +108,18 @@ function validateTelemetryHealth(): HealthCheckResult {
       return result;
     }
 
-    // Check if stats data is recent (within last 3 hours for interval=180)
-    const latestTick = Math.max(...statsKeys.map(k => parseInt(k, 10)));
-    const latestTimestamp = latestTick * 1000; // Convert game time to ms (approximate)
-    const now = Date.now();
-    const ageMs = now - latestTimestamp;
-    const ageHours = ageMs / (1000 * 60 * 60);
+    // Check if stats data is recent using the snapshot's fetchedAt timestamp
+    let ageHours: number | null = null;
+    if (snapshot.fetchedAt) {
+      const fetchedAtTime = Date.parse(snapshot.fetchedAt);
+      if (!isNaN(fetchedAtTime)) {
+        const now = Date.now();
+        const ageMs = now - fetchedAtTime;
+        ageHours = ageMs / (1000 * 60 * 60);
+      }
+    }
 
-    if (ageHours > 6) {
+    if (ageHours !== null && ageHours > 6) {
       result.warnings.push(`Latest stats data is ${ageHours.toFixed(1)} hours old (stale data)`);
       result.recommendations.push("Bot may not be actively running or stats sync is delayed");
       result.availability = 50; // Partial availability
