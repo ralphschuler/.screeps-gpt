@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.51.1] - 2025-11-12
+
 ### Fixed
 
 - **PTR Telemetry Blackout Regression**: Implemented comprehensive prevention measures for recurring stats collection failures (#550)
@@ -17,6 +19,7 @@ All notable changes to this project are documented here. This changelog now main
   - Implements automated detection of empty stats within 15 minutes
   - Prevents recurrence of issues #523, #331, #345 through proactive monitoring
   - Resolves #550: PTR telemetry blackout regression - empty stats data despite successful deployments
+
 ## [0.50.0] - 2025-11-12
 
 ### Added
