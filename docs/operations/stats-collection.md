@@ -225,12 +225,170 @@ if (game.gcl) {
 2. Check `Memory.stats` in console: `JSON.stringify(Memory.stats)`
 3. Ensure stats collection is integrated in kernel
 4. Verify API authentication token is valid
+5. Run telemetry health check: `npx tsx scripts/validate-telemetry-health.ts`
 
 **Incomplete stats data:**
 
 1. Check for CPU emergency aborts (stats still collected but limited)
 2. Verify respawn mode isn't active
 3. Review console for errors during stats collection
+
+## Telemetry Blackout Prevention (Issue #550, #523)
+
+### Problem History
+
+The stats collection system has experienced multiple telemetry blackout regressions where the `/api/user/stats` endpoint returns empty data (`{"ok": 1, "stats": {}}`), despite the bot running successfully. This has occurred in:
+
+- **Issue #331** - Initial telemetry blackout (closed 2025-11-06)
+- **Issue #345** - Second occurrence (closed 2025-11-06)
+- **Issue #523** - Third regression (closed 2025-11-09)
+- **Issue #550** - Fourth regression (2025-11-08) - **CURRENT**
+
+### Root Causes Identified
+
+1. **API Sync Delays**: Memory.stats populated but not syncing to API endpoint
+2. **Memory Reset Events**: Respawn or memory corruption clearing stats
+3. **Stats Collection Skipped**: Early returns in kernel preventing stats write
+4. **Validation Gaps**: No automated detection of empty stats within 15 minutes
+
+### Prevention Measures Implemented
+
+#### 1. Stats Collection Validation
+
+Added validation to StatsCollector to detect write failures:
+
+```typescript
+// In StatsCollector.collect()
+if (!memory.stats || memory.stats.time !== game.time) {
+  console.log(`[StatsCollector] WARNING: Failed to persist stats to Memory (tick ${game.time})`);
+}
+```
+
+#### 2. Automated Telemetry Health Checks
+
+New script `scripts/validate-telemetry-health.ts` validates:
+
+- Stats snapshot existence and validity
+- Empty stats detection (the regression condition)
+- Data freshness (< 6 hours old)
+- Expected field presence (cpu, rooms, creeps)
+- Fallback activation status
+
+**Usage:**
+
+```bash
+npx tsx scripts/validate-telemetry-health.ts
+```
+
+**Integration:**
+
+- Monitoring workflow runs health check every 30 minutes
+- Deployment workflow validates telemetry 5 minutes post-deploy
+- Health check fails if availability < 90%
+
+#### 3. Post-Deployment Validation
+
+Deploy workflow now includes:
+
+```yaml
+- name: Wait for bot to initialize (5 min)
+- name: Validate post-deployment telemetry
+  run: |
+    npx tsx scripts/fetch-resilient-telemetry.ts
+    npx tsx scripts/validate-telemetry-health.ts
+```
+
+This ensures stats collection is working before marking deployment successful.
+
+#### 4. Regression Testing
+
+New test suite `tests/regression/stats-collection-blackout.test.ts` validates:
+
+- Stats populated on successful kernel execution
+- Stats populated during CPU emergency aborts
+- Stats populated during memory corruption recovery
+- Stats populated during respawn detection
+- Stats updated with current tick data on each execution
+- Stats contain all required telemetry fields
+- Stats maintain consistent format across ticks
+
+**Run tests:**
+
+```bash
+npm run test:regression -- stats-collection-blackout
+```
+
+#### 5. Resilient Telemetry Architecture
+
+Multi-source fallback strategy prevents single-point-of-failure:
+
+1. **Primary**: Stats API (`/api/user/stats`) - Historical time-series data
+2. **Fallback**: Console Telemetry - Real-time direct bot queries
+3. **Failure**: Comprehensive diagnostic snapshot
+
+**Implementation:**
+
+```bash
+npx tsx scripts/fetch-resilient-telemetry.ts
+```
+
+The script automatically tries all sources and marks which was used.
+
+### Detection and Alerting
+
+**Automated Detection Criteria:**
+
+| Condition            | Threshold      | Action                  |
+| -------------------- | -------------- | ----------------------- |
+| Empty stats detected | 1 occurrence   | Create monitoring issue |
+| Stats age > 6 hours  | Stale data     | Warning logged          |
+| Availability < 90%   | Health check   | Workflow failure        |
+| Both sources fail    | Infrastructure | Critical alert          |
+
+**Manual Detection:**
+
+```bash
+# Check current stats
+curl -H "X-Token: $SCREEPS_TOKEN" \
+  "https://screeps.com/api/user/stats?interval=180" | jq '.stats | length'
+
+# Should return > 0 if stats are collecting
+```
+
+### Recovery Procedures
+
+**If telemetry blackout detected:**
+
+1. **Verify bot is running:**
+
+   ```javascript
+   // In Screeps console
+   JSON.stringify(Memory.stats);
+   ```
+
+2. **Check stats collection:**
+
+   ```javascript
+   // Should show current tick data
+   Object.keys(Memory.stats || {});
+   ```
+
+3. **Use console fallback:**
+
+   ```bash
+   npx tsx scripts/fetch-console-telemetry.ts
+   ```
+
+4. **Validate health:**
+
+   ```bash
+   npx tsx scripts/validate-telemetry-health.ts
+   ```
+
+5. **If issue persists > 2 hours:**
+   - Create GitHub issue with monitoring label
+   - Include snapshot from `reports/screeps-stats/latest.json`
+   - Run regression tests to validate code integrity
 
 ## Related Documentation
 
