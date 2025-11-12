@@ -114,37 +114,79 @@ RECHARGE ⟷ UPGRADE
 **Task State Machine**:
 
 ```
-GATHER → BUILD → MAINTAIN
-   ↑               ↓
-   └───────────────┘
+GATHER → BUILD → REPAIR → MAINTAIN
+   ↑                         ↓
+   └─────────────────────────┘
 ```
 
 **Decision Tree**:
 
 1. **GATHER Task**
    - **Trigger**: Default state and whenever the creep is empty
-   - **Energy Sources**: Spawns, extensions, containers, and storage structures with spare energy
-   - **Fallback**: Harvests from active sources if no stored energy is available
+   - **Energy Sources**: Containers and storage only (NOT spawns/extensions/towers)
+   - **Fallback**: Picks up dropped energy (>50 amount), then harvests from active sources if no stored energy is available
    - **Transition**: When `store.getFreeCapacity(RESOURCE_ENERGY) === 0`, switch to BUILD
 
-2. **BUILD Task**
-   - **Trigger**: Inventory is full
+2. **BUILD Task** (Primary)
+   - **Trigger**: Inventory is full and construction sites exist
    - **Action**: Build the closest construction site (path priority)
+   - **Visual Feedback**: 🔨 emoji indicator
    - **Transition**:
-     - When the current site finishes or none exist, switch to MAINTAIN
+     - When no construction sites exist, switch to REPAIR (if enabled) or MAINTAIN
      - When `store.getUsedCapacity(RESOURCE_ENERGY) === 0`, switch to GATHER
 
-3. **MAINTAIN Task**
-   - **Trigger**: No construction sites are available
-   - **Action**: Repair damaged non-defensive structures; upgrade the controller when nothing needs repair
+3. **REPAIR Task** (Fallback)
+   - **Trigger**: No construction sites available and `enableRepairFallback` is true
+   - **Action**: Repair structures using priority-based selection system
+   - **Visual Feedback**: 🔧 emoji indicator
+   - **Priority System** (repairs most important structures first):
+     1. Spawn (priority 1)
+     2. Extension (priority 2)
+     3. Tower (priority 3)
+     4. Storage (priority 4)
+     5. Container (priority 5)
+     6. Road (priority 6)
+     7. Rampart (priority 7)
+     8. Wall (priority 8)
+   - **Filtering Rules**:
+     - Only repairs structures below `minRepairThreshold` health (default: 80%)
+     - Walls and ramparts limited to `maxWallRepair` hits (default: 10,000)
+     - Within same priority, structures with higher damage percentage repaired first
+   - **Transition**:
+     - When no repair targets exist, switch to MAINTAIN
+     - When `store.getUsedCapacity(RESOURCE_ENERGY) === 0`, switch to GATHER
+
+4. **MAINTAIN Task** (Tertiary Fallback)
+   - **Trigger**: No construction sites or repair targets available
+   - **Action**: Upgrade the controller with remaining energy
    - **Transition**: When `store.getUsedCapacity(RESOURCE_ENERGY) === 0`, switch back to GATHER
+
+**Configuration Options**:
+
+```typescript
+interface BuilderConfig {
+  enableRepairFallback: boolean;  // Default: true
+  minRepairThreshold: number;      // Default: 0.8 (repair if <80% health)
+  maxWallRepair: number;           // Default: 10000 hits
+}
+```
 
 **Performance Characteristics**:
 
 - Construction throughput: 5 build power/tick (1 WORK part)
 - Repair throughput: 100 hits/tick (1 WORK part)
 - Travel speed: 1 road tile/tick, 2 ticks/plain tile
-- Utility coverage: Always contributes by repairing or upgrading even without construction work
+- Utility coverage: Always contributes by building, repairing, or upgrading
+- Energy efficiency: Prioritizes critical structures to maximize infrastructure health
+- Wall management: Prevents infinite wall repairs while maintaining defensive structures
+
+**Repair Fallback Benefits**:
+
+- Improved infrastructure maintenance and longevity
+- Better builder utilization during construction gaps
+- Reduced infrastructure decay and emergency repairs
+- Increased room efficiency and operational stability
+- Automatic transition back to building when new construction sites appear
 
 ### Remote Miner
 
