@@ -302,6 +302,7 @@ Configure these GitHub repository variables:
 - `SCREEPS_HOST` - Screeps server host (default: screeps.com)
 - `SCREEPS_SHARD` - Target shard (default: shard3)
 - `SCREEPS_BRANCH` - Deployment branch (default: default)
+- `PROFILER_ENABLED` - Enable profiler in production builds (default: true). Set to `false` to disable CPU profiling and reduce bundle size
 
 See [Push Notification Documentation](docs/automation/push-notifications.md) for details on notification setup.
 
