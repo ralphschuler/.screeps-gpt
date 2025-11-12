@@ -8,7 +8,7 @@ import { TaskManager } from "@runtime/tasks";
  * This test validates that the round-robin scheduling prevents task starvation
  * when CPU constraints limit the number of creeps that can be processed per tick.
  *
- * Issue: ralphschuler/.screeps-gpt#[issue-number]
+ * Issue: ralphschuler/.screeps-gpt#564
  * Related: docs/runtime/task-system.md
  */
 describe("Regression: Task System CPU Starvation Prevention", () => {
@@ -74,10 +74,6 @@ describe("Regression: Task System CPU Starvation Prevention", () => {
 
   it("should prevent starvation with 20+ creeps under CPU constraints", () => {
     const manager = new TaskManager({ cpuThreshold: 0.7 });
-    const executionCounts = new Map<string, number>();
-
-    // Initialize execution counts
-    mockCreeps.forEach(creep => executionCounts.set(creep.name, 0));
 
     // Simulate 50 ticks with CPU constraints
     // Each tick can only process ~12 creeps before hitting threshold

@@ -93,13 +93,15 @@ export class TaskManager {
 
     // Apply round-robin scheduling to prevent starvation
     // Rotate starting position each tick for fair CPU distribution
+    let orderedCreeps = creeps;
     if (creeps.length > 0) {
-      const reordered = [...creeps.slice(this.tickOffset), ...creeps.slice(0, this.tickOffset)];
-      this.tickOffset = (this.tickOffset + 1) % creeps.length;
-      creeps = reordered;
+      // Ensure offset is valid for current creep count
+      const validOffset = this.tickOffset % creeps.length;
+      orderedCreeps = [...creeps.slice(validOffset), ...creeps.slice(0, validOffset)];
+      this.tickOffset = (validOffset + 1) % creeps.length;
     }
 
-    for (const creep of creeps) {
+    for (const creep of orderedCreeps) {
       // Check CPU budget before processing each creep
       if (Game.cpu.getUsed() > cpuBudget) {
         skippedCreeps = creeps.length - processedCreeps;

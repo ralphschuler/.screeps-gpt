@@ -118,10 +118,6 @@ describe("TaskManager - Round-Robin Scheduling", () => {
 
     it("should distribute execution fairly over multiple ticks with CPU constraints", () => {
       const manager = new TaskManager({ cpuThreshold: 0.5 });
-      const executionCounts = new Map<string, number>();
-
-      // Initialize counts
-      mockCreeps.forEach(creep => executionCounts.set(creep.name, 0));
 
       // Simulate 20 ticks with CPU constraints
       for (let tick = 0; tick < 20; tick++) {
