@@ -91,8 +91,8 @@ jobs:
 - `guard-version.yml` (15 min)
 - `docs-pages.yml` (15 min)
 - `post-merge-release.yml` (15 min)
-- `quality-gate-summary.yml` (30 min)
-- `screeps-spawn-monitor.yml` (30 min)
+- `quality-gate-summary.yml` (30 min) - Aggregates multiple guard workflow results
+- `screeps-spawn-monitor.yml` (30 min) - Periodic spawn checks and simple respawn logic
 
 #### Deployment Operations (10-15 minutes)
 
@@ -151,7 +151,16 @@ jobs:
 - `copilot-email-triage.yml` (45 min)
 - `copilot-speckit.yml` (45 min)
 - `copilot-changelog-to-blog.yml` (45 min)
-- `screeps-monitoring.yml` (45 min)
+- `screeps-monitoring.yml` (45 min) - Comprehensive strategic analysis with PTR telemetry collection
+
+**Note on Monitoring Workflows:**
+
+The repository has two monitoring workflows with different timeout requirements:
+
+- **`screeps-monitoring.yml` (45 min)**: Performs comprehensive strategic monitoring combining AI-powered analysis with PTR telemetry collection. Requires longer timeout due to LLM API calls, extensive data fetching, snapshot collection, and alert processing.
+- **`screeps-spawn-monitor.yml` (30 min)**: Performs simpler spawn status checks and automated respawn operations. Shorter timeout is sufficient as it only checks spawn state and triggers respawn if needed, without AI analysis or extensive telemetry.
+
+Choose 45 minutes for monitoring workflows that involve AI analysis or comprehensive data collection, and 30 minutes for simpler periodic checks.
 
 ### Implementation Guidelines
 
@@ -312,8 +321,9 @@ If a workflow hangs despite timeout configuration:
 
 - **GitHub Actions Documentation**: [Workflow syntax - timeout-minutes](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idtimeout-minutes)
 - **Good Examples**:
-  - `screeps-monitoring.yml` (line 29): 45-minute timeout for complex monitoring
-  - `quality-gate-summary.yml` (line 32): 30-minute timeout for test aggregation
+  - `screeps-monitoring.yml`: 45-minute timeout for complex strategic monitoring with AI analysis and PTR telemetry
+  - `screeps-spawn-monitor.yml`: 30-minute timeout for simpler spawn status checks and automated respawn
+  - `quality-gate-summary.yml`: 30-minute timeout for aggregating multiple guard workflow results
 - **Related Documentation**:
   - `docs/automation/overview.md`: Overall automation architecture
   - `AGENTS.md`: Agent-specific guidelines and best practices
