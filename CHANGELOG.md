@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.51.3] - 2025-11-12
+
 ### Added
 
 - **Deprecation Strategy and Code Lifecycle Management**: Implemented comprehensive system for managing deprecated code and technical debt
