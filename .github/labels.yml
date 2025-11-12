@@ -2,9 +2,6 @@
 - name: Todo
   color: BFD4F2
   description: Triggers Copilot automation to draft a fix for the linked issue.
-- name: speckit
-  color: 7B68EE
-  description: Triggers spec-kit workflow to draft an implementation plan for the issue.
 - name: monitoring
   color: 1D76DB
   description: Screeps PTR monitoring alerts raised by automation.
