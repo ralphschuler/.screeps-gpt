@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.48.0] - 2025-11-12
+
 ### Changed
 
 - **Issue Triage Enhancement**: Enhanced issue triage automation with comprehensive context gathering
