@@ -19,6 +19,8 @@ export class TaskManager {
   private readonly cpuThreshold: number;
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly pathfindingManager: PathfindingManager;
+  private tickOffset = 0;
+  private lastExecuted: Map<string, number> = new Map();
 
   public constructor(config: TaskManagerConfig = {}) {
     this.cpuThreshold = config.cpuThreshold ?? 0.8;
@@ -80,6 +82,7 @@ export class TaskManager {
 
   /**
    * Execute tasks for all creeps with CPU threshold management.
+   * Uses round-robin scheduling to ensure fair execution across all creeps.
    * Stops execution when CPU usage exceeds the configured threshold.
    */
   public executeTasks(creeps: Creep[], cpuLimit: number): Record<string, number> {
@@ -88,7 +91,17 @@ export class TaskManager {
     let skippedCreeps = 0;
     let processedCreeps = 0;
 
-    for (const creep of creeps) {
+    // Apply round-robin scheduling to prevent starvation
+    // Rotate starting position each tick for fair CPU distribution
+    let orderedCreeps = creeps;
+    if (creeps.length > 0) {
+      // Ensure offset is valid for current creep count
+      const validOffset = this.tickOffset % creeps.length;
+      orderedCreeps = [...creeps.slice(validOffset), ...creeps.slice(0, validOffset)];
+      this.tickOffset = (validOffset + 1) % creeps.length;
+    }
+
+    for (const creep of orderedCreeps) {
       // Check CPU budget before processing each creep
       if (Game.cpu.getUsed() > cpuBudget) {
         skippedCreeps = creeps.length - processedCreeps;
@@ -104,6 +117,7 @@ export class TaskManager {
       const taskId = creep.memory.taskId;
       if (!taskId) {
         processedCreeps++;
+        this.lastExecuted.set(creep.name, Game.time);
         continue;
       }
 
@@ -111,6 +125,7 @@ export class TaskManager {
       if (!task) {
         delete creep.memory.taskId;
         processedCreeps++;
+        this.lastExecuted.set(creep.name, Game.time);
         continue;
       }
 
@@ -126,6 +141,8 @@ export class TaskManager {
         this.tasks.delete(taskId);
       }
 
+      // Record execution time for starvation tracking
+      this.lastExecuted.set(creep.name, Game.time);
       processedCreeps++;
     }
 
@@ -361,5 +378,43 @@ export class TaskManager {
     }
 
     return stats;
+  }
+
+  /**
+   * Get starvation statistics for monitoring.
+   * Returns creeps that haven't been processed in multiple ticks.
+   */
+  public getStarvationStats(creeps: Creep[]): {
+    starvedCreeps: string[];
+    maxTicksSinceExecution: number;
+    avgTicksSinceExecution: number;
+  } {
+    const currentTick = Game.time;
+    const ticksSinceExecution: number[] = [];
+    const starvedCreeps: string[] = [];
+
+    for (const creep of creeps) {
+      const lastTick = this.lastExecuted.get(creep.name);
+      if (lastTick !== undefined) {
+        const ticksSince = currentTick - lastTick;
+        ticksSinceExecution.push(ticksSince);
+        // Consider creep starved if not executed in 5+ ticks
+        if (ticksSince >= 5) {
+          starvedCreeps.push(creep.name);
+        }
+      }
+      // Note: Creeps never executed are not included in stats
+      // This is intentional to avoid skewing metrics on initial spawn
+    }
+
+    const maxTicksSinceExecution = ticksSinceExecution.length > 0 ? Math.max(...ticksSinceExecution) : 0;
+    const avgTicksSinceExecution =
+      ticksSinceExecution.length > 0 ? ticksSinceExecution.reduce((a, b) => a + b, 0) / ticksSinceExecution.length : 0;
+
+    return {
+      starvedCreeps,
+      maxTicksSinceExecution,
+      avgTicksSinceExecution
+    };
   }
 }

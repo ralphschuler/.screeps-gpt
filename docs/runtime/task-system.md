@@ -87,7 +87,7 @@ Central coordinator for task lifecycle management.
   - Execution metrics tracking
 - **Task Cleanup:** Removes expired and completed tasks
 
-**CPU Threshold Management:**
+**CPU Threshold Management & Fair Scheduling:**
 
 ```typescript
 const taskManager = new TaskManager({
@@ -96,8 +96,30 @@ const taskManager = new TaskManager({
 });
 
 // Automatically stops when threshold is reached
+// Uses round-robin scheduling to prevent starvation
 const metrics = taskManager.executeTasks(creeps, Game.cpu.limit);
+
+// Monitor starvation statistics
+const stats = taskManager.getStarvationStats(creeps);
+console.log(`Starved creeps: ${stats.starvedCreeps.length}`);
+console.log(`Max ticks since execution: ${stats.maxTicksSinceExecution}`);
 ```
+
+**Round-Robin Scheduling (v0.57.0+):**
+
+To prevent task starvation when CPU limits are hit, `executeTasks()` implements round-robin scheduling:
+
+- **Rotation:** Starting offset in creep array increments each tick
+- **Fairness:** All creeps eventually execute, no permanent starvation
+- **Tracking:** `lastExecuted` map tracks when each creep last executed
+- **Metrics:** `getStarvationStats()` monitors execution gaps and starved creeps
+
+With 25 creeps and CPU allowing only 12 per tick:
+
+- **Old behavior:** Same 13 creeps NEVER executed (permanent starvation)
+- **New behavior:** All creeps cycle through, max gap ~14 ticks (fair distribution)
+
+This ensures CPU-constrained environments don't permanently starve later creeps.
 
 ## Feature Comparison: Task System vs Role-Based System
 
