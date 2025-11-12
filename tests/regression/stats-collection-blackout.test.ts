@@ -38,8 +38,7 @@ describe("Regression: Stats Collection Blackout (#550, #523)", () => {
           controller: {
             level: 3,
             progress: 25000,
-            progressTotal: 45000,
-            my: true
+            progressTotal: 45000
           }
         }
       }
