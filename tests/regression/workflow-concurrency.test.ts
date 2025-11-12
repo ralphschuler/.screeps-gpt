@@ -28,7 +28,6 @@ describe("Workflow concurrency controls", () => {
     "copilot-email-triage.yml",
     "copilot-issue-triage.yml",
     "copilot-review.yml",
-    "copilot-speckit.yml",
     "copilot-todo-daily.yml",
     "copilot-todo-pr.yml",
     // Monitoring workflows
