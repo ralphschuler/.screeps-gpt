@@ -49,6 +49,12 @@ npx tsx scripts/fetch-resilient-telemetry.ts
 
 This script implements infrastructure resilience by trying multiple telemetry sources:
 
+0. **Bot Aliveness Check** (`scripts/check-bot-aliveness.ts`)
+   - Checks bot status using `/api/user/world-status` endpoint
+   - Determines if bot is active, needs respawn, or status is unknown
+   - **CRITICAL**: This is the PRIMARY indicator of bot lifecycle health
+   - Independent of Memory.stats availability
+
 1. **Primary Source: Stats API** (`scripts/fetch-screeps-stats.mjs`)
    - Fetches historical stats from `/api/user/stats` endpoint
    - Provides comprehensive time-series data
@@ -63,6 +69,7 @@ This script implements infrastructure resilience by trying multiple telemetry so
 3. **Failure Handling:**
    - If both sources fail, creates comprehensive failure snapshot
    - Includes attempted sources and diagnostic information
+   - **IMPORTANT**: Includes bot aliveness status to differentiate bot failure from monitoring failure
    - Monitoring continues with repository analysis
 
 **Snapshot Metadata:**
@@ -71,6 +78,29 @@ The snapshot at `reports/screeps-stats/latest.json` will include:
 - `source`: `"stats_api"` or `"console"` indicating data source
 - `fallback_activated`: `true` if console fallback was used
 - `primary_source_failed`: `true` if Stats API was unavailable
+- `bot_aliveness`: `"active"`, `"needs_spawn"`, or `"unknown"`
+- `bot_status`: Actual world-status value from API
+
+**Bot Aliveness Check:**
+
+The aliveness snapshot at `reports/copilot/bot-aliveness.json` contains:
+- `aliveness`: `"active"`, `"respawn_needed"`, `"spawn_placement_needed"`, or `"unknown"`
+- `status`: Raw world-status value from Screeps API
+- `interpretation`: Human-readable explanation of status
+
+**CRITICAL DISTINCTION - Empty Stats vs Bot Failure:**
+
+**If bot aliveness shows "active" but stats are empty:**
+- ❌ DO NOT create "bot lifecycle failure" issues
+- ✓ This is a **stats collection bug** in the bot code
+- ✓ Memory.stats is not being populated correctly
+- ✓ Create issue: "Stats collection failure - Memory.stats not populated"
+- ✓ Bot IS executing normally, monitoring data is incomplete
+
+**If bot aliveness shows "respawn_needed" or "spawn_placement_needed":**
+- ✓ This IS a genuine bot lifecycle issue
+- ✓ Create critical issue: "Bot requires manual respawn/spawn placement"
+- ✓ Empty stats are EXPECTED in this scenario
 
 **Success Handling:**
 
