@@ -113,6 +113,86 @@ After Copilot analysis completes, the workflow also executes `scripts/check-ptr-
 - Sends push notifications via Push by Techulus for critical and high severity alerts
 - Provides real-time alerting independent of issue creation
 
+#### Phase 3.5: Bot Aliveness Heartbeat (Graduated Failure Detection)
+
+**Deployed:** 2025-11-12 - Addresses 8+ hour bot outage detection gap (Issue #559)
+
+The workflow executes automated bot aliveness heartbeat monitoring with graduated failure detection to catch bot outages within 30 minutes (vs. previous 8+ hour detection time).
+
+**Multi-Stage Health Check:**
+
+The health check (`scripts/check-bot-health.ts`) performs graduated detection:
+
+1. **Stage 1: PTR Stats Validation** (fast, cached)
+   - Checks if `reports/screeps-stats/latest.json` contains recent game data
+   - If stats present → Bot is operational (immediate success)
+   - If no stats → Proceed to Stage 2
+
+2. **Stage 2: Bot Aliveness Check** (world-status API, 1 minute timeout)
+   - Uses `scripts/check-bot-aliveness.ts` to query Screeps world-status API
+   - Returns: `active`, `respawn_needed`, `spawn_placement_needed`, or `unknown`
+   - If `active` → Bot is operational
+   - If other status → Proceed to failure tracking
+
+3. **Stage 3: Console Fallback** (future enhancement)
+   - Planned: Direct console ping when world-status API fails
+   - Minimal telemetry collection via console commands
+   - Provides definitive bot state when other methods fail
+
+**Graduated Alert Thresholds:**
+
+The system implements escalating detection to prevent false positives:
+
+- **0-15 minutes**: No alert (normal API fluctuation or temporary outage)
+- **15-30 minutes**: Warning level logged, retry health check
+- **30-60 minutes**: HIGH priority alert issued
+- **60+ minutes**: CRITICAL priority, manual intervention required
+
+**Health State Persistence:**
+
+Health state is maintained in `reports/monitoring/health.json`:
+
+```json
+{
+  "last_successful_ping": "2025-11-12T10:00:00Z",
+  "last_failed_ping": null,
+  "consecutive_failures": 0,
+  "health_status": "operational|degraded|critical",
+  "last_known_tick": 12345678,
+  "last_bot_status": "active",
+  "detection_history": [
+    {
+      "timestamp": "2025-11-12T10:00:00Z",
+      "status": "success",
+      "aliveness": "active"
+    }
+  ]
+}
+```
+
+The health state is:
+
+- Persisted across monitoring runs (committed to repository)
+- Used to track consecutive failure count
+- Maintains detection history (last 100 entries)
+- Enables graduated alerting based on failure duration
+
+**Alert Integration:**
+
+Health check results are integrated into `check-ptr-alerts.ts`:
+
+- Reads health check results from `reports/monitoring/health-check-latest.json`
+- Creates bot outage alerts when thresholds exceeded
+- Sends push notifications and email alerts for HIGH/CRITICAL outages
+- Alert messages include failure duration and consecutive failure count
+
+**Benefits:**
+
+- **Early Detection**: Bot outages detected within 30 minutes (vs. 8+ hours)
+- **Zero False Positives**: Graduated thresholds prevent alerts from temporary glitches
+- **Historical Tracking**: Persistent state enables trend analysis and failure pattern detection
+- **Actionable Alerts**: Clear severity levels guide intervention urgency
+
 #### Phase 4: Repository Health Analysis
 
 Evaluates development infrastructure through GitHub MCP tools:
