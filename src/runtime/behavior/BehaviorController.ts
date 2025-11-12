@@ -37,6 +37,7 @@ const UPGRADE_TASK = "upgrade" as const;
 const BUILDER_GATHER_TASK = "gather" as const;
 const BUILDER_BUILD_TASK = "build" as const;
 const BUILDER_MAINTAIN_TASK = "maintain" as const;
+const BUILDER_REPAIR_TASK = "repair" as const;
 const REMOTE_TRAVEL_TASK = "travel" as const;
 const REMOTE_MINE_TASK = "mine" as const;
 const REMOTE_RETURN_TASK = "return" as const;
@@ -46,7 +47,11 @@ const HAULER_DELIVER_TASK = "haulerDeliver" as const;
 
 type HarvesterTask = typeof HARVEST_TASK | typeof DELIVER_TASK | typeof UPGRADE_TASK;
 type UpgraderTask = typeof RECHARGE_TASK | typeof UPGRADE_TASK;
-type BuilderTask = typeof BUILDER_GATHER_TASK | typeof BUILDER_BUILD_TASK | typeof BUILDER_MAINTAIN_TASK;
+type BuilderTask =
+  | typeof BUILDER_GATHER_TASK
+  | typeof BUILDER_BUILD_TASK
+  | typeof BUILDER_MAINTAIN_TASK
+  | typeof BUILDER_REPAIR_TASK;
 type RemoteMinerTask = typeof REMOTE_TRAVEL_TASK | typeof REMOTE_MINE_TASK | typeof REMOTE_RETURN_TASK;
 type StationaryHarvesterTask = typeof STATIONARY_HARVEST_TASK;
 type HaulerTask = typeof HAULER_PICKUP_TASK | typeof HAULER_DELIVER_TASK;
@@ -62,6 +67,18 @@ interface UpgraderMemory extends BaseCreepMemory {
 interface BuilderMemory extends BaseCreepMemory {
   task: BuilderTask;
 }
+
+interface BuilderConfig {
+  enableRepairFallback: boolean;
+  minRepairThreshold: number;
+  maxWallRepair: number;
+}
+
+const DEFAULT_BUILDER_CONFIG: BuilderConfig = {
+  enableRepairFallback: true,
+  minRepairThreshold: 0.8,
+  maxWallRepair: 10000
+};
 
 interface RemoteMinerMemory extends BaseCreepMemory {
   task: RemoteMinerTask;
@@ -664,7 +681,8 @@ function ensureBuilderTask(memory: BuilderMemory, creep: CreepLike): BuilderTask
   if (
     memory.task !== BUILDER_GATHER_TASK &&
     memory.task !== BUILDER_BUILD_TASK &&
-    memory.task !== BUILDER_MAINTAIN_TASK
+    memory.task !== BUILDER_MAINTAIN_TASK &&
+    memory.task !== BUILDER_REPAIR_TASK
   ) {
     memory.task = BUILDER_GATHER_TASK;
     return memory.task;
@@ -679,10 +697,51 @@ function ensureBuilderTask(memory: BuilderMemory, creep: CreepLike): BuilderTask
   return memory.task;
 }
 
+/**
+ * Prioritizes structures for repair based on importance and damage percentage.
+ * Critical structures (spawns, extensions, towers) are repaired before infrastructure.
+ * Walls and ramparts have a maximum hit point threshold to prevent infinite repairs.
+ */
+function prioritizeRepairs(structures: Structure[], config: BuilderConfig = DEFAULT_BUILDER_CONFIG): Structure[] {
+  const priority: Record<string, number> = {
+    [STRUCTURE_SPAWN]: 1,
+    [STRUCTURE_EXTENSION]: 2,
+    [STRUCTURE_TOWER]: 3,
+    [STRUCTURE_STORAGE]: 4,
+    [STRUCTURE_CONTAINER]: 5,
+    [STRUCTURE_ROAD]: 6,
+    [STRUCTURE_RAMPART]: 7,
+    [STRUCTURE_WALL]: 8
+  };
+
+  return structures
+    .filter(structure => {
+      const healthPercentage = structure.hits / structure.hitsMax;
+
+      if (structure.structureType === STRUCTURE_WALL || structure.structureType === STRUCTURE_RAMPART) {
+        return structure.hits < config.maxWallRepair && healthPercentage < config.minRepairThreshold;
+      }
+
+      return healthPercentage < config.minRepairThreshold;
+    })
+    .sort((a, b) => {
+      const priorityA = priority[a.structureType] ?? 99;
+      const priorityB = priority[b.structureType] ?? 99;
+      const priorityDiff = priorityA - priorityB;
+
+      if (priorityDiff !== 0) return priorityDiff;
+
+      const damageA = (a.hitsMax - a.hits) / a.hitsMax;
+      const damageB = (b.hitsMax - b.hits) / b.hitsMax;
+      return damageB - damageA;
+    });
+}
+
 function runBuilder(creep: ManagedCreep): string {
   const memory = creep.memory as BuilderMemory;
   const task = ensureBuilderTask(memory, creep);
   const comm = getComm();
+  const config = DEFAULT_BUILDER_CONFIG;
 
   if (task === BUILDER_GATHER_TASK) {
     comm?.say(creep, "gather");
@@ -730,7 +789,7 @@ function runBuilder(creep: ManagedCreep): string {
   }
 
   if (task === BUILDER_BUILD_TASK) {
-    comm?.say(creep, "build");
+    comm?.say(creep, "🔨");
 
     const sites = creep.room.find(FIND_CONSTRUCTION_SITES) as ConstructionSite[];
     const site = sites.length > 0 ? (creep.pos.findClosestByPath(sites) ?? sites[0]) : null;
@@ -743,44 +802,54 @@ function runBuilder(creep: ManagedCreep): string {
       return BUILDER_BUILD_TASK;
     }
 
-    memory.task = BUILDER_MAINTAIN_TASK;
+    if (config.enableRepairFallback) {
+      memory.task = BUILDER_REPAIR_TASK;
+    } else {
+      memory.task = BUILDER_MAINTAIN_TASK;
+    }
   }
 
-  // Maintain (repair/upgrade) fallback
-  comm?.say(creep, "repair");
+  if (task === BUILDER_REPAIR_TASK || task === BUILDER_MAINTAIN_TASK) {
+    if (task === BUILDER_REPAIR_TASK && config.enableRepairFallback) {
+      comm?.say(creep, "🔧");
 
-  const repairTargets = creep.room.find(FIND_STRUCTURES, {
-    filter: (structure: AnyStructure) => {
-      if (!("hits" in structure) || typeof structure.hits !== "number") {
-        return false;
+      const allStructures = creep.room.find(FIND_STRUCTURES, {
+        filter: (structure: AnyStructure) => {
+          if (!("hits" in structure) || typeof structure.hits !== "number") {
+            return false;
+          }
+          return structure.hits < structure.hitsMax;
+        }
+      }) as Structure[];
+
+      const prioritizedTargets = prioritizeRepairs(allStructures, config);
+      const target = prioritizedTargets.length > 0 ? prioritizedTargets[0] : null;
+
+      if (target) {
+        const result = creep.repair(target);
+        if (result === ERR_NOT_IN_RANGE) {
+          creep.moveTo(target, { range: 3, reusePath: 30 });
+        }
+        return BUILDER_REPAIR_TASK;
       }
 
-      if (structure.structureType === STRUCTURE_WALL || structure.structureType === STRUCTURE_RAMPART) {
-        return false;
+      memory.task = BUILDER_MAINTAIN_TASK;
+    }
+
+    comm?.say(creep, "upgrade");
+
+    const controller = creep.room.controller;
+    if (controller) {
+      const upgrade = creep.upgradeController(controller);
+      if (upgrade === ERR_NOT_IN_RANGE) {
+        creep.moveTo(controller, { range: 3, reusePath: 30 });
       }
-
-      return structure.hits < structure.hitsMax;
     }
-  }) as Structure[];
 
-  const target = repairTargets.length > 0 ? (creep.pos.findClosestByPath(repairTargets) ?? repairTargets[0]) : null;
-  if (target) {
-    const result = creep.repair(target);
-    if (result === ERR_NOT_IN_RANGE) {
-      creep.moveTo(target, { range: 3, reusePath: 30 });
-    }
     return BUILDER_MAINTAIN_TASK;
   }
 
-  const controller = creep.room.controller;
-  if (controller) {
-    const upgrade = creep.upgradeController(controller);
-    if (upgrade === ERR_NOT_IN_RANGE) {
-      creep.moveTo(controller, { range: 3, reusePath: 30 });
-    }
-  }
-
-  return BUILDER_MAINTAIN_TASK;
+  return task;
 }
 
 function ensureRemoteMinerTask(memory: RemoteMinerMemory): RemoteMinerTask {

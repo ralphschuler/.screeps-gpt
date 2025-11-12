@@ -5,6 +5,16 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Added
+
+- **Builder Repair Fallback**: Builders now automatically repair damaged structures when no construction sites available
+  - Added repair priority system ranking structures by importance (spawn > extension > tower > storage > container > road > rampart > wall)
+  - Implemented configurable repair thresholds (default: 80% health minimum, 10000 max hits for walls/ramparts)
+  - Added visual feedback with emoji indicators (🔨 building, 🔧 repairing)
+  - Prevents infinite wall/rampart repairs with configurable maximum hit points
+  - Maintains existing behavior: gather energy → build → repair → upgrade controller
+  - Resolves #656: Implement builder repair fallback when no construction sites available
+
 ## [0.48.0] - 2025-11-12
 
 ### Changed
