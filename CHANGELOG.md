@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.52.0] - 2025-11-12
+
 ### Added
 
 - **Bot Aliveness Heartbeat Monitoring**: Implemented automated bot heartbeat monitoring with graduated failure detection to catch outages within 30 minutes instead of 8+ hours
