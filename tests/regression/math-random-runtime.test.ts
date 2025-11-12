@@ -33,7 +33,7 @@ function findTypeScriptFiles(dir: string): string[] {
 
 describe("Deterministic runtime requirements", () => {
   it("should not use Math.random() in runtime code", () => {
-    const runtimePath = resolve(__dirname, "../../src/runtime");
+    const runtimePath = resolve(__dirname, "../../packages/bot/src/runtime");
     const runtimeFiles = findTypeScriptFiles(runtimePath);
 
     expect(runtimeFiles.length).toBeGreaterThan(0);
@@ -51,7 +51,7 @@ describe("Deterministic runtime requirements", () => {
   });
 
   it("should use deterministic naming for creeps", () => {
-    const behaviorControllerPath = resolve(__dirname, "../../src/runtime/behavior/BehaviorController.ts");
+    const behaviorControllerPath = resolve(__dirname, "../../packages/bot/src/runtime/behavior/BehaviorController.ts");
     const content = readFileSync(behaviorControllerPath, "utf-8");
 
     // Verify the creep naming pattern uses memory counter

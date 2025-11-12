@@ -4,6 +4,7 @@ import { TaskManager } from "@runtime/tasks";
 import { profile } from "@profiler";
 import { CreepCommunicationManager } from "./CreepCommunicationManager";
 import { EnergyPriorityManager } from "@runtime/energy";
+import { BodyComposer } from "./BodyComposer";
 
 type RoleName = "harvester" | "upgrader" | "builder" | "remoteMiner" | "stationaryHarvester" | "hauler" | "repairer";
 
@@ -225,6 +226,7 @@ export class BehaviorController {
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly communicationManager: CreepCommunicationManager;
   private readonly energyPriorityManager: EnergyPriorityManager;
+  private readonly bodyComposer: BodyComposer;
 
   public constructor(options: BehaviorControllerOptions = {}, logger: Pick<Console, "log" | "warn"> = console) {
     this.logger = logger;
@@ -244,6 +246,7 @@ export class BehaviorController {
     communicationManager = this.communicationManager;
     this.energyPriorityManager = new EnergyPriorityManager({}, this.logger);
     energyPriorityManager = this.energyPriorityManager;
+    this.bodyComposer = new BodyComposer();
   }
 
   /**
@@ -265,8 +268,8 @@ export class BehaviorController {
     // Update communication configuration from Memory
     if (this.options.enableCreepCommunication && memory.creepCommunication) {
       this.communicationManager.updateConfig({
-        verbosity: memory.creepCommunication.verbosity,
-        enableRoomVisuals: memory.creepCommunication.enableRoomVisuals
+        verbosity: memory.creepCommunication.verbosity as "disabled" | "minimal" | "normal" | "verbose",
+        enableRoomVisuals: memory.creepCommunication.enableRoomVisuals as boolean
       });
     } else if (!this.options.enableCreepCommunication) {
       this.communicationManager.updateConfig({ verbosity: "disabled" });
@@ -492,29 +495,33 @@ export class BehaviorController {
         continue; // No available spawns
       }
 
+      // Generate dynamic body based on available energy capacity
+      const room = spawn.room as Room | undefined;
+      const energyCapacity = room?.energyCapacityAvailable ?? 300;
+      const body = this.bodyComposer.generateBody(role, energyCapacity);
+
+      if (body.length === 0) {
+        // Not enough energy for minimum body
+        continue;
+      }
+
       // Validate sufficient energy before spawning to prevent partial spawns
-      const spawnCost = this.calculateBodyCost(definition.body);
+      const spawnCost = this.bodyComposer.calculateBodyCost(body);
       if (spawn.room && spawn.room.energyAvailable < spawnCost) {
         continue; // Not enough energy yet
       }
 
       const name = `${role}-${game.time}-${memory.creepCounter}`;
       memory.creepCounter += 1;
-      const result = spawn.spawnCreep(definition.body, name, { memory: definition.memory() });
+      const result = spawn.spawnCreep(body, name, { memory: definition.memory() });
       if (result === OK) {
         spawned.push(name);
         roleCounts[role] = current + 1;
+        this.logger.log?.(`[BehaviorController] Spawned ${name} with ${body.length} parts (${spawnCost} energy)`);
       } else {
         this.logger.warn?.(`Failed to spawn ${role}: ${result}`);
       }
     }
-  }
-
-  /**
-   * Calculate the energy cost of body parts
-   */
-  private calculateBodyCost(body: BodyPartConstant[]): number {
-    return body.reduce((total, part) => total + (BODYPART_COST[part] ?? 0), 0);
   }
 
   /**

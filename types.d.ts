@@ -1,7 +1,7 @@
-import type { SystemReport } from "./src/shared/contracts";
-import type { ColonyManagerMemory } from "./src/runtime/planning/ColonyManager";
-import type { ProfilerMemory } from "./src/shared/profiler-types";
-import type { CommunicationVerbosity } from "./src/runtime/behavior/CreepCommunicationManager";
+import type { SystemReport } from "./packages/bot/src/shared/contracts";
+import type { ColonyManagerMemory } from "./packages/bot/src/runtime/planning/ColonyManager";
+import type { ProfilerMemory } from "./packages/bot/src/shared/profiler-types";
+import type { CommunicationVerbosity } from "./packages/bot/src/runtime/behavior/CreepCommunicationManager";
 
 declare global {
   interface Memory {
