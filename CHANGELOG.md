@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.51.7] - 2025-11-12
+
 ### Removed
 
 - **Spec-Kit Workflow System**: Removed unused specification-driven development workflow infrastructure
