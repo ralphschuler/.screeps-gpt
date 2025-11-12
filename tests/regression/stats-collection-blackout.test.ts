@@ -85,10 +85,9 @@ describe("Regression: Stats Collection Blackout (#550, #523)", () => {
   });
 
   it("should populate Memory.stats even when respawn is needed", () => {
-    // Simulate respawn condition (no spawns, no creeps, no construction sites)
+    // Simulate respawn condition (no spawns, no creeps)
     game.spawns = {};
     game.creeps = {};
-    game.constructionSites = {};
     memory.respawn = {
       lastCheck: game.time - 100,
       respawnDetected: false
