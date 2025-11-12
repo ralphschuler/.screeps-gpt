@@ -126,15 +126,19 @@ function validateTelemetryHealth(): HealthCheckResult {
     }
 
     // Check if stats contain expected fields
-    const latestStats = stats[latestTick.toString()];
-    if (typeof latestStats === "object" && latestStats !== null) {
-      const hasExpectedFields =
-        "cpu" in latestStats && "rooms" in latestStats && "creeps" in latestStats;
+    // Find the latest tick in the stats object
+    const ticks = statsKeys.map(key => parseInt(key, 10)).filter(tick => !isNaN(tick));
+    if (ticks.length > 0) {
+      const latestTick = Math.max(...ticks);
+      const latestStats = stats[latestTick.toString()];
+      if (typeof latestStats === "object" && latestStats !== null) {
+        const hasExpectedFields = "cpu" in latestStats && "rooms" in latestStats && "creeps" in latestStats;
 
-      if (!hasExpectedFields) {
-        result.warnings.push("Stats data missing expected fields (cpu, rooms, creeps)");
-        result.recommendations.push("Verify StatsCollector is collecting all required metrics (cpu, rooms, creeps)");
-        result.availability = 75; // Mostly available but incomplete
+        if (!hasExpectedFields) {
+          result.warnings.push("Stats data missing expected fields (cpu, rooms, creeps)");
+          result.recommendations.push("Verify StatsCollector is collecting all required metrics (cpu, rooms, creeps)");
+          result.availability = 75; // Mostly available but incomplete
+        }
       }
     }
   }

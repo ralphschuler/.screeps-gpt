@@ -115,6 +115,5 @@ export class StatsCollector {
 
     // Store stats in Memory for API access
     memory.stats = stats;
-
   }
 }
