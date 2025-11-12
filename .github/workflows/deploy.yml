@@ -22,6 +22,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     # Only run for successful workflow_run events or manual dispatch
     if: >-
       github.event_name == 'workflow_dispatch' ||
