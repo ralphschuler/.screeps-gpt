@@ -39,6 +39,7 @@ For a complete setup guide, see the **[Getting Started Guide](getting-started.md
 
 ### Runtime Strategy & Behavior
 
+- [Energy Management](runtime/energy-management.md) - Comprehensive energy collection and distribution strategies
 - [Creep Roles](runtime/strategy/creep-roles.md) - Role definitions, decision trees, and performance characteristics
 - [Task Prioritization](runtime/strategy/task-prioritization.md) - Task switching, efficiency optimization, and load balancing
 - [Scaling Strategies](runtime/strategy/scaling-strategies.md) - RCL progression, multi-room expansion, and CPU budgeting
