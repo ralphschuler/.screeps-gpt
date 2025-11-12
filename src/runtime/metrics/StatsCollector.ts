@@ -115,5 +115,10 @@ export class StatsCollector {
 
     // Store stats in Memory for API access
     memory.stats = stats;
+
+    // Validation: Ensure Memory.stats was successfully written
+    if (!memory.stats || memory.stats.time !== game.time) {
+      console.log(`[StatsCollector] WARNING: Failed to persist stats to Memory (tick ${game.time})`);
+    }
   }
 }

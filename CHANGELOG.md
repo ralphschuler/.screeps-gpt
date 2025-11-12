@@ -5,6 +5,19 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Fixed
+
+- **PTR Telemetry Blackout Regression**: Implemented comprehensive prevention measures for recurring stats collection failures (#550)
+  - Added validation to StatsCollector to detect Memory.stats write failures
+  - Created `scripts/validate-telemetry-health.ts` for automated health checks
+  - Integrated telemetry health validation into monitoring workflow (runs every 30 minutes)
+  - Added post-deployment validation step (5 min wait + health check)
+  - Created regression test suite `tests/regression/stats-collection-blackout.test.ts` with 8 test cases
+  - Enhanced documentation in `docs/operations/stats-collection.md` with troubleshooting and recovery procedures
+  - Implements automated detection of empty stats within 15 minutes
+  - Prevents recurrence of issues #523, #331, #345 through proactive monitoring
+  - Resolves #550: PTR telemetry blackout regression - empty stats data despite successful deployments
+
 ### Changed
 
 - **Issue Triage Enhancement**: Enhanced issue triage automation with comprehensive context gathering
