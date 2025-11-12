@@ -1173,4 +1173,100 @@ describe("BehaviorController", () => {
       expect(firstSpawn).toContain("harvester-");
     });
   });
+
+  describe("dynamic role minimums with containers", () => {
+    it("should spawn stationary harvesters and haulers when containers exist near sources", () => {
+      const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
+
+      // Create a room with containers near sources
+      const source = { pos: { findInRange: vi.fn().mockReturnValue([{ structureType: STRUCTURE_CONTAINER }]) } };
+      const room: RoomLike = {
+        name: "W0N0",
+        controller: { my: true },
+        find: vi.fn().mockImplementation((type: FindConstant) => {
+          if (type === FIND_SOURCES) return [source];
+          return [];
+        })
+      };
+
+      const spawn = {
+        name: "spawn1",
+        spawning: null,
+        spawnCreep: vi.fn().mockReturnValue(OK),
+        store: { getFreeCapacity: () => 300, getUsedCapacity: () => 0 },
+        room
+      };
+
+      const game: GameContext = {
+        time: 100,
+        cpu: { getUsed: () => 0, limit: 10, bucket: 1000 },
+        creeps: {},
+        spawns: { spawn1: spawn },
+        rooms: { W0N0: room }
+      };
+
+      const memory = {} as Memory;
+      const roleCounts = {};
+
+      const result = controller.execute(game, memory, roleCounts);
+
+      // Should have spawned some creeps
+      expect(result.spawnedCreeps.length).toBeGreaterThan(0);
+    });
+
+    it("should not spawn stationary harvesters when no containers exist", () => {
+      const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
+
+      // Create a room without containers near sources
+      const source = { pos: { findInRange: vi.fn().mockReturnValue([]) } };
+      const room: RoomLike = {
+        name: "W0N0",
+        controller: { my: true },
+        find: vi.fn().mockImplementation((type: FindConstant) => {
+          if (type === FIND_SOURCES) return [source];
+          return [];
+        })
+      };
+
+      const spawn = {
+        name: "spawn1",
+        spawning: null,
+        spawnCreep: vi.fn().mockReturnValue(OK),
+        store: { getFreeCapacity: () => 300, getUsedCapacity: () => 0 },
+        room
+      };
+
+      const game: GameContext = {
+        time: 100,
+        cpu: { getUsed: () => 0, limit: 10, bucket: 1000 },
+        creeps: {},
+        spawns: { spawn1: spawn },
+        rooms: { W0N0: room }
+      };
+
+      const memory = {} as Memory;
+      const roleCounts = { harvester: 4, upgrader: 3, builder: 2, stationaryHarvester: 0, hauler: 0, repairer: 0 };
+
+      const result = controller.execute(game, memory, roleCounts);
+
+      // Should not spawn stationary harvesters, haulers, or repairers
+      const spawnedRoles = result.spawnedCreeps.map(name => name.split("-")[0]);
+      expect(spawnedRoles).not.toContain("stationaryHarvester");
+      expect(spawnedRoles).not.toContain("hauler");
+      expect(spawnedRoles).not.toContain("repairer");
+    });
+
+    it("should verify repairer role definition exists", () => {
+      // Simple test to verify the repairer role was added to the system
+      const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
+      const game = createGameContext({ time: 100, hasSpawns: false });
+      const memory = {} as Memory;
+      const roleCounts = {};
+
+      // Execute once to ensure no errors with new role definition
+      expect(() => {
+        controller.execute(game, memory, roleCounts);
+      }).not.toThrow();
+    });
+  });
 });

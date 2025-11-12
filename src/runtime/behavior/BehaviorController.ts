@@ -380,7 +380,7 @@ export class BehaviorController {
    */
   private hasContainersNearSources(room: Room): boolean {
     const sources = room.find(FIND_SOURCES);
-    
+
     for (const source of sources) {
       const nearbyStructures = source.pos.findInRange(FIND_STRUCTURES, 1);
       const hasContainer = nearbyStructures.some(s => s.structureType === STRUCTURE_CONTAINER);
@@ -388,7 +388,7 @@ export class BehaviorController {
         return true;
       }
     }
-    
+
     return false;
   }
 
@@ -398,13 +398,13 @@ export class BehaviorController {
    */
   private calculateDynamicMinimums(game: GameContext): Partial<Record<RoleName, number>> {
     const dynamicMinimums: Partial<Record<RoleName, number>> = {};
-    
+
     // Check each room we control
     for (const room of Object.values(game.rooms)) {
       if (!room.controller?.my) continue;
-      
+
       const hasContainers = this.hasContainersNearSources(room);
-      
+
       if (hasContainers) {
         // Count sources to determine how many stationary harvesters we need
         const sources = room.find(FIND_SOURCES);
@@ -412,21 +412,21 @@ export class BehaviorController {
           const nearbyStructures = source.pos.findInRange(FIND_STRUCTURES, 1);
           return nearbyStructures.some(s => s.structureType === STRUCTURE_CONTAINER);
         });
-        
+
         // One stationary harvester per source with container
         dynamicMinimums.stationaryHarvester = (dynamicMinimums.stationaryHarvester ?? 0) + containersWithSources.length;
-        
+
         // Two haulers per room with containers
         dynamicMinimums.hauler = (dynamicMinimums.hauler ?? 0) + 2;
-        
+
         // One repairer per room with containers
         dynamicMinimums.repairer = (dynamicMinimums.repairer ?? 0) + 1;
-        
+
         // Reduce regular harvesters if we have stationary harvesters
         dynamicMinimums.harvester = 2; // Keep minimum for flexibility
       }
     }
-    
+
     return dynamicMinimums;
   }
 
@@ -458,7 +458,7 @@ export class BehaviorController {
       const baseMinimum = definition.minimum;
       const dynamicMinimum = dynamicMinimums[role as RoleName] ?? baseMinimum;
       const bootstrapMinimum = bootstrapMinimums[role as RoleName];
-      
+
       // Use bootstrap minimum if provided, otherwise use dynamic minimum
       const targetMinimum = bootstrapMinimum ?? dynamicMinimum;
 
@@ -1312,10 +1312,7 @@ function runRepairer(creep: ManagedCreep): string {
         return false;
       }
 
-      if (
-        structure.structureType !== STRUCTURE_ROAD &&
-        structure.structureType !== STRUCTURE_CONTAINER
-      ) {
+      if (structure.structureType !== STRUCTURE_ROAD && structure.structureType !== STRUCTURE_CONTAINER) {
         return false;
       }
 
@@ -1339,10 +1336,7 @@ function runRepairer(creep: ManagedCreep): string {
         return false;
       }
 
-      if (
-        structure.structureType === STRUCTURE_WALL ||
-        structure.structureType === STRUCTURE_RAMPART
-      ) {
+      if (structure.structureType === STRUCTURE_WALL || structure.structureType === STRUCTURE_RAMPART) {
         return false;
       }
 
