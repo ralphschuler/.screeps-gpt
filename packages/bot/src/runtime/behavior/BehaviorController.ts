@@ -5,6 +5,7 @@ import { profile } from "@profiler";
 import { CreepCommunicationManager } from "./CreepCommunicationManager";
 import { EnergyPriorityManager } from "@runtime/energy";
 import { BodyComposer } from "./BodyComposer";
+import { WallUpgradeManager } from "@runtime/defense/WallUpgradeManager";
 
 type RoleName = "harvester" | "upgrader" | "builder" | "remoteMiner" | "stationaryHarvester" | "hauler" | "repairer";
 
@@ -48,10 +49,6 @@ const HAULER_PICKUP_TASK = "pickup" as const;
 const HAULER_DELIVER_TASK = "haulerDeliver" as const;
 const REPAIRER_GATHER_TASK = "repairerGather" as const;
 const REPAIRER_REPAIR_TASK = "repair" as const;
-
-// Target HP thresholds for defensive structures
-const WALL_TARGET_HP = 100_000;
-const RAMPART_TARGET_HP = 50_000;
 
 type HarvesterTask = typeof HARVEST_TASK | typeof DELIVER_TASK | typeof UPGRADE_TASK;
 type UpgraderTask = typeof RECHARGE_TASK | typeof UPGRADE_TASK;
@@ -214,6 +211,9 @@ let communicationManager: CreepCommunicationManager | null = null;
 // Global energy priority manager instance for role functions to access
 let energyPriorityManager: EnergyPriorityManager | null = null;
 
+// Global wall upgrade manager instance for role functions to access
+let wallUpgradeManager: WallUpgradeManager | null = null;
+
 /**
  * Coordinates spawning and per-tick behaviour execution for every registered role.
  * Uses priority-based task management system by default (v0.32.0+).
@@ -227,6 +227,7 @@ export class BehaviorController {
   private readonly communicationManager: CreepCommunicationManager;
   private readonly energyPriorityManager: EnergyPriorityManager;
   private readonly bodyComposer: BodyComposer;
+  private readonly wallUpgradeManager: WallUpgradeManager;
 
   public constructor(options: BehaviorControllerOptions = {}, logger: Pick<Console, "log" | "warn"> = console) {
     this.logger = logger;
@@ -247,6 +248,8 @@ export class BehaviorController {
     this.energyPriorityManager = new EnergyPriorityManager({}, this.logger);
     energyPriorityManager = this.energyPriorityManager;
     this.bodyComposer = new BodyComposer();
+    this.wallUpgradeManager = new WallUpgradeManager();
+    wallUpgradeManager = this.wallUpgradeManager;
   }
 
   /**
@@ -888,6 +891,7 @@ function runBuilder(creep: ManagedCreep): string {
   // Maintain (repair/upgrade) fallback
   comm?.say(creep, "repair");
 
+  const targetHits = wallUpgradeManager?.getTargetHits(creep.room) ?? 0;
   const repairTargets = creep.room.find(FIND_STRUCTURES, {
     filter: (structure: AnyStructure) => {
       if (!("hits" in structure) || typeof structure.hits !== "number") {
@@ -895,11 +899,11 @@ function runBuilder(creep: ManagedCreep): string {
       }
 
       if (structure.structureType === STRUCTURE_WALL) {
-        return structure.hits < WALL_TARGET_HP;
+        return structure.hits < targetHits;
       }
 
       if (structure.structureType === STRUCTURE_RAMPART) {
-        return structure.hits < RAMPART_TARGET_HP;
+        return structure.hits < targetHits;
       }
 
       return structure.hits < structure.hitsMax;
@@ -1431,6 +1435,7 @@ function runRepairer(creep: ManagedCreep): string {
   }
 
   // Priority 2: Other structures (excluding walls and ramparts)
+  const targetHits = wallUpgradeManager?.getTargetHits(creep.room) ?? 0;
   const repairTargets = creep.room.find(FIND_STRUCTURES, {
     filter: (structure: AnyStructure) => {
       if (!("hits" in structure) || typeof structure.hits !== "number") {
@@ -1443,11 +1448,11 @@ function runRepairer(creep: ManagedCreep): string {
       }
 
       if (structure.structureType === STRUCTURE_WALL) {
-        return structure.hits < WALL_TARGET_HP;
+        return structure.hits < targetHits;
       }
 
       if (structure.structureType === STRUCTURE_RAMPART) {
-        return structure.hits < RAMPART_TARGET_HP;
+        return structure.hits < targetHits;
       }
 
       return structure.hits < structure.hitsMax;
