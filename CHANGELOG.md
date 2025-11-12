@@ -17,6 +17,7 @@ All notable changes to this project are documented here. This changelog now main
   - Implements automated detection of empty stats within 15 minutes
   - Prevents recurrence of issues #523, #331, #345 through proactive monitoring
   - Resolves #550: PTR telemetry blackout regression - empty stats data despite successful deployments
+## [0.48.0] - 2025-11-12
 
 ### Changed
 
