@@ -452,7 +452,7 @@ The task system validates creep body composition before assigning tasks. This pr
 - **`MinionCanWork`**: Checks if creep has any WORK parts
 - **`MinionCanCarry`**: Checks if creep has any CARRY parts
 
-#### Functional Count Prerequisites (v0.69.1+)
+#### Functional Count Prerequisites ([Unreleased])
 
 - **`MinionHasBodyParts`**: Validates minimum count of functional body parts
 
