@@ -198,16 +198,68 @@ Set up useful views in your project board:
 
 ## Troubleshooting
 
+### Validation Script
+
+Before troubleshooting manually, run the project configuration validator:
+
+```bash
+bun scripts/validate-project-config.ts
+```
+
+Or specify configuration explicitly:
+
+```bash
+bun scripts/validate-project-config.ts --project-number 1 --project-owner ralphschuler
+```
+
+This script will:
+- ✅ Verify GitHub CLI is installed and authenticated
+- ✅ Check for GITHUB_TOKEN environment variable
+- ✅ List all available projects for the owner
+- ✅ Validate access to the specified project number
+- ✅ Provide specific troubleshooting guidance
+
+### GraphQL Error: "Could not resolve to a ProjectV2 with the number X"
+
+**Symptoms**: Workflows fail with error message like:
+```
+Error: GraphQL: Could not resolve to a ProjectV2 with the number 3. (user.projectV2)
+```
+
+**Root Causes**:
+1. **Project doesn't exist**: The project number may have been deleted or never created
+2. **Wrong project scope**: Project is organization-scoped but workflow queries user-scoped (or vice versa)
+3. **Permissions issue**: Workflow token lacks access to the project
+4. **Incorrect PROJECT_NUMBER**: Variable is set to wrong project number
+
+**Solutions**:
+
+1. **Run the validation script** (see above) to diagnose the exact issue
+2. **List your projects** to find the correct project number:
+   ```bash
+   gh project list --owner ralphschuler
+   ```
+3. **Update repository variables** with correct project number:
+   - Go to repository Settings → Secrets and variables → Actions → Variables
+   - Update `PROJECT_NUMBER` to the correct project number from the list
+4. **Verify project ownership**:
+   - Ensure `PROJECT_OWNER` matches the actual project owner
+   - Check if project is user-owned or organization-owned
+5. **Disable project integration** if not needed:
+   - Remove or clear the `PROJECT_NUMBER` and `PROJECT_OWNER` variables
+   - Workflows will gracefully skip project sync operations
+
 ### Project Sync Not Working
 
 **Symptoms**: Items not appearing in project board
 
 **Solutions**:
 
-1. Verify `PROJECT_NUMBER` and `PROJECT_OWNER` variables are set correctly
-2. Check workflow run logs for permission errors
-3. Ensure the project exists and is accessible
-4. Verify repository has `repository-projects: write` permission in workflow files
+1. **Run validation script**: `bun scripts/validate-project-config.ts`
+2. Verify `PROJECT_NUMBER` and `PROJECT_OWNER` variables are set correctly
+3. Check workflow run logs for permission errors
+4. Ensure the project exists and is accessible
+5. Verify repository has `repository-projects: write` permission in workflow files
 
 ### Field Update Failures
 
