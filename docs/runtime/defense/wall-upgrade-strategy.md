@@ -245,8 +245,8 @@ The system includes comprehensive unit tests covering:
 Run tests with:
 
 ```bash
-npm run test:unit tests/unit/wallUpgradeManager.test.ts
-npm run test:unit tests/unit/towerManager.test.ts
+bun run test:unit tests/unit/wallUpgradeManager.test.ts
+bun run test:unit tests/unit/towerManager.test.ts
 ```
 
 ## Future Enhancements
