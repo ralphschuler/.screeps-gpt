@@ -40,4 +40,6 @@ jobs:
             build-${{ runner.os }}-
       - name: Build AI
         if: steps.cache-build.outputs.cache-hit != 'true'
+        env:
+          PROFILER_ENABLED: ${{ vars.PROFILER_ENABLED || 'true' }}
         run: bun run build

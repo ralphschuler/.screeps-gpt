@@ -180,4 +180,19 @@ describe("Profiler Compilation Integration", () => {
     expect(buildStepMatch).toBeTruthy();
     expect(buildStepMatch![0]).toContain("PROFILER_ENABLED:");
   });
+
+  it("should verify guard-build workflow includes PROFILER_ENABLED environment variable", async () => {
+    // Read the guard-build workflow file
+    const workflowPath = resolve(".github/workflows/guard-build.yml");
+    const workflowContent = await readFile(workflowPath, "utf8");
+
+    // Verify PROFILER_ENABLED is set in the build step
+    expect(workflowContent).toContain("PROFILER_ENABLED:");
+    expect(workflowContent).toMatch(/PROFILER_ENABLED:\s*\$\{\{\s*vars\.PROFILER_ENABLED\s*\|\|\s*['"]true['"]\s*\}\}/);
+
+    // Verify it's in the correct step (Build AI)
+    const buildStepMatch = workflowContent.match(/- name: Build AI[\s\S]*?run: bun run build/);
+    expect(buildStepMatch).toBeTruthy();
+    expect(buildStepMatch![0]).toContain("PROFILER_ENABLED:");
+  });
 });
