@@ -148,6 +148,24 @@ function listProjects(owner: string): ProjectInfo[] {
  * Validate project access using GraphQL API
  */
 function validateProjectAccess(owner: string, projectNumber: string): ValidationResult {
+  // Validate owner format to prevent injection
+  if (!/^[a-zA-Z0-9-]+$/.test(owner)) {
+    return {
+      success: false,
+      message: "Invalid owner format",
+      details: "Owner must contain only alphanumeric characters and hyphens"
+    };
+  }
+
+  // Validate projectNumber is numeric
+  if (!/^\d+$/.test(projectNumber)) {
+    return {
+      success: false,
+      message: "Invalid project number format",
+      details: "Project number must be numeric"
+    };
+  }
+
   const query = `
     query {
       user(login: "${owner}") {
