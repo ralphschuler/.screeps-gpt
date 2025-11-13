@@ -187,9 +187,7 @@ export class MinionHasBodyParts extends TaskPrerequisite {
 
   public meets(creep: Creep): boolean {
     for (const [partType, minCount] of Object.entries(this.requiredParts)) {
-      const functionalCount = creep.body.filter(
-        part => part.type === partType && part.hits > 0
-      ).length;
+      const functionalCount = creep.body.filter(part => part.type === partType && part.hits > 0).length;
 
       if (functionalCount < (minCount ?? 0)) {
         return false;

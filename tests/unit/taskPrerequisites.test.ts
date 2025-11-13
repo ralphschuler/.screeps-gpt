@@ -202,9 +202,7 @@ describe("MinionHasBodyParts prerequisite", () => {
     });
 
     it("should handle requirement of 0 parts (should always pass)", () => {
-      const creep = createMockCreep([
-        { type: CARRY, hits: 100 }
-      ]);
+      const creep = createMockCreep([{ type: CARRY, hits: 100 }]);
 
       const prereq = new MinionHasBodyParts({ [WORK]: 0 });
       expect(prereq.meets(creep)).toBe(true);
