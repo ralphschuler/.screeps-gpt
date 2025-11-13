@@ -121,17 +121,17 @@ export function createMCPServer(config: MCPServerConfig) {
 
   // Handle call tool request
   server.setRequestHandler(CallToolRequestSchema, async request => {
-    const { name, arguments: args } = request.params;
+    const { name, arguments: toolArgs } = request.params;
 
     try {
       if (name === "screeps.console") {
-        const validated = toolSchemas.console.parse(args);
+        const validated = toolSchemas.console.parse(toolArgs);
         return await handleConsole(client, validated);
       } else if (name === "screeps.memory.get") {
-        const validated = toolSchemas.memoryGet.parse(args);
+        const validated = toolSchemas.memoryGet.parse(toolArgs);
         return await handleMemoryGet(client, validated);
       } else if (name === "screeps.memory.set") {
-        const validated = toolSchemas.memorySet.parse(args);
+        const validated = toolSchemas.memorySet.parse(toolArgs);
         return await handleMemorySet(client, validated);
       } else if (name === "screeps.stats") {
         return await handleStats(client);
