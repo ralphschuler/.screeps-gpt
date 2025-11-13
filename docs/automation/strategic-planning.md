@@ -355,7 +355,7 @@ Documentation ──┘                      Documentation                    De
 
 ### Workflow Schedule
 
-**Default:** Every 8 hours (0 _/8 _ \* \*)
+**Default:** Every 8 hours (`0 */8 * * *`)
 
 **Rationale:**
 
