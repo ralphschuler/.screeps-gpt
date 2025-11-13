@@ -251,6 +251,21 @@ All specialized agents are located in `.github/actions/copilot-*-agent/` directo
 - **Required Inputs**: `copilot-token`
 - **Used By**: `copilot-review.yml`
 
+**Strategic Planning Workflow** (`copilot-strategic-planner.yml`):
+
+- **Purpose**: Autonomous strategic planning and improvement roadmap generation
+- **Key Features**:
+  - Bot performance analysis from snapshots and PTR telemetry
+  - Profiler-driven CPU bottleneck identification
+  - Strategic opportunity identification across six categories
+  - Evidence-based issue creation with priorities
+  - Documentation updates for strategic alignment
+  - Learning feedback loop from past implementations
+- **Data Sources**: Bot snapshots, PTR stats, profiler data, documentation, issue history
+- **Schedule**: Every 8 hours
+- **Documentation**: [Strategic Planning Guide](./strategic-planning.md)
+- **Used By**: Direct workflow invocation via `copilot-exec` with `strategic-planner` prompt
+
 **copilot-dev-agent** (`.github/actions/copilot-dev-agent/`):
 
 - **Purpose**: Development workflow assistance and code generation

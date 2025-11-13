@@ -5,6 +5,21 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Added
+
+- **Strategic Planning Automation**: Implemented autonomous strategic planning agent that analyzes bot performance and creates improvement roadmaps
+  - Added workflow: `.github/workflows/copilot-strategic-planner.yml` (runs every 8 hours)
+  - Created comprehensive strategic planner prompt: `.github/copilot/prompts/strategic-planner`
+  - Integrates bot snapshots, PTR telemetry, profiler data, and documentation for strategic analysis
+  - Identifies improvement opportunities across six categories: performance, economy, expansion, defense, infrastructure, automation
+  - Creates evidence-based issues with clear priorities, acceptance criteria, and implementation approaches
+  - Updates strategic documentation to maintain alignment with bot capabilities
+  - Learning feedback loop from past implementations to avoid repeating mistakes
+  - Detailed documentation in `docs/automation/strategic-planning.md`
+  - Updated `docs/automation/overview.md` with strategic planning workflow description
+  - Completes autonomous development loop: Monitoring → Strategic Planning → Implementation → Validation
+  - Resolves issue: feat(automation): implement strategic planning Copilot agent for autonomous bot improvement
+
 ## [0.57.1] - 2025-11-12
 
 ### Fixed
