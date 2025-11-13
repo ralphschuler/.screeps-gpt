@@ -133,13 +133,13 @@ describe("Task Prerequisites", () => {
 describe("Task Actions", () => {
   it("should create HarvestAction with correct prerequisites", () => {
     const action = new HarvestAction("source1" as Id<Source>);
-    expect(action.prereqs).toHaveLength(2);
+    expect(action.prereqs).toHaveLength(3);
     expect(action.prereqs[0]).toBeInstanceOf(MinionCanWork);
   });
 
   it("should create BuildAction with correct prerequisites", () => {
     const action = new BuildAction("site1" as Id<ConstructionSite>);
-    expect(action.prereqs).toHaveLength(2);
+    expect(action.prereqs).toHaveLength(3);
     expect(action.prereqs[0]).toBeInstanceOf(MinionCanWork);
     expect(action.prereqs[1]).toBeInstanceOf(MinionHasEnergy);
   });
