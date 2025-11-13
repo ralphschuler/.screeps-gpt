@@ -70,6 +70,8 @@ jobs:
       - name: Commit version bump to main
         id: commit
         uses: stefanzweifel/git-auto-commit-action@v7
+        env:
+          GITHUB_TOKEN: ${{ secrets.COPILOT_TOKEN }}
         with:
           commit_message: >-
             chore(release): bump version to ${{
@@ -86,6 +88,8 @@ jobs:
           steps.bump.outputs.version != ''
           && steps.commit.outputs.commit_hash != ''
         shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.COPILOT_TOKEN }}
         run: |
           VERSION="${{ steps.bump.outputs.version }}"
           TAG="v${VERSION}"
@@ -112,7 +116,7 @@ jobs:
           && steps.commit.outputs.commit_hash != ''
         uses: actions/github-script@v8
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.COPILOT_TOKEN }}
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
