@@ -7,8 +7,7 @@
     "declarationMap": true,
     "types": ["node"],
     "skipLibCheck": true,
-    "noPropertyAccessFromIndexSignature": false,
-    "exactOptionalPropertyTypes": false
+    "noPropertyAccessFromIndexSignature": false
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "tests"]
