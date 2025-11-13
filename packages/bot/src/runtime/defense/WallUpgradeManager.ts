@@ -9,7 +9,11 @@ export interface WallUpgradeStage {
   controllerLevel: number;
   /** Target hit points for walls/ramparts at this stage */
   targetHits: number;
-  /** Repair threshold percentage (0.0-1.0) - start repairs when below this */
+  /**
+   * Repair threshold percentage (0.0-1.0) - Reserved for future use to determine
+   * when to start repairs (e.g., repair when hits < targetHits * repairThreshold).
+   * Currently not used; repairs begin whenever hits < targetHits.
+   */
   repairThreshold: number;
 }
 
@@ -46,7 +50,7 @@ export class WallUpgradeManager {
    * @param stages - Array of upgrade stages (uses defaults if not provided)
    */
   public constructor(stages: WallUpgradeStage[] = DEFAULT_WALL_UPGRADE_STAGES) {
-    this.stages = stages.sort((a, b) => a.controllerLevel - b.controllerLevel);
+    this.stages = [...stages].sort((a, b) => a.controllerLevel - b.controllerLevel);
   }
 
   /**
