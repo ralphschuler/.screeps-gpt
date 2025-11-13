@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.64.0] - 2025-11-13
+
 ### Added
 
 - **Build Validation Enhancements**: Implemented comprehensive build artifact validation to prevent corrupted or empty files from being deployed
