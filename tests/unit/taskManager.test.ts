@@ -72,7 +72,11 @@ describe("TaskManager", () => {
       id: "creep1" as Id<Creep>,
       name: "harvester1",
       memory: {},
-      body: [{ type: WORK }, { type: CARRY }, { type: MOVE }],
+      body: [
+        { type: WORK, hits: 100 },
+        { type: CARRY, hits: 100 },
+        { type: MOVE, hits: 100 }
+      ],
       store: {
         getFreeCapacity: vi.fn().mockReturnValue(50),
         getUsedCapacity: vi.fn().mockReturnValue(0)
