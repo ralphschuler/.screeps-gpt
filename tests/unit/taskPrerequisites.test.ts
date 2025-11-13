@@ -1,16 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { MinionHasBodyParts } from "@runtime/tasks";
 
-// Setup global constants
-global.WORK = "work" as BodyPartConstant;
-global.CARRY = "carry" as BodyPartConstant;
-global.MOVE = "move" as BodyPartConstant;
-global.ATTACK = "attack" as BodyPartConstant;
-global.RANGED_ATTACK = "ranged_attack" as BodyPartConstant;
-global.HEAL = "heal" as BodyPartConstant;
-global.CLAIM = "claim" as BodyPartConstant;
-global.TOUGH = "tough" as BodyPartConstant;
-
 describe("MinionHasBodyParts prerequisite", () => {
   const createMockCreep = (body: Array<{ type: BodyPartConstant; hits: number }>): Creep => {
     return {
