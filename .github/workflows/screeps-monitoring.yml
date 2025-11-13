@@ -57,6 +57,15 @@ jobs:
           timeout: "40"
           verbose: "true"
 
+      - name: Collect bot state snapshot
+        id: collect_snapshot
+        if: success()
+        run: |
+          npx tsx packages/utilities/scripts/collect-bot-snapshot.ts || \
+            echo "::warning::Snapshot collection failed (stats may not \
+            be available)"
+        continue-on-error: true
+
       - name: Fetch profiler data from console
         if: always()
         env:
@@ -67,22 +76,14 @@ jobs:
           SCREEPS_PROTOCOL: ${{ secrets.SCREEPS_PROTOCOL }}
         run: |
           npx tsx packages/utilities/scripts/fetch-profiler-console.ts || \
-            echo "Profiler data fetch failed (may not be enabled)"
+            echo "::warning::Profiler data fetch failed (may not be enabled)"
+        continue-on-error: true
 
       - name: Validate profiler health
         if: always()
         run: |
           npx tsx packages/utilities/scripts/check-profiler-health.ts || \
             echo "::warning::Profiler health check failed or has warnings"
-        continue-on-error: true
-
-      - name: Collect bot state snapshot
-        id: collect_snapshot
-        if: success()
-        run: |
-          npx tsx packages/utilities/scripts/collect-bot-snapshot.ts || \
-            echo "::warning::Snapshot collection failed (stats may not \
-            be available)"
         continue-on-error: true
 
       - name: Bot Health Check with Graduated Detection
