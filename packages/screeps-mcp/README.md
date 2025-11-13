@@ -39,21 +39,27 @@ npx screeps-mcp
 
 ```typescript
 import { createMCPServer } from "@ralphschuler/screeps-mcp";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
-const config = {
-  name: "my-screeps-mcp",
-  version: "1.0.0",
-  screeps: {
-    token: process.env.SCREEPS_TOKEN,
-    host: "screeps.com",
-    port: 443,
-    protocol: "https",
-    shard: "shard3"
-  }
-};
+async function main() {
+  const config = {
+    name: "my-screeps-mcp",
+    version: "1.0.0",
+    screeps: {
+      token: process.env.SCREEPS_TOKEN,
+      host: "screeps.com",
+      port: 443,
+      protocol: "https",
+      shard: "shard3"
+    }
+  };
 
-const server = createMCPServer(config);
-// Connect to transport and start handling requests
+  const server = createMCPServer(config);
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+}
+
+main().catch(console.error);
 ```
 
 ## Configuration

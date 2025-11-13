@@ -37,9 +37,8 @@ describe("Resource Handlers", () => {
           energyCapacityAvailable: 550
         }
       ];
-      /* eslint-disable-line @typescript-eslint/no-explicit-any */ (mockClient.getRooms as any).mockResolvedValue(
-        mockRooms
-      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (mockClient.getRooms as any).mockResolvedValue(mockRooms);
 
       const result = await getRoomsResource(mockClient);
 
@@ -55,9 +54,8 @@ describe("Resource Handlers", () => {
       const mockCreeps = [
         { name: "Harvester1", role: "harvester", room: "W1N1", hits: 100, hitsMax: 100, ticksToLive: 1500 }
       ];
-      /* eslint-disable-line @typescript-eslint/no-explicit-any */ (mockClient.getCreeps as any).mockResolvedValue(
-        mockCreeps
-      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (mockClient.getCreeps as any).mockResolvedValue(mockCreeps);
 
       const result = await getCreepsResource(mockClient);
 
@@ -71,9 +69,8 @@ describe("Resource Handlers", () => {
   describe("getSpawnsResource", () => {
     it("should return formatted spawn data", async () => {
       const mockSpawns = [{ name: "Spawn1", room: "W1N1", energy: 300, energyCapacity: 300 }];
-      /* eslint-disable-line @typescript-eslint/no-explicit-any */ (mockClient.getSpawns as any).mockResolvedValue(
-        mockSpawns
-      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (mockClient.getSpawns as any).mockResolvedValue(mockSpawns);
 
       const result = await getSpawnsResource(mockClient);
 
@@ -86,9 +83,8 @@ describe("Resource Handlers", () => {
   describe("getMemoryResource", () => {
     it("should return memory data for given path", async () => {
       const mockMemory = { success: true, path: "myData", value: { config: 123 } };
-      /* eslint-disable-line @typescript-eslint/no-explicit-any */ (mockClient.getMemory as any).mockResolvedValue(
-        mockMemory
-      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (mockClient.getMemory as any).mockResolvedValue(mockMemory);
 
       const result = await getMemoryResource(mockClient, "myData");
 
@@ -100,9 +96,8 @@ describe("Resource Handlers", () => {
     it("should handle empty path parameter", async () => {
       const mockMemory = { success: true, path: "", value: {} };
 
-      /* eslint-disable-line @typescript-eslint/no-explicit-any */ (mockClient.getMemory as any).mockResolvedValue(
-        mockMemory
-      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (mockClient.getMemory as any).mockResolvedValue(mockMemory);
 
       await getMemoryResource(mockClient);
 
@@ -118,9 +113,8 @@ describe("Resource Handlers", () => {
         rooms: 1,
         creeps: 5
       };
-      /* eslint-disable-line @typescript-eslint/no-explicit-any */ (mockClient.getStats as any).mockResolvedValue(
-        mockStats
-      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (mockClient.getStats as any).mockResolvedValue(mockStats);
 
       const result = await getStatsResource(mockClient);
 
@@ -190,12 +184,11 @@ describe("Tool Handlers", () => {
 
   describe("handleConsole", () => {
     it("should execute console command and return output", async () => {
-      /* eslint-disable-line @typescript-eslint/no-explicit-any */ (mockClient.executeConsole as any).mockResolvedValue(
-        {
-          success: true,
-          output: "Game time: 12345"
-        }
-      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (mockClient.executeConsole as any).mockResolvedValue({
+        success: true,
+        output: "Game time: 12345"
+      });
 
       const result = await handleConsole(mockClient, { command: "Game.time" });
 
@@ -204,13 +197,12 @@ describe("Tool Handlers", () => {
     });
 
     it("should handle console errors", async () => {
-      /* eslint-disable-line @typescript-eslint/no-explicit-any */ (mockClient.executeConsole as any).mockResolvedValue(
-        {
-          success: false,
-          output: "",
-          error: "Invalid command"
-        }
-      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (mockClient.executeConsole as any).mockResolvedValue({
+        success: false,
+        output: "",
+        error: "Invalid command"
+      });
 
       const result = await handleConsole(mockClient, { command: "invalid" });
 
@@ -222,9 +214,8 @@ describe("Tool Handlers", () => {
   describe("handleMemoryGet", () => {
     it("should retrieve memory value", async () => {
       const mockMemory = { success: true, path: "myData", value: { config: 123 } };
-      /* eslint-disable-line @typescript-eslint/no-explicit-any */ (mockClient.getMemory as any).mockResolvedValue(
-        mockMemory
-      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (mockClient.getMemory as any).mockResolvedValue(mockMemory);
 
       const result = await handleMemoryGet(mockClient, { path: "myData" });
 
@@ -237,9 +228,8 @@ describe("Tool Handlers", () => {
   describe("handleMemorySet", () => {
     it("should set memory value", async () => {
       const mockResult = { success: true, path: "myData", value: { config: 456 } };
-      /* eslint-disable-line @typescript-eslint/no-explicit-any */ (mockClient.setMemory as any).mockResolvedValue(
-        mockResult
-      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (mockClient.setMemory as any).mockResolvedValue(mockResult);
 
       const result = await handleMemorySet(mockClient, { path: "myData", value: { config: 456 } });
 
@@ -250,9 +240,8 @@ describe("Tool Handlers", () => {
 
     it("should handle set memory errors", async () => {
       const mockResult = { success: false, path: "badPath", error: "Cannot modify critical system paths" };
-      /* eslint-disable-line @typescript-eslint/no-explicit-any */ (mockClient.setMemory as any).mockResolvedValue(
-        mockResult
-      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (mockClient.setMemory as any).mockResolvedValue(mockResult);
 
       const result = await handleMemorySet(mockClient, { path: "badPath", value: "value" });
 
@@ -268,9 +257,8 @@ describe("Tool Handlers", () => {
         rooms: 1,
         creeps: 5
       };
-      /* eslint-disable-line @typescript-eslint/no-explicit-any */ (mockClient.getStats as any).mockResolvedValue(
-        mockStats
-      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (mockClient.getStats as any).mockResolvedValue(mockStats);
 
       const result = await handleStats(mockClient);
 

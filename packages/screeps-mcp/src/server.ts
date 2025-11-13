@@ -38,6 +38,12 @@ import {
  * Create and configure the MCP server
  */
 export function createMCPServer(config: MCPServerConfig) {
+  /**
+   * NOTE: Using the deprecated Server class from @modelcontextprotocol/sdk.
+   * The new McpServer class doesn't yet support stdio transport which is required
+   * for this implementation. This should be migrated when stdio support is added.
+   * See: https://github.com/modelcontextprotocol/typescript-sdk
+   */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   const server = new Server(
     {
@@ -54,6 +60,15 @@ export function createMCPServer(config: MCPServerConfig) {
 
   // Initialize Screeps client
   const client = new ScreepsClient(config.screeps);
+  let clientConnected = false;
+
+  // Lazy connection initialization
+  const ensureConnected = async () => {
+    if (!clientConnected) {
+      await client.connect();
+      clientConnected = true;
+    }
+  };
 
   // Handle list resources request
   server.setRequestHandler(ListResourcesRequestSchema, async () => {
@@ -75,6 +90,8 @@ export function createMCPServer(config: MCPServerConfig) {
     let content: string;
 
     try {
+      await ensureConnected();
+
       if (uri === "screeps://game/rooms") {
         content = await getRoomsResource(client);
       } else if (uri === "screeps://game/creeps") {
@@ -124,6 +141,8 @@ export function createMCPServer(config: MCPServerConfig) {
     const { name, arguments: toolArgs } = request.params;
 
     try {
+      await ensureConnected();
+
       if (name === "screeps.console") {
         const validated = toolSchemas.console.parse(toolArgs);
         return await handleConsole(client, validated);
@@ -144,7 +163,7 @@ export function createMCPServer(config: MCPServerConfig) {
         content: [
           {
             type: "text",
-            text: `Error: ${errorMessage}`
+            text: `Error executing tool '${name}': ${errorMessage}`
           }
         ]
       };

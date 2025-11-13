@@ -69,7 +69,7 @@ export function listTools() {
             description: "Memory path to write (e.g., 'myData.config')"
           },
           value: {
-            description: "Value to set at the path"
+            description: "Value to set at the path (any JSON-serializable value)"
           }
         },
         required: ["path", "value"]

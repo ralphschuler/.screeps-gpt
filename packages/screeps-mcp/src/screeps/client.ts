@@ -21,11 +21,11 @@ export class ScreepsClient {
 
   public constructor(config: ScreepsConfig) {
     this.config = {
-      ...config,
       host: config.host ?? "screeps.com",
       port: config.port ?? 443,
       protocol: config.protocol ?? "https",
-      shard: config.shard ?? "shard3"
+      shard: config.shard ?? "shard3",
+      ...config
     };
   }
 
@@ -58,7 +58,7 @@ export class ScreepsClient {
       throw new Error("API not initialized. Call connect() first.");
     }
 
-    const shard = this.config.shard!;
+    const shard = this.config.shard ?? "shard3";
     const response = await this.api.memory.get(`_shard_${shard}`, "rooms");
 
     if (!response || !response.data) {
@@ -82,7 +82,7 @@ export class ScreepsClient {
       throw new Error("API not initialized. Call connect() first.");
     }
 
-    const shard = this.config.shard!;
+    const shard = this.config.shard ?? "shard3";
     const response = await this.api.memory.get(`_shard_${shard}`, "creeps");
 
     if (!response || !response.data) {
@@ -108,7 +108,7 @@ export class ScreepsClient {
       throw new Error("API not initialized. Call connect() first.");
     }
 
-    const shard = this.config.shard!;
+    const shard = this.config.shard ?? "shard3";
     const response = await this.api.memory.get(`_shard_${shard}`, "spawns");
 
     if (!response || !response.data) {
@@ -133,7 +133,7 @@ export class ScreepsClient {
       throw new Error("API not initialized. Call connect() first.");
     }
 
-    const shard = this.config.shard!;
+    const shard = this.config.shard ?? "shard3";
     const response = await this.api.memory.get(`_shard_${shard}`, "stats");
 
     const data = response?.data ?? {};
@@ -159,7 +159,7 @@ export class ScreepsClient {
     }
 
     try {
-      const shard = this.config.shard!;
+      const shard = this.config.shard ?? "shard3";
       const response = await this.api.memory.get(`_shard_${shard}`, path);
 
       return {
@@ -185,8 +185,9 @@ export class ScreepsClient {
     }
 
     // Safety check: prevent modifying critical system paths
+    const pathParts = path.split(".");
     const criticalPaths = ["__proto__", "constructor", "prototype"];
-    if (criticalPaths.some(p => path.includes(p))) {
+    if (pathParts.some(part => criticalPaths.includes(part))) {
       return {
         success: false,
         path,
@@ -195,7 +196,7 @@ export class ScreepsClient {
     }
 
     try {
-      const shard = this.config.shard!;
+      const shard = this.config.shard ?? "shard3";
       await this.api.memory.set(`_shard_${shard}`, path, value);
 
       return {
@@ -221,7 +222,7 @@ export class ScreepsClient {
     }
 
     try {
-      const shard = this.config.shard!;
+      const shard = this.config.shard ?? "shard3";
       const response = await this.api.console(command, shard);
 
       return {
