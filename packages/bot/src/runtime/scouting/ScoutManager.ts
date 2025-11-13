@@ -2,6 +2,36 @@ import type { GameContext, RoomLike } from "@runtime/types/GameContext";
 import { profile } from "@profiler";
 
 /**
+ * Body part count for threat assessment
+ */
+export interface BodyPartCount {
+  attack: number;
+  rangedAttack: number;
+  heal: number;
+  tough: number;
+  work: number;
+}
+
+/**
+ * Hostile structure intelligence
+ */
+export interface HostileStructures {
+  towers: number;
+  ramparts: number;
+  walls: number;
+  spawns: number;
+}
+
+/**
+ * Hostile creep composition
+ */
+export interface HostileCreeps {
+  defenders: number;
+  healers: number;
+  totalBodyParts: BodyPartCount;
+}
+
+/**
  * Information about a remote room discovered by scouts
  */
 export interface RemoteRoomData {
@@ -49,6 +79,15 @@ export interface RemoteRoomData {
 
   /** Distance from home room (path cost) */
   pathDistance?: number;
+
+  /** Hostile structures in the room (for combat assessment) */
+  hostileStructures?: HostileStructures;
+
+  /** Hostile creep composition (for combat assessment) */
+  hostileCreeps?: HostileCreeps;
+
+  /** Threat level assessment */
+  threatLevel?: "none" | "low" | "medium" | "high" | "extreme";
 }
 
 /**
@@ -161,13 +200,22 @@ export class ScoutManager {
     }) as StructureKeeperLair[];
     data.isSourceKeeper = keeperLairs.length > 0;
 
+    // Collect hostile intelligence for combat assessment
+    if (data.owned && data.owner && data.owner !== "ralphschuler") {
+      data.hostileStructures = this.analyzeHostileStructures(room);
+      data.hostileCreeps = this.analyzeHostileCreeps(hostiles);
+      data.threatLevel = this.calculateThreatLevel(data.hostileStructures, data.hostileCreeps);
+    } else if (!data.owned && !data.reserved) {
+      data.threatLevel = "none";
+    }
+
     // Store in memory
     scoutMemory.rooms[roomName] = data;
     scoutMemory.lastUpdate = game.time;
 
     this.logger.log?.(
       `[ScoutManager] Scouted ${roomName}: ${data.sourceCount} sources, ` +
-        `owned=${data.owned}, SK=${data.isSourceKeeper}, hostiles=${data.hostileCount}`
+        `owned=${data.owned}, SK=${data.isSourceKeeper}, hostiles=${data.hostileCount}, threat=${data.threatLevel ?? "unknown"}`
     );
 
     return data;
@@ -316,5 +364,126 @@ export class ScoutManager {
     }
 
     return needsRescouting;
+  }
+
+  /**
+   * Analyze hostile structures in a room for combat assessment
+   */
+  private analyzeHostileStructures(room: RoomLike): HostileStructures {
+    // Use FIND_STRUCTURES and filter for hostile structures manually
+    // This is more compatible with test mocks and provides the same results
+    const allStructures = room.find(FIND_STRUCTURES) as Structure[];
+
+    const analysis: HostileStructures = {
+      towers: 0,
+      ramparts: 0,
+      walls: 0,
+      spawns: 0
+    };
+
+    for (const structure of allStructures) {
+      // Only count structures owned by other players (not owned by us)
+      if ("owner" in structure && structure.owner && structure.owner.username !== "ralphschuler") {
+        switch (structure.structureType) {
+          case STRUCTURE_TOWER:
+            analysis.towers++;
+            break;
+          case STRUCTURE_RAMPART:
+            analysis.ramparts++;
+            break;
+          case STRUCTURE_SPAWN:
+            analysis.spawns++;
+            break;
+        }
+      } else if (structure.structureType === STRUCTURE_WALL) {
+        // Walls don't have owners, so count them all
+        analysis.walls++;
+      }
+    }
+
+    return analysis;
+  }
+
+  /**
+   * Analyze hostile creep composition for combat assessment
+   */
+  private analyzeHostileCreeps(hostiles: Creep[]): HostileCreeps {
+    const bodyParts: BodyPartCount = {
+      attack: 0,
+      rangedAttack: 0,
+      heal: 0,
+      tough: 0,
+      work: 0
+    };
+
+    let defenders = 0;
+    let healers = 0;
+
+    for (const hostile of hostiles) {
+      let hasAttack = false;
+      let hasHeal = false;
+
+      for (const part of hostile.body) {
+        switch (part.type) {
+          case ATTACK:
+            bodyParts.attack++;
+            hasAttack = true;
+            break;
+          case RANGED_ATTACK:
+            bodyParts.rangedAttack++;
+            hasAttack = true;
+            break;
+          case HEAL:
+            bodyParts.heal++;
+            hasHeal = true;
+            break;
+          case TOUGH:
+            bodyParts.tough++;
+            break;
+          case WORK:
+            bodyParts.work++;
+            break;
+        }
+      }
+
+      if (hasAttack) defenders++;
+      if (hasHeal) healers++;
+    }
+
+    return {
+      defenders,
+      healers,
+      totalBodyParts: bodyParts
+    };
+  }
+
+  /**
+   * Calculate threat level based on hostile structures and creeps
+   */
+  private calculateThreatLevel(
+    structures: HostileStructures,
+    creeps: HostileCreeps
+  ): "low" | "medium" | "high" | "extreme" {
+    let threatScore = 0;
+
+    // Structure threat scoring
+    threatScore += structures.towers * 50; // Towers are very dangerous
+    threatScore += structures.spawns * 20; // Spawns indicate established presence
+    threatScore += structures.ramparts * 5;
+    threatScore += structures.walls * 2;
+
+    // Creep threat scoring
+    threatScore += creeps.defenders * 15;
+    threatScore += creeps.healers * 20; // Healers significantly increase threat
+    threatScore += creeps.totalBodyParts.attack * 8;
+    threatScore += creeps.totalBodyParts.rangedAttack * 6;
+    threatScore += creeps.totalBodyParts.heal * 10;
+
+    // Classify threat level
+    if (threatScore === 0) return "low";
+    if (threatScore < 100) return "low";
+    if (threatScore < 300) return "medium";
+    if (threatScore < 600) return "high";
+    return "extreme";
   }
 }

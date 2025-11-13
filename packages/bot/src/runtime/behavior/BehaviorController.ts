@@ -7,7 +7,17 @@ import { EnergyPriorityManager } from "@runtime/energy";
 import { BodyComposer } from "./BodyComposer";
 import { WallUpgradeManager } from "@runtime/defense/WallUpgradeManager";
 
-type RoleName = "harvester" | "upgrader" | "builder" | "remoteMiner" | "stationaryHarvester" | "hauler" | "repairer";
+type RoleName =
+  | "harvester"
+  | "upgrader"
+  | "builder"
+  | "remoteMiner"
+  | "stationaryHarvester"
+  | "hauler"
+  | "repairer"
+  | "attacker"
+  | "healer"
+  | "dismantler";
 
 interface BaseCreepMemory extends CreepMemory {
   role: RoleName;
@@ -33,6 +43,9 @@ const REMOTE_MINER_VERSION = 1;
 const STATIONARY_HARVESTER_VERSION = 1;
 const HAULER_VERSION = 1;
 const REPAIRER_VERSION = 1;
+const ATTACKER_VERSION = 1;
+const HEALER_VERSION = 1;
+const DISMANTLER_VERSION = 1;
 
 const HARVEST_TASK = "harvest" as const;
 const DELIVER_TASK = "deliver" as const;
@@ -49,6 +62,9 @@ const HAULER_PICKUP_TASK = "pickup" as const;
 const HAULER_DELIVER_TASK = "haulerDeliver" as const;
 const REPAIRER_GATHER_TASK = "repairerGather" as const;
 const REPAIRER_REPAIR_TASK = "repair" as const;
+const ATTACKER_ATTACK_TASK = "attack" as const;
+const HEALER_HEAL_TASK = "heal" as const;
+const DISMANTLER_DISMANTLE_TASK = "dismantle" as const;
 
 type HarvesterTask = typeof HARVEST_TASK | typeof DELIVER_TASK | typeof UPGRADE_TASK;
 type UpgraderTask = typeof RECHARGE_TASK | typeof UPGRADE_TASK;
@@ -57,6 +73,9 @@ type RemoteMinerTask = typeof REMOTE_TRAVEL_TASK | typeof REMOTE_MINE_TASK | typ
 type StationaryHarvesterTask = typeof STATIONARY_HARVEST_TASK;
 type HaulerTask = typeof HAULER_PICKUP_TASK | typeof HAULER_DELIVER_TASK;
 type RepairerTask = typeof REPAIRER_GATHER_TASK | typeof REPAIRER_REPAIR_TASK;
+type AttackerTask = typeof ATTACKER_ATTACK_TASK;
+type HealerTask = typeof HEALER_HEAL_TASK;
+type DismantlerTask = typeof DISMANTLER_DISMANTLE_TASK;
 
 interface HarvesterMemory extends BaseCreepMemory {
   task: HarvesterTask;
@@ -89,6 +108,24 @@ interface HaulerMemory extends BaseCreepMemory {
 
 interface RepairerMemory extends BaseCreepMemory {
   task: RepairerTask;
+}
+
+interface AttackerMemory extends BaseCreepMemory {
+  task: AttackerTask;
+  targetRoom?: string;
+  squadId?: string;
+}
+
+interface HealerMemory extends BaseCreepMemory {
+  task: HealerTask;
+  targetRoom?: string;
+  squadId?: string;
+}
+
+interface DismantlerMemory extends BaseCreepMemory {
+  task: DismantlerTask;
+  targetRoom?: string;
+  squadId?: string;
 }
 
 /**
@@ -194,6 +231,39 @@ const ROLE_DEFINITIONS: Record<RoleName, RoleDefinition> = {
         version: REPAIRER_VERSION
       }) satisfies RepairerMemory,
     run: (creep: ManagedCreep) => runRepairer(creep)
+  },
+  attacker: {
+    minimum: 0,
+    body: [TOUGH, TOUGH, ATTACK, ATTACK, ATTACK, ATTACK, MOVE, MOVE, MOVE, MOVE],
+    memory: () =>
+      ({
+        role: "attacker",
+        task: ATTACKER_ATTACK_TASK,
+        version: ATTACKER_VERSION
+      }) satisfies AttackerMemory,
+    run: (creep: ManagedCreep) => runAttacker(creep)
+  },
+  healer: {
+    minimum: 0,
+    body: [TOUGH, HEAL, HEAL, HEAL, MOVE, MOVE, MOVE, MOVE],
+    memory: () =>
+      ({
+        role: "healer",
+        task: HEALER_HEAL_TASK,
+        version: HEALER_VERSION
+      }) satisfies HealerMemory,
+    run: (creep: ManagedCreep) => runHealer(creep)
+  },
+  dismantler: {
+    minimum: 0,
+    body: [TOUGH, WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE],
+    memory: () =>
+      ({
+        role: "dismantler",
+        task: DISMANTLER_DISMANTLE_TASK,
+        version: DISMANTLER_VERSION
+      }) satisfies DismantlerMemory,
+    run: (creep: ManagedCreep) => runDismantler(creep)
   }
 };
 
@@ -1478,4 +1548,261 @@ function runRepairer(creep: ManagedCreep): string {
   }
 
   return REPAIRER_REPAIR_TASK;
+}
+
+/**
+ * Executes the behavior logic for an attacker creep.
+ *
+ * Attackers are specialized for melee combat. They prioritize hostile creeps,
+ * then hostile spawns, then towers, and finally other hostile structures.
+ * Attackers coordinate with healers in their squad for sustained engagement.
+ *
+ * @param creep - The attacker creep to run behavior for.
+ * @returns The current attacker task ("attack") as a string.
+ */
+function runAttacker(creep: ManagedCreep): string {
+  const memory = creep.memory as AttackerMemory;
+  const comm = getComm();
+
+  // Move to target room if specified
+  if (memory.targetRoom && creep.room.name !== memory.targetRoom) {
+    comm?.say(creep, "➡️");
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+    const exitDir: ExitConstant | ERR_NO_PATH | ERR_INVALID_ARGS = creep.room.findExitTo(memory.targetRoom);
+    if (typeof exitDir === "number" && exitDir >= 1 && exitDir <= 8) {
+      const exitPositions = creep.room.find(exitDir as ExitConstant) as RoomPosition[];
+      if (exitPositions.length > 0) {
+        const exitPos: RoomPosition | null = creep.pos.findClosestByPath(exitPositions);
+        const actualExitPos: RoomPosition = exitPos ?? exitPositions[0];
+        creep.moveTo(actualExitPos, { reusePath: 50 });
+      }
+    }
+    return ATTACKER_ATTACK_TASK;
+  }
+
+  comm?.say(creep, "⚔️");
+
+  // Priority 1: Attack hostile creeps
+  const hostileCreeps = creep.room.find(FIND_HOSTILE_CREEPS) as Creep[];
+  if (hostileCreeps.length > 0) {
+    const target: Creep | null = creep.pos.findClosestByPath(hostileCreeps);
+    const actualTarget: Creep = target ?? hostileCreeps[0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+    const result = creep.attack(actualTarget);
+    if (result === ERR_NOT_IN_RANGE) {
+      creep.moveTo(actualTarget, { reusePath: 10 });
+    }
+    return ATTACKER_ATTACK_TASK;
+  }
+
+  // Priority 2: Attack hostile spawns
+  const hostileSpawns = creep.room.find(FIND_HOSTILE_STRUCTURES, {
+    filter: (s: Structure) => s.structureType === STRUCTURE_SPAWN
+  }) as StructureSpawn[];
+  if (hostileSpawns.length > 0) {
+    const target: StructureSpawn | null = creep.pos.findClosestByPath(hostileSpawns);
+    const actualTarget: StructureSpawn = target ?? hostileSpawns[0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+    const result = creep.attack(actualTarget);
+    if (result === ERR_NOT_IN_RANGE) {
+      creep.moveTo(actualTarget, { reusePath: 20 });
+    }
+    return ATTACKER_ATTACK_TASK;
+  }
+
+  // Priority 3: Attack hostile towers
+  const hostileTowers = creep.room.find(FIND_HOSTILE_STRUCTURES, {
+    filter: (s: Structure) => s.structureType === STRUCTURE_TOWER
+  }) as StructureTower[];
+  if (hostileTowers.length > 0) {
+    const target: StructureTower | null = creep.pos.findClosestByPath(hostileTowers);
+    const actualTarget: StructureTower = target ?? hostileTowers[0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+    const result = creep.attack(actualTarget);
+    if (result === ERR_NOT_IN_RANGE) {
+      creep.moveTo(actualTarget, { reusePath: 20 });
+    }
+    return ATTACKER_ATTACK_TASK;
+  }
+
+  // Priority 4: Attack any hostile structure
+  const hostileStructures = creep.room.find(FIND_HOSTILE_STRUCTURES) as Structure[];
+  if (hostileStructures.length > 0) {
+    const target: Structure | null = creep.pos.findClosestByPath(hostileStructures);
+    const actualTarget: Structure = target ?? hostileStructures[0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+    const result = creep.attack(actualTarget);
+    if (result === ERR_NOT_IN_RANGE) {
+      creep.moveTo(actualTarget, { reusePath: 20 });
+    }
+    return ATTACKER_ATTACK_TASK;
+  }
+
+  // No targets found - hold position or return to rally point
+  return ATTACKER_ATTACK_TASK;
+}
+
+/**
+ * Executes the behavior logic for a healer creep.
+ *
+ * Healers support combat operations by healing damaged friendly creeps.
+ * They prioritize critically wounded creeps, then engaged attackers, then any damaged friendlies.
+ * Healers stay close to their squad for maximum effectiveness.
+ *
+ * @param creep - The healer creep to run behavior for.
+ * @returns The current healer task ("heal") as a string.
+ */
+function runHealer(creep: ManagedCreep): string {
+  const memory = creep.memory as HealerMemory;
+  const comm = getComm();
+
+  // Move to target room if specified
+  if (memory.targetRoom && creep.room.name !== memory.targetRoom) {
+    comm?.say(creep, "➡️");
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+    const exitDir: ExitConstant | ERR_NO_PATH | ERR_INVALID_ARGS = creep.room.findExitTo(memory.targetRoom);
+    if (typeof exitDir === "number" && exitDir >= 1 && exitDir <= 8) {
+      const exitPositions = creep.room.find(exitDir as ExitConstant) as RoomPosition[];
+      if (exitPositions.length > 0) {
+        const exitPos: RoomPosition | null = creep.pos.findClosestByPath(exitPositions);
+        const actualExitPos: RoomPosition = exitPos ?? exitPositions[0];
+        creep.moveTo(actualExitPos, { reusePath: 50 });
+      }
+    }
+    return HEALER_HEAL_TASK;
+  }
+
+  comm?.say(creep, "💚");
+
+  // Find wounded friendly creeps
+  const woundedCreeps = creep.room.find(FIND_MY_CREEPS, {
+    filter: (c: Creep) => c.hits < c.hitsMax
+  }) as Creep[];
+
+  if (woundedCreeps.length > 0) {
+    // Sort by health percentage (most critical first)
+
+    woundedCreeps.sort((a, b) => a.hits / a.hitsMax - b.hits / b.hitsMax);
+
+    const target = woundedCreeps[0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    if (creep.pos.isNearTo(target)) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      creep.heal(target);
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      creep.rangedHeal(target);
+      creep.moveTo(target, { reusePath: 10 });
+    }
+    return HEALER_HEAL_TASK;
+  }
+
+  // No wounded friendlies - follow squad leader (attacker)
+  if (memory.squadId) {
+    const squadMembers = Object.values(Game.creeps).filter(
+      c => (c.memory as AttackerMemory).squadId === memory.squadId && c.memory.role === "attacker"
+    );
+    if (squadMembers.length > 0) {
+      const leader = squadMembers[0];
+      if (!creep.pos.inRangeTo(leader, 2)) {
+        creep.moveTo(leader, { reusePath: 20 });
+      }
+    }
+  }
+
+  return HEALER_HEAL_TASK;
+}
+
+/**
+ * Executes the behavior logic for a dismantler creep.
+ *
+ * Dismantlers specialize in destroying defensive structures to create breach points.
+ * They prioritize ramparts, then walls, then towers, allowing attackers to penetrate defenses.
+ * Dismantlers have high WORK parts for maximum structure damage.
+ *
+ * @param creep - The dismantler creep to run behavior for.
+ * @returns The current dismantler task ("dismantle") as a string.
+ */
+function runDismantler(creep: ManagedCreep): string {
+  const memory = creep.memory as DismantlerMemory;
+  const comm = getComm();
+
+  // Move to target room if specified
+  if (memory.targetRoom && creep.room.name !== memory.targetRoom) {
+    comm?.say(creep, "➡️");
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+    const exitDir: ExitConstant | ERR_NO_PATH | ERR_INVALID_ARGS = creep.room.findExitTo(memory.targetRoom);
+    if (typeof exitDir === "number" && exitDir >= 1 && exitDir <= 8) {
+      const exitPositions = creep.room.find(exitDir as ExitConstant) as RoomPosition[];
+      if (exitPositions.length > 0) {
+        const exitPos: RoomPosition | null = creep.pos.findClosestByPath(exitPositions);
+        const actualExitPos: RoomPosition = exitPos ?? exitPositions[0];
+        creep.moveTo(actualExitPos, { reusePath: 50 });
+      }
+    }
+    return DISMANTLER_DISMANTLE_TASK;
+  }
+
+  comm?.say(creep, "🔨");
+
+  // Priority 1: Dismantle ramparts (create breach points)
+  const ramparts = creep.room.find(FIND_HOSTILE_STRUCTURES, {
+    filter: (s: Structure) => s.structureType === STRUCTURE_RAMPART
+  }) as StructureRampart[];
+  if (ramparts.length > 0) {
+    const target: StructureRampart | null = creep.pos.findClosestByPath(ramparts);
+    const actualTarget: StructureRampart = target ?? ramparts[0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+    const result = creep.dismantle(actualTarget);
+    if (result === ERR_NOT_IN_RANGE) {
+      creep.moveTo(actualTarget, { reusePath: 20 });
+    }
+    return DISMANTLER_DISMANTLE_TASK;
+  }
+
+  // Priority 2: Dismantle walls
+  const walls = creep.room.find(FIND_STRUCTURES, {
+    filter: (s: Structure) => s.structureType === STRUCTURE_WALL
+  }) as StructureWall[];
+  if (walls.length > 0) {
+    const target: StructureWall | null = creep.pos.findClosestByPath(walls);
+    const actualTarget: StructureWall = target ?? walls[0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+    const result = creep.dismantle(actualTarget);
+    if (result === ERR_NOT_IN_RANGE) {
+      creep.moveTo(actualTarget, { reusePath: 20 });
+    }
+    return DISMANTLER_DISMANTLE_TASK;
+  }
+
+  // Priority 3: Dismantle towers
+  const towers = creep.room.find(FIND_HOSTILE_STRUCTURES, {
+    filter: (s: Structure) => s.structureType === STRUCTURE_TOWER
+  }) as StructureTower[];
+  if (towers.length > 0) {
+    const target: StructureTower | null = creep.pos.findClosestByPath(towers);
+    const actualTarget: StructureTower = target ?? towers[0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+    const result = creep.dismantle(actualTarget);
+    if (result === ERR_NOT_IN_RANGE) {
+      creep.moveTo(actualTarget, { reusePath: 20 });
+    }
+    return DISMANTLER_DISMANTLE_TASK;
+  }
+
+  // Priority 4: Dismantle any hostile structure
+  const hostileStructures = creep.room.find(FIND_HOSTILE_STRUCTURES) as Structure[];
+  if (hostileStructures.length > 0) {
+    const target: Structure | null = creep.pos.findClosestByPath(hostileStructures);
+    const actualTarget: Structure = target ?? hostileStructures[0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+    const result = creep.dismantle(actualTarget);
+    if (result === ERR_NOT_IN_RANGE) {
+      creep.moveTo(actualTarget, { reusePath: 20 });
+    }
+    return DISMANTLER_DISMANTLE_TASK;
+  }
+
+  // No targets found - hold position
+  return DISMANTLER_DISMANTLE_TASK;
 }
