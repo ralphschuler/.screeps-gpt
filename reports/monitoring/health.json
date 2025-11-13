@@ -1,7 +1,7 @@
 {
   "last_successful_ping": "2025-11-13T09:39:00.497Z",
-  "last_failed_ping": "2025-11-13T10:03:06.349Z",
-  "consecutive_failures": 1,
+  "last_failed_ping": "2025-11-13T10:13:16.752Z",
+  "consecutive_failures": 2,
   "health_status": "degraded",
   "last_known_tick": null,
   "last_bot_status": "unknown",
@@ -68,6 +68,12 @@
     },
     {
       "timestamp": "2025-11-13T10:03:06.349Z",
+      "status": "failure",
+      "aliveness": "unknown",
+      "error": "<html>\r\n<head><title>502 Bad Gateway</title></head>\r\n<body>\r\n<center><h1>502 Bad Gateway</h1></center>\r\n<hr><center>Angie</center>\r\n</body>\r\n</html>\r\n"
+    },
+    {
+      "timestamp": "2025-11-13T10:13:16.752Z",
       "status": "failure",
       "aliveness": "unknown",
       "error": "<html>\r\n<head><title>502 Bad Gateway</title></head>\r\n<body>\r\n<center><h1>502 Bad Gateway</h1></center>\r\n<hr><center>Angie</center>\r\n</body>\r\n</html>\r\n"
