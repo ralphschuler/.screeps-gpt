@@ -1,11 +1,4 @@
-import {
-  TaskPrerequisite,
-  MinionCanWork,
-  MinionCanCarry,
-  MinionHasEnergy,
-  MinionHasFreeCapacity,
-  MinionHasBodyParts
-} from "./TaskPrerequisite";
+import { TaskPrerequisite, MinionHasEnergy, MinionHasFreeCapacity, MinionHasBodyParts } from "./TaskPrerequisite";
 import type { PathfindingManager } from "@runtime/pathfinding";
 
 /**
