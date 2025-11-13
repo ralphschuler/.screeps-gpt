@@ -35,14 +35,15 @@ The profiler can be controlled via the `PROFILER_ENABLED` environment variable d
 
 ### Automatic Data Collection
 
-**✨ NEW:** The profiler now **automatically starts** data collection on the first tick after deployment when enabled. No manual start command required!
+**✨ NEW:** The profiler now has **fully automated** data collection integrated into the monitoring workflow!
 
 **How it works:**
 
-1. On first tick after deployment, profiler checks its status
-2. If stopped, automatically calls `Profiler.start()`
-3. Data collection begins immediately
-4. Monitoring workflow fetches data every 30 minutes
+1. **First tick auto-start**: On first tick after deployment, profiler checks its status and automatically calls `Profiler.start()` if stopped
+2. **Monitoring workflow backup**: Every 30 minutes, the monitoring workflow ensures profiler is running via console command
+3. **Data collection**: Profiler continuously collects CPU metrics while running
+4. **Automated retrieval**: Monitoring workflow fetches profiler data via `Memory.profiler` and saves to `reports/profiler/latest.json`
+5. **Health validation**: Automated health checks ensure profiler data is fresh and valid
 
 This ensures profiler data is always available for performance analysis without manual intervention.
 
@@ -219,12 +220,14 @@ Profiling data is particularly valuable in conjunction with PTR monitoring:
 
 The **Screeps Monitoring** workflow (`screeps-monitoring.yml`) now automatically collects profiler data:
 
-**Automatic Collection:**
+**Automatic Collection Pipeline:**
 
-- Workflow fetches `Memory.profiler` data via console every 30 minutes
-- Profiler snapshot saved to `reports/profiler/latest.json`
-- Data included in monitoring artifacts for historical analysis
-- Monitoring agent analyzes profiler data and creates performance issues
+1. **Profiler Start**: Resilient telemetry collection ensures profiler is running
+2. **Telemetry Collection**: Stats API or console telemetry fetched (every 30 minutes)
+3. **Profiler Data Fetch**: `Memory.profiler` data retrieved via console
+4. **Health Validation**: Automated checks ensure data quality
+5. **Artifact Storage**: Profiler snapshot saved to `reports/profiler/latest.json`
+6. **Strategic Analysis**: Monitoring agent analyzes profiler data for bottlenecks
 
 **Workflow Trigger:**
 
@@ -239,10 +242,11 @@ workflow_run:
 **What Gets Collected:**
 
 - Profiler status (enabled/disabled/no-data)
-- Total ticks profiled
+- Total ticks profiled (cumulative since profiler started)
 - Top 20 CPU consumers with detailed metrics
 - Function-level performance breakdowns
 - CPU percentage distribution
+- Historical profiler reports for trend analysis
 
 **Monitoring Agent Actions:**
 
@@ -253,6 +257,7 @@ When profiler data is available, the monitoring agent will:
 3. Detect excessive function calls (> 5x per tick)
 4. Create GitHub issues for significant bottlenecks
 5. Correlate profiler hotspots with PTR CPU alerts
+6. Recommend optimization strategies based on profiler evidence
 
 ### Profiler Health Checks
 
@@ -357,23 +362,29 @@ bun run deploy:no-profiler
 **Automated Workflow:**
 
 ```bash
-# 1. Deploy (profiler is enabled by default)
+# 1. Deploy (profiler is enabled by default and auto-starts)
 bun run deploy
 
-# 2. Start profiler in console
-Profiler.start()
-
-# 3. Wait for monitoring workflow to run (every 30 min)
-# Monitoring agent will automatically:
+# 2. Wait for monitoring workflow to run (every 30 min)
+# Monitoring workflow will automatically:
+# - Ensure profiler is running via console command
 # - Fetch profiler data from Memory.profiler
-# - Analyze performance bottlenecks
+# - Validate profiler health and data freshness
+# - Save profiler snapshot to reports/profiler/latest.json
+# - Upload profiler data as workflow artifact
+
+# 3. Monitoring agent will automatically:
+# - Analyze performance bottlenecks from profiler data
 # - Create issues for CPU-intensive functions
 # - Provide optimization recommendations
+# - Correlate with PTR CPU alerts
 
 # 4. Review generated issues with label "monitoring,performance"
 
-# 5. After optimizations, redeploy and verify
+# 5. After optimizations, redeploy and verify improvement
 bun run deploy
+# - Profiler continues collecting data automatically
+# - Compare reports/profiler/ snapshots to validate gains
 ```
 
 ## Performance Overhead
