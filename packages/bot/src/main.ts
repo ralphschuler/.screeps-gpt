@@ -2,6 +2,7 @@ import { createKernel } from "@runtime/bootstrap";
 import type { GameContext } from "@runtime/types/GameContext";
 import { BehaviorController } from "@runtime/behavior/BehaviorController";
 import { init as initProfiler } from "@profiler";
+import { Diagnostics } from "@runtime/utils/Diagnostics";
 
 // Task system is enabled by default (v0.32.0+)
 // Can be disabled via TASK_SYSTEM_ENABLED=false or Memory flag
@@ -29,9 +30,13 @@ const profilerInstance = initProfiler();
 if (typeof global !== "undefined") {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (global as any).Profiler = profilerInstance;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (global as any).Diagnostics = Diagnostics;
 } else if (typeof window !== "undefined") {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any).Profiler = profilerInstance;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).Diagnostics = Diagnostics;
 }
 
 // Auto-start profiler if __PROFILER_ENABLED__ is true and not already running
