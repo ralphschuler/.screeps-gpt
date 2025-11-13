@@ -57,7 +57,7 @@ async function fetchResilientTelemetry(): Promise<TelemetryResult> {
   // Phase 0: Start profiler for CPU analysis (non-blocking)
   console.log("Phase 0: Starting profiler data collection...");
   try {
-    const profilerResult = await executeScript("packages/utilities/scripts/collect-profiler-data.ts");
+    const profilerResult = await executeScript("scripts/collect-profiler-data.ts");
 
     if (profilerResult.exitCode === 0) {
       console.log("✓ Profiler start command successful");

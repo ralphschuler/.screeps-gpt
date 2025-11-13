@@ -47,17 +47,36 @@ async function executeScript(scriptPath: string): Promise<{ exitCode: number; st
  * Fetch telemetry with resilient fallback strategy
  *
  * Strategy:
- * 0. Check bot aliveness first (using world-status API)
- * 1. Try Stats API first (primary source, historical data)
- * 2. If Stats API fails, fall back to console telemetry (redundant source, real-time data)
- * 3. If both fail, create comprehensive failure snapshot
+ * 0. Start profiler data collection for CPU analysis
+ * 1. Check bot aliveness first (using world-status API)
+ * 2. Try Stats API first (primary source, historical data)
+ * 3. If Stats API fails, fall back to console telemetry (redundant source, real-time data)
+ * 4. If both fail, create comprehensive failure snapshot
  */
 async function fetchResilientTelemetry(): Promise<TelemetryResult> {
   console.log("=== Resilient Telemetry Collection ===");
-  console.log("Strategy: Bot Aliveness Check → Stats API → Console Fallback → Failure Snapshot\n");
+  console.log("Strategy: Profiler Start → Bot Aliveness Check → Stats API → Console Fallback → Failure Snapshot\n");
 
-  // Phase 0: Check bot aliveness using world-status API
-  console.log("Phase 0: Checking bot aliveness...");
+  // Phase 0: Start profiler for CPU analysis (non-blocking)
+  console.log("Phase 0: Starting profiler data collection...");
+  try {
+    const profilerResult = await executeScript("scripts/collect-profiler-data.ts");
+
+    if (profilerResult.exitCode === 0) {
+      console.log("✓ Profiler start command successful");
+      console.log(profilerResult.stdout);
+    } else {
+      console.log("⚠ Profiler start command failed (may already be running)");
+      console.log(profilerResult.stderr);
+    }
+  } catch (error) {
+    console.log("⚠ Profiler start failed with exception (non-critical):", error);
+  }
+
+  console.log();
+
+  // Phase 1: Check bot aliveness using world-status API
+  console.log("Phase 1: Checking bot aliveness...");
   let botAlive = false;
   let botStatus = "unknown";
 
@@ -83,8 +102,8 @@ async function fetchResilientTelemetry(): Promise<TelemetryResult> {
 
   console.log();
 
-  // Phase 1: Try Stats API
-  console.log("Phase 1: Attempting Stats API telemetry...");
+  // Phase 2: Try Stats API
+  console.log("Phase 2: Attempting Stats API telemetry...");
   try {
     const statsResult = await executeScript("scripts/fetch-screeps-stats.mjs");
 
@@ -125,8 +144,8 @@ async function fetchResilientTelemetry(): Promise<TelemetryResult> {
     console.log("✗ Stats API telemetry failed with exception:", error);
   }
 
-  // Phase 2: Fall back to Console Telemetry
-  console.log("\nPhase 2: Falling back to Console telemetry...");
+  // Phase 3: Fall back to Console Telemetry
+  console.log("\nPhase 3: Falling back to Console telemetry...");
   try {
     const consoleResult = await executeScript("scripts/fetch-console-telemetry.ts");
 
@@ -153,8 +172,8 @@ async function fetchResilientTelemetry(): Promise<TelemetryResult> {
     console.log("✗ Console telemetry failed with exception:", error);
   }
 
-  // Phase 3: Both sources failed - create comprehensive failure snapshot
-  console.log("\nPhase 3: Both telemetry sources failed - creating failure snapshot");
+  // Phase 4: Both sources failed - create comprehensive failure snapshot
+  console.log("\nPhase 4: Both telemetry sources failed - creating failure snapshot");
 
   const outputDir = resolve("reports", "screeps-stats");
   mkdirSync(outputDir, { recursive: true });
