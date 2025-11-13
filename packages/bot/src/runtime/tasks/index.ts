@@ -6,7 +6,8 @@ export {
   MinionHasFreeCapacity,
   MinionIsNear,
   SpawnHasEnergy,
-  StructureHasCapacity
+  StructureHasCapacity,
+  MinionHasBodyParts
 } from "./TaskPrerequisite";
 export {
   TaskAction,

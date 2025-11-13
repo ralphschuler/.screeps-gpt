@@ -3,7 +3,8 @@ import {
   MinionCanWork,
   MinionCanCarry,
   MinionHasEnergy,
-  MinionHasFreeCapacity
+  MinionHasFreeCapacity,
+  MinionHasBodyParts
 } from "./TaskPrerequisite";
 import type { PathfindingManager } from "@runtime/pathfinding";
 
@@ -57,7 +58,11 @@ export class HarvestAction extends TaskAction {
   public constructor(sourceId: Id<Source>) {
     super();
     this.sourceId = sourceId;
-    this.prereqs = [new MinionCanWork(), new MinionHasFreeCapacity()];
+    this.prereqs = [
+      new MinionCanWork(),
+      new MinionHasFreeCapacity(),
+      new MinionHasBodyParts({ [WORK]: 1 })
+    ];
   }
 
   public getSourceId(): Id<Source> {
@@ -96,7 +101,11 @@ export class BuildAction extends TaskAction {
   public constructor(siteId: Id<ConstructionSite>) {
     super();
     this.siteId = siteId;
-    this.prereqs = [new MinionCanWork(), new MinionHasEnergy()];
+    this.prereqs = [
+      new MinionCanWork(),
+      new MinionHasEnergy(),
+      new MinionHasBodyParts({ [WORK]: 1 })
+    ];
   }
 
   public getSiteId(): Id<ConstructionSite> {
@@ -135,7 +144,11 @@ export class RepairAction extends TaskAction {
   public constructor(structureId: Id<Structure>) {
     super();
     this.structureId = structureId;
-    this.prereqs = [new MinionCanWork(), new MinionHasEnergy()];
+    this.prereqs = [
+      new MinionCanWork(),
+      new MinionHasEnergy(),
+      new MinionHasBodyParts({ [WORK]: 1 })
+    ];
   }
 
   public getStructureId(): Id<Structure> {
@@ -174,7 +187,11 @@ export class UpgradeAction extends TaskAction {
   public constructor(controllerId: Id<StructureController>) {
     super();
     this.controllerId = controllerId;
-    this.prereqs = [new MinionCanWork(), new MinionHasEnergy()];
+    this.prereqs = [
+      new MinionCanWork(),
+      new MinionHasEnergy(),
+      new MinionHasBodyParts({ [WORK]: 1 })
+    ];
   }
 
   public action(creep: Creep): boolean {
@@ -211,7 +228,10 @@ export class TransferAction extends TaskAction {
     super();
     this.targetId = targetId;
     this.resourceType = resourceType;
-    this.prereqs = [new MinionCanCarry()];
+    this.prereqs = [
+      new MinionCanCarry(),
+      new MinionHasBodyParts({ [CARRY]: 1 })
+    ];
 
     if (resourceType === RESOURCE_ENERGY) {
       this.prereqs.push(new MinionHasEnergy());
@@ -256,7 +276,11 @@ export class WithdrawAction extends TaskAction {
     super();
     this.targetId = targetId;
     this.resourceType = resourceType;
-    this.prereqs = [new MinionCanCarry(), new MinionHasFreeCapacity()];
+    this.prereqs = [
+      new MinionCanCarry(),
+      new MinionHasFreeCapacity(),
+      new MinionHasBodyParts({ [CARRY]: 1 })
+    ];
   }
 
   public action(creep: Creep): boolean {
