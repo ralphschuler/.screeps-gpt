@@ -85,6 +85,24 @@
         "marked": "^16.4.1",
       },
     },
+    "packages/screeps-agent": {
+      "name": "@ralphschuler/screeps-agent",
+      "version": "0.1.0",
+      "bin": {
+        "screeps-agent": "./dist/agent.js",
+      },
+      "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.0.4",
+        "@ralphschuler/screeps-mcp": "workspace:*",
+        "screeps-api": "^1.16.1",
+        "zod": "^4.1.12",
+      },
+      "devDependencies": {
+        "@types/node": "^24.9.1",
+        "typescript": "^5.4.3",
+        "vitest": "^4.0.1",
+      },
+    },
     "packages/screeps-mcp": {
       "name": "@ralphschuler/screeps-mcp",
       "version": "0.1.0",
@@ -328,6 +346,8 @@
     "@oven/bun-windows-x64": ["@oven/bun-windows-x64@1.3.1", "", { "os": "win32", "cpu": "x64" }, "sha512-xdUjOZRq6PwPbbz4/F2QEMLBZwintGp7AS50cWxgkHnyp7Omz5eJfV6/vWtN4qwZIyR3V3DT/2oXsY1+7p3rtg=="],
 
     "@oven/bun-windows-x64-baseline": ["@oven/bun-windows-x64-baseline@1.3.1", "", { "os": "win32", "cpu": "x64" }, "sha512-dcA+Kj7hGFrY3G8NWyYf3Lj3/GMViknpttWUf5pI6p6RphltZaoDu0lY5Lr71PkMdRZTwL2NnZopa/x/NWCdKA=="],
+
+    "@ralphschuler/screeps-agent": ["@ralphschuler/screeps-agent@workspace:packages/screeps-agent"],
 
     "@ralphschuler/screeps-gpt-actions": ["@ralphschuler/screeps-gpt-actions@workspace:packages/actions"],
 
