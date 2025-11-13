@@ -39,7 +39,16 @@ export default defineConfig({
     setupFiles: [resolve(rootDir, "tests/setup.ts")],
     coverage: {
       provider: "v8",
-      reporter: ["text", "json", "lcov"]
+      reporter: ["text", "json", "lcov"],
+      exclude: [
+        "**/node_modules/**",
+        "**/dist/**",
+        "**/tests/**",
+        "**/scripts/**",
+        "**/*.test.ts",
+        "**/*.spec.ts",
+        "**/vitest.config.ts"
+      ]
     }
   }
 });

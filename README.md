@@ -298,11 +298,29 @@ Configure these GitHub secrets for full automation functionality:
 
 Configure these GitHub repository variables:
 
-- `EMAIL_NOTIFY_TO` - Email address for critical notifications (e.g., `screeps-gpt+notify@nyphon.de`)
+**Screeps Configuration:**
+
 - `SCREEPS_HOST` - Screeps server host (default: screeps.com)
 - `SCREEPS_SHARD` - Target shard (default: shard3)
 - `SCREEPS_BRANCH` - Deployment branch (default: default)
 - `PROFILER_ENABLED` - Enable profiler in production builds (default: true). Set to `false` to disable CPU profiling and reduce bundle size
+
+**Notifications:**
+
+- `EMAIL_NOTIFY_TO` - Email address for critical notifications (e.g., `screeps-gpt+notify@nyphon.de`)
+
+**GitHub Projects Integration (Optional):**
+
+- `PROJECT_NUMBER` - GitHub Project number for automated issue/PR tracking (e.g., `1`)
+- `PROJECT_OWNER` - GitHub username or organization that owns the project (e.g., `ralphschuler`)
+
+If `PROJECT_NUMBER` and `PROJECT_OWNER` are not set, project sync workflows will gracefully skip project operations. To validate your project configuration, run:
+
+```bash
+npm run validate:project-config
+```
+
+See [GitHub Projects Setup Guide](docs/automation/github-projects-setup.md) for detailed project integration documentation.
 
 See [Push Notification Documentation](docs/automation/push-notifications.md) for details on notification setup.
 

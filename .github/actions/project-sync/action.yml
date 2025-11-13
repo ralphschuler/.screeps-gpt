@@ -114,7 +114,25 @@ runs:
         else
           echo "⚠️  Failed to add item to project"
           echo "   Error: $result"
-          echo "   This is non-fatal, workflow will continue"
+          
+          # Provide specific troubleshooting for common errors
+          if echo "$result" | grep -q "Could not resolve to a ProjectV2"; then
+            echo ""
+            echo "   💡 Troubleshooting: Project number may be incorrect or inaccessible"
+            echo "      1. Verify PROJECT_NUMBER ($PROJECT_NUMBER) is correct"
+            echo "      2. Check project exists: gh project list --owner $PROJECT_OWNER"
+            echo "      3. Run validation: npm run validate:project-config"
+            echo "      4. See docs: docs/automation/github-projects-setup.md"
+          elif echo "$result" | grep -q "Resource not accessible"; then
+            echo ""
+            echo "   💡 Troubleshooting: Permission or access issue"
+            echo "      1. Verify PROJECT_OWNER ($PROJECT_OWNER) is correct"
+            echo "      2. Check workflow has 'repository-projects: write' permission"
+            echo "      3. Ensure project is accessible by repository owner"
+          fi
+          
+          echo ""
+          echo "   ℹ️  This is non-fatal, workflow will continue"
           echo "status=failed" >> "$GITHUB_OUTPUT"
         fi
 

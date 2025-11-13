@@ -121,6 +121,26 @@ This ensures project integration is opt-in and doesn't break existing functional
 
 ## Monitoring & Troubleshooting
 
+### Validation Script
+
+Before troubleshooting manually, use the project configuration validator:
+
+```bash
+# Run with repository variables
+npm run validate:project-config
+
+# Or specify configuration explicitly
+tsx scripts/validate-project-config.ts --project-number 1 --project-owner username
+```
+
+The validator will:
+
+- ✅ Check GitHub CLI installation and authentication
+- ✅ Verify GITHUB_TOKEN environment variable
+- ✅ List all available projects for the owner
+- ✅ Validate access to specified project number
+- ✅ Provide specific troubleshooting guidance
+
 ### Check Workflow Logs
 
 1. Navigate to Actions tab in repository
@@ -130,8 +150,16 @@ This ensures project integration is opt-in and doesn't break existing functional
 
 ### Common Issues
 
+**GraphQL "Could not resolve to a ProjectV2" error:**
+
+- Run validation script: `npm run validate:project-config`
+- List available projects: `gh project list --owner USERNAME`
+- Verify `PROJECT_NUMBER` is correct in repository variables
+- Check if project exists and is accessible
+
 **Items not appearing in project:**
 
+- Run validation script first to diagnose the issue
 - Verify `PROJECT_NUMBER` and `PROJECT_OWNER` variables are set
 - Check project permissions (should be accessible by repository)
 - Review workflow logs for permission errors

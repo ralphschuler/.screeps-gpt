@@ -61,6 +61,7 @@
     "versions:update": "tsx packages/utilities/scripts/update-version-index.ts",
     "analyze:system": "tsx packages/utilities/scripts/evaluate-system.ts",
     "reports:cleanup": "tsx packages/utilities/scripts/cleanup-old-reports.ts",
+    "validate:project-config": "tsx scripts/validate-project-config.ts",
     "prepare": "husky",
     "docker:build": "docker compose build",
     "docker:test": "docker compose run --rm test",
