@@ -1,8 +1,3 @@
----
-title: Push Notification System
-date: 2025-10-24T23:38:43.762Z
----
-
 # Push Notification System
 
 The repository implements push notifications using [Push by Techulus](https://push.techulus.com) to provide real-time alerts for critical repository and Screeps bot events.
@@ -65,11 +60,11 @@ Sends notifications for:
 - **Success:** Version deployed successfully (Priority 3)
 - **Failure:** Deployment failed, immediate attention required (Priority 5)
 
-### Quality Gate Workflow (quality-gate.yml)
+### Guard Workflows (guard-*.yml)
 
-Sends notifications for:
+Individual guard workflows can send notifications for:
 
-- **Failure:** PR build failed, review required (Priority 4)
+- **Failure:** Specific check failed (e.g., build, lint, tests), review required (Priority 4)
 
 ### Screeps Monitoring Workflow (screeps-monitoring.yml)
 
@@ -196,9 +191,14 @@ The system uses the `/api/v1/notify` endpoint with:
 - **Headers:** `Content-Type: application/json`, `x-api-key: <token>`
 - **Body:** `{ title, body, link?, priority? }`
 
+## Related Documentation
+
+- [Email Notification System](./email-notifications.md) - Complementary SMTP email notifications
+- [Autonomous Monitoring](./autonomous-monitoring.md) - PTR and deployment monitoring integration
+
 ## Related Issues
 
-- #134 - Email notification system (complementary notification channel)
+- #134 - Email notification system (now implemented - see email-notifications.md)
 - #152 - PTR monitoring API authentication
 - #117 - PTR CPU monitoring alerts
 

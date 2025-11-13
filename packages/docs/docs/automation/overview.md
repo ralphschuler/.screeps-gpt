@@ -251,6 +251,21 @@ All specialized agents are located in `.github/actions/copilot-*-agent/` directo
 - **Required Inputs**: `copilot-token`
 - **Used By**: `copilot-review.yml`
 
+**Strategic Planning Workflow** (`copilot-strategic-planner.yml`):
+
+- **Purpose**: Autonomous strategic planning and improvement roadmap generation
+- **Key Features**:
+  - Bot performance analysis from snapshots and PTR telemetry
+  - Profiler-driven CPU bottleneck identification
+  - Strategic opportunity identification across six categories
+  - Evidence-based issue creation with priorities
+  - Documentation updates for strategic alignment
+  - Learning feedback loop from past implementations
+- **Data Sources**: Bot snapshots, PTR stats, profiler data, documentation, issue history
+- **Schedule**: Every 8 hours
+- **Documentation**: [Strategic Planning Guide](./strategic-planning.md)
+- **Used By**: Direct workflow invocation via `copilot-exec` with `strategic-planner` prompt
+
 **copilot-dev-agent** (`.github/actions/copilot-dev-agent/`):
 
 - **Purpose**: Development workflow assistance and code generation
@@ -463,9 +478,41 @@ Quality checks are split into separate guard workflows for better granularity an
 - Permissions: `contents: read` only.
 - Jobs: Test coverage reporting and evaluation artifact upload.
 
-## Quality Gate (`quality-gate.yml`)
+## Quality Gate (Guard Workflows)
 
-**Deprecated:** The monolithic quality-gate workflow has been split into multiple focused guard workflows (guard-lint, guard-format, etc.) for better granularity and parallel execution. This workflow is kept for backward compatibility but may be removed in a future version.
+The quality gate system has been refactored from a monolithic `quality-gate.yml` into modular guard workflows for better granularity, parallel execution, and faster feedback:
+
+### Individual Guard Workflows
+
+Each guard workflow runs independently on pull requests targeting `main`:
+
+- **guard-build.yml** - Validates AI builds successfully with caching support
+- **guard-lint.yml** - Runs ESLint code quality checks
+- **guard-format.yml** - Validates Prettier formatting
+- **guard-test-unit.yml** - Executes unit test suite
+- **guard-test-e2e.yml** - Runs end-to-end tests
+- **guard-test-regression.yml** - Validates regression test suite
+- **guard-test-docs.yml** - Tests documentation build processes
+- **guard-yaml-lint.yml** - Validates YAML syntax in workflow files
+- **guard-version.yml** - Checks version consistency
+- **guard-coverage.yml** - Reports test coverage metrics
+- **guard-deprecation.yml** - Detects deprecated API usage
+- **guard-security-audit.yml** - Performs security vulnerability scanning
+
+### Quality Gate Summary (`quality-gate-summary.yml`)
+
+Provides a single, reliable quality gate status for PRs by aggregating results from individual guard workflows:
+
+- **Trigger**: Pull requests to `main` branch
+- **Behaviour**: Polls guard workflow results and reports unified pass/fail status
+- **Required Guards**: Unit Tests, Build, Lint, Format, YAML Lint
+- **Features**:
+  - Waits up to 25 minutes for guards to complete
+  - Treats `action_required` (cancelled by concurrency) as non-blocking
+  - Provides single check for branch protection requirements
+  - Never cancelled by concurrency to ensure definitive reporting
+
+This architecture allows guards to fail fast individually while the summary provides a single status for branch protection.
 
 ## Post Merge Release (`post-merge-release.yml`)
 
@@ -544,15 +591,19 @@ Quality checks are split into separate guard workflows for better granularity an
 - Trigger: Issues opened or reopened.
 - Behaviour: Copilot performs comprehensive context-aware triage by:
   - Fetching all existing open issues for duplicate detection and relationship analysis
+  - **Gathering code context** by searching for related files in `.github/workflows/`, `.github/actions/`, `src/`, `tests/` directories
+  - **Cross-referencing issues** to find related open and closed issues with similar keywords or technical context
+  - **Cross-referencing pull requests** to find related PRs that touch similar code or address related problems
   - Detecting and handling duplicate issues automatically (comments on both issues, closes duplicate with "duplicate" reason)
   - Identifying related issues, sub-tasks, and parent-child relationships
   - Reformulating title and description to clearly outline required changes and expectations
+  - Including discovered context in reformulated body: "Related Code", "Related Issues", "Related PRs" sections
   - Applying appropriate labels based on content analysis (**excludes automatic Todo labeling** per issue #78)
   - Linking related issues in the reformulated description
   - Establishing sub-issue connections via GitHub CLI when parent-child relationships are detected
-  - Adding a single triage comment with summary and recommendations (avoids redundant comments)
+  - Adding a single triage comment with summary, discovered context, and recommendations (avoids redundant comments)
 - Permissions: Uses the default `GITHUB_TOKEN` with `issues: write` to edit issue metadata, add comments, and close duplicates.
-- Integration: Uses GitHub MCP server for querying all issues and performing relationship analysis.
+- Integration: Uses GitHub MCP server for querying issues, searching code, and performing relationship analysis.
 - Action Enforcement: Mandatory reformulation, labeling, and triage comments with failure handling for API issues.
 
 ## Copilot Todo Automation (`copilot-todo-pr.yml`)
@@ -600,14 +651,14 @@ Quality checks are split into separate guard workflows for better granularity an
 
 - Trigger: Every 30 minutes (cron schedule) + on "Deploy Screeps AI" completion + manual dispatch.
 - Behaviour: Comprehensive autonomous monitoring workflow combining strategic analysis with PTR telemetry monitoring. Copilot performs multi-phase analysis:
-  - **PTR Telemetry Collection**: Fetches stats from Screeps API using `packages/utilities/scripts/fetch-screeps-stats.mjs`, stores in `reports/screeps-stats/latest.json`
+  - **PTR Telemetry Collection**: Fetches stats from Screeps API using `scripts/fetch-screeps-stats.mjs`, stores in `reports/screeps-stats/latest.json`
   - **Bot Performance Analysis**: Direct console access via screeps-mcp MCP server to evaluate spawning, CPU usage, energy economy, RCL progress, defense capabilities, and strategic execution
   - **PTR Anomaly Detection**: Analyzes telemetry for critical conditions (CPU >95%, >80%, low energy) with concrete evidence requirements
   - **Repository Health Analysis**: GitHub MCP server integration to assess codebase quality, automation effectiveness, CI/CD health, and development velocity
   - **Strategic Decision Making**: Intelligent prioritization of development tasks based on game performance impact and infrastructure health
   - **Autonomous Issue Management**: Creates, updates, and closes issues with evidence-based recommendations (strategic issues prefixed with `[Autonomous Monitor]`, PTR anomalies with `PTR:`)
   - **Strategic Reporting**: Generates comprehensive analysis report with bot health score (0-100), PTR status, top priorities, and actionable recommendations
-  - **Alert Notifications**: Executes `packages/utilities/scripts/check-ptr-alerts.ts` to send push notifications for critical/high severity PTR alerts
+  - **Alert Notifications**: Executes `scripts/check-ptr-alerts.ts` to send push notifications for critical/high severity PTR alerts
 - MCP Integration: Uses three MCP servers for comprehensive analysis:
   - `github` - Repository operations (issues, PRs, code search, workflow logs)
   - `screeps-mcp` - Bot console access (commands, memory, room data) via `@ralphschuler/screeps-api-mcp`
@@ -634,18 +685,18 @@ The system tracks and persists several types of reports:
    - Telemetry snapshots from Screeps Stats API or console fallback
    - CPU usage, energy levels, and resource metrics
    - Saved with timestamps for historical tracking
-   - Managed by `packages/utilities/scripts/check-ptr-alerts.ts`
+   - Managed by `scripts/check-ptr-alerts.ts`
 
 2. **System Evaluation Reports** (`reports/evaluations/`)
    - Runtime health assessments from `SystemEvaluator`
    - Test results, lint errors, coverage metrics
    - Findings and recommendations for improvements
-   - Managed by `packages/utilities/scripts/evaluate-system.ts`
+   - Managed by `scripts/evaluate-system.ts`
 
 3. **Profiler Snapshots** (`reports/profiler/`)
    - CPU profiling data from Memory.profiler
    - Function-level performance metrics
-   - Managed by `packages/utilities/scripts/fetch-profiler-console.ts`
+   - Managed by `scripts/fetch-profiler-console.ts`
 
 4. **Copilot Workflow Logs** (`reports/copilot/`)
    - Monitoring and analysis reports
@@ -654,7 +705,7 @@ The system tracks and persists several types of reports:
 
 ### Storage Infrastructure
 
-The report storage system is implemented in `packages/utilities/scripts/lib/report-storage.ts` and provides:
+The report storage system is implemented in `scripts/lib/report-storage.ts` and provides:
 
 - **Timestamped Storage**: Reports saved with ISO 8601 timestamps in filenames
 - **Type-based Organization**: Reports grouped by type in subdirectories
@@ -667,7 +718,7 @@ The report storage system is implemented in `packages/utilities/scripts/lib/repo
 
 ### Historical Comparison
 
-The comparison system is implemented in `packages/utilities/scripts/lib/report-comparison.ts` and provides:
+The comparison system is implemented in `scripts/lib/report-comparison.ts` and provides:
 
 **PTR Stats Comparison**:
 
@@ -706,7 +757,7 @@ Default configuration (configurable per report type):
 - **Maximum Age**: 30 days
 - **Minimum Reports**: 10 (always kept regardless of age)
 - **Cleanup Frequency**: On each monitoring/evaluation run
-- **Manual Cleanup**: `npx tsx packages/utilities/scripts/cleanup-old-reports.ts`
+- **Manual Cleanup**: `npx tsx scripts/cleanup-old-reports.ts`
 
 The retention policy ensures historical data availability while managing repository size by removing old reports that exceed both the age threshold and minimum count requirement.
 
@@ -731,8 +782,8 @@ The retention policy ensures historical data availability while managing reposit
 **Load and compare PTR stats**:
 
 ```typescript
-import { listReports, loadReport } from "./packages/utilities/scripts/lib/report-storage";
-import { comparePTRStats, formatPTRTrendReport } from "./packages/utilities/scripts/lib/report-comparison";
+import { listReports, loadReport } from "./scripts/lib/report-storage";
+import { comparePTRStats, formatPTRTrendReport } from "./scripts/lib/report-comparison";
 
 // Load the two most recent reports
 const reports = await listReports("ptr-stats");
@@ -746,7 +797,7 @@ console.log(formatPTRTrendReport(comparison));
 **Save a report**:
 
 ```typescript
-import { saveReport } from "./packages/utilities/scripts/lib/report-storage";
+import { saveReport } from "./scripts/lib/report-storage";
 
 const report = {
   tick: 1000,
@@ -761,7 +812,7 @@ console.log(`Report saved to: ${path}`);
 **Apply retention policy**:
 
 ```typescript
-import { applyRetentionPolicy } from "./packages/utilities/scripts/lib/report-storage";
+import { applyRetentionPolicy } from "./scripts/lib/report-storage";
 
 const deleted = await applyRetentionPolicy("ptr-stats", {
   maxAgeDays: 30,
@@ -934,7 +985,7 @@ All credentials must be stored as GitHub Actions secrets and referenced in workf
 
 ### Current Integrations
 
-- **screeps-monitoring.yml**: Uses the `packages/utilities/scripts/fetch-screeps-stats.mjs` script to fetch telemetry from the Screeps REST API and integrates with screeps-mcp MCP server for console access
+- **screeps-monitoring.yml**: Uses the `scripts/fetch-screeps-stats.mjs` script to fetch telemetry from the Screeps REST API and integrates with screeps-mcp MCP server for console access
 
 See `AGENTS.md` for detailed MCP server capabilities and best practices.
 

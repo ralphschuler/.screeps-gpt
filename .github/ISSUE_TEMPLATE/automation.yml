@@ -34,8 +34,8 @@ body:
       label: Specific Workflow/File
       description: Which workflow file or automation is affected?
       placeholder: |
-        Workflow: .github/workflows/quality-gate.yml
-        Job: build-and-test
+        Workflow: .github/workflows/guard-build.yml
+        Job: build
         Action: copilot-exec
     validations:
       required: true
@@ -138,7 +138,8 @@ body:
       label: Affected Workflows
       description: Which workflows are impacted by this issue?
       options:
-        - label: quality-gate.yml (PR validation)
+        - label: guard-* workflows (PR validation)
+        - label: quality-gate-summary.yml (PR status aggregation)
         - label: post-merge-release.yml (versioning)
         - label: deploy.yml (Screeps deployment)
         - label: copilot-review.yml (repository audits)

@@ -478,9 +478,41 @@ Quality checks are split into separate guard workflows for better granularity an
 - Permissions: `contents: read` only.
 - Jobs: Test coverage reporting and evaluation artifact upload.
 
-## Quality Gate (`quality-gate.yml`)
+## Quality Gate (Guard Workflows)
 
-**Deprecated:** The monolithic quality-gate workflow has been split into multiple focused guard workflows (guard-lint, guard-format, etc.) for better granularity and parallel execution. This workflow is kept for backward compatibility but may be removed in a future version.
+The quality gate system has been refactored from a monolithic `quality-gate.yml` into modular guard workflows for better granularity, parallel execution, and faster feedback:
+
+### Individual Guard Workflows
+
+Each guard workflow runs independently on pull requests targeting `main`:
+
+- **guard-build.yml** - Validates AI builds successfully with caching support
+- **guard-lint.yml** - Runs ESLint code quality checks
+- **guard-format.yml** - Validates Prettier formatting
+- **guard-test-unit.yml** - Executes unit test suite
+- **guard-test-e2e.yml** - Runs end-to-end tests
+- **guard-test-regression.yml** - Validates regression test suite
+- **guard-test-docs.yml** - Tests documentation build processes
+- **guard-yaml-lint.yml** - Validates YAML syntax in workflow files
+- **guard-version.yml** - Checks version consistency
+- **guard-coverage.yml** - Reports test coverage metrics
+- **guard-deprecation.yml** - Detects deprecated API usage
+- **guard-security-audit.yml** - Performs security vulnerability scanning
+
+### Quality Gate Summary (`quality-gate-summary.yml`)
+
+Provides a single, reliable quality gate status for PRs by aggregating results from individual guard workflows:
+
+- **Trigger**: Pull requests to `main` branch
+- **Behaviour**: Polls guard workflow results and reports unified pass/fail status
+- **Required Guards**: Unit Tests, Build, Lint, Format, YAML Lint
+- **Features**:
+  - Waits up to 25 minutes for guards to complete
+  - Treats `action_required` (cancelled by concurrency) as non-blocking
+  - Provides single check for branch protection requirements
+  - Never cancelled by concurrency to ensure definitive reporting
+
+This architecture allows guards to fail fast individually while the summary provides a single status for branch protection.
 
 ## Post Merge Release (`post-merge-release.yml`)
 
