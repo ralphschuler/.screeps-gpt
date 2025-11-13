@@ -35,7 +35,7 @@ describe("WallUpgradeManager", () => {
     it("should return 0 for room with no controller", () => {
       const mockRoom: RoomLike = {
         name: "W0N0",
-        controller: undefined,
+        controller: null,
         find: vi.fn()
       };
 
@@ -118,7 +118,7 @@ describe("WallUpgradeManager", () => {
     it("should return null for room with no controller", () => {
       const mockRoom: RoomLike = {
         name: "W0N0",
-        controller: undefined,
+        controller: null,
         find: vi.fn()
       };
 
