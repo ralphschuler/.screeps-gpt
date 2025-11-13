@@ -151,13 +151,17 @@ export class CodeReviewCapability {
       const line = lines[i];
 
       // Check for unnecessary lookups
-      if (line.includes("Game.rooms") && line.match(/Game\.rooms\[.*?\]/g)?.length > 1) {
-        comments.push({
-          path: file.path,
-          line: i + 1,
-          body: "Multiple Game.rooms lookups. Cache the room reference in a variable.",
-          severity: "info"
-        });
+      if (line.includes("Game.rooms")) {
+        // Use a safer regex pattern to avoid ReDoS
+        const matches = line.match(/Game\.rooms\[[^\]]+\]/g);
+        if (matches && matches.length > 1) {
+          comments.push({
+            path: file.path,
+            line: i + 1,
+            body: "Multiple Game.rooms lookups. Cache the room reference in a variable.",
+            severity: "info"
+          });
+        }
       }
 
       // Check for missing CPU checks in expensive operations
