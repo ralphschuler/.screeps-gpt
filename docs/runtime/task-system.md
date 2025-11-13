@@ -37,19 +37,20 @@ Each action includes:
 - **Completion Detection:** Determines when the task is done
 - **Movement Integration:** Automatic pathfinding to targets
 
-#### 2. TaskPrerequisite.ts (174 lines)
+#### 2. TaskPrerequisite.ts (203 lines)
 
 Defines prerequisites that creeps must meet to execute tasks.
 
 **Implemented Prerequisites:**
 
-- `MinionCanWork` - Requires WORK body parts
-- `MinionCanCarry` - Requires CARRY body parts
+- `MinionCanWork` - Requires WORK body parts (existence check)
+- `MinionCanCarry` - Requires CARRY body parts (existence check)
 - `MinionHasEnergy` - Requires minimum energy amount
 - `MinionHasFreeCapacity` - Requires free storage capacity
 - `MinionIsNear` - Requires proximity to target
 - `SpawnHasEnergy` - Validates spawn energy availability
 - `StructureHasCapacity` - Validates structure storage capacity
+- `MinionHasBodyParts` - Requires minimum count of functional body parts (filters damaged parts with hits: 0)
 
 #### 3. TaskRequest.ts (118 lines)
 
@@ -167,6 +168,7 @@ This ensures CPU-constrained environments don't permanently starve later creeps.
 - ✅ CPU budget management at task manager level
 - ✅ Idle creep detection (creeps without tasks can be recycled)
 - ✅ Better scalability (tasks generated per-room, not per-creep)
+- ✅ Functional body part validation (damaged parts excluded from prerequisites)
 - ❌ More complex to debug
 - ❌ Higher memory overhead for task tracking
 - ❌ Potential performance overhead from task generation
@@ -188,7 +190,8 @@ This ensures CPU-constrained environments don't permanently starve later creeps.
    - Priority ensures critical work completes first
 
 3. **Prerequisite System:**
-   - Body part validation
+   - Body part validation (existence and functional count)
+   - Damaged body part filtering (parts with hits: 0 excluded)
    - Energy/capacity checks
    - Proximity validation
    - Extensible for custom prerequisites
@@ -435,6 +438,83 @@ The TaskManager logs important events:
 4. **Task Completion Rate:**
    - Track tasks created vs completed
    - Alert if completion rate drops
+
+## Body Part Prerequisites
+
+### Overview
+
+The task system validates creep body composition before assigning tasks. This prevents CPU waste from impossible task assignments and improves task efficiency.
+
+### Prerequisite Types
+
+#### Existence Check Prerequisites
+
+- **`MinionCanWork`**: Checks if creep has any WORK parts
+- **`MinionCanCarry`**: Checks if creep has any CARRY parts
+
+#### Functional Count Prerequisites (v0.69.1+)
+
+- **`MinionHasBodyParts`**: Validates minimum count of functional body parts
+
+**Key Features:**
+
+- Counts only parts with `hits > 0` (excludes damaged/destroyed parts)
+- Supports multiple part type requirements simultaneously
+- Prevents assigning tasks to creeps with insufficient functional parts
+
+**Example Usage:**
+
+```typescript
+// Require 1 functional WORK part
+new MinionHasBodyParts({ [WORK]: 1 });
+
+// Require 2 WORK parts and 5 CARRY parts
+new MinionHasBodyParts({
+  [WORK]: 2,
+  [CARRY]: 5
+});
+
+// Heavy harvester with 5+ WORK parts
+new MinionHasBodyParts({ [WORK]: 5 });
+```
+
+### Task Action Prerequisites
+
+All task actions now include functional body part validation:
+
+| Task Action        | Body Part Requirements    | Other Prerequisites       |
+| ------------------ | ------------------------- | ------------------------- |
+| **HarvestAction**  | 1+ functional WORK parts  | Free capacity             |
+| **BuildAction**    | 1+ functional WORK parts  | Energy available          |
+| **RepairAction**   | 1+ functional WORK parts  | Energy available          |
+| **UpgradeAction**  | 1+ functional WORK parts  | Energy available          |
+| **TransferAction** | 1+ functional CARRY parts | Energy/resource available |
+| **WithdrawAction** | 1+ functional CARRY parts | Free capacity             |
+
+### Damaged Part Handling
+
+When creeps take damage, body parts can be destroyed (hits: 0):
+
+```typescript
+// Creep with damaged parts
+{
+  body: [
+    { type: WORK, hits: 0 }, // Destroyed - ignored
+    { type: WORK, hits: 50 }, // Functional - counted
+    { type: CARRY, hits: 100 } // Functional - counted
+  ];
+}
+
+// MinionHasBodyParts({ [WORK]: 2 }) => false (only 1 functional)
+// MinionHasBodyParts({ [WORK]: 1 }) => true
+// MinionHasBodyParts({ [CARRY]: 1 }) => true
+```
+
+**Benefits:**
+
+- Prevents harvest tasks on creeps with destroyed WORK parts
+- Prevents transfer tasks on creeps with destroyed CARRY parts
+- Enables role specialization based on body composition
 
 ## Configuration
 
