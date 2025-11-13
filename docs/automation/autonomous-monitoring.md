@@ -25,10 +25,15 @@ The workflow executes in seven mandatory phases:
 - Fetches bot performance data from game console
 - Logs all connection states for debugging
 
-**PTR Telemetry Collection - Resilient Architecture (Deployed 2025-11-05):**
+**PTR Telemetry Collection - Resilient Architecture (Deployed 2025-11-05, Enhanced 2025-11-13):**
 
 The workflow executes the resilient telemetry fetch script (`scripts/fetch-resilient-telemetry.ts`) which:
 
+- **Phase 0: Profiler Start** (New in 2025-11-13)
+  - Ensures profiler is running via console command
+  - Executes `Profiler.start()` if profiler is stopped
+  - Non-blocking - continues even if profiler fails
+  - Enables CPU bottleneck identification for optimization
 - **Primary Source**: Stats API via `scripts/fetch-screeps-stats.mjs`
   - Historical time-series data from `/api/user/stats` endpoint
   - Uses `SCREEPS_STATS_TOKEN` or `SCREEPS_TOKEN`
@@ -46,6 +51,21 @@ The workflow executes the resilient telemetry fetch script (`scripts/fetch-resil
   - Copies snapshot to `reports/copilot/ptr-stats.json` for analysis
   - Creates comprehensive failure snapshot only if all sources fail
   - Tracks telemetry source and fallback status in metadata
+
+**Profiler Data Collection Pipeline (New in 2025-11-13):**
+
+After telemetry collection, the workflow fetches profiler data for CPU analysis:
+
+- **Profiler Data Fetch**: `scripts/fetch-profiler-console.ts`
+  - Retrieves `Memory.profiler` data via console
+  - Saves snapshot to `reports/profiler/latest.json`
+  - Includes top CPU consumers and performance metrics
+- **Profiler Health Check**: `scripts/check-profiler-health.ts`
+  - Validates profiler data quality and freshness
+  - Reports profiler status (healthy/warning/error)
+  - Ensures data is available for strategic analysis
+
+This enables identification of CPU bottlenecks for Phase 1 optimization targets (<5 CPU/tick) and scales with empire growth.
 
 #### Phase 2: Bot Performance Analysis
 
