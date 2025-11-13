@@ -88,6 +88,30 @@ export class BodyComposer {
       repairer: {
         base: [WORK, WORK, CARRY, MOVE, MOVE],
         pattern: [WORK, CARRY, MOVE]
+      },
+
+      // Attacker: Melee combat specialist with high damage output
+      // Base: 2 TOUGH, 4 ATTACK, 4 MOVE (560 energy)
+      // Pattern: 1 ATTACK, 1 MOVE (prioritize damage and mobility)
+      attacker: {
+        base: [TOUGH, TOUGH, ATTACK, ATTACK, ATTACK, ATTACK, MOVE, MOVE, MOVE, MOVE],
+        pattern: [ATTACK, MOVE]
+      },
+
+      // Healer: Support specialist for sustained healing
+      // Base: 1 TOUGH, 3 HEAL, 4 MOVE (650 energy)
+      // Pattern: 1 HEAL, 1 MOVE (prioritize healing and mobility)
+      healer: {
+        base: [TOUGH, HEAL, HEAL, HEAL, MOVE, MOVE, MOVE, MOVE],
+        pattern: [HEAL, MOVE]
+      },
+
+      // Dismantler: Structure removal specialist
+      // Base: 1 TOUGH, 4 WORK, 4 MOVE (550 energy)
+      // Pattern: 1 WORK, 1 MOVE (prioritize structure damage and mobility)
+      dismantler: {
+        base: [TOUGH, WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE],
+        pattern: [WORK, MOVE]
       }
     };
   }
