@@ -21,11 +21,11 @@ export class ScreepsClient {
 
   public constructor(config: ScreepsConfig) {
     this.config = {
+      ...config,
       host: config.host ?? "screeps.com",
       port: config.port ?? 443,
       protocol: config.protocol ?? "https",
-      shard: config.shard ?? "shard3",
-      ...config
+      shard: config.shard ?? "shard3"
     };
   }
 
