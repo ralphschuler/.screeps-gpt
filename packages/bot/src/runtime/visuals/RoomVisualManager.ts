@@ -1,4 +1,5 @@
 import { profile } from "@profiler";
+import { WallUpgradeManager } from "@runtime/defense/WallUpgradeManager";
 
 /**
  * Configuration options for room visuals
@@ -41,6 +42,12 @@ export interface RoomVisualConfig {
   showCpuUsage?: boolean;
 
   /**
+   * Show wall upgrade progress
+   * Default: true (if enabled)
+   */
+  showWallUpgrade?: boolean;
+
+  /**
    * Maximum CPU budget for visuals per tick
    * Default: 2.0
    */
@@ -58,6 +65,7 @@ interface GameLike {
       visual: RoomVisual;
       find<T>(type: number): T[];
       name: string;
+      controller?: StructureController | null;
     }
   >;
   creeps: Record<
@@ -79,8 +87,9 @@ interface GameLike {
 @profile
 export class RoomVisualManager {
   private readonly config: Required<RoomVisualConfig>;
+  private readonly wallUpgradeManager: WallUpgradeManager;
 
-  public constructor(config: RoomVisualConfig = {}) {
+  public constructor(config: RoomVisualConfig = {}, wallUpgradeManager?: WallUpgradeManager) {
     this.config = {
       enabled: config.enabled ?? false,
       showCreepPaths: config.showCreepPaths ?? true,
@@ -88,8 +97,10 @@ export class RoomVisualManager {
       showConstructionTargets: config.showConstructionTargets ?? true,
       showSpawnQueue: config.showSpawnQueue ?? true,
       showCpuUsage: config.showCpuUsage ?? true,
+      showWallUpgrade: config.showWallUpgrade ?? true,
       cpuBudget: config.cpuBudget ?? 2.0
     };
+    this.wallUpgradeManager = wallUpgradeManager ?? new WallUpgradeManager();
   }
 
   /**
@@ -131,6 +142,10 @@ export class RoomVisualManager {
 
       if (this.config.showCpuUsage) {
         this.renderCpuUsage(game, room);
+      }
+
+      if (this.config.showWallUpgrade) {
+        this.renderWallUpgrade(room);
       }
     }
   }
@@ -264,6 +279,86 @@ export class RoomVisualManager {
       align: "right",
       opacity: 0.7
     });
+  }
+
+  /**
+   * Render wall upgrade progress information
+   */
+  private renderWallUpgrade(room: {
+    visual: RoomVisual;
+    name: string;
+    controller?: StructureController | null;
+    find<T>(type: number): T[];
+  }): void {
+    // Only show for rooms with a controller
+    if (!room.controller) {
+      return;
+    }
+
+    const progress = this.wallUpgradeManager.getUpgradeProgress(room);
+
+    // Skip if no walls exist
+    if (progress.wallCount === 0) {
+      return;
+    }
+
+    // Format target hits for display (K = thousands, M = millions)
+    const formatHits = (hits: number): string => {
+      if (hits >= 1_000_000) {
+        return `${(hits / 1_000_000).toFixed(1)}M`;
+      }
+      if (hits >= 1_000) {
+        return `${(hits / 1_000).toFixed(0)}K`;
+      }
+      return hits.toString();
+    };
+
+    const targetStr = formatHits(progress.targetHits);
+    const minStr = formatHits(progress.minHits);
+    const maxStr = formatHits(progress.maxHits);
+
+    // Calculate completion percentage
+    const completionPercent =
+      progress.targetHits > 0 ? Math.floor((progress.minHits / progress.targetHits) * 100) : 100;
+
+    // Choose color based on completion
+    let color = "#ff0000"; // Red for low completion
+    if (completionPercent >= 90) {
+      color = "#00ff00"; // Green for near completion
+    } else if (completionPercent >= 60) {
+      color = "#ffff00"; // Yellow for moderate
+    } else if (completionPercent >= 30) {
+      color = "#ff8800"; // Orange for low-moderate
+    }
+
+    // Display in top-left corner
+    const y = 1;
+    room.visual.text(`🛡️ Walls: ${minStr}/${targetStr} (${completionPercent}%)`, 1, y, {
+      color,
+      font: 0.5,
+      align: "left",
+      opacity: 0.9
+    });
+
+    // Show range if not all walls are equal
+    if (progress.maxHits > progress.minHits) {
+      room.visual.text(`   Range: ${minStr} - ${maxStr}`, 1, y + 0.6, {
+        color: "#aaaaaa",
+        font: 0.4,
+        align: "left",
+        opacity: 0.7
+      });
+    }
+
+    // Show completion status
+    if (progress.upgradeComplete) {
+      room.visual.text(`   ✓ Stage Complete`, 1, y + 1.2, {
+        color: "#00ff00",
+        font: 0.4,
+        align: "left",
+        opacity: 0.8
+      });
+    }
   }
 
   /**
