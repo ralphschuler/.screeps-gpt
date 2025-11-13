@@ -49,7 +49,9 @@ describe("Workflow concurrency controls", () => {
     "deploy.yml",
     "docs-pages.yml",
     "post-merge-release.yml",
-    "publish-package.yml"
+    "publish-package.yml",
+    // Agent workflows
+    "screeps-agent.yml"
   ];
 
   for (const workflowFile of expectedWorkflows) {

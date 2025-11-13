@@ -1,0 +1,29 @@
+# Build output
+dist/
+dist-test/
+*.js
+*.js.map
+*.d.ts
+*.d.ts.map
+
+# Dependencies
+node_modules/
+
+# Test coverage
+coverage/
+
+# Environment
+.env
+.env.local
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
