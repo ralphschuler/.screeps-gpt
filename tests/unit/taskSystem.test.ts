@@ -1,5 +1,13 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { TaskRequest, TaskPriority, HarvestAction, BuildAction, MinionCanWork, MinionHasEnergy } from "@runtime/tasks";
+import {
+  TaskRequest,
+  TaskPriority,
+  HarvestAction,
+  BuildAction,
+  MinionCanWork,
+  MinionHasFreeCapacity,
+  MinionHasEnergy
+} from "@runtime/tasks";
 
 // Mock Game object
 global.Game = {
@@ -134,13 +142,12 @@ describe("Task Actions", () => {
   it("should create HarvestAction with correct prerequisites", () => {
     const action = new HarvestAction("source1" as Id<Source>);
     expect(action.prereqs).toHaveLength(2);
-    expect(action.prereqs[0]).toBeInstanceOf(MinionCanWork);
+    expect(action.prereqs[0]).toBeInstanceOf(MinionHasFreeCapacity);
   });
 
   it("should create BuildAction with correct prerequisites", () => {
     const action = new BuildAction("site1" as Id<ConstructionSite>);
     expect(action.prereqs).toHaveLength(2);
-    expect(action.prereqs[0]).toBeInstanceOf(MinionCanWork);
-    expect(action.prereqs[1]).toBeInstanceOf(MinionHasEnergy);
+    expect(action.prereqs[0]).toBeInstanceOf(MinionHasEnergy);
   });
 });

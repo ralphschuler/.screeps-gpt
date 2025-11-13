@@ -172,3 +172,33 @@ export class StructureHasCapacity extends TaskPrerequisite {
     return [];
   }
 }
+
+/**
+ * Prerequisite: Creep has minimum count of functional body parts
+ * Only counts parts with hits > 0 (undamaged parts)
+ */
+export class MinionHasBodyParts extends TaskPrerequisite {
+  private readonly requiredParts: Partial<Record<BodyPartConstant, number>>;
+
+  public constructor(requiredParts: Partial<Record<BodyPartConstant, number>>) {
+    super();
+    this.requiredParts = requiredParts;
+  }
+
+  public meets(creep: Creep): boolean {
+    for (const partType of Object.keys(this.requiredParts) as BodyPartConstant[]) {
+      const minCount = this.requiredParts[partType];
+      const functionalCount = creep.body.filter(part => part.type === partType && part.hits > 0).length;
+
+      if (functionalCount < (minCount ?? 0)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  public toMeet(_creep: Creep): TaskAction[] {
+    // Cannot modify body composition of existing creep
+    return [];
+  }
+}
