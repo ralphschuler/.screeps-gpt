@@ -449,6 +449,47 @@ bun run build
 bun run build:no-profiler
 ```
 
+### CI/CD Configuration
+
+The profiler state is explicitly configured in GitHub Actions workflows to ensure build consistency between development and production:
+
+**Repository Variable:**
+
+Create a `PROFILER_ENABLED` repository variable to control profiler compilation in CI/CD:
+
+1. Navigate to **Settings → Secrets and variables → Actions → Variables**
+2. Click **New repository variable**
+3. Name: `PROFILER_ENABLED`
+4. Value: `true` (default) or `false` to disable globally
+5. Click **Add variable**
+
+**Workflow Configuration:**
+
+Both deployment and build guard workflows reference this variable:
+
+```yaml
+# In .github/workflows/deploy.yml and guard-build.yml
+env:
+  PROFILER_ENABLED: ${{ vars.PROFILER_ENABLED || 'true' }}
+```
+
+This ensures:
+
+- **Consistent builds**: Same profiler state in PR validation and production
+- **Explicit configuration**: No reliance on implicit defaults
+- **Centralized control**: Single variable controls profiler across all workflows
+- **Safe defaults**: Falls back to `true` if variable is not set
+
+**Why This Matters:**
+
+Without explicit configuration, the profiler could be enabled in development but disabled in production (or vice versa), leading to:
+
+- Inconsistent monitoring and performance data
+- Debugging difficulties in production
+- CI/CD reliability issues
+
+The explicit `PROFILER_ENABLED` configuration ensures deterministic builds and predictable profiler behavior across all environments.
+
 ### Runtime Configuration
 
 The profiler stores data in `Memory.profiler`:
