@@ -183,27 +183,67 @@ export async function buildProject(watch: boolean): Promise<void> {
  * Validate that expected build artifacts were generated
  */
 async function validateBuildOutput(isModular: boolean, moduleNames?: string[]): Promise<void> {
-  // Always require main.js
+  // Validate main.js
   const mainPath = resolve(outDir, "main.js");
-  try {
-    await access(mainPath, constants.F_OK);
-  } catch {
-    throw new Error(`Build validation failed: main.js was not generated at ${mainPath}`);
-  }
+  await validateFile(mainPath, "main.js", true);
 
   if (isModular && moduleNames) {
     // In modular mode, verify that all expected modules were generated
     for (const moduleName of moduleNames) {
       const modulePath = resolve(outDir, `${moduleName}.js`);
-      try {
-        await access(modulePath, constants.F_OK);
-      } catch {
-        throw new Error(`Build validation failed: Expected module ${moduleName}.js was not generated at ${modulePath}`);
-      }
+      await validateFile(modulePath, `${moduleName}.js`, false);
     }
 
     console.log(`✓ Build validation passed: Generated main.js + ${moduleNames.length} runtime modules`);
   } else {
     console.log("✓ Build validation passed: Generated main.js");
+  }
+}
+
+/**
+ * Validate a single build artifact file
+ * @param filePath - Absolute path to the file
+ * @param fileName - Name of the file (for error messages)
+ * @param checkLoopExport - Whether to check for loop function export (only for main.js)
+ * @internal Exported for testing purposes
+ */
+export async function validateFile(filePath: string, fileName: string, checkLoopExport: boolean): Promise<void> {
+  // Check file exists
+  try {
+    await access(filePath, constants.F_OK);
+  } catch {
+    throw new Error(`Build validation failed: ${fileName} was not generated at ${filePath}`);
+  }
+
+  // Check file size
+  const stats = await stat(filePath);
+  if (stats.size === 0) {
+    throw new Error(`Build validation failed: ${fileName} is empty`);
+  }
+
+  // Verify minimum expected size (500 bytes to catch broken builds)
+  // This is low enough to allow small type-only modules but high enough to catch truly broken builds
+  const MIN_SIZE = 500;
+  if (stats.size < MIN_SIZE) {
+    throw new Error(
+      `Build validation failed: ${fileName} is suspiciously small (${stats.size} bytes, expected >${MIN_SIZE})`
+    );
+  }
+
+  // Optional: Check for expected exports in main.js
+  if (checkLoopExport) {
+    const content = await readFile(filePath, "utf-8");
+    // Check for loop export - handle various module patterns
+    // esbuild with format: "cjs" produces: __export(main_exports, { loop: () => loop })
+    const hasLoopExport =
+      content.includes("exports.loop") ||
+      content.includes("export { loop }") ||
+      content.includes("export function loop") ||
+      content.includes("loop: () => loop") || // esbuild CommonJS pattern
+      /module\.exports\s*=.*loop/s.test(content); // module.exports with loop
+
+    if (!hasLoopExport) {
+      throw new Error(`Build validation failed: ${fileName} does not export loop function`);
+    }
   }
 }
