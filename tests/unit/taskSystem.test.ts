@@ -1,5 +1,13 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { TaskRequest, TaskPriority, HarvestAction, BuildAction, MinionCanWork, MinionHasEnergy } from "@runtime/tasks";
+import {
+  TaskRequest,
+  TaskPriority,
+  HarvestAction,
+  BuildAction,
+  MinionCanWork,
+  MinionHasFreeCapacity,
+  MinionHasEnergy
+} from "@runtime/tasks";
 
 // Mock Game object
 global.Game = {
