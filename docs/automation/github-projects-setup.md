@@ -203,16 +203,17 @@ Set up useful views in your project board:
 Before troubleshooting manually, run the project configuration validator:
 
 ```bash
-bun scripts/validate-project-config.ts
+npm run validate:project-config
 ```
 
 Or specify configuration explicitly:
 
 ```bash
-bun scripts/validate-project-config.ts --project-number 1 --project-owner ralphschuler
+tsx scripts/validate-project-config.ts --project-number 1 --project-owner ralphschuler
 ```
 
 This script will:
+
 - ✅ Verify GitHub CLI is installed and authenticated
 - ✅ Check for GITHUB_TOKEN environment variable
 - ✅ List all available projects for the owner
@@ -222,11 +223,13 @@ This script will:
 ### GraphQL Error: "Could not resolve to a ProjectV2 with the number X"
 
 **Symptoms**: Workflows fail with error message like:
+
 ```
 Error: GraphQL: Could not resolve to a ProjectV2 with the number 3. (user.projectV2)
 ```
 
 **Root Causes**:
+
 1. **Project doesn't exist**: The project number may have been deleted or never created
 2. **Wrong project scope**: Project is organization-scoped but workflow queries user-scoped (or vice versa)
 3. **Permissions issue**: Workflow token lacks access to the project
@@ -255,7 +258,7 @@ Error: GraphQL: Could not resolve to a ProjectV2 with the number 3. (user.projec
 
 **Solutions**:
 
-1. **Run validation script**: `bun scripts/validate-project-config.ts`
+1. **Run validation script**: `npm run validate:project-config`
 2. Verify `PROJECT_NUMBER` and `PROJECT_OWNER` variables are set correctly
 3. Check workflow run logs for permission errors
 4. Ensure the project exists and is accessible

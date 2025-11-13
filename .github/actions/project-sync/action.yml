@@ -121,7 +121,7 @@ runs:
             echo "   💡 Troubleshooting: Project number may be incorrect or inaccessible"
             echo "      1. Verify PROJECT_NUMBER ($PROJECT_NUMBER) is correct"
             echo "      2. Check project exists: gh project list --owner $PROJECT_OWNER"
-            echo "      3. Run validation: bun scripts/validate-project-config.ts"
+            echo "      3. Run validation: npm run validate:project-config"
             echo "      4. See docs: docs/automation/github-projects-setup.md"
           elif echo "$result" | grep -q "Resource not accessible"; then
             echo ""

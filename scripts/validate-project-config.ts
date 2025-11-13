@@ -10,8 +10,8 @@
  * - Missing repository variables
  *
  * Usage:
- *   bun scripts/validate-project-config.ts
- *   bun scripts/validate-project-config.ts --project-number 1 --project-owner username
+ *   npm run validate:project-config
+ *   tsx scripts/validate-project-config.ts --project-number 1 --project-owner username
  *
  * Environment Variables:
  *   GITHUB_TOKEN - GitHub token with project scope (required)

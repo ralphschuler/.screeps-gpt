@@ -127,16 +127,14 @@ Before troubleshooting manually, use the project configuration validator:
 
 ```bash
 # Run with repository variables
-bun scripts/validate-project-config.ts
+npm run validate:project-config
 
 # Or specify configuration explicitly
-bun scripts/validate-project-config.ts --project-number 1 --project-owner username
-
-# Or use npm script
-bun run validate:project-config
+tsx scripts/validate-project-config.ts --project-number 1 --project-owner username
 ```
 
 The validator will:
+
 - ✅ Check GitHub CLI installation and authentication
 - ✅ Verify GITHUB_TOKEN environment variable
 - ✅ List all available projects for the owner
@@ -154,7 +152,7 @@ The validator will:
 
 **GraphQL "Could not resolve to a ProjectV2" error:**
 
-- Run validation script: `bun scripts/validate-project-config.ts`
+- Run validation script: `npm run validate:project-config`
 - List available projects: `gh project list --owner USERNAME`
 - Verify `PROJECT_NUMBER` is correct in repository variables
 - Check if project exists and is accessible
