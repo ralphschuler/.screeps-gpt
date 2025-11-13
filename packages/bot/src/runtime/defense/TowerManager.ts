@@ -1,5 +1,6 @@
 import type { RoomLike } from "@runtime/types/GameContext";
 import { profile } from "@profiler";
+import { WallUpgradeManager } from "./WallUpgradeManager";
 
 /**
  * Threat assessment for hostile creeps
@@ -25,15 +26,18 @@ export class TowerManager {
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly repairThreshold: number;
   private readonly criticalRepairThreshold: number;
+  private readonly wallUpgradeManager: WallUpgradeManager;
 
   public constructor(
     logger: Pick<Console, "log" | "warn"> = console,
     repairThreshold: number = 0.8, // Repair structures below 80% health
-    criticalRepairThreshold: number = 0.3 // Critical repair below 30%
+    criticalRepairThreshold: number = 0.3, // Critical repair below 30%
+    wallUpgradeManager?: WallUpgradeManager
   ) {
     this.logger = logger;
     this.repairThreshold = repairThreshold;
     this.criticalRepairThreshold = criticalRepairThreshold;
+    this.wallUpgradeManager = wallUpgradeManager ?? new WallUpgradeManager();
   }
 
   /**
@@ -63,17 +67,19 @@ export class TowerManager {
     }) as Creep[];
 
     // Get structures needing repair
+    const targetHits = this.wallUpgradeManager.getTargetHits(room);
     const damagedStructures = room.find(FIND_STRUCTURES, {
       filter: (s: Structure) => {
         if (!("hits" in s) || typeof s.hits !== "number") {
           return false;
         }
 
-        // Skip walls and ramparts for now (separate logic needed)
+        // Apply stage-based caps to walls and ramparts
         if (s.structureType === STRUCTURE_WALL || s.structureType === STRUCTURE_RAMPART) {
-          return false;
+          return s.hits < targetHits;
         }
 
+        // Other structures: repair to threshold percentage
         const healthPercent = s.hits / s.hitsMax;
         return healthPercent < this.repairThreshold;
       }
