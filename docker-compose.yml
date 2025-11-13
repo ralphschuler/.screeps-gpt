@@ -75,3 +75,33 @@ services:
       - /workspace/node_modules
     working_dir: /workspace
     command: npm run format:check
+
+  # Screeps agent service
+  screeps-agent:
+    build:
+      context: ./packages/screeps-agent
+      dockerfile: Dockerfile
+    volumes:
+      - ./packages/screeps-agent:/app
+      - /app/node_modules
+      - /app/dist
+    working_dir: /app
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - AGENT_NAME=${AGENT_NAME:-screeps-agent}
+      - AGENT_VERSION=${AGENT_VERSION:-0.1.0}
+      - SCREEPS_TOKEN=${SCREEPS_TOKEN}
+      - SCREEPS_EMAIL=${SCREEPS_EMAIL}
+      - SCREEPS_PASSWORD=${SCREEPS_PASSWORD}
+      - SCREEPS_HOST=${SCREEPS_HOST:-screeps.com}
+      - SCREEPS_PORT=${SCREEPS_PORT:-443}
+      - SCREEPS_PROTOCOL=${SCREEPS_PROTOCOL:-https}
+      - SCREEPS_SHARD=${SCREEPS_SHARD:-shard3}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GITHUB_REPOSITORY=${GITHUB_REPOSITORY}
+      - GITHUB_BASE_BRANCH=${GITHUB_BASE_BRANCH:-main}
+      - AUTONOMY_LEVEL=${AUTONOMY_LEVEL:-manual}
+      - TIMEOUT=${TIMEOUT:-45}
+    command: node dist/agent.js --task=${AGENT_TASK:-run_tests}
+    stdin_open: true
+    tty: true

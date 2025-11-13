@@ -1,0 +1,137 @@
+---
+name: Screeps Agent
+
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'Agent task to execute'
+        required: true
+        type: choice
+        options:
+          - review_pr
+          - implement_feature
+          - run_tests
+          - optimize_performance
+          - analyze_code
+          - update_docs
+      autonomy_level:
+        description: 'Agent autonomy level'
+        required: false
+        type: choice
+        default: 'manual'
+        options:
+          - manual
+          - semi-auto
+          - full-auto
+      timeout:
+        description: 'Maximum execution time in minutes'
+        required: false
+        type: number
+        default: 45
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: screeps-agent-${{ github.event.inputs.task }}
+  cancel-in-progress: false
+
+jobs:
+  execute-agent:
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ fromJSON(github.event.inputs.timeout || 45) }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd packages/screeps-agent
+          npm install
+
+      - name: Build agent
+        run: |
+          cd packages/screeps-agent
+          npm run build
+
+      - name: Run Screeps Agent
+        id: agent
+        env:
+          AGENT_NAME: screeps-agent
+          AGENT_VERSION: 0.1.0
+          SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
+          SCREEPS_EMAIL: ${{ secrets.SCREEPS_EMAIL }}
+          SCREEPS_PASSWORD: ${{ secrets.SCREEPS_PASSWORD }}
+          SCREEPS_HOST: ${{ vars.SCREEPS_HOST || 'screeps.com' }}
+          SCREEPS_PORT: ${{ vars.SCREEPS_PORT || '443' }}
+          SCREEPS_PROTOCOL: ${{ vars.SCREEPS_PROTOCOL || 'https' }}
+          SCREEPS_SHARD: ${{ vars.SCREEPS_SHARD || 'shard3' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_BASE_BRANCH: ${{ github.event.repository.default_branch }}
+          AUTONOMY_LEVEL: ${{ github.event.inputs.autonomy_level || 'manual' }}
+          TIMEOUT: ${{ github.event.inputs.timeout || '45' }}
+        run: |
+          cd packages/screeps-agent
+          node dist/agent.js --task=${{ github.event.inputs.task }}
+
+      - name: Upload agent logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-logs-${{ github.run_id }}
+          path: packages/screeps-agent/logs/
+          retention-days: 7
+
+      - name: Create summary
+        if: always()
+        run: |
+          echo "## Screeps Agent Execution" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          task="${{ github.event.inputs.task }}"
+          autonomy="${{ github.event.inputs.autonomy_level || 'manual' }}"
+          status="${{ job.status }}"
+          echo "**Task:** $task" >> $GITHUB_STEP_SUMMARY
+          echo "**Autonomy Level:** $autonomy" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** $status" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f "packages/screeps-agent/logs/output.log" ]; then
+            echo "### Agent Output" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            tail -n 50 packages/screeps-agent/logs/output.log \
+              >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Notify on failure
+        if: failure() && vars.EMAIL_NOTIFY_TO
+        uses: ./.github/actions/send-email-notification
+        with:
+          smtp-host: ${{ secrets.SMTP_HOST }}
+          smtp-port: ${{ secrets.SMTP_PORT }}
+          smtp-user: ${{ secrets.SMTP_USER }}
+          smtp-password: ${{ secrets.SMTP_PASSWORD }}
+          to: ${{ vars.EMAIL_NOTIFY_TO }}
+          subject: >-
+            Screeps Agent Failed: ${{ github.event.inputs.task }}
+          body: |
+            Task: ${{ github.event.inputs.task }}
+
+            Workflow: ${{ github.workflow }}
+            Run ID: ${{ github.run_id }}
+            Repository: ${{ github.repository }}
+
+            View logs: ${{ github.server_url }}/${{ github.repository }}\
+            /actions/runs/${{ github.run_id }}
