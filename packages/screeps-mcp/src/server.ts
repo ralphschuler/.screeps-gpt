@@ -146,8 +146,7 @@ export function createMCPServer(config: MCPServerConfig) {
             type: "text",
             text: `Error: ${errorMessage}`
           }
-        ],
-        isError: true
+        ]
       };
     }
   });
