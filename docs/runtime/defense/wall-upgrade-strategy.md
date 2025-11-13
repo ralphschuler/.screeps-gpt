@@ -257,7 +257,6 @@ Potential improvements for consideration:
 2. **Room-specific overrides** - Custom targets per room
 3. **Emergency repair mode** - Bypass stage caps during active defense
 4. **Repair rate limiting** - Prevent CPU spikes from mass repairs
-5. **Visual feedback** - Display upgrade progress in room visuals
 
 ## Related Systems
 
