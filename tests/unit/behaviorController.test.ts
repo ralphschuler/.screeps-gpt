@@ -1173,4 +1173,262 @@ describe("BehaviorController", () => {
       expect(firstSpawn).toContain("harvester-");
     });
   });
+
+  describe("dying creep energy drop behavior", () => {
+    it("should drop energy when creep TTL is below threshold (role-based system)", () => {
+      const controller = new BehaviorController({ useTaskSystem: false, log: vi.fn(), warn: vi.fn() });
+
+      let energyDropped = false;
+      const dyingCreep = {
+        name: "harvester-dying",
+        ticksToLive: 30, // Below default threshold of 50
+        store: {
+          getUsedCapacity: (resource: ResourceConstant) => (resource === RESOURCE_ENERGY ? 100 : 0),
+          getFreeCapacity: () => 0
+        },
+        drop: (resource: ResourceConstant) => {
+          if (resource === RESOURCE_ENERGY) {
+            energyDropped = true;
+          }
+          return OK;
+        },
+        memory: { role: "harvester", task: "harvest", version: 1 },
+        pos: {},
+        room: { name: "W0N0" }
+      } as unknown as CreepLike;
+
+      const game = {
+        time: 100,
+        cpu: { getUsed: () => 0, limit: 10, bucket: 1000 },
+        creeps: { "harvester-dying": dyingCreep },
+        spawns: {},
+        rooms: {}
+      } as GameContext;
+
+      const memory = {} as Memory;
+      controller.execute(game, memory, {});
+
+      expect(energyDropped).toBe(true);
+    });
+
+    it("should drop energy when creep TTL is below threshold (task-based system)", () => {
+      const controller = new BehaviorController({ useTaskSystem: true, log: vi.fn(), warn: vi.fn() });
+
+      let energyDropped = false;
+      const dyingCreep = {
+        name: "harvester-dying",
+        ticksToLive: 30, // Below default threshold of 50
+        store: {
+          getUsedCapacity: (resource: ResourceConstant) => (resource === RESOURCE_ENERGY ? 100 : 0),
+          getFreeCapacity: () => 0
+        },
+        drop: (resource: ResourceConstant) => {
+          if (resource === RESOURCE_ENERGY) {
+            energyDropped = true;
+          }
+          return OK;
+        },
+        memory: { role: "harvester", task: "harvest", version: 1 },
+        pos: {},
+        room: { name: "W0N0" }
+      } as unknown as Creep;
+
+      const game = {
+        time: 100,
+        cpu: { getUsed: () => 0, limit: 10, bucket: 1000 },
+        creeps: { "harvester-dying": dyingCreep },
+        spawns: {},
+        rooms: {}
+      } as GameContext;
+
+      const memory = {} as Memory;
+      controller.execute(game, memory, {});
+
+      expect(energyDropped).toBe(true);
+    });
+
+    it("should not drop energy when creep TTL is above threshold", () => {
+      const controller = new BehaviorController({ useTaskSystem: false, log: vi.fn(), warn: vi.fn() });
+
+      let energyDropped = false;
+      const healthyCreep = {
+        name: "harvester-healthy",
+        ticksToLive: 100, // Above threshold
+        store: {
+          getUsedCapacity: (resource: ResourceConstant) => (resource === RESOURCE_ENERGY ? 100 : 0),
+          getFreeCapacity: () => 0
+        },
+        drop: () => {
+          energyDropped = true;
+          return OK;
+        },
+        memory: { role: "harvester", task: "harvest", version: 1 },
+        pos: {},
+        room: { name: "W0N0", find: () => [] }
+      } as unknown as CreepLike;
+
+      const game = {
+        time: 100,
+        cpu: { getUsed: () => 0, limit: 10, bucket: 1000 },
+        creeps: { "harvester-healthy": healthyCreep },
+        spawns: {},
+        rooms: {}
+      } as GameContext;
+
+      const memory = {} as Memory;
+      controller.execute(game, memory, {});
+
+      expect(energyDropped).toBe(false);
+    });
+
+    it("should respect custom TTL threshold from memory", () => {
+      const controller = new BehaviorController({ useTaskSystem: false, log: vi.fn(), warn: vi.fn() });
+
+      let energyDropped = false;
+      const creep = {
+        name: "harvester-custom",
+        ticksToLive: 80, // Below custom threshold of 100
+        store: {
+          getUsedCapacity: (resource: ResourceConstant) => (resource === RESOURCE_ENERGY ? 50 : 0),
+          getFreeCapacity: () => 0
+        },
+        drop: () => {
+          energyDropped = true;
+          return OK;
+        },
+        memory: { role: "harvester", task: "harvest", version: 1 },
+        pos: {},
+        room: { name: "W0N0" }
+      } as unknown as CreepLike;
+
+      const game = {
+        time: 100,
+        cpu: { getUsed: () => 0, limit: 10, bucket: 1000 },
+        creeps: { "harvester-custom": creep },
+        spawns: {},
+        rooms: {}
+      } as GameContext;
+
+      const memory = {
+        dyingCreepBehavior: {
+          enabled: true,
+          ttlThreshold: 100
+        }
+      } as Memory;
+
+      controller.execute(game, memory, {});
+
+      expect(energyDropped).toBe(true);
+    });
+
+    it("should not drop energy when dying behavior is disabled", () => {
+      const controller = new BehaviorController({ useTaskSystem: false, log: vi.fn(), warn: vi.fn() });
+
+      let energyDropped = false;
+      const dyingCreep = {
+        name: "harvester-disabled",
+        ticksToLive: 30, // Below threshold but disabled
+        store: {
+          getUsedCapacity: (resource: ResourceConstant) => (resource === RESOURCE_ENERGY ? 100 : 0),
+          getFreeCapacity: () => 0
+        },
+        drop: () => {
+          energyDropped = true;
+          return OK;
+        },
+        memory: { role: "harvester", task: "harvest", version: 1 },
+        pos: {},
+        room: { name: "W0N0", find: () => [] }
+      } as unknown as CreepLike;
+
+      const game = {
+        time: 100,
+        cpu: { getUsed: () => 0, limit: 10, bucket: 1000 },
+        creeps: { "harvester-disabled": dyingCreep },
+        spawns: {},
+        rooms: {}
+      } as GameContext;
+
+      const memory = {
+        dyingCreepBehavior: {
+          enabled: false,
+          ttlThreshold: 50
+        }
+      } as Memory;
+
+      controller.execute(game, memory, {});
+
+      expect(energyDropped).toBe(false);
+    });
+
+    it("should not drop energy when creep has no energy", () => {
+      const controller = new BehaviorController({ useTaskSystem: false, log: vi.fn(), warn: vi.fn() });
+
+      let energyDropped = false;
+      const dyingCreep = {
+        name: "harvester-empty",
+        ticksToLive: 30,
+        store: {
+          getUsedCapacity: () => 0, // No energy
+          getFreeCapacity: () => 50
+        },
+        drop: () => {
+          energyDropped = true;
+          return OK;
+        },
+        memory: { role: "harvester", task: "harvest", version: 1 },
+        pos: {},
+        room: { name: "W0N0" }
+      } as unknown as CreepLike;
+
+      const game = {
+        time: 100,
+        cpu: { getUsed: () => 0, limit: 10, bucket: 1000 },
+        creeps: { "harvester-empty": dyingCreep },
+        spawns: {},
+        rooms: {}
+      } as GameContext;
+
+      const memory = {} as Memory;
+      controller.execute(game, memory, {});
+
+      expect(energyDropped).toBe(false);
+    });
+
+    it("should skip normal role execution for dying creeps", () => {
+      const controller = new BehaviorController({ useTaskSystem: false, log: vi.fn(), warn: vi.fn() });
+
+      let roleExecuted = false;
+      const dyingCreep = {
+        name: "harvester-dying",
+        ticksToLive: 30,
+        store: {
+          getUsedCapacity: (resource: ResourceConstant) => (resource === RESOURCE_ENERGY ? 100 : 0),
+          getFreeCapacity: () => 0
+        },
+        drop: () => OK,
+        harvest: () => {
+          roleExecuted = true; // Should not be called
+          return OK;
+        },
+        moveTo: () => OK,
+        memory: { role: "harvester", task: "harvest", version: 1 },
+        pos: {},
+        room: { name: "W0N0", find: () => [] }
+      } as unknown as CreepLike;
+
+      const game = {
+        time: 100,
+        cpu: { getUsed: () => 0, limit: 10, bucket: 1000 },
+        creeps: { "harvester-dying": dyingCreep },
+        spawns: {},
+        rooms: {}
+      } as GameContext;
+
+      const memory = {} as Memory;
+      controller.execute(game, memory, {});
+
+      expect(roleExecuted).toBe(false);
+    });
+  });
 });

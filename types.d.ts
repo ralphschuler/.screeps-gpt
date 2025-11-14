@@ -39,6 +39,15 @@ declare global {
       verbosity?: CommunicationVerbosity;
       enableRoomVisuals?: boolean;
     };
+    /**
+     * Configuration for dying creep energy dropping behavior.
+     * Controls when creeps should drop energy before expiring.
+     * @see src/runtime/behavior/creepHelpers.ts
+     */
+    dyingCreepBehavior?: {
+      enabled?: boolean; // Default: true
+      ttlThreshold?: number; // Default: 50 ticks
+    };
     colony?: ColonyManagerMemory;
     /**
      * Profiler performance data collection.

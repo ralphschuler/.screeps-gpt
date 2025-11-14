@@ -6,6 +6,7 @@ import { CreepCommunicationManager } from "./CreepCommunicationManager";
 import { EnergyPriorityManager } from "@runtime/energy";
 import { BodyComposer } from "./BodyComposer";
 import { WallUpgradeManager } from "@runtime/defense/WallUpgradeManager";
+import { isCreepDying, handleDyingCreepEnergyDrop } from "./creepHelpers";
 
 type RoleName =
   | "harvester"
@@ -376,6 +377,23 @@ export class BehaviorController {
     _memory: Memory
   ): { processedCreeps: number; tasksExecuted: Record<string, number> } {
     const creeps = Object.values(game.creeps) as Creep[];
+    const dyingConfig = _memory.dyingCreepBehavior ?? { enabled: true, ttlThreshold: 50 };
+    const comm = getComm();
+
+    // Handle dying creeps first - they should drop energy and skip normal tasks
+    const activeCreeps: Creep[] = [];
+    for (const creep of creeps) {
+      const isDying = dyingConfig.enabled !== false && isCreepDying(creep, dyingConfig.ttlThreshold ?? 50);
+
+      if (isDying) {
+        const dropped = handleDyingCreepEnergyDrop(creep);
+        if (dropped) {
+          comm?.say(creep, "💀");
+        }
+      } else {
+        activeCreeps.push(creep);
+      }
+    }
 
     // Generate tasks for each room
     const rooms = Object.values(game.rooms);
@@ -385,11 +403,11 @@ export class BehaviorController {
       }
     }
 
-    // Assign tasks to idle creeps
-    this.taskManager.assignTasks(creeps);
+    // Assign tasks to idle creeps (excluding dying creeps)
+    this.taskManager.assignTasks(activeCreeps);
 
     // Execute tasks with CPU threshold management
-    const tasksExecuted = this.taskManager.executeTasks(creeps, game.cpu.limit);
+    const tasksExecuted = this.taskManager.executeTasks(activeCreeps, game.cpu.limit);
 
     return {
       processedCreeps: creeps.length,
@@ -426,6 +444,20 @@ export class BehaviorController {
       }
 
       const cpuBefore = game.cpu.getUsed();
+
+      // Check if creep is dying and should drop energy
+      const dyingConfig = _memory.dyingCreepBehavior ?? { enabled: true, ttlThreshold: 50 };
+      const isDying = dyingConfig.enabled !== false && isCreepDying(creep as Creep, dyingConfig.ttlThreshold ?? 50);
+
+      if (isDying) {
+        const dropped = handleDyingCreepEnergyDrop(creep as Creep);
+        if (dropped) {
+          const comm = getComm();
+          comm?.say(creep, "💀");
+        }
+        processedCreeps++;
+        continue; // Skip normal behavior for dying creeps
+      }
 
       const role = creep.memory.role;
       const handler = role ? ROLE_DEFINITIONS[role] : undefined;
