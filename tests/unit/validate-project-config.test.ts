@@ -28,7 +28,7 @@ describe("Project configuration validator script", () => {
   it("should check for GitHub CLI", async () => {
     const content = await readFile(scriptPath, "utf-8");
     expect(content).toContain("function checkGitHubCLI()");
-    expect(content).toContain("gh --version");
+    expect(content).toContain('"gh", ["--version"]');
   });
 
   it("should check for GitHub token", async () => {
@@ -41,13 +41,13 @@ describe("Project configuration validator script", () => {
     const content = await readFile(scriptPath, "utf-8");
     expect(content).toContain("function validateProjectAccess");
     expect(content).toContain("projectV2");
-    expect(content).toContain("gh api graphql");
+    expect(content).toContain('"api", "graphql"');
   });
 
   it("should list projects for owner", async () => {
     const content = await readFile(scriptPath, "utf-8");
     expect(content).toContain("function listProjects");
-    expect(content).toContain("gh project list");
+    expect(content).toContain('"project", "list"');
   });
 
   it("should support command line arguments", async () => {
