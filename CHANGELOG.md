@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.76.0] - 2025-11-14
+
 ### Added
 
 - **Dying Creep Energy Dropping**: Implemented automatic energy dropping behavior for creeps approaching end of life
