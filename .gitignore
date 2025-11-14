@@ -31,6 +31,11 @@ screeps.json
 # ScreepsServer data from integration tests
 /server
 
+# Performance test artifacts (except baseline)
+/reports/performance/*
+!/reports/performance/baseline.json
+performance-test-output.log
+
 # Numerous always-ignore extensions
 *.diff
 *.err

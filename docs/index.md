@@ -85,6 +85,10 @@ For a complete setup guide, see the **[Getting Started Guide](getting-started.md
 - [Developer Onboarding Resources](../DOCS.md)
 - [Release History](changelog/versions.md)
 
+### Testing Infrastructure
+
+- [Private Server Testing](testing/private-server.md) - Performance benchmarking using private Screeps server with bot opponents
+
 Contributions should expand these notes rather than duplicating content in ad-hoc Markdown files.
 
 ```
