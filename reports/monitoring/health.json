@@ -1,0 +1,100 @@
+{
+  "last_successful_ping": "2025-11-14T10:25:28.762Z",
+  "last_failed_ping": null,
+  "consecutive_failures": 0,
+  "health_status": "operational",
+  "last_known_tick": null,
+  "last_bot_status": "active",
+  "detection_history": [
+    {
+      "timestamp": "2025-11-13T14:31:36.316Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-13T16:09:46.531Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-13T18:15:03.574Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-13T18:44:14.990Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-13T19:41:55.613Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-13T20:50:57.027Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-13T22:35:23.295Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-13T23:24:54.295Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-13T23:36:11.545Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-14T00:14:11.288Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-14T02:20:19.676Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-14T03:46:32.187Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-14T03:51:11.661Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-14T04:17:56.454Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-14T06:54:22.783Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-14T07:05:16.792Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-14T09:08:17.312Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-14T10:25:28.762Z",
+      "status": "success",
+      "aliveness": "active"
+    }
+  ]
+}
