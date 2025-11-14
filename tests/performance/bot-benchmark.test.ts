@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { ScreepsAPI } from "screeps-api";
 import fs from "node:fs";
 import path from "node:path";
@@ -46,10 +46,7 @@ interface TestConfig {
 describe("Bot Performance Benchmark", () => {
   let api: ScreepsAPI;
   let testConfig: TestConfig;
-  const BASELINE_PATH = path.join(
-    process.cwd(),
-    "reports/performance/baseline.json"
-  );
+  const BASELINE_PATH = path.join(process.cwd(), "reports/performance/baseline.json");
 
   beforeAll(async () => {
     // Configuration from environment or defaults
@@ -58,16 +55,14 @@ describe("Bot Performance Benchmark", () => {
       username: process.env.SCREEPS_TEST_USERNAME || "screeps-gpt",
       password: process.env.SCREEPS_TEST_PASSWORD || "test-password",
       maxTicks: 10000,
-      checkInterval: 100,
+      checkInterval: 100
     };
 
     // Skip tests if server not available (local development)
     try {
       const response = await fetch(testConfig.serverUrl);
       if (!response.ok) {
-        console.warn(
-          `⚠️  Screeps test server not available at ${testConfig.serverUrl}`
-        );
+        console.warn(`⚠️  Screeps test server not available at ${testConfig.serverUrl}`);
         console.warn("   Skipping performance tests (requires docker-compose.test.yml)");
         return;
       }
@@ -81,7 +76,7 @@ describe("Bot Performance Benchmark", () => {
       protocol: testConfig.serverUrl.startsWith("https") ? "https" : "http",
       hostname: new URL(testConfig.serverUrl).hostname,
       port: parseInt(new URL(testConfig.serverUrl).port) || 21025,
-      path: "/",
+      path: "/"
     });
 
     // Authenticate (or create user if doesn't exist)
@@ -98,93 +93,70 @@ describe("Bot Performance Benchmark", () => {
     // Cleanup: no persistent state modifications
   });
 
-  it.skip(
-    "should survive and win against opponent bots",
-    async () => {
-      // Skip if API not initialized
-      if (!api) {
-        console.log("Skipping: Screeps server not available");
-        return;
-      }
+  it.skip("should survive and win against opponent bots", async () => {
+    // Skip if API not initialized
+    if (!api) {
+      console.log("Skipping: Screeps server not available");
+      return;
+    }
 
-      // Deploy bot code
-      const botCode = fs.readFileSync(
-        path.join(process.cwd(), "dist/main.js"),
-        "utf-8"
-      );
-      await deployBot(api, testConfig.username, botCode);
+    // Deploy bot code
+    const botCode = fs.readFileSync(path.join(process.cwd(), "dist/main.js"), "utf-8");
+    await deployBot(api, testConfig.username, botCode);
 
-      // Enable speedrun mode for fast simulation
-      await api.console(`Game.speedrunMode = true`);
+    // Enable speedrun mode for fast simulation
+    await api.console(`Game.speedrunMode = true`);
 
-      // Run simulation
-      const result = await simulateUntilCompletion(api, {
-        maxTicks: testConfig.maxTicks,
-        checkInterval: testConfig.checkInterval,
-      });
+    // Run simulation
+    const result = await simulateUntilCompletion(api, {
+      maxTicks: testConfig.maxTicks,
+      checkInterval: testConfig.checkInterval
+    });
 
-      // Assertions
-      expect(result.victory).toBe(true);
-      expect(result.survivalTime).toBeGreaterThan(0);
+    // Assertions
+    expect(result.victory).toBe(true);
+    expect(result.survivalTime).toBeGreaterThan(0);
 
-      // Compare against baseline if available
-      if (fs.existsSync(BASELINE_PATH)) {
-        const baseline: BaselineMetrics = JSON.parse(
-          fs.readFileSync(BASELINE_PATH, "utf-8")
-        );
-        expect(result.finalScore).toBeGreaterThanOrEqual(baseline.controllerLevel);
-      }
-    },
-    600000
-  ); // 10 minute timeout
+    // Compare against baseline if available
+    if (fs.existsSync(BASELINE_PATH)) {
+      const baseline: BaselineMetrics = JSON.parse(fs.readFileSync(BASELINE_PATH, "utf-8"));
+      expect(result.finalScore).toBeGreaterThanOrEqual(baseline.controllerLevel);
+    }
+  }, 600000); // 10 minute timeout
 
-  it.skip(
-    "should show performance improvement vs. baseline",
-    async () => {
-      // Skip if API not initialized
-      if (!api) {
-        console.log("Skipping: Screeps server not available");
-        return;
-      }
+  it.skip("should show performance improvement vs. baseline", async () => {
+    // Skip if API not initialized
+    if (!api) {
+      console.log("Skipping: Screeps server not available");
+      return;
+    }
 
-      // Skip if no baseline exists
-      if (!fs.existsSync(BASELINE_PATH)) {
-        console.warn("⚠️  No baseline metrics found, skipping comparison");
-        return;
-      }
+    // Skip if no baseline exists
+    if (!fs.existsSync(BASELINE_PATH)) {
+      console.warn("⚠️  No baseline metrics found, skipping comparison");
+      return;
+    }
 
-      const baseline: BaselineMetrics = JSON.parse(
-        fs.readFileSync(BASELINE_PATH, "utf-8")
-      );
+    const baseline: BaselineMetrics = JSON.parse(fs.readFileSync(BASELINE_PATH, "utf-8"));
 
-      // Collect current performance metrics
-      const metrics = await collectPerformanceMetrics(api, testConfig.username);
+    // Collect current performance metrics
+    const metrics = await collectPerformanceMetrics(api, testConfig.username);
 
-      // Compare key metrics
-      expect(metrics.avgCPU).toBeLessThanOrEqual(baseline.avgCPU * 1.1); // Allow 10% degradation
-      expect(metrics.controllerLevel).toBeGreaterThanOrEqual(
-        baseline.controllerLevel
-      );
-      expect(metrics.energyEfficiency).toBeGreaterThanOrEqual(
-        baseline.energyEfficiency * 0.9
-      ); // Allow 10% degradation
-    },
-    300000
-  ); // 5 minute timeout
+    // Compare key metrics
+    expect(metrics.avgCPU).toBeLessThanOrEqual(baseline.avgCPU * 1.1); // Allow 10% degradation
+    expect(metrics.controllerLevel).toBeGreaterThanOrEqual(baseline.controllerLevel);
+    expect(metrics.energyEfficiency).toBeGreaterThanOrEqual(baseline.energyEfficiency * 0.9); // Allow 10% degradation
+  }, 300000); // 5 minute timeout
 });
 
 /**
  * Deploy bot code to Screeps server
  */
-async function deployBot(
-  api: ScreepsAPI,
-  username: string,
-  code: string
-): Promise<void> {
+async function deployBot(api: ScreepsAPI, username: string, code: string): Promise<void> {
   // Upload bot code via API
   // This requires the bot code to be wrapped in proper module format
   const modules = {
-    main: code,
+    main: code
   };
 
   try {
@@ -212,9 +184,7 @@ async function simulateUntilCompletion(
   // Simulation loop
   while (currentTick < options.maxTicks) {
     // Wait for interval
-    await new Promise((resolve) =>
-      setTimeout(resolve, options.checkInterval * 10)
-    );
+    await new Promise(resolve => setTimeout(resolve, options.checkInterval * 10));
 
     // Check game state
     const gameState = await checkGameState(api);
@@ -247,20 +217,15 @@ async function simulateUntilCompletion(
     finalScore: 100, // Placeholder - would calculate based on game state
     baselineScore: 100,
     survivalTime,
-    avgCPU,
+    avgCPU
   };
 }
 
 /**
  * Collect performance metrics from current game state
  */
-async function collectPerformanceMetrics(
-  api: ScreepsAPI,
-  username: string
-): Promise<PerformanceMetrics> {
-  const packageJson = JSON.parse(
-    fs.readFileSync(path.join(process.cwd(), "package.json"), "utf-8")
-  );
+async function collectPerformanceMetrics(api: ScreepsAPI, username: string): Promise<PerformanceMetrics> {
+  const packageJson = JSON.parse(fs.readFileSync(path.join(process.cwd(), "package.json"), "utf-8"));
 
   // Gather metrics from API
   // This is a simplified implementation - actual metrics would come from game state
@@ -271,7 +236,7 @@ async function collectPerformanceMetrics(
     controllerLevel: 2, // Placeholder - would query actual level
     survivalTime: 5000, // Placeholder - would track actual time
     victory: false,
-    timestamp: new Date().toISOString(),
+    timestamp: new Date().toISOString()
   };
 
   return metrics;
@@ -280,9 +245,7 @@ async function collectPerformanceMetrics(
 /**
  * Check current game state for simulation progress
  */
-async function checkGameState(
-  api: ScreepsAPI
-): Promise<{
+async function checkGameState(api: ScreepsAPI): Promise<{
   time: number;
   cpu?: number;
   controllerLevel: number;
@@ -296,6 +259,6 @@ async function checkGameState(
     cpu: 10.5,
     controllerLevel: 1,
     spawnCount: 1,
-    creepCount: 3,
+    creepCount: 3
   };
 }

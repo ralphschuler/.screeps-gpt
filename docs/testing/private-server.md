@@ -114,12 +114,14 @@ docker-compose -f docker-compose.test.yml down
 Performance tests run automatically in GitHub Actions:
 
 **Trigger Conditions:**
+
 - Pull requests modifying `packages/bot/src/runtime/**`
 - Manual workflow dispatch via Actions UI
 
 **Workflow:** `.github/workflows/performance-test.yml`
 
 The workflow:
+
 1. Builds bot code
 2. Starts private Screeps server
 3. Runs performance test suite
@@ -130,19 +132,20 @@ The workflow:
 
 ### Tracked Metrics
 
-| Metric | Description | Target |
-|--------|-------------|--------|
-| **Average CPU** | CPU consumption per tick | < 20 CPU/tick |
-| **Energy Efficiency** | Energy harvested vs. consumed | > 0.80 ratio |
-| **Controller Level** | Room control progress | ≥ 3 within 10k ticks |
-| **Survival Time** | Ticks survived in simulation | > 8000 ticks |
-| **Victory Rate** | Win vs. loss against opponents | > 70% win rate |
+| Metric                | Description                    | Target               |
+| --------------------- | ------------------------------ | -------------------- |
+| **Average CPU**       | CPU consumption per tick       | < 20 CPU/tick        |
+| **Energy Efficiency** | Energy harvested vs. consumed  | > 0.80 ratio         |
+| **Controller Level**  | Room control progress          | ≥ 3 within 10k ticks |
+| **Survival Time**     | Ticks survived in simulation   | > 8000 ticks         |
+| **Victory Rate**      | Win vs. loss against opponents | > 70% win rate       |
 
 ### Baseline Comparison
 
 Current run metrics are compared against baseline stored in `reports/performance/baseline.json`.
 
 **Regression Detection:**
+
 - CPU usage increase > 10%
 - Energy efficiency decrease > 10%
 - Controller level decrease
@@ -171,9 +174,9 @@ Modify in `tests/performance/bot-benchmark.test.ts`:
 
 ```typescript
 const testConfig = {
-  maxTicks: 10000,        // Maximum simulation ticks
-  checkInterval: 100,     // State check frequency
-  speedrunMode: true,     // Fast simulation
+  maxTicks: 10000, // Maximum simulation ticks
+  checkInterval: 100, // State check frequency
+  speedrunMode: true // Fast simulation
 };
 ```
 
@@ -221,6 +224,7 @@ bots:
 Speedrun mode enables fast simulation by removing tick delays:
 
 **Benefits:**
+
 - Tests complete in minutes instead of hours
 - Rapid iteration on performance improvements
 - Efficient CI/CD integration
@@ -232,10 +236,11 @@ Speedrun mode enables fast simulation by removing tick delays:
 Game.speedrunMode = true;
 
 // Or in test configuration
-await api.console('Game.speedrunMode = true');
+await api.console("Game.speedrunMode = true");
 ```
 
 **Performance Impact:**
+
 - Normal mode: ~2.5 ticks/second
 - Speedrun mode: ~100+ ticks/second (hardware dependent)
 
@@ -276,6 +281,7 @@ git commit -m "chore: update performance baseline after optimization"
 **Symptom:** `screeps-test-server` container exits immediately
 
 **Solutions:**
+
 - Check Docker logs: `docker-compose -f docker-compose.test.yml logs`
 - Verify port 21025 not in use: `lsof -i :21025`
 - Ensure MongoDB and Redis healthy: `docker-compose -f docker-compose.test.yml ps`
@@ -285,6 +291,7 @@ git commit -m "chore: update performance baseline after optimization"
 **Symptom:** Tests exceed 10-minute timeout
 
 **Solutions:**
+
 - Increase `maxTicks` if simulation needs more time
 - Verify speedrun mode enabled
 - Check server resource allocation (CPU/RAM)
@@ -295,6 +302,7 @@ git commit -m "chore: update performance baseline after optimization"
 **Symptom:** Performance metrics return defaults/zeros
 
 **Solutions:**
+
 - Verify bot deployed successfully
 - Check API authentication
 - Ensure server mods loaded correctly
@@ -305,6 +313,7 @@ git commit -m "chore: update performance baseline after optimization"
 **Symptom:** Containers slow or crashing
 
 **Solutions:**
+
 - Allocate more Docker RAM (≥4GB recommended)
 - Reduce concurrent tests
 - Clean up old containers: `docker system prune`
@@ -320,8 +329,8 @@ Create custom test scenarios by modifying server configuration:
 # packages/pserver/config.yml
 serverConfig:
   constants:
-    ENERGY_REGEN_TIME: 300    # Adjust resource regeneration
-    CREEP_LIFE_TIME: 1500     # Modify creep lifespan
+    ENERGY_REGEN_TIME: 300 # Adjust resource regeneration
+    CREEP_LIFE_TIME: 1500 # Modify creep lifespan
 ```
 
 ### Multi-Room Testing
@@ -330,11 +339,11 @@ Test bot performance across multiple rooms:
 
 ```typescript
 // Add rooms to simulation
-await world.addRoom('W21N23');
-await world.addRoom('W22N23');
+await world.addRoom("W21N23");
+await world.addRoom("W22N23");
 
 // Deploy bot in multiple locations
-await deployBot(api, 'screeps-gpt', botCode, ['W21N23', 'W22N23']);
+await deployBot(api, "screeps-gpt", botCode, ["W21N23", "W22N23"]);
 ```
 
 ### Performance Profiling
