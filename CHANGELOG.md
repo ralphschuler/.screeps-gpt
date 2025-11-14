@@ -5,6 +5,19 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Fixed
+
+- **CI Autofix Circuit Breaker**: Implemented circuit breaker to prevent infinite retry loops in CI autofix workflow
+  - Added circuit breaker logic to track consecutive failures (max 3 attempts)
+  - Implemented 15-minute backoff period between retry attempts
+  - Created automatic escalation to GitHub issues when circuit breaker trips
+  - Added diagnostic logging showing retry attempts and circuit breaker status
+  - Circuit breaker resets on successful autofix or after backoff period
+  - Prevents workflow saturation from repeated failed autofix attempts
+  - Checks for existing escalation issues to avoid duplicates
+  - Added comprehensive regression test suite (16 tests) in `tests/regression/ci-autofix-circuit-breaker.test.ts`
+  - Resolves issue: fix(automation): CI autofix workflow saturation - 17+ consecutive action_required failures
+
 ## [0.76.0] - 2025-11-14
 
 ### Added
