@@ -234,6 +234,7 @@ Multiple specialized Copilot agents collaborate on different aspects of developm
 - **[Task System Architecture](docs/runtime/task-system.md)** - Priority-based task management system (experimental)
 - **[Task Prioritization](docs/runtime/strategy/task-prioritization.md)** - Decision-making logic
 - **[Scaling Strategies](docs/runtime/strategy/scaling-strategies.md)** - Room expansion plans
+- **[Competitive Bot Development Guide](docs/reference/screeps-competitive-guide.md)** - Advanced strategies reference covering game mechanics, optimization, and competitive play
 
 **[📚 Complete Documentation Index →](docs/index.md)**
 
