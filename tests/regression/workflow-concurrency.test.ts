@@ -51,7 +51,9 @@ describe("Workflow concurrency controls", () => {
     "post-merge-release.yml",
     "publish-package.yml",
     // Agent workflows
-    "screeps-agent.yml"
+    "screeps-agent.yml",
+    // Testing workflows
+    "performance-test.yml"
   ];
 
   for (const workflowFile of expectedWorkflows) {
