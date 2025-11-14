@@ -60,11 +60,11 @@ Sends notifications for:
 - **Success:** Version deployed successfully (Priority 3)
 - **Failure:** Deployment failed, immediate attention required (Priority 5)
 
-### Quality Gate Workflow (quality-gate.yml)
+### Guard Workflows (guard-\*.yml)
 
-Sends notifications for:
+Individual guard workflows can send notifications for:
 
-- **Failure:** PR build failed, review required (Priority 4)
+- **Failure:** Specific check failed (e.g., build, lint, tests), review required (Priority 4)
 
 ### Screeps Monitoring Workflow (screeps-monitoring.yml)
 
@@ -105,7 +105,7 @@ export PUSH_LINK="https://example.com"  # Optional
 export PUSH_PRIORITY="3"  # Optional
 
 # Run script
-npx tsx packages/utilities/scripts/send-push-notification.ts
+npx tsx scripts/send-push-notification.ts
 ```
 
 ### Programmatically
@@ -113,7 +113,7 @@ npx tsx packages/utilities/scripts/send-push-notification.ts
 Import and use the notification function:
 
 ```typescript
-import { sendPushNotification } from "./packages/utilities/scripts/send-push-notification.js";
+import { sendPushNotification } from "./scripts/send-push-notification.js";
 
 await sendPushNotification({
   title: "Alert Title",
@@ -169,9 +169,9 @@ bun run test:unit
 
 Rate limiting prevents spam, but you can:
 
-- Adjust thresholds in `packages/utilities/scripts/check-ptr-alerts.ts`
+- Adjust thresholds in `scripts/check-ptr-alerts.ts`
 - Modify notification conditions in workflow files
-- Increase the minimum interval in `packages/utilities/scripts/send-push-notification.ts`
+- Increase the minimum interval in `scripts/send-push-notification.ts`
 
 ### API Errors
 

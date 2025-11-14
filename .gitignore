@@ -110,3 +110,4 @@ IMPLEMENTATION*.md
 *_NOTES.md
 *_FIX.md
 validate-*.sh
+packages/docs/public/

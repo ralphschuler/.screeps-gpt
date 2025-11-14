@@ -478,9 +478,50 @@ Quality checks are split into separate guard workflows for better granularity an
 - Permissions: `contents: read` only.
 - Jobs: Test coverage reporting and evaluation artifact upload.
 
-## Quality Gate (`quality-gate.yml`)
+## Quality Gate (Guard Workflows)
 
-**Deprecated:** The monolithic quality-gate workflow has been split into multiple focused guard workflows (guard-lint, guard-format, etc.) for better granularity and parallel execution. This workflow is kept for backward compatibility but may be removed in a future version.
+The quality gate system has been refactored from a monolithic `quality-gate.yml` into modular guard workflows for better granularity, parallel execution, and faster feedback:
+
+### Individual Guard Workflows
+
+#### Required Guards (enforced for branch protection)
+
+- **guard-test-unit.yml** - Executes unit test suite
+- **guard-build.yml** - Validates build process (compilation and bundling)
+- **guard-lint.yml** - Runs ESLint for code style and static analysis
+- **guard-format.yml** - Validates Prettier formatting
+- **guard-yaml-lint.yml** - Validates YAML syntax in workflow files
+
+These five guards are required for branch protection and must pass for a pull request to be merged.
+
+#### Optional/Supplementary Guards
+
+- **guard-test-e2e.yml** - Runs end-to-end tests
+- **guard-test-regression.yml** - Validates regression test suite
+- **guard-test-docs.yml** - Tests documentation build processes
+- **guard-version.yml** - Checks version consistency
+- **guard-coverage.yml** - Reports test coverage metrics
+- **guard-deprecation.yml** - Detects deprecated API usage
+- **guard-security-audit.yml** - Performs security vulnerability scanning
+
+These supplementary guards provide additional quality signals and reporting, but are not required for branch protection. Failures in these checks will be surfaced in the PR, but do not block merging.
+
+### Quality Gate Summary (`quality-gate-summary.yml`)
+
+Provides a single, reliable quality gate status for PRs by aggregating results from individual guard workflows:
+
+- **Trigger**: Pull requests to `main` branch
+- **Behaviour**: Polls guard workflow results and reports unified pass/fail status
+- **Required Guards for Branch Protection**: Unit Tests, Build, Lint, Format, YAML Lint (see above)
+- **Features**:
+  - Waits up to 25 minutes for guards to complete
+  - Treats `action_required` (cancelled by concurrency) as non-blocking
+  - Provides single check for branch protection requirements
+  - Never cancelled by concurrency to ensure definitive reporting
+
+> **Note:** Only the required guards listed above are enforced for branch protection. Optional/supplementary guards provide additional feedback but do not block merging.
+
+This architecture allows guards to fail fast individually while the summary provides a single status for branch protection.
 
 ## Post Merge Release (`post-merge-release.yml`)
 

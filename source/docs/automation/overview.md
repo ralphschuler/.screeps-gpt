@@ -1,11 +1,110 @@
 ---
 title: Automation Overview
-date: 2025-10-24T23:38:43.752Z
+date: 2025-11-14T09:00:00.000Z
+layout: page
 ---
 
 # Automation Overview
 
 This document expands on the workflows under `.github/workflows/` and how they combine with the Copilot CLI.
+
+## GitHub Projects Integration
+
+The repository includes comprehensive GitHub Projects V2 integration that automatically tracks issues, pull requests, and discussions through their entire lifecycle.
+
+### Project Management Workflows
+
+**Automated Item Sync** (`project-sync-items.yml`):
+
+- Automatically adds new issues, PRs, and discussions to the project board
+- Sets initial status to "Pending" and automation state to "Not Started"
+- Triggers on: issue/PR opened or reopened, discussion created
+
+**PR Status Tracking** (`project-pr-status.yml`):
+
+- Tracks pull request lifecycle and review states
+- Updates status based on draft/ready state and review outcomes
+- Automation states: Draft, Ready for Review, Review Requested, Reviewed, Approved, Changes Requested, Merged, Closed without Merge
+- Triggers on: PR ready_for_review, converted_to_draft, review_requested, review_submitted, closed
+
+**Comment Activity Tracking** (`project-comment-activity.yml`):
+
+- Marks items with active discussion when comments are added
+- Helps identify items requiring attention
+- Triggers on: issue_comment, pull_request_review_comment created
+
+### Integration with Copilot Workflows
+
+Integrated Copilot workflows update project status automatically:
+
+**Issue Triage** (`copilot-issue-triage.yml`):
+
+- After triage: Status → "Backlog", Automation State → "Triaged"
+- Indicates issue has been processed and categorized
+
+**Todo Automation** (`copilot-todo-pr.yml`):
+
+- On start: Status → "In Progress", Automation State → "Implementing"
+- On completion: Status → "Under Review", Automation State → "PR Created"
+- Tracks automated implementation from start to PR creation
+
+**Note**: CI AutoFix and Repository Audit workflows do not currently update project status due to GitHub Projects limitation - workflow runs cannot be tracked as project items (only issues, PRs, and discussions are supported).
+
+### Project Board Configuration
+
+The system expects the following project fields:
+
+- **Status**: Pending, Backlog, In Progress, Under Review, Blocked, Done, Canceled
+- **Priority**: Critical, High, Medium, Low, None
+- **Type**: Bug, Feature, Enhancement, Chore, Question
+- **Automation State**: Various states tracking automation pipeline progress
+- **Domain**: Runtime, Automation, Documentation, Dependencies, Monitoring, Infrastructure
+
+See [GitHub Projects Setup Guide](./github-projects-setup.md) for complete configuration instructions.
+
+### Configuration Variables
+
+Set the following repository variables to enable project integration:
+
+- `PROJECT_NUMBER`: GitHub Project number (e.g., `1`)
+- `PROJECT_OWNER`: Project owner username or organization name
+
+**Graceful Degradation**: If these variables are not set, workflows will skip project sync operations and continue normally. This allows opt-in project integration without breaking existing functionality.
+
+### Project Sync Composite Action
+
+The `project-sync` composite action (`.github/actions/project-sync/action.yml`) provides centralized project management functionality:
+
+**Features**:
+
+- Adds items to project board using GitHub CLI
+- Updates project field values (Status, Priority, Automation State)
+- Gracefully handles missing configuration (non-fatal failures)
+- Supports issues, pull requests, and discussions
+- Provides detailed logging of sync operations
+
+**Usage Example**:
+
+```yaml
+- name: Update project status
+  uses: ./.github/actions/project-sync
+  with:
+    github-token: ${{ secrets.GITHUB_TOKEN }}
+    project-number: ${{ vars.PROJECT_NUMBER }}
+    project-owner: ${{ vars.PROJECT_OWNER }}
+    item-type: issue
+    item-url: ${{ github.event.issue.html_url }}
+    status-field: In Progress
+    automation-state-field: Implementing
+```
+
+### Benefits
+
+- **Full Lifecycle Visibility**: Track items from creation through completion
+- **Automation Pipeline Monitoring**: See which items are being processed by Copilot workflows
+- **Bottleneck Identification**: Quickly identify items stuck in specific states
+- **Historical Tracking**: Maintain project history with automation state transitions
+- **Integration with Existing Tools**: Works seamlessly with Copilot workflows and label system
 
 ## Build and Deployment
 
@@ -105,6 +204,226 @@ This will output:
 - The final selected model
 - Cache key information
 
+## Specialized Copilot Agent Actions
+
+The repository uses a specialized agent architecture for Copilot automation, where each agent handles a specific type of task with focused functionality and minimal input requirements.
+
+### Architecture Overview
+
+**Design Principles:**
+
+- **Single Responsibility**: Each agent handles only one specific task type
+- **Minimal Input Requirements**: Accept only essential parameters (copilot-token + task-specific inputs)
+- **Consistent Interface**: Standardized input/output patterns across all agents
+- **Composable**: Agents can be combined in workflows without conflicts
+- **Built on copilot-exec**: All agents leverage the existing `copilot-exec` composite action
+
+**Agent Implementations:**
+
+All specialized agents are located in `.github/actions/copilot-*-agent/` directories and provide wrappers around `copilot-exec` with task-specific configurations.
+
+### Available Agents
+
+**copilot-triage-agent** (`.github/actions/copilot-triage-agent/`):
+
+- **Purpose**: GitHub issue triage and reformulation
+- **Key Features**:
+  - Context-aware issue analysis with duplicate detection
+  - Automatic reformulation of title and description
+  - Intelligent label application based on content
+  - Related issue linking and relationship management
+- **Required Inputs**: `copilot-token`, `issue-number`, `issue-title`, `issue-url`, `issue-author`
+- **Used By**: `copilot-issue-triage.yml`
+
+**copilot-review-agent** (`.github/actions/copilot-review-agent/`):
+
+- **Purpose**: Repository reviews and quality assessment
+- **Key Features**:
+  - Comprehensive repository audit
+  - Automated issue filing for identified problems
+  - Duplicate detection and prevention
+  - Severity assessment and prioritization
+- **Required Inputs**: `copilot-token`
+- **Used By**: Currently available but not used by any workflow (uses `repository-review` prompt for more comprehensive analysis than `repository-audit`)
+
+**copilot-audit-agent** (`.github/actions/copilot-audit-agent/`):
+
+- **Purpose**: Scheduled repository health checks
+- **Key Features**:
+  - Periodic repository health assessment
+  - Automation and workflow quality evaluation
+  - Strategic recommendations for improvements
+  - Trend analysis and performance tracking
+- **Required Inputs**: `copilot-token`
+- **Used By**: `copilot-review.yml`
+
+**Strategic Planning Workflow** (`copilot-strategic-planner.yml`):
+
+- **Purpose**: Autonomous strategic planning and improvement roadmap generation
+- **Key Features**:
+  - Bot performance analysis from snapshots and PTR telemetry
+  - Profiler-driven CPU bottleneck identification
+  - Strategic opportunity identification across six categories
+  - Evidence-based issue creation with priorities
+  - Documentation updates for strategic alignment
+  - Learning feedback loop from past implementations
+- **Data Sources**: Bot snapshots, PTR stats, profiler data, documentation, issue history
+- **Schedule**: Every 8 hours
+- **Documentation**: [Strategic Planning Guide](./strategic-planning.md)
+- **Used By**: Direct workflow invocation via `copilot-exec` with `strategic-planner` prompt
+
+**copilot-dev-agent** (`.github/actions/copilot-dev-agent/`):
+
+- **Purpose**: Development workflow assistance and code generation
+- **Key Features**:
+  - Context-aware code implementation and fixes
+  - Dependency and sub-task validation
+  - Incremental progress reporting and commit management
+  - Automated testing and validation
+- **Required Inputs**: `copilot-token`, `issue-number`, `issue-title`, `issue-url`, `issue-author`
+- **Used By**: `copilot-todo-pr.yml`
+
+**copilot-ci-autofix-agent** (`.github/actions/copilot-ci-autofix-agent/`):
+
+- **Purpose**: CI failure resolution and automated fixes
+- **Key Features**:
+  - Intelligent failure classification (lint, format, compilation, etc.)
+  - Specialized fix strategies per failure type
+  - Context-aware branch strategy (PR vs main vs feature)
+  - Manual review escalation for complex issues
+- **Required Inputs**: `copilot-token`, `workflow-name`, `run-id`, `run-url`, `trigger-event`
+- **Used By**: `copilot-ci-autofix.yml`
+
+### Usage Examples
+
+**Using the Triage Agent:**
+
+```yaml
+- name: Triage issue
+  uses: ./.github/actions/copilot-triage-agent
+  with:
+    copilot-token: ${{ secrets.COPILOT_TOKEN }}
+    issue-number: ${{ github.event.issue.number }}
+    issue-title: ${{ toJSON(github.event.issue.title) }}
+    issue-body: ${{ toJSON(github.event.issue.body || '') }}
+    issue-url: ${{ toJSON(github.event.issue.html_url) }}
+    issue-author: ${{ toJSON(github.event.issue.user.login) }}
+```
+
+**Using the CI AutoFix Agent:**
+
+```yaml
+- name: Auto-fix CI failure
+  uses: ./.github/actions/copilot-ci-autofix-agent
+  with:
+    copilot-token: ${{ secrets.COPILOT_TOKEN }}
+    workflow-name: ${{ toJSON(github.event.workflow_run.name) }}
+    run-id: ${{ github.event.workflow_run.id }}
+    run-url: ${{ toJSON(github.event.workflow_run.html_url) }}
+    trigger-event: ${{ toJSON(github.event.workflow_run.event) }}
+```
+
+**Using the Audit Agent:**
+
+```yaml
+- name: Run repository audit
+  uses: ./.github/actions/copilot-audit-agent
+  with:
+    copilot-token: ${{ secrets.COPILOT_TOKEN }}
+    run-url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+```
+
+### Benefits of Specialized Agents
+
+1. **Reduced Complexity**: Workflows are simpler and easier to understand with focused agents
+2. **Better Maintainability**: Agent-specific changes are isolated from other automation
+3. **Easier Debugging**: Agent boundaries make it clear where issues originate
+4. **Clear Contracts**: Well-defined input/output interfaces for each automation type
+5. **Optimized Configuration**: Agent-specific defaults and timeouts for each task type
+6. **Reusability**: Agents can be easily reused across multiple workflows
+
+### Backward Compatibility
+
+The generic `copilot-exec` composite action remains available for custom use cases and workflows that don't fit into the specialized agent categories. All specialized agents are built on top of `copilot-exec`, ensuring consistent behavior and shared optimizations.
+
+### Creating New Agents
+
+To create a new specialized agent:
+
+1. Create a new directory: `.github/actions/copilot-{name}-agent/`
+2. Define the agent action in `action.yml` with:
+   - Clear description of purpose and features
+   - Minimal required inputs specific to the task
+   - Sensible defaults for optional parameters
+   - Output path for result logs
+3. Use `copilot-exec` as the underlying implementation
+4. Map agent inputs to appropriate environment variables
+5. Reference an existing or new prompt template in `.github/copilot/prompts/`
+6. Update this documentation with the new agent's details
+
+## Task Management System
+
+The runtime includes a priority-based task management system for coordinating creep work assignments:
+
+### Task Flow
+
+1. **Task Generation** - Each tick, the `TaskManager` scans rooms to generate tasks based on:
+   - Active sources (harvest tasks)
+   - Construction sites (build tasks)
+   - Damaged structures (repair tasks)
+   - Controllers (upgrade tasks)
+   - Energy distribution needs (transfer/withdraw tasks)
+
+2. **Task Assignment** - Idle creeps (no current task) are matched with pending tasks:
+   - Tasks are sorted by priority (CRITICAL > HIGH > NORMAL > LOW > IDLE)
+   - Prerequisites are checked (body parts, energy, capacity, proximity)
+   - Highest priority compatible task is assigned to each creep
+
+3. **Task Execution** - Assigned creeps execute their tasks:
+   - CPU budget is monitored to prevent timeouts
+   - Task actions return completion status
+   - Completed tasks are removed from the queue
+   - Failed/expired tasks are cleaned up
+
+4. **Cleanup** - Each tick removes:
+   - Completed tasks
+   - Expired tasks (past deadline)
+   - Tasks with invalid targets (deleted objects)
+
+### Task Interface
+
+Tasks implement the `Task` interface defined in `src/shared/contracts.ts`:
+
+- **id**: Unique identifier
+- **type**: Human-readable type (e.g., "harvest", "build")
+- **status**: PENDING, INPROCESS, COMPLETE, or FAILED
+- **priority**: TaskPriority enum value
+- **targetId**: Game object ID being targeted
+- **targetRoom**: Room name for cross-room tasks
+- **canAssign(creep)**: Check if task can be assigned
+- **assign(creep)**: Assign task to a creep
+- **execute(creep)**: Execute the task action
+- **isExpired()**: Check if task has exceeded deadline
+
+### CPU Threshold Management
+
+The `TaskManager` respects CPU budgets to prevent script timeouts:
+
+- Configurable threshold (default 80% of limit)
+- Stops processing creeps when threshold is reached
+- Logs warnings when creeps are skipped
+- Ensures critical operations complete before timeout
+
+### Testing
+
+Task system behavior is validated by regression tests in `tests/regression/task-assignment.test.ts` covering:
+
+- Task generation for different room states
+- Priority-based assignment logic
+- CPU threshold enforcement
+- Task cleanup and expiration
+- Error handling for invalid targets
+
 ## Quality Guards
 
 Quality checks are split into separate guard workflows for better granularity and parallel execution:
@@ -165,9 +484,50 @@ Quality checks are split into separate guard workflows for better granularity an
 - Permissions: `contents: read` only.
 - Jobs: Test coverage reporting and evaluation artifact upload.
 
-## Quality Gate (`quality-gate.yml`)
+## Quality Gate (Guard Workflows)
 
-**Deprecated:** The monolithic quality-gate workflow has been split into multiple focused guard workflows (guard-lint, guard-format, etc.) for better granularity and parallel execution. This workflow is kept for backward compatibility but may be removed in a future version.
+The quality gate system has been refactored from a monolithic `quality-gate.yml` into modular guard workflows for better granularity, parallel execution, and faster feedback:
+
+### Individual Guard Workflows
+
+#### Required Guards (enforced for branch protection)
+
+- **guard-test-unit.yml** - Executes unit test suite
+- **guard-build.yml** - Validates build process (compilation and bundling)
+- **guard-lint.yml** - Runs ESLint for code style and static analysis
+- **guard-format.yml** - Validates Prettier formatting
+- **guard-yaml-lint.yml** - Validates YAML syntax in workflow files
+
+These five guards are required for branch protection and must pass for a pull request to be merged.
+
+#### Optional/Supplementary Guards
+
+- **guard-test-e2e.yml** - Runs end-to-end tests
+- **guard-test-regression.yml** - Validates regression test suite
+- **guard-test-docs.yml** - Tests documentation build processes
+- **guard-version.yml** - Checks version consistency
+- **guard-coverage.yml** - Reports test coverage metrics
+- **guard-deprecation.yml** - Detects deprecated API usage
+- **guard-security-audit.yml** - Performs security vulnerability scanning
+
+These supplementary guards provide additional quality signals and reporting, but are not required for branch protection. Failures in these checks will be surfaced in the PR, but do not block merging.
+
+### Quality Gate Summary (`quality-gate-summary.yml`)
+
+Provides a single, reliable quality gate status for PRs by aggregating results from individual guard workflows:
+
+- **Trigger**: Pull requests to `main` branch
+- **Behaviour**: Polls guard workflow results and reports unified pass/fail status
+- **Required Guards for Branch Protection**: Unit Tests, Build, Lint, Format, YAML Lint (see above)
+- **Features**:
+  - Waits up to 25 minutes for guards to complete
+  - Treats `action_required` (cancelled by concurrency) as non-blocking
+  - Provides single check for branch protection requirements
+  - Never cancelled by concurrency to ensure definitive reporting
+
+> **Note:** Only the required guards listed above are enforced for branch protection. Optional/supplementary guards provide additional feedback but do not block merging.
+
+This architecture allows guards to fail fast individually while the summary provides a single status for branch protection.
 
 ## Post Merge Release (`post-merge-release.yml`)
 
@@ -191,6 +551,17 @@ Quality checks are split into separate guard workflows for better granularity an
 - Secrets: `SCREEPS_TOKEN` (required), `SCREEPS_HOST`/`PORT`/`PROTOCOL`/`BRANCH` (optional overrides). `PUSH_TOKEN` (optional) for deployment alerts.
 - Notes: Deployment is triggered automatically when the `post-merge-release.yml` workflow pushes a version tag. The workflow uses only the `push.tags` trigger because GitHub Actions does not trigger `release.published` events when releases are created by workflows using `GITHUB_TOKEN` (security measure to prevent recursive workflow execution). The autospawner ensures the bot is active after each deployment.
 
+## Publish Package (`publish-package.yml`)
+
+- Trigger: Release published + manual dispatch with optional version tag input.
+- Behaviour: Publishes the bot as an npm package to GitHub Packages registry for use as an NPC bot on private Screeps servers. The workflow builds the project, verifies the output, and publishes to `@ralphschuler/screeps-gpt` on GitHub Packages.
+- Package Configuration: The package includes the `screeps_bot: true` flag in package.json, making it compatible with Screeps private server bot loading. The main entry point is `dist/main.js`.
+- Installation: Users can install via `npm install @ralphschuler/screeps-gpt` after configuring npm to use GitHub Packages registry.
+- Usage: On private servers, spawn the bot with `bots.spawn('screeps-gpt', 'ROOM_NAME', options)`.
+- Permissions: Requires `packages: write` permission to publish to GitHub Packages.
+- Secrets: Uses `GITHUB_TOKEN` for authentication.
+- Notes: The `prepublishOnly` script ensures the project is built before publishing. Published artifacts include dist/main.js, dist/main.js.map, README.md, and LICENSE.
+
 ## Copilot Repository Review (`copilot-review.yml`)
 
 - Trigger: Daily schedule + manual dispatch.
@@ -201,23 +572,53 @@ Quality checks are split into separate guard workflows for better granularity an
 ## Documentation Pages (`docs-pages.yml`)
 
 - Trigger: Pushes to `main`, published releases, and manual dispatches.
-- Behaviour: Executes `bun run versions:update` and `bun run build:docs-site`, then publishes `build/docs-site` to GitHub Pages.
+- Behaviour: Builds and deploys documentation site with post-deployment validation:
+  1. **Build**: Executes `bun run versions:update`, generates analytics data, and builds documentation site with Hexo
+  2. **Deploy**: Publishes `build/docs-site` to GitHub Pages
+  3. **Validate**: Runs E2E tests against deployed site to verify accessibility and functionality
+- Testing: Post-deployment validation includes homepage accessibility checks, key page validation, link checking, and asset loading verification
 - Permissions: Requires `pages: write` and `id-token: write`.
+- Notes: E2E tests run against https://nyphon.de/.screeps-gpt/ after deployment completes. Test failures indicate deployment issues requiring investigation.
+
+## Changelog to Blog Automation (`copilot-changelog-to-blog.yml`)
+
+- Trigger: Version tags matching `v*` pattern (e.g., `v0.12.0`) + manual dispatch with version input.
+- Behaviour: Automatically converts CHANGELOG.md entries into comprehensive blog posts by:
+  - Extracting the changelog section for the specified version
+  - Using Copilot to generate a detailed blog post with design rationale and implementation context
+  - Creating proper front matter (title, date, categories, tags) based on release content
+  - Writing blog post to `source/_posts/release-{version-slug}.md`
+  - Including technical deep-dives that explain WHY decisions were made, not just WHAT changed
+  - Referencing specific files, functions, and modules with architectural context
+  - Connecting features to broader project goals (autonomous development, workflow automation)
+- Integration: Works seamlessly with the release process - `post-merge-release.yml` creates version tags which automatically trigger blog post generation.
+- Output: Blog posts are committed directly to the repository, triggering `docs-pages.yml` to rebuild and deploy the documentation site.
+- Manual Execution: Use workflow_dispatch with version parameter (e.g., "0.12.0") to generate blog posts for existing releases.
+- Validation: Checks if blog post already exists before generation to avoid duplicates.
+- Content Style: Technical but accessible, targeting developers interested in Screeps automation and AI-driven development.
+- Target Length: 800-1500 words depending on release complexity.
+- Permissions: Uses the default `GITHUB_TOKEN` with `contents: write` for committing blog posts.
+- Concurrency: Single execution per tag via `${{ github.workflow }}-${{ github.ref }}` concurrency group.
+- Action Enforcement: Mandatory changelog extraction validation, comprehensive blog post structure with introduction/features/technical details/impact/future sections, design rationale for all major features, and proper markdown formatting.
 
 ## Copilot Issue Triage (`copilot-issue-triage.yml`)
 
 - Trigger: Issues opened or reopened.
 - Behaviour: Copilot performs comprehensive context-aware triage by:
   - Fetching all existing open issues for duplicate detection and relationship analysis
+  - **Gathering code context** by searching for related files in `.github/workflows/`, `.github/actions/`, `src/`, `tests/` directories
+  - **Cross-referencing issues** to find related open and closed issues with similar keywords or technical context
+  - **Cross-referencing pull requests** to find related PRs that touch similar code or address related problems
   - Detecting and handling duplicate issues automatically (comments on both issues, closes duplicate with "duplicate" reason)
   - Identifying related issues, sub-tasks, and parent-child relationships
   - Reformulating title and description to clearly outline required changes and expectations
+  - Including discovered context in reformulated body: "Related Code", "Related Issues", "Related PRs" sections
   - Applying appropriate labels based on content analysis (**excludes automatic Todo labeling** per issue #78)
   - Linking related issues in the reformulated description
   - Establishing sub-issue connections via GitHub CLI when parent-child relationships are detected
-  - Adding a single triage comment with summary and recommendations (avoids redundant comments)
+  - Adding a single triage comment with summary, discovered context, and recommendations (avoids redundant comments)
 - Permissions: Uses the default `GITHUB_TOKEN` with `issues: write` to edit issue metadata, add comments, and close duplicates.
-- Integration: Uses GitHub MCP server for querying all issues and performing relationship analysis.
+- Integration: Uses GitHub MCP server for querying issues, searching code, and performing relationship analysis.
 - Action Enforcement: Mandatory reformulation, labeling, and triage comments with failure handling for API issues.
 
 ## Copilot Todo Automation (`copilot-todo-pr.yml`)
@@ -287,6 +688,164 @@ Quality checks are split into separate guard workflows for better granularity an
 - Documentation: See [Screeps Monitoring Guide](./autonomous-monitoring.md) for detailed usage, configuration, and best practices.
 - Consolidation: This workflow replaces the former `copilot-autonomous-monitor.yml` and `screeps-stats-monitor.yml` workflows, combining strategic monitoring with high-frequency PTR analysis.
 
+## Report Storage and Historical Trend Analysis
+
+The monitoring and evaluation workflows implement persistent report storage for historical comparison and trend analysis. This enables data-driven insights into bot performance evolution and system health trends over time.
+
+### Report Types
+
+The system tracks and persists several types of reports:
+
+1. **PTR Stats Reports** (`reports/ptr-stats/`)
+   - Telemetry snapshots from Screeps Stats API or console fallback
+   - CPU usage, energy levels, and resource metrics
+   - Saved with timestamps for historical tracking
+   - Managed by `scripts/check-ptr-alerts.ts`
+
+2. **System Evaluation Reports** (`reports/evaluations/`)
+   - Runtime health assessments from `SystemEvaluator`
+   - Test results, lint errors, coverage metrics
+   - Findings and recommendations for improvements
+   - Managed by `scripts/evaluate-system.ts`
+
+3. **Profiler Snapshots** (`reports/profiler/`)
+   - CPU profiling data from Memory.profiler
+   - Function-level performance metrics
+   - Managed by `scripts/fetch-profiler-console.ts`
+
+4. **Copilot Workflow Logs** (`reports/copilot/`)
+   - Monitoring and analysis reports
+   - Excluded from git via `.gitignore`
+   - Stored as workflow artifacts with 30-day retention
+
+### Storage Infrastructure
+
+The report storage system is implemented in `scripts/lib/report-storage.ts` and provides:
+
+- **Timestamped Storage**: Reports saved with ISO 8601 timestamps in filenames
+- **Type-based Organization**: Reports grouped by type in subdirectories
+- **Retention Policies**: Automatic cleanup of old reports (30 days default, minimum 10 reports retained)
+- **Efficient Loading**: Helper functions to load latest reports or specific historical snapshots
+
+**Report Filename Format**: `{type}-YYYY-MM-DDTHH-MM-SS-SSSZ.json`
+
+**Example**: `ptr-stats-2025-11-07T00-30-15-123Z.json`
+
+### Historical Comparison
+
+The comparison system is implemented in `scripts/lib/report-comparison.ts` and provides:
+
+**PTR Stats Comparison**:
+
+- CPU usage trend analysis (percentage change)
+- Energy reserve trend analysis (percentage change)
+- Automatic alerting on significant changes (>10% CPU, >20% energy)
+- Formatted trend reports for workflow logs
+
+**System Evaluation Comparison**:
+
+- Finding count changes (added/removed/resolved)
+- Summary change detection
+- Quality trend analysis over time
+- Formatted trend reports with actionable insights
+
+### Integration with Workflows
+
+**Screeps Monitoring** (`screeps-monitoring.yml`):
+
+- Saves PTR stats snapshots on each run
+- Compares current stats with previous run
+- Logs trend analysis in workflow output
+- Applies 30-day retention policy automatically
+
+**System Evaluation** (`analyze:system` script):
+
+- Saves evaluation reports with timestamps
+- Compares current evaluation with previous
+- Tracks finding resolution and new issues
+- Applies retention policy after each run
+
+### Retention Policy
+
+Default configuration (configurable per report type):
+
+- **Maximum Age**: 30 days
+- **Minimum Reports**: 10 (always kept regardless of age)
+- **Cleanup Frequency**: On each monitoring/evaluation run
+- **Manual Cleanup**: `npx tsx scripts/cleanup-old-reports.ts`
+
+The retention policy ensures historical data availability while managing repository size by removing old reports that exceed both the age threshold and minimum count requirement.
+
+### Repository Size Management
+
+**Storage Strategy**:
+
+- Only timestamped JSON reports committed to git
+- Copilot logs excluded via `.gitignore` (ephemeral, stored as artifacts)
+- Compact JSON format for efficiency
+- Automatic cleanup prevents unbounded growth
+
+**Expected Storage Impact**:
+
+- PTR stats: ~2-3 KB per report, 10-30 reports = 30-90 KB
+- Evaluations: ~1-2 KB per report, 10-30 reports = 10-60 KB
+- Profiler: ~5-10 KB per report, 10-30 reports = 50-300 KB
+- **Total Maximum**: ~400-500 KB for all report types combined
+
+### Usage Examples
+
+**Load and compare PTR stats**:
+
+```typescript
+import { listReports, loadReport } from "./scripts/lib/report-storage";
+import { comparePTRStats, formatPTRTrendReport } from "./scripts/lib/report-comparison";
+
+// Load the two most recent reports
+const reports = await listReports("ptr-stats");
+const current = reports.length > 0 ? await loadReport<PTRStatsSnapshot>("ptr-stats", reports[0].filename) : null;
+const previous = reports.length > 1 ? await loadReport<PTRStatsSnapshot>("ptr-stats", reports[1].filename) : null;
+
+const comparison = comparePTRStats(current, previous);
+console.log(formatPTRTrendReport(comparison));
+```
+
+**Save a report**:
+
+```typescript
+import { saveReport } from "./scripts/lib/report-storage";
+
+const report = {
+  tick: 1000,
+  data: {
+    /* ... */
+  }
+};
+const path = await saveReport("ptr-stats", report);
+console.log(`Report saved to: ${path}`);
+```
+
+**Apply retention policy**:
+
+```typescript
+import { applyRetentionPolicy } from "./scripts/lib/report-storage";
+
+const deleted = await applyRetentionPolicy("ptr-stats", {
+  maxAgeDays: 30,
+  minReportsToKeep: 10
+});
+console.log(`Cleaned up ${deleted} old reports`);
+```
+
+### Future Enhancements
+
+Potential improvements for report storage infrastructure:
+
+- **External Storage**: Consider GitHub Artifacts API or external storage for long-term archives
+- **Aggregated Reports**: Weekly/monthly summary reports with trend statistics
+- **Visualization**: Generate charts and graphs from historical data
+- **Alerting Thresholds**: Configurable alert rules based on historical baselines
+- **Performance Dashboards**: Real-time dashboards showing key metrics over time
+
 ## Screeps Spawn Monitor (`screeps-spawn-monitor.yml`)
 
 - Trigger: Manual dispatch or pushes to `main`.
@@ -297,13 +856,25 @@ Quality checks are split into separate guard workflows for better granularity an
 - Trigger: Failed runs of any workflow except `Copilot CI AutoFix` itself (to prevent infinite loops).
 - Behaviour: Copilot downloads the failing logs, analyzes the workflow context (PR vs non-PR trigger), clones the affected branch, applies the fix with changelog/docs/tests updates, and pushes the result based on context-aware decision logic.
 - Context Awareness: The workflow passes `TRIGGER_EVENT` and event payload to enable intelligent decision-making about fix application strategy.
+- Timeout & Logging: Configured with 45-minute timeout and verbose logging enabled for comprehensive debugging and performance monitoring.
+- **Enhanced Failure Classification**: Autofix now categorizes failures into specific types (linting, formatting, compilation, dependency, documentation, version sync) with specialized fix strategies for each category.
+- **Improved Error Context Gathering**: Downloads full logs, extracts error indicators with surrounding context, identifies affected files, and checks for related failures across recent workflow runs.
+- **Specialized Fix Strategies**:
+  - **Linting Failures**: Auto-runs `bun run lint:fix` for ESLint/YAML violations
+  - **Formatting Failures**: Auto-runs `bun run format:write` for Prettier inconsistencies
+  - **Version Index Sync**: Auto-runs `bun run versions:update` for changelog misalignment
+  - **Simple Compilation Errors**: Fixes missing imports, typos, and type mismatches
+  - **Documentation Failures**: Fixes broken links and outdated examples
+  - **Dependency Conflicts**: Updates lockfiles and resolves version incompatibilities
+- **Manual Review Escalation**: Complex failures (test logic errors, security issues, performance regressions, workflow config errors) automatically create issues with `help-wanted` and `state/pending` labels instead of attempting risky automatic fixes.
 - Fix Application Strategy:
   - **PR-triggered failures**: Commits directly to the PR branch for fast iteration
   - **Main branch failures**: Creates new PR (`copilot/autofix-{run_id}`) to avoid direct commits to protected branches
   - **Feature branch failures**: Commits directly to the feature branch
   - **Scheduled/manual triggers**: Creates new PR for review and validation
 - Branch Protection: Never pushes directly to `main` or production branches - always creates a PR to maintain audit trail and review process.
-- Action Enforcement: Mandatory root cause analysis, minimal targeted fixes with validation, explicit criteria for fix appropriateness, and comprehensive failure handling for complex issues.
+- **Output Metrics**: JSON output includes failure_type, fix_strategy, validation_commands, and files_changed for performance tracking and improvement analysis.
+- Action Enforcement: Mandatory root cause analysis, failure classification, minimal targeted fixes with validation, explicit criteria for fix appropriateness, and comprehensive failure handling for complex issues.
 
 Keep this file accurate—workflows load these expectations via the Copilot CLI when planning fixes.
 
@@ -438,3 +1009,241 @@ See `AGENTS.md` for detailed MCP server capabilities and best practices.
 ### Local workflow validation
 
 Run `bun run test:actions` to execute linting, formatting checks, and dry-run the key workflows (`quality-gate`, `post-merge-release`, `deploy`, `docs-pages`, `copilot-email-triage`) using the `act` CLI. Populate placeholder secrets in `tests/actions/secrets.env` before invoking the command.
+
+## Phase 3: Economy Expansion Automation
+
+The repository includes comprehensive automation for Phase 3 economy expansion features (RCL 3-5), supporting remote harvesting, improved base planning, road automation, and intelligent defense.
+
+### Remote Harvesting and Mapping
+
+**ScoutManager** (`src/runtime/scouting/ScoutManager.ts`) discovers and maps remote rooms for resource extraction:
+
+- **Room Intelligence**: Collects data on sources, minerals, ownership, hostiles, and Source Keepers
+- **Memory Persistence**: Stores room data in `Memory.scout` with configurable lifetime (default: 10,000 ticks)
+- **Target Selection**: Ranks rooms by path distance, source count, and safety for optimal remote mining
+- **Data Cleanup**: Automatically removes stale data to prevent memory bloat
+- **Corruption Recovery**: Handles memory loss/corruption gracefully without crashes
+
+**Key Features**:
+
+- Discovers source locations, mineral types, and hostile presence
+- Filters out owned, Source Keeper, and hostile rooms automatically
+- Updates path distances for route optimization
+- Supports re-scouting for data freshness
+
+**Documentation**: [Remote Harvesting Guide](../runtime/strategy/remote-harvesting.md)
+
+### Construction and Base Planning
+
+**BasePlanner** (`src/runtime/planning/BasePlanner.ts`) manages automatic structure placement with bunker/stamp layouts:
+
+- **RCL Progression**: Supports RCL 2-5 with extension, tower, storage, and link placement
+- **Bunker Layout**: Compact radial pattern centered on spawn for efficient energy distribution
+- **Smart Placement**: Avoids walls using distance transform algorithm
+- **RCL-Based Queuing**: Automatically unlocks new structures as controller levels up
+
+**Layout Coverage (RCL 2-5)**:
+
+- RCL 2: 5 extensions, 1 container
+- RCL 3: 10 extensions, 1 tower
+- RCL 4: 20 extensions, 1 storage
+- RCL 5: 30 extensions, 2 towers, 2 links
+
+**ConstructionManager** (`src/runtime/planning/ConstructionManager.ts`) creates construction sites automatically based on planner output.
+
+### Road and Building Automation
+
+**RoadPlanner** (`src/runtime/infrastructure/RoadPlanner.ts`) automates road placement using pathfinding results:
+
+- **Path-Based Planning**: Uses room.findPath() to determine optimal road positions
+- **Auto-Placement**: Connects sources to spawns and controllers automatically
+- **Deduplication**: Prevents duplicate roads on overlapping paths
+- **Terrain Awareness**: Skips wall tiles automatically
+- **Throttling**: Limits construction sites per tick to manage CPU (default: 1 per tick)
+
+**Road Types**:
+
+- Source roads: Connect energy sources to spawns
+- Controller roads: Connect sources to controller for upgrading efficiency
+- Auto-mode: Combines both types with deduplication
+
+**Usage**:
+
+```typescript
+const roadPlanner = new RoadPlanner();
+const result = roadPlanner.autoPlaceRoads(room, Game);
+console.log(`Created ${result.created} road sites`);
+```
+
+### Improved Defense
+
+**TowerManager** (`src/runtime/defense/TowerManager.ts`) implements threat-based targeting with intelligent prioritization:
+
+- **Threat Assessment**: Evaluates hostiles based on attack/heal parts, distance, and health
+- **Priority System**:
+  1. Attack hostiles (healers prioritized first)
+  2. Heal damaged friendlies
+  3. Repair critical structures (<30% health)
+- **Smart Targeting**: Focuses fire on wounded enemies for faster kills
+- **Multi-Tower Coordination**: All towers target highest-threat hostile
+
+**Threat Scoring**:
+
+- +100 per attack part (ATTACK, RANGED_ATTACK, WORK)
+- +150 per heal part (high priority - can sustain other hostiles)
+- +50 for proximity (closer = more dangerous)
+- +50 for wounded enemies (<50% health, easier to kill)
+
+**Actions Tracked**:
+
+- `attack`: Hostile creeps attacked
+- `heal`: Friendly creeps healed
+- `repair`: Structures repaired
+
+**Documentation**: All Phase 3 features include comprehensive test coverage (unit + regression tests) and are documented in the appropriate guides.
+
+## Advanced Economy Automation (Phase 4)
+
+### Link Network Management
+
+The LinkManager automates energy distribution through link networks:
+
+- **Role Classification**: Automatically identifies links as source, storage, controller, or upgrade links based on proximity to game objects
+- **Energy Transfer**: Source links automatically transfer energy when full to controller/storage links with free capacity
+- **Priority System**: Controller links receive energy first, followed by storage links
+- **Network Tracking**: Maintains link metadata and transfer history for optimization
+
+### Terminal Operations
+
+The TerminalManager handles inter-room resource logistics:
+
+- **Energy Balancing**: Maintains minimum energy reserve (default 20,000) in terminals
+- **Resource Transfers**: Priority-based queue for inter-room resource requests
+- **Cooldown Management**: Waits for terminal cooldown before executing transfers
+- **Request Cleanup**: Automatically removes old requests (>1000 ticks)
+
+### Lab Automation
+
+The LabManager coordinates compound production and creep boosting:
+
+- **Production Mode**: Automatically produces compounds using input/output lab configuration
+- **Boosting Mode**: Priority system for creep boosting requests
+- **State Management**: Tracks lab states (idle, production, boosting, cooldown)
+- **Recipe System**: Built-in recipes for Tier 1 compounds (UH, UO, KH, KO, LH, LO, ZH, ZO, GH, GO)
+
+### Factory Automation
+
+The FactoryManager handles commodity production:
+
+- **Production Queue**: Priority-based orders for commodity production
+- **Auto-Production**: Automatically produces batteries when idle
+- **Resource Validation**: Checks factory has required components before production
+- **Order Management**: Removes completed orders and cleans up old orders (>5000 ticks)
+
+### Combat Coordination
+
+The CombatManager provides squad-based combat operations:
+
+- **Squad Formation**: Create and manage squads with offense/defense/raid roles
+- **Threat Assessment**: Identifies hostile creeps and structures with threat scoring
+- **Engagement Logic**: Commands squads to engage targets by priority
+- **Squad Lifecycle**: Automatically disbands squads when all members die
+
+### Traffic Management
+
+The TrafficManager coordinates creep movement with collision avoidance:
+
+- **Priority Movement**: Higher priority creeps get path preference
+- **Collision Detection**: Detects and resolves creep blocking situations
+- **Position Reservation**: Reserves positions for high-priority creeps
+- **Swap Logic**: Requests blocking creeps to move for higher priority traffic
+
+## Phase 5: Performance Optimizations and Error Handling
+
+### Profiling and CPU Optimization
+
+All runtime managers use the `@profile` decorator for automated CPU profiling:
+
+- **Automatic Profiling**: The profiler tracks CPU usage for all decorated methods
+- **Auto-Start Collection**: Profiler automatically begins data collection on first tick after deployment
+- **Performance Monitoring**: Detailed breakdown of CPU costs per manager and method
+- **Health Validation**: Automated health checks in monitoring workflow (`check-profiler-health.ts`)
+- **Zero-Cost in Production**: Profiling can be disabled via `PROFILER_ENABLED=false`
+- **Build Integration**: Profiler is conditionally included based on environment variable
+
+**Implementation:** [`src/profiler/Profiler.ts`](../../src/profiler/Profiler.ts)
+
+**Monitoring:**
+
+- Profiler data fetched automatically every 30 minutes via `fetch-profiler-console.ts`
+- Health checks validate data availability and freshness
+- Reports saved to `reports/profiler/latest.json`
+- See [Profiler Usage Guide](../operations/profiler-usage.md) for detailed documentation
+
+### Memory Efficiency
+
+Memory optimization strategies across the codebase:
+
+- **Batch Processing**: AnalyticsReporter batches reports to reduce memory overhead
+- **Queue Management**: Automatic cleanup of old data (e.g., shard messages >1000 ticks)
+- **Lazy Loading**: Managers only load state from Memory when configured
+- **State Persistence**: Explicit save operations prevent unnecessary memory writes
+
+### Error Handling and Recovery
+
+Comprehensive error handling across all managers:
+
+- **Graceful Degradation**: Managers continue operating when non-critical operations fail
+- **Logging**: All errors logged with context via Logger utility
+- **Recovery Patterns**: Failed operations re-queued with limits to prevent unbounded growth
+- **Validation**: Input validation prevents invalid state from propagating
+
+**Example from AnalyticsReporter:**
+
+```typescript
+try {
+  await this.sendReports(reports);
+  this.logger.log(`Successfully sent ${reports.length} reports`);
+} catch (error) {
+  const errorMsg = error instanceof Error ? error.message : String(error);
+  this.logger.error(`Failed to send reports: ${errorMsg}`);
+  // Re-queue with limit
+  if (this.reportQueue.length < this.batchSize * 2) {
+    this.reportQueue.push(...reports);
+  }
+}
+```
+
+### Testing Coverage
+
+Comprehensive test coverage for error scenarios:
+
+- **Unit Tests**: Error handling tested with invalid inputs and edge cases
+- **Regression Tests**: High-volume scenarios validate memory and performance
+- **Integration Tests**: End-to-end testing with StatsCollector integration
+- **Coverage Metrics**: 80%+ coverage for new Phase 5 implementations
+
+### Best Practices
+
+1. **Use the profiler**: Always decorate manager classes with `@profile`
+2. **Handle errors**: Catch and log errors, never let them crash the kernel
+3. **Validate inputs**: Check parameters before expensive operations
+4. **Limit growth**: Prevent unbounded queue/array growth with explicit limits
+5. **Log context**: Include relevant context in log messages for debugging
+6. **Test errors**: Write tests for error paths and recovery scenarios
+
+### Performance Metrics
+
+**Colony Manager:**
+
+- Room tracking: <1ms for 10 rooms
+- Message processing: <10ms for 100 messages
+- Expansion evaluation: <5ms per check
+
+**Analytics Reporter:**
+
+- Queue insertion: <0.1ms per report
+- Batch flush: <50ms for 100 reports
+- High-volume: 1000 reports in <200ms
+
+See test suites for detailed performance benchmarks.

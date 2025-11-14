@@ -60,11 +60,11 @@ Sends notifications for:
 - **Success:** Version deployed successfully (Priority 3)
 - **Failure:** Deployment failed, immediate attention required (Priority 5)
 
-### Quality Gate Workflow (quality-gate.yml)
+### Guard Workflows (guard-\*.yml)
 
-Sends notifications for:
+Individual guard workflows can send notifications for:
 
-- **Failure:** PR build failed, review required (Priority 4)
+- **Failure:** Specific check failed (e.g., build, lint, tests), review required (Priority 4)
 
 ### Screeps Monitoring Workflow (screeps-monitoring.yml)
 

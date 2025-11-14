@@ -435,33 +435,45 @@ console.log(`Improvement: ${improvement.toFixed(1)}%`);
 
 ### Pre-Merge Validation
 
-**GitHub Actions Workflow** (`.github/workflows/quality-gate.yml`):
+**GitHub Actions Guard Workflows** (`.github/workflows/guard-*.yml`):
+
+Individual guard workflows validate different aspects of PRs:
 
 ```yaml
-- name: Run unit tests
+# guard-test-unit.yml
+- name: Unit tests
   run: bun run test:unit
 
-- name: Run e2e tests
+# guard-test-e2e.yml
+- name: E2E tests
   run: bun run test:e2e
 
+# guard-coverage.yml
 - name: Check test coverage
   run: bun run test:coverage
 
-- name: Verify coverage threshold
-  run: |
-    coverage=$(jq '.total.statements.pct' coverage/coverage-summary.json)
-    if [ "$coverage" -lt 85 ]; then
-      echo "Coverage below 85%: $coverage%"
-      exit 1
-    fi
+# guard-build.yml
+- name: Build AI
+  run: bun run build
+
+# guard-lint.yml
+- name: Lint
+  run: bun run lint
+
+# guard-format.yml
+- name: Format check
+  run: bun run format:check
 ```
 
 **Quality Gates**:
 
-- All tests must pass
-- Coverage ≥85%
-- No linting errors
+Results are aggregated by `quality-gate-summary.yml`:
+
+- All tests must pass (unit, e2e, regression)
 - Build succeeds
+- No linting errors
+- Code is properly formatted
+- YAML syntax is valid
 
 ### Post-Merge Validation
 
