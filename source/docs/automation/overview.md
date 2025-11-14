@@ -1,3 +1,9 @@
+---
+title: Automation Overview
+date: 2025-11-14T09:00:00.000Z
+layout: page
+---
+
 # Automation Overview
 
 This document expands on the workflows under `.github/workflows/` and how they combine with the Copilot CLI.

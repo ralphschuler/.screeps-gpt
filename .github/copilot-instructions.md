@@ -162,7 +162,7 @@ bun run deploy             # Deploy to Screeps (requires secrets)
 
 This repository has extensive GitHub Actions automation. Key workflows:
 
-- **guard-* workflows** - Modular PR validation (guard-build.yml, guard-lint.yml, guard-format.yml, guard-test-unit.yml, etc.)
+- **guard-\* workflows** - Modular PR validation (guard-build.yml, guard-lint.yml, guard-format.yml, guard-test-unit.yml, etc.)
 - **quality-gate-summary.yml** - Aggregates guard workflow results for PR validation
 - **post-merge-release.yml** - Auto-versioning and tagging
 - **deploy.yml** - Screeps deployment on version tags

@@ -60,7 +60,7 @@ Sends notifications for:
 - **Success:** Version deployed successfully (Priority 3)
 - **Failure:** Deployment failed, immediate attention required (Priority 5)
 
-### Guard Workflows (guard-*.yml)
+### Guard Workflows (guard-\*.yml)
 
 Individual guard workflows can send notifications for:
 

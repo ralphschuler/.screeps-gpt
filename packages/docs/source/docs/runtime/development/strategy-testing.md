@@ -444,7 +444,7 @@ Individual guard workflows validate different aspects of PRs:
 - name: Unit tests
   run: bun run test:unit
 
-# guard-test-e2e.yml  
+# guard-test-e2e.yml
 - name: E2E tests
   run: bun run test:e2e
 

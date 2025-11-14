@@ -1,3 +1,9 @@
+---
+title: Push Notification System
+date: 2025-11-14T09:00:00.000Z
+layout: page
+---
+
 # Push Notification System
 
 The repository implements push notifications using [Push by Techulus](https://push.techulus.com) to provide real-time alerts for critical repository and Screeps bot events.
@@ -60,7 +66,7 @@ Sends notifications for:
 - **Success:** Version deployed successfully (Priority 3)
 - **Failure:** Deployment failed, immediate attention required (Priority 5)
 
-### Guard Workflows (guard-*.yml)
+### Guard Workflows (guard-\*.yml)
 
 Individual guard workflows can send notifications for:
 
