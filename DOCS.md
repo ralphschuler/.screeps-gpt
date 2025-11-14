@@ -48,26 +48,28 @@ The repository replaces previous Codex integrations with the [GitHub Copilot CLI
 
 Use the following material to deepen your Screeps expertise and tooling knowledge:
 
+- **Internal References**:
+  - [Competitive Screeps Bot Development Guide](docs/reference/screeps-competitive-guide.md) - Comprehensive strategic reference covering game mechanics, optimization techniques, and competitive play patterns
 - Official Screeps Documentation: [Game Guide](https://docs.screeps.com/index.html) · [API Reference](https://docs.screeps.com/api/)
 - Type Definitions & Tooling:
-- [`@types/screeps`](https://www.npmjs.com/package/@types/screeps)
-- [`@types/screeps-profiler`](https://www.npmjs.com/package/@types/screeps-profiler)
-- [`screeps-typescript-starter` guide](https://screepers.gitbook.io/screeps-typescript-starter/)
+  - [`@types/screeps`](https://www.npmjs.com/package/@types/screeps)
+  - [`@types/screeps-profiler`](https://www.npmjs.com/package/@types/screeps-profiler)
+  - [`screeps-typescript-starter` guide](https://screepers.gitbook.io/screeps-typescript-starter/)
 - Build & Deployment Utilities:
-- [`rollup-plugin-screeps`](https://www.npmjs.com/package/rollup-plugin-screeps)
-- [`screeps-api`](https://www.npmjs.com/package/screeps-api) (used by our deployment script)
-- [`screeps-multimeter`](https://www.npmjs.com/package/screeps-multimeter)
+  - [`rollup-plugin-screeps`](https://www.npmjs.com/package/rollup-plugin-screeps)
+  - [`screeps-api`](https://www.npmjs.com/package/screeps-api) (used by our deployment script)
+  - [`screeps-multimeter`](https://www.npmjs.com/package/screeps-multimeter)
 - Runtime Enhancements:
-- [`screeps-movement`](https://www.npmjs.com/package/screeps-movement)
-- [`screeps-profiler`](https://www.npmjs.com/package/screeps-profiler)
-- [`screeps-calculator`](https://www.npmjs.com/package/screeps-calculator)
-- [`screeps-cartographer`](https://www.npmjs.com/package/screeps-cartographer)
-- [`screeps-viz`](https://www.npmjs.com/package/screeps-viz)
-- [`screeps-pathfinding`](https://www.npmjs.com/package/screeps-pathfinding)
-- [`screeps-lru-cache`](https://www.npmjs.com/package/screeps-lru-cache)
-- [`screeps-cache`](https://www.npmjs.com/package/screeps-cache)
-- [`screeps-stats`](https://www.npmjs.com/package/screeps-stats)
-- [`screeps-spawn`](https://www.npmjs.com/package/screeps-spawn)
+  - [`screeps-movement`](https://www.npmjs.com/package/screeps-movement)
+  - [`screeps-profiler`](https://www.npmjs.com/package/screeps-profiler)
+  - [`screeps-calculator`](https://www.npmjs.com/package/screeps-calculator)
+  - [`screeps-cartographer`](https://www.npmjs.com/package/screeps-cartographer)
+  - [`screeps-viz`](https://www.npmjs.com/package/screeps-viz)
+  - [`screeps-pathfinding`](https://www.npmjs.com/package/screeps-pathfinding)
+  - [`screeps-lru-cache`](https://www.npmjs.com/package/screeps-lru-cache)
+  - [`screeps-cache`](https://www.npmjs.com/package/screeps-cache)
+  - [`screeps-stats`](https://www.npmjs.com/package/screeps-stats)
+  - [`screeps-spawn`](https://www.npmjs.com/package/screeps-spawn)
 
 For architectural inspiration and large-scale automation patterns, explore the open-source [Screeps Quorum](https://github.com/ScreepsQuorum/screeps-quorum) project. Many of its patterns (task queues, modular role controllers, etc.) can inform incremental improvements in this repository.
 

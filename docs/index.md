@@ -59,6 +59,10 @@ For a complete setup guide, see the **[Getting Started Guide](getting-started.md
   - [Jon Winsley Blog Analysis](strategy/external-analysis/jon-winsley-analysis.md) - Real-world Screeps development patterns, CPU optimization, and task management insights
   - [Screeps Quorum Analysis](strategy/external-analysis/screeps-quorum-analysis.md) - Community-driven architecture and governance patterns
 
+### Reference Material
+
+- [Competitive Screeps Bot Development Guide](reference/screeps-competitive-guide.md) - Comprehensive reference covering advanced strategies, game mechanics, optimization techniques, and competitive play patterns from RCL 1 to multi-shard operations
+
 ### Operations & Monitoring
 
 - [CPU Timeout Diagnostic Runbook](operations/cpu-timeout-diagnosis.md) - Comprehensive CPU timeout diagnosis, resolution, and prevention guide
