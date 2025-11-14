@@ -1,0 +1,25 @@
+# Dockerfile.performance - Performance testing environment
+# Based on screepers/screeps-launcher with required mods for bot benchmarking
+
+FROM screepers/screeps-launcher:latest
+
+# Install additional performance testing mods
+# These mods are already configured in packages/pserver/config.yml
+# but we ensure they're available in the performance test image
+
+# Set working directory for test server
+WORKDIR /screeps
+
+# Copy performance test configuration
+COPY packages/pserver/config.yml /screeps/config.yml
+COPY packages/pserver/bots.yml /screeps/bots.yml
+
+# Expose Screeps server port
+EXPOSE 21025
+
+# Health check to ensure server is ready
+HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=5 \
+  CMD curl --fail --silent http://127.0.0.1:21025/ || exit 1
+
+# Start Screeps server
+CMD ["screeps-launcher"]

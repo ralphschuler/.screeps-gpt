@@ -1,0 +1,85 @@
+version: "3.8"
+
+services:
+  # MongoDB for Screeps server storage
+  mongo-test:
+    image: mongo:6
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongo-test-data:/data/db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'echo \"db.runCommand(\\\"ping\\\").ok\" | mongosh localhost:27017/test --quiet'"]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+  # Redis for Screeps server cache
+  redis-test:
+    image: redis:6
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-test-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      start_period: 5s
+      retries: 3
+
+  # Screeps private server for performance testing
+  screeps-test-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.performance
+    depends_on:
+      mongo-test:
+        condition: service_healthy
+      redis-test:
+        condition: service_healthy
+    environment:
+      MONGO_HOST: mongo-test
+      MONGO_URI: mongodb://root:password@mongo-test:27017/screeps
+      REDIS_HOST: redis-test
+      STEAM_KEY: 3549B638D775FAD046D54C82DD917330
+    ports:
+      - "21025:21025"
+    volumes:
+      - ./packages/pserver/config.yml:/screeps/config.yml
+      - ./packages/pserver/bots.yml:/screeps/bots.yml
+      - screeps-test-data:/screeps
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent http://127.0.0.1:21025/"]
+      interval: 15s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+
+  # Performance test runner
+  performance-tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    depends_on:
+      screeps-test-server:
+        condition: service_healthy
+    volumes:
+      - .:/workspace
+      - /workspace/node_modules
+    working_dir: /workspace
+    environment:
+      - NODE_ENV=test
+      - SCREEPS_SERVER=http://screeps-test-server:21025
+      - SCREEPS_TEST_USERNAME=test-user
+      - SCREEPS_TEST_PASSWORD=test-password
+    command: npm run test:performance
+
+volumes:
+  mongo-test-data:
+  redis-test-data:
+  screeps-test-data:
