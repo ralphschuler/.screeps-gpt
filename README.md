@@ -183,6 +183,7 @@ Multiple specialized Copilot agents collaborate on different aspects of developm
 - **Resilient PTR Monitoring**: Multi-source telemetry collection (Stats API + Console fallback) eliminates monitoring blackouts
 - **Autonomous Strategic Analysis**: Combined bot performance and repository health monitoring every 30 minutes
 - **30-Day Analytics**: Automated collection and visualization of bot performance metrics with interactive charts
+- **Performance Benchmarking**: Private Screeps server testing with bot-vs-bot competitive simulation
 - **Regression Testing**: Comprehensive test suites prevent quality degradation
 - **Coverage Tracking**: Ensure critical code paths remain tested
 
@@ -215,6 +216,7 @@ Multiple specialized Copilot agents collaborate on different aspects of developm
 - **[Creep Communication System](docs/runtime/creep-communication.md)** - Visual feedback and debugging
 - **[Docker Development](docs/operations/docker-guide.md)** - Containerized development guide
 - **[Deployment](docs/operations/deployment-troubleshooting.md)** - Deployment and troubleshooting
+- **[Performance Testing](docs/testing/private-server.md)** - Bot benchmarking with private Screeps server
 
 ### 📊 Monitoring & Operations
 
