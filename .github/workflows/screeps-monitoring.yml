@@ -66,6 +66,14 @@ jobs:
             be available)"
         continue-on-error: true
 
+      - name: Generate analytics data from snapshots
+        id: generate_analytics
+        if: success() && steps.collect_snapshot.outcome == 'success'
+        run: |
+          npx tsx packages/utilities/scripts/generate-analytics.ts || \
+            echo "::warning::Analytics generation failed (no snapshots yet)"
+        continue-on-error: true
+
       - name: Fetch profiler data from console
         if: always()
         env:
@@ -128,6 +136,7 @@ jobs:
             reports/bot-snapshots/*.json
             reports/monitoring/health.json
             reports/monitoring/health-check-latest.json
+            source/docs/analytics/data.json
           retention-days: 30
 
       - name: Commit bot snapshots and health state
@@ -141,6 +150,11 @@ jobs:
           if [ -d "reports/bot-snapshots" ] && \
             [ "$(ls -A reports/bot-snapshots/*.json 2>/dev/null)" ]; then
             git add reports/bot-snapshots/
+          fi
+
+          # Add analytics data if generated
+          if [ -f "source/docs/analytics/data.json" ]; then
+            git add source/docs/analytics/data.json
           fi
 
           # Add health monitoring state

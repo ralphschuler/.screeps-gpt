@@ -203,3 +203,98 @@ The script automatically creates a failure snapshot when the API is unavailable,
 - Alert severity determination
 
 See [PTR Infrastructure Failures Guide](./ptr-infrastructure-failures.md) for detailed troubleshooting and escalation procedures.
+
+## Bot State Snapshots and Analytics
+
+### Overview
+
+The monitoring system automatically collects and archives bot state snapshots, generating a 30-day analytics dashboard for performance visualization.
+
+### Snapshot Collection
+
+**Script:** [`packages/utilities/scripts/collect-bot-snapshot.ts`](../../packages/utilities/scripts/collect-bot-snapshot.ts)
+
+Every 30 minutes, the monitoring workflow captures a snapshot of bot state including:
+
+- **CPU Metrics**: Used CPU, limit, and bucket level
+- **Room Statistics**: RCL, energy availability, controller progress
+- **Creep Data**: Total count and breakdown by role
+- **Spawn Status**: Active spawns and spawn queue
+
+**Storage:**
+
+- Location: `reports/bot-snapshots/`
+- Naming: `snapshot-YYYY-MM-DD.json` (one per day)
+- Retention: Last 30 snapshots (automatically cleaned up)
+
+### Analytics Generation
+
+**Script:** [`packages/utilities/scripts/generate-analytics.ts`](../../packages/utilities/scripts/generate-analytics.ts)
+
+After each snapshot collection, the system aggregates all snapshots into analytics data:
+
+**Workflow Integration:**
+
+1. Collect snapshot (`collect-bot-snapshot.ts`)
+2. Generate analytics (`generate-analytics.ts`)
+3. Commit both snapshot and analytics data to repository
+
+**Output:**
+
+- Location: `source/docs/analytics/data.json`
+- Format: JSON with time series data points
+- Metrics: CPU usage, CPU bucket, creep count, room count, average RCL, total energy
+
+### Visualization
+
+**Page:** [Bot Analytics](https://nyphon.de/.screeps-gpt/docs/analytics.html)
+
+The analytics page provides interactive charts powered by Chart.js:
+
+- **CPU Usage Chart**: Line chart showing CPU consumption over time
+- **CPU Bucket Chart**: Tracks CPU bucket level for burst capacity monitoring
+- **Creep Count Chart**: Bar chart displaying creep population
+- **Room Statistics Chart**: Dual-axis chart with room count and average RCL
+
+**Features:**
+
+- Automatically updates when docs site is published
+- Gracefully handles missing data (shows informative messages)
+- Responsive design with clear visual legends
+- 30-day historical view
+
+### Data Flow
+
+```
+Monitoring Workflow (every 30 min)
+  ↓
+Collect Bot Snapshot
+  ↓
+Generate Analytics Data
+  ↓
+Commit to Repository [skip ci]
+  ↓
+Docs Publishing (on push to main)
+  ↓
+Analytics Visualization (GitHub Pages)
+```
+
+### Testing
+
+The snapshot and analytics system includes comprehensive test coverage:
+
+**Test File:** [`tests/unit/bot-snapshots.test.ts`](../../tests/unit/bot-snapshots.test.ts)
+
+Tests validate:
+
+- Snapshot file creation with date-based naming
+- Data extraction from Screeps stats (CPU, rooms, creeps)
+- 30-day snapshot retention and cleanup
+- Empty stats handling (graceful degradation)
+- Analytics data aggregation and formatting
+
+Run tests with:
+
+```bash
+bun run test:unit tests/unit/bot-snapshots.test.ts
+```
