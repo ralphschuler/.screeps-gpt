@@ -1,0 +1,4 @@
+npx lint-staged
+npm run test:unit
+npm run test:regression
+npm run test:coverage
