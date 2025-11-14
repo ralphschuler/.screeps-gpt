@@ -11,7 +11,7 @@ services:
       - mongo-test-data:/data/db
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "sh", "-c", 'echo ''db.runCommand("ping").ok'' | mongosh localhost:27017/test --quiet']
+      test: ["CMD-SHELL", "sh -c 'echo \"db.runCommand(\\\"ping\\\").ok\" | mongosh localhost:27017/test --quiet'"]
       interval: 10s
       timeout: 5s
       start_period: 10s
@@ -54,7 +54,7 @@ services:
       - screeps-test-data:/screeps
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "curl", "--fail", "--silent", "http://127.0.0.1:21025/"]
+      test: ["CMD-SHELL", "curl --fail --silent http://127.0.0.1:21025/"]
       interval: 15s
       timeout: 5s
       start_period: 60s

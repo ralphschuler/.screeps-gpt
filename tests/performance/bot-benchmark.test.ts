@@ -140,7 +140,7 @@ describe("Bot Performance Benchmark", () => {
     const baseline: BaselineMetrics = JSON.parse(fs.readFileSync(BASELINE_PATH, "utf-8"));
 
     // Collect current performance metrics
-    const metrics = await collectPerformanceMetrics(api, testConfig.username);
+    const metrics = await collectPerformanceMetrics(api);
 
     // Compare key metrics
     expect(metrics.avgCPU).toBeLessThanOrEqual(baseline.avgCPU * 1.1); // Allow 10% degradation
@@ -224,7 +224,7 @@ async function simulateUntilCompletion(
 /**
  * Collect performance metrics from current game state
  */
-async function collectPerformanceMetrics(api: ScreepsAPI, username: string): Promise<PerformanceMetrics> {
+async function collectPerformanceMetrics(api: ScreepsAPI): Promise<PerformanceMetrics> {
   const packageJson = JSON.parse(fs.readFileSync(path.join(process.cwd(), "package.json"), "utf-8"));
 
   // Gather metrics from API
@@ -244,6 +244,11 @@ async function collectPerformanceMetrics(api: ScreepsAPI, username: string): Pro
 
 /**
  * Check current game state for simulation progress
+ *
+ * @warning This is a placeholder implementation that returns hardcoded values.
+ * In a real implementation, this would query the Screeps API to get actual game state.
+ * The simulation loop in simulateUntilCompletion will not function correctly until
+ * this is implemented with actual API queries.
  */
 async function checkGameState(api: ScreepsAPI): Promise<{
   time: number;
@@ -252,8 +257,8 @@ async function checkGameState(api: ScreepsAPI): Promise<{
   spawnCount: number;
   creepCount: number;
 }> {
-  // Query game state via console or memory API
-  // This is a simplified implementation
+  // TODO: Query game state via console or memory API
+  // Placeholder implementation - replace with actual API queries
   return {
     time: 100, // Current game tick
     cpu: 10.5,

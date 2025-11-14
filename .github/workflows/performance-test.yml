@@ -5,7 +5,6 @@ on:
     branches: [main]
     paths:
       - "packages/bot/src/runtime/**"
-      - "packages/bot/src/ai/**"
       - "tests/performance/**"
       - ".github/workflows/performance-test.yml"
   workflow_dispatch:
@@ -101,7 +100,7 @@ jobs:
           - Redis for caching
           - Bot opponents deployed via screepsmod-bots
           
-          Tests are currently marked as \`.skip()\` and require manual server setup.
+          Tests are currently marked as .skip() and require manual server setup.
           Future work will enable full CI integration with automated bot deployment.
           
           ### Next Steps
