@@ -29,6 +29,7 @@ globals.ERR_NOT_IN_RANGE = -9;
 globals.ERR_NO_PATH = -2;
 globals.ERR_RCL_NOT_ENOUGH = -14;
 globals.TERRAIN_MASK_WALL = 1;
+globals.TERRAIN_MASK_SWAMP = 2;
 globals.FIND_SOURCES = 105;
 globals.FIND_SOURCES_ACTIVE = 1;
 globals.FIND_MINERALS = 106;
