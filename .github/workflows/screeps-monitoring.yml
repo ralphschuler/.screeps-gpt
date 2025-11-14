@@ -195,6 +195,3 @@ jobs:
                 have caused conflicts)"
             fi
           fi
-          else
-            echo "No snapshot files found to commit"
-          fi
