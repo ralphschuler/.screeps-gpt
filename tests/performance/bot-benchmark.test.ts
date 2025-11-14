@@ -66,7 +66,7 @@ describe("Bot Performance Benchmark", () => {
         console.warn("   Skipping performance tests (requires docker-compose.test.yml)");
         return;
       }
-    } catch (error) {
+    } catch (_error) {
       console.warn("⚠️  Screeps test server not reachable, skipping performance tests");
       return;
     }
@@ -82,7 +82,7 @@ describe("Bot Performance Benchmark", () => {
     // Authenticate (or create user if doesn't exist)
     try {
       await api.auth(testConfig.username, testConfig.password);
-    } catch (error) {
+    } catch (_error) {
       console.log("Creating test user...");
       // User creation would need admin API access
       // This is a placeholder - actual implementation depends on server setup
@@ -224,7 +224,7 @@ async function simulateUntilCompletion(
 /**
  * Collect performance metrics from current game state
  */
-async function collectPerformanceMetrics(api: ScreepsAPI): Promise<PerformanceMetrics> {
+async function collectPerformanceMetrics(_api: ScreepsAPI): Promise<PerformanceMetrics> {
   const packageJson = JSON.parse(fs.readFileSync(path.join(process.cwd(), "package.json"), "utf-8"));
 
   // Gather metrics from API
@@ -250,7 +250,7 @@ async function collectPerformanceMetrics(api: ScreepsAPI): Promise<PerformanceMe
  * The simulation loop in simulateUntilCompletion will not function correctly until
  * this is implemented with actual API queries.
  */
-async function checkGameState(api: ScreepsAPI): Promise<{
+async function checkGameState(_api: ScreepsAPI): Promise<{
   time: number;
   cpu?: number;
   controllerLevel: number;
