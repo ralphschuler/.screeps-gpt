@@ -5,6 +5,18 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Added
+
+- **Overmind Architecture Research**: Comprehensive analysis of Overmind bot patterns for potential integration
+  - Created research documentation in `docs/research/overmind-analysis.md`
+  - Identified 12 key architectural patterns with compatibility assessments
+  - Documented quick wins: Task Persistence, Decorator-Based Caching, Directive System
+  - Prioritized implementation roadmap with complexity and value estimates
+  - Linked patterns to existing issues (#478, #487, #494, #392, #426, #493, #607, #614)
+  - Added recommendations to TASKS.md for phased implementation
+  - Total of 10 prioritized patterns spanning Phases 2-5
+  - Focused on high-value areas: CPU optimization, task management, multi-room scaling
+
 ## [0.80.0] - 2025-11-15
 
 ### Fixed

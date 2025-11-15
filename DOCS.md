@@ -50,6 +50,7 @@ Use the following material to deepen your Screeps expertise and tooling knowledg
 
 - **Internal References**:
   - [Competitive Screeps Bot Development Guide](docs/reference/screeps-competitive-guide.md) - Comprehensive strategic reference covering game mechanics, optimization techniques, and competitive play patterns
+  - [Overmind Architecture Analysis](docs/research/overmind-analysis.md) - Research on Overmind bot patterns for integration (Task persistence, CPU optimization, multi-room scaling)
 - Official Screeps Documentation: [Game Guide](https://docs.screeps.com/index.html) · [API Reference](https://docs.screeps.com/api/)
 - Type Definitions & Tooling:
   - [`@types/screeps`](https://www.npmjs.com/package/@types/screeps)
