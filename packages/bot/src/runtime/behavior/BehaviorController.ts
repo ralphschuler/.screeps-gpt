@@ -710,6 +710,10 @@ export class BehaviorController {
     // Get current harvester count for emergency spawn detection
     const harvesterCount = roleCounts["harvester"] ?? 0;
 
+    // Detect emergency situation: no creeps alive in any owned room
+    const totalCreeps = Object.keys(game.creeps).length;
+    const isEmergency = totalCreeps === 0;
+
     // Priority-based spawn order: harvesters first to prevent starvation
     const roleOrder: RoleName[] = [
       "harvester",
@@ -739,10 +743,15 @@ export class BehaviorController {
         continue; // No available spawns
       }
 
-      // Generate dynamic body based on available energy capacity
       const room = spawn.room as Room | undefined;
-      const energyCapacity = room?.energyCapacityAvailable ?? 300;
-      const body = this.bodyComposer.generateBody(role, energyCapacity);
+
+      // EMERGENCY MODE: Use actual available energy instead of capacity
+      // This allows spawning with whatever energy we have to bootstrap recovery
+      const energyToUse =
+        isEmergency || harvesterCount === 0 ? (room?.energyAvailable ?? 300) : (room?.energyCapacityAvailable ?? 300);
+
+      // Generate body based on energy (capacity in normal mode, available in emergency)
+      const body = this.bodyComposer.generateBody(role, energyToUse);
 
       if (body.length === 0) {
         // Not enough energy for minimum body
@@ -770,7 +779,22 @@ export class BehaviorController {
         roleCounts[role] = current + 1;
 
         // Log emergency spawn recovery
-        if (role === "harvester" && harvesterCount < 2) {
+        if (isEmergency || harvesterCount === 0) {
+          this.logger.log?.(
+            `[BehaviorController] ⚠️ EMERGENCY SPAWN: ${name} with ${body.length} parts (${spawnCost} energy) - ` +
+              `Recovering from total creep loss (${totalCreeps} creeps, ${harvesterCount} harvesters)`
+          );
+          // Display emergency visual feedback
+          if (room && typeof room.visual?.text === "function") {
+            const spawnPos = spawn.pos as { x: number; y: number } | undefined;
+            if (spawnPos) {
+              room.visual.text("⚠️ EMERGENCY", spawnPos.x, spawnPos.y - 1, {
+                color: "red",
+                font: 0.5
+              });
+            }
+          }
+        } else if (role === "harvester" && harvesterCount < 2) {
           this.logger.log?.(
             `[BehaviorController] EMERGENCY SPAWN: ${name} with ${body.length} parts (${spawnCost} energy) - ` +
               `Recovering from starvation (${harvesterCount} harvesters)`

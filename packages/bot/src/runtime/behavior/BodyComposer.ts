@@ -126,11 +126,45 @@ export class BodyComposer {
   public generateBody(role: string, energyCapacity: number): BodyPartConstant[] {
     const pattern = this.patterns[role];
     if (!pattern) {
-      // Unknown role - return minimal body
-      return energyCapacity >= 200 ? [WORK, CARRY, MOVE] : [];
+      // Unknown role - return minimal emergency body if possible
+      return this.generateEmergencyBody(energyCapacity);
     }
 
-    return this.scaleBody(pattern, energyCapacity);
+    // Try normal body generation first
+    const normalBody = this.scaleBody(pattern, energyCapacity);
+    if (normalBody.length > 0) {
+      return normalBody;
+    }
+
+    // Fallback to emergency body for critical roles in low-energy situations
+    if (role === "harvester" || role === "upgrader" || role === "builder") {
+      return this.generateEmergencyBody(energyCapacity);
+    }
+
+    return [];
+  }
+
+  /**
+   * Generate an emergency minimal body when energy is critically low.
+   * Used during bootstrap or total creep loss scenarios.
+   *
+   * @param energyAvailable - Energy currently available for spawning
+   * @returns Minimal viable body, or empty array if insufficient energy
+   */
+  public generateEmergencyBody(energyAvailable: number): BodyPartConstant[] {
+    // Minimal harvester: [WORK, CARRY, MOVE] = 200 energy
+    if (energyAvailable >= 200) {
+      return [WORK, CARRY, MOVE];
+    }
+
+    // Ultra-minimal worker: [WORK, MOVE] = 150 energy
+    // Can harvest but needs to drop resources on ground
+    if (energyAvailable >= 150) {
+      return [WORK, MOVE];
+    }
+
+    // Cannot spawn anything useful
+    return [];
   }
 
   /**
