@@ -227,7 +227,9 @@ async function establishBaselines(): Promise<void> {
 
   console.log("CPU Metrics:");
   console.log(`  Used: μ=${cpuUsedMean.toFixed(2)}, σ=${cpuUsedStdDev.toFixed(2)}, P95=${cpuUsedP95.toFixed(2)}`);
-  console.log(`  Bucket: μ=${cpuBucketMean.toFixed(2)}, σ=${cpuBucketStdDev.toFixed(2)}, trend=${cpuBucketTrend.toFixed(2)}`);
+  console.log(
+    `  Bucket: μ=${cpuBucketMean.toFixed(2)}, σ=${cpuBucketStdDev.toFixed(2)}, trend=${cpuBucketTrend.toFixed(2)}`
+  );
 
   // Extract energy metrics
   const energyTotalValues = extractValues(snapshots, s => {
@@ -250,7 +252,9 @@ async function establishBaselines(): Promise<void> {
   const energyIncomePerRoomStdDev = calculateStdDev(energyIncomePerRoomValues, energyIncomePerRoomMean);
 
   console.log("Energy Metrics:");
-  console.log(`  Total: μ=${energyTotalMean.toFixed(2)}, σ=${energyTotalStdDev.toFixed(2)}, trend=${energyTotalTrend.toFixed(2)}`);
+  console.log(
+    `  Total: μ=${energyTotalMean.toFixed(2)}, σ=${energyTotalStdDev.toFixed(2)}, trend=${energyTotalTrend.toFixed(2)}`
+  );
   console.log(`  Per Room: μ=${energyIncomePerRoomMean.toFixed(2)}, σ=${energyIncomePerRoomStdDev.toFixed(2)}`);
 
   // Extract creep metrics
@@ -309,7 +313,9 @@ async function establishBaselines(): Promise<void> {
 
   console.log("Room Metrics:");
   console.log(`  Controlled: μ=${roomCountMean.toFixed(2)}, σ=${roomCountStdDev.toFixed(2)}`);
-  console.log(`  RCL Progress: μ=${rclProgressMean.toFixed(2)}%, σ=${rclProgressStdDev.toFixed(2)}%, trend=${rclProgressTrend.toFixed(4)}`);
+  console.log(
+    `  RCL Progress: μ=${rclProgressMean.toFixed(2)}%, σ=${rclProgressStdDev.toFixed(2)}%, trend=${rclProgressTrend.toFixed(4)}`
+  );
 
   // Extract spawn metrics
   const spawnUptimeValues = extractValues(snapshots, s => {
@@ -394,7 +400,8 @@ async function establishBaselines(): Promise<void> {
       }
     },
     metadata: {
-      methodology: "Mean and standard deviation calculated from historical snapshots. Warning threshold: μ ± 2σ (95% CI). Critical threshold: μ ± 3σ (99.7% CI).",
+      methodology:
+        "Mean and standard deviation calculated from historical snapshots. Warning threshold: μ ± 2σ (95% CI). Critical threshold: μ ± 3σ (99.7% CI).",
       confidenceLevel: snapshots.length >= 48 ? "high" : "low",
       recalibrationRecommended: "Weekly or after significant code changes"
     }

@@ -1,13 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } from "node:fs";
+import { mkdirSync, rmSync, writeFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
-import { execSync } from "node:child_process";
 import type { BotSnapshot } from "../../packages/utilities/scripts/types/bot-snapshot";
 
 describe("establish-baselines", () => {
   const testSnapshotsDir = resolve("tests", "fixtures", "test-snapshots");
   const testOutputDir = resolve("tests", "fixtures", "test-output");
-  const testBaselinesPath = resolve(testOutputDir, "baselines.json");
 
   beforeEach(() => {
     // Clean up any previous test artifacts
@@ -48,10 +46,7 @@ describe("establish-baselines", () => {
         }
       };
       snapshots.push(snapshot);
-      writeFileSync(
-        resolve(testSnapshotsDir, `snapshot-2025-11-${10 + i}.json`),
-        JSON.stringify(snapshot, null, 2)
-      );
+      writeFileSync(resolve(testSnapshotsDir, `snapshot-2025-11-${10 + i}.json`), JSON.stringify(snapshot, null, 2));
     }
 
     // Run baseline calculation (note: this test validates the logic conceptually)
@@ -264,7 +259,8 @@ describe("establish-baselines", () => {
       }
     };
 
-    const uptimePercentage = snapshot.spawns!.total === 0 ? undefined : (snapshot.spawns!.active / snapshot.spawns!.total) * 100;
+    const uptimePercentage =
+      snapshot.spawns!.total === 0 ? undefined : (snapshot.spawns!.active / snapshot.spawns!.total) * 100;
 
     expect(uptimePercentage).toBeUndefined();
   });
