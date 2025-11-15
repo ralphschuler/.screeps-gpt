@@ -512,6 +512,9 @@ export class BehaviorController {
    * Calculates the optimal harvester count based on energy sources.
    * Single-source rooms need fewer harvesters than multi-source rooms.
    *
+   * Falls back to default minimum (4) if no sources detected (e.g., in test mocks
+   * or rooms without visibility).
+   *
    * @param room - The room to analyze
    * @returns Optimal harvester count for the room
    */
@@ -521,6 +524,11 @@ export class BehaviorController {
     const controller = room.controller;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const rcl = controller ? controller.level : 1;
+
+    // No sources detected - use default minimum from role definition
+    if (sourceCount === 0) {
+      return ROLE_DEFINITIONS["harvester"].minimum;
+    }
 
     // Single source rooms: 2-3 harvesters depending on RCL
     // Multi-source rooms: 1-2 harvesters per source
@@ -549,11 +557,21 @@ export class BehaviorController {
    * Checks if the room can afford to spawn a creep while maintaining energy reserves.
    * Ensures 20% energy reserve is maintained for emergencies, construction, and repairs.
    *
+   * Emergency Spawn Mode: Bypasses reserve requirement when critically low on harvesters
+   * to prevent spawn starvation deadlock (Issue #806).
+   *
    * @param room - The room to check energy reserves (must be actual Room type for energy checks)
    * @param spawnCost - Cost of the creep to spawn
+   * @param role - Role being spawned (used for emergency spawn detection)
+   * @param harvesterCount - Current harvester count (for emergency spawn detection)
    * @returns true if the room can afford the creep while maintaining reserves
    */
-  private canAffordCreepWithReserve(room: Room | undefined, spawnCost: number): boolean {
+  private canAffordCreepWithReserve(
+    room: Room | undefined,
+    spawnCost: number,
+    role: string,
+    harvesterCount: number
+  ): boolean {
     if (!room) {
       // For test mocks without room property, allow spawning
       return true;
@@ -567,6 +585,15 @@ export class BehaviorController {
     if (typeof energyAvailable !== "number" || typeof energyCapacity !== "number") {
       // For test mocks without energy properties, allow spawning if cost is affordable
       return true;
+    }
+
+    // Emergency Spawn Mode: Bypass reserve for harvesters when critically low
+    // This prevents spawn starvation deadlock where we can't spawn harvesters
+    // because of reserve requirements, but can't collect energy without harvesters
+    const isEmergencySpawn = role === "harvester" && harvesterCount < 2;
+    if (isEmergencySpawn) {
+      // In emergency mode, only check if we have enough energy for the spawn
+      return energyAvailable >= spawnCost;
     }
 
     // Calculate reserve threshold (20% of capacity, minimum 50 energy)
@@ -680,10 +707,28 @@ export class BehaviorController {
     // Detect containers near sources and adjust role minimums dynamically
     const adjustedMinimums = this.calculateDynamicRoleMinimums(game);
 
-    for (const [role, definition] of Object.entries(ROLE_DEFINITIONS)) {
+    // Get current harvester count for emergency spawn detection
+    const harvesterCount = roleCounts["harvester"] ?? 0;
+
+    // Priority-based spawn order: harvesters first to prevent starvation
+    const roleOrder: RoleName[] = [
+      "harvester",
+      "upgrader",
+      "builder",
+      "stationaryHarvester",
+      "hauler",
+      "repairer",
+      "remoteMiner",
+      "attacker",
+      "healer",
+      "dismantler"
+    ];
+
+    for (const role of roleOrder) {
+      const definition = ROLE_DEFINITIONS[role];
       const current = roleCounts[role] ?? 0;
-      const dynamicMinimum = adjustedMinimums[role as RoleName] ?? definition.minimum;
-      const targetMinimum = bootstrapMinimums[role as RoleName] ?? dynamicMinimum;
+      const dynamicMinimum = adjustedMinimums[role] ?? definition.minimum;
+      const targetMinimum = bootstrapMinimums[role] ?? dynamicMinimum;
 
       if (current >= targetMinimum) {
         continue;
@@ -711,7 +756,8 @@ export class BehaviorController {
       }
 
       // Check if we can afford the creep while maintaining energy reserves (20% buffer)
-      if (!this.canAffordCreepWithReserve(spawn.room as Room | undefined, spawnCost)) {
+      // Emergency mode bypasses reserve for harvesters when critically low
+      if (!this.canAffordCreepWithReserve(spawn.room as Room | undefined, spawnCost, role, harvesterCount)) {
         // Skip spawning to maintain emergency reserves
         continue;
       }
@@ -722,7 +768,16 @@ export class BehaviorController {
       if (result === OK) {
         spawned.push(name);
         roleCounts[role] = current + 1;
-        this.logger.log?.(`[BehaviorController] Spawned ${name} with ${body.length} parts (${spawnCost} energy)`);
+
+        // Log emergency spawn recovery
+        if (role === "harvester" && harvesterCount < 2) {
+          this.logger.log?.(
+            `[BehaviorController] EMERGENCY SPAWN: ${name} with ${body.length} parts (${spawnCost} energy) - ` +
+              `Recovering from starvation (${harvesterCount} harvesters)`
+          );
+        } else {
+          this.logger.log?.(`[BehaviorController] Spawned ${name} with ${body.length} parts (${spawnCost} energy)`);
+        }
       } else {
         this.logger.warn?.(`Failed to spawn ${role}: ${result}`);
       }

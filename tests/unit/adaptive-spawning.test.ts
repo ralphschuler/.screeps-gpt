@@ -106,7 +106,7 @@ describe("Adaptive Spawning System", () => {
   });
 
   describe("Energy Reserve Validation", () => {
-    it("should maintain 20% energy reserve when spawning", () => {
+    it("should maintain 20% energy reserve when spawning (with sufficient harvesters)", () => {
       const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
 
       const room = {
@@ -134,12 +134,14 @@ describe("Adaptive Spawning System", () => {
       };
 
       const memory = {} as Memory;
-      const roleCounts = {};
+      // Have sufficient harvesters to avoid emergency spawn mode (Issue #806)
+      const roleCounts = { harvester: 4 };
 
       controller.execute(game, memory, roleCounts);
 
       // Should not spawn if it would deplete reserves below 20% (60 energy)
       // 250 - 200 (spawn cost) = 50 < 60 (20% of 300)
+      // Emergency spawn mode is disabled with 4+ harvesters
       expect(spawn.spawnCreep).not.toHaveBeenCalled();
     });
 
@@ -179,7 +181,7 @@ describe("Adaptive Spawning System", () => {
       expect(spawn.spawnCreep).toHaveBeenCalled();
     });
 
-    it("should maintain minimum 50 energy reserve regardless of capacity", () => {
+    it("should maintain minimum 50 energy reserve regardless of capacity (with sufficient harvesters)", () => {
       const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
 
       // Small capacity room (early game)
@@ -208,12 +210,58 @@ describe("Adaptive Spawning System", () => {
       };
 
       const memory = {} as Memory;
-      const roleCounts = {};
+      // Have sufficient harvesters to avoid emergency spawn mode (Issue #806)
+      const roleCounts = { harvester: 4 };
 
       controller.execute(game, memory, roleCounts);
 
       // Should not spawn: 230 - 200 (spawn cost) = 30 < 60 (max(50, 20% of 300))
+      // Emergency spawn mode is disabled with 4+ harvesters
       expect(spawn.spawnCreep).not.toHaveBeenCalled();
+    });
+
+    it("should bypass energy reserve in emergency spawn mode (0 harvesters)", () => {
+      const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
+
+      const room = {
+        name: "W0N0",
+        controller: { my: true, level: 1 } as StructureController,
+        find: vi.fn(() => [{ id: "source1" as Id<Source>, energy: 3000 }]),
+        energyAvailable: 220, // Barely enough for harvester (200), violates 20% reserve
+        energyCapacityAvailable: 300
+      } as unknown as Room;
+
+      const spawn = {
+        name: "spawn1",
+        spawning: null,
+        spawnCreep: vi.fn().mockReturnValue(OK),
+        store: { getFreeCapacity: () => 80, getUsedCapacity: () => 220 },
+        room
+      };
+
+      const game: GameContext = {
+        time: 100,
+        cpu: { getUsed: () => 0, limit: 10, bucket: 1000 },
+        creeps: {},
+        spawns: { spawn1: spawn },
+        rooms: { W0N0: room }
+      };
+
+      const memory = {} as Memory;
+      // 0 harvesters - emergency spawn mode
+      const roleCounts = {};
+
+      controller.execute(game, memory, roleCounts);
+
+      // Should spawn despite violating energy reserve (Issue #806 fix)
+      // Emergency spawn mode bypasses reserve requirement to prevent starvation
+      expect(spawn.spawnCreep).toHaveBeenCalledWith(
+        expect.arrayContaining([WORK, CARRY, MOVE]),
+        expect.stringMatching(/^harvester-/),
+        expect.objectContaining({
+          memory: expect.objectContaining({ role: "harvester" })
+        })
+      );
     });
   });
 
