@@ -237,6 +237,7 @@ Multiple specialized Copilot agents collaborate on different aspects of developm
 - **[Task Prioritization](docs/runtime/strategy/task-prioritization.md)** - Decision-making logic
 - **[Scaling Strategies](docs/runtime/strategy/scaling-strategies.md)** - Room expansion plans
 - **[Competitive Bot Development Guide](docs/reference/screeps-competitive-guide.md)** - Advanced strategies reference covering game mechanics, optimization, and competitive play
+- **[Overmind Architecture Analysis](docs/research/overmind-analysis.md)** - Research on Overmind bot patterns for integration (Task persistence, CPU optimization, multi-room scaling)
 
 **[📚 Complete Documentation Index →](docs/index.md)**
 
