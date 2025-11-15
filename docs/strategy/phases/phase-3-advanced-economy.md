@@ -22,14 +22,14 @@ Phase 3 implements advanced economic systems required for RCL 6-8 gameplay. This
 
 ### Success Criteria
 
-| Criterion | Target | Status |
-|-----------|--------|--------|
-| Remote rooms harvested | 2+ per owned room | ✅ Framework implemented |
-| Terminal energy balance | Maintained within ±20k | ✅ Implemented |
-| Lab uptime | >80% production time | ✅ Implemented |
-| Factory uptime | >50% production time | ✅ Implemented |
-| Road coverage | All major paths | ✅ Automated |
-| Resource surplus | Sufficient for power/boost | ✅ Enabled |
+| Criterion               | Target                     | Status                   |
+| ----------------------- | -------------------------- | ------------------------ |
+| Remote rooms harvested  | 2+ per owned room          | ✅ Framework implemented |
+| Terminal energy balance | Maintained within ±20k     | ✅ Implemented           |
+| Lab uptime              | >80% production time       | ✅ Implemented           |
+| Factory uptime          | >50% production time       | ✅ Implemented           |
+| Road coverage           | All major paths            | ✅ Automated             |
+| Resource surplus        | Sufficient for power/boost | ✅ Enabled               |
 
 ## Implementation Status
 
@@ -46,6 +46,7 @@ Implemented 2024-11-06
 - ✅ Safety checks for hostile presence
 
 **Key Capabilities**:
+
 - Automatic discovery of nearby unowned rooms
 - Source reservation and tracking
 - Coordinated harvester + hauler operation
@@ -63,6 +64,7 @@ Implemented 2024-11-06
 - ✅ Terminal and storage positioning
 
 **Key Capabilities**:
+
 - RCL-appropriate structure placement
 - Efficiency-optimized layouts (minimize hauler travel)
 - Defense-oriented structure positioning
@@ -79,6 +81,7 @@ Implemented 2024-11-06
 - ✅ Maintenance tracking for damaged roads
 
 **Key Capabilities**:
+
 - Automatic road planning for high-traffic paths
 - Construction priority based on usage patterns
 - Repair tracking and automation
@@ -95,6 +98,7 @@ Implemented 2024-11-06
 - ✅ Multi-tower coordination
 
 **Key Capabilities**:
+
 - Automatic hostile detection
 - Smart target selection (focus fire on highest threats)
 - Energy-aware repair (only when energy >50%)
@@ -111,6 +115,7 @@ Implemented 2024-11-07
 - ✅ Integration with market (framework, not fully automated)
 
 **Key Capabilities**:
+
 - Automatic energy surplus detection
 - Cross-room energy balancing
 - Priority-based resource transfers
@@ -118,6 +123,7 @@ Implemented 2024-11-07
 - Market order preparation (structure in place)
 
 **Lessons Learned**:
+
 - Energy balancing crucial for multi-room scaling
 - Priority queue prevents low-value transfers from blocking critical ones
 - Configurable reserves allow room-specific optimization
@@ -133,6 +139,7 @@ Implemented 2024-11-07
 - ✅ Lab role assignment (input vs output labs)
 
 **Key Capabilities**:
+
 - Automatic lab role detection
 - Reaction planning for compound chains
 - Creep boost scheduling
@@ -140,6 +147,7 @@ Implemented 2024-11-07
 - Production queue management
 
 **Lessons Learned**:
+
 - Lab coordination significantly more complex than expected
 - Input/output lab separation simplifies reaction logic
 - Boost system enables high-efficiency operations for power creeps
@@ -155,12 +163,14 @@ Implemented 2024-11-07
 - ✅ Integration with terminal for inter-room component shipping
 
 **Key Capabilities**:
+
 - Automatic battery production (energy → battery)
 - Commodity production queue
 - Resource availability checking
 - Integration with terminal for component sourcing
 
 **Lessons Learned**:
+
 - Factory system relatively simple compared to labs
 - Battery production good default for excess energy
 - Commodity system requires careful resource planning
@@ -233,13 +243,13 @@ Phase 4 (Empire Coordination) depends on Phase 3:
 
 ### Key Performance Indicators
 
-| KPI | Target | Current Status |
-|-----|--------|----------------|
-| Remote energy income | >10/tick per remote room | ⏳ Pending validation |
+| KPI                    | Target                   | Current Status        |
+| ---------------------- | ------------------------ | --------------------- |
+| Remote energy income   | >10/tick per remote room | ⏳ Pending validation |
 | Terminal transfer rate | <1000 credits/10k energy | ⏳ Pending validation |
-| Lab production rate | 1 compound per 100 ticks | ⏳ Pending validation |
-| Factory uptime | >50% | ⏳ Pending validation |
-| Road coverage | 100% major paths | ⏳ Pending validation |
+| Lab production rate    | 1 compound per 100 ticks | ⏳ Pending validation |
+| Factory uptime         | >50%                     | ⏳ Pending validation |
+| Road coverage          | 100% major paths         | ⏳ Pending validation |
 
 ### Current Monitoring
 

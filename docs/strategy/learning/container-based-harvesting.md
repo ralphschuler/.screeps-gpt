@@ -16,18 +16,21 @@ As rooms progressed to RCL 3+, containers became available, enabling a more effi
 **Challenge**: Mobile harvesters waste CPU and energy on pathfinding and movement.
 
 Specific issues:
+
 - High CPU cost from repeated pathfinding (harvester → source → spawn → source)
 - Energy loss from MOVE parts required for mobile harvesters
 - Inefficient energy transfer (harvester carries 50 energy max, travels slowly)
 - Poor scalability (adding more mobile harvesters increases congestion and CPU cost)
 
 **Symptoms**:
+
 - CPU usage >5/tick in simple rooms
 - Low energy throughput despite multiple harvesters
 - Traffic congestion around energy sources
 - Energy surplus below target (<10/tick)
 
 **Performance Baseline** (Mobile Harvesters):
+
 - 4 mobile harvesters (300 energy each): 1200 energy investment
 - Energy throughput: ~15-20 energy/tick
 - CPU cost: ~2.5-3.5 CPU/tick (mostly pathfinding)
@@ -82,7 +85,7 @@ Key elements:
 ```typescript
 // Container detection
 const containersNearSources = room.find(FIND_STRUCTURES, {
-  filter: (s) => {
+  filter: s => {
     if (s.structureType !== STRUCTURE_CONTAINER) return false;
     const nearSource = s.pos.findInRange(FIND_SOURCES, 1).length > 0;
     return nearSource;
@@ -129,6 +132,7 @@ if (containersNearSources.length > 0) {
 - ✅ **Traffic Reduction**: Fewer creeps moving, less congestion
 
 **Performance Comparison** (Container-Based):
+
 - 2 stationary harvesters (550 energy each): 1100 energy investment
 - 2 haulers (400 energy each): 800 energy investment
 - Total investment: 1900 energy (vs 1200 mobile)
@@ -152,18 +156,21 @@ if (containersNearSources.length > 0) {
 ## Trade-offs
 
 **Benefits**:
+
 - Dramatically improved energy efficiency
 - Reduced CPU cost (less pathfinding)
 - Better scalability
 - Clearer role separation
 
 **Costs**:
+
 - Higher energy investment (1900 vs 1200 energy for similar capacity)
 - Requires containers to be operational (construction dependency)
 - More complex role management logic
 - Repairer role needed for infrastructure maintenance
 
 **Limitations**:
+
 - Requires RCL 3+ for container availability
 - Less flexible (stationary harvesters can't adapt to changing conditions)
 - Vulnerable to container destruction (single point of failure)
@@ -171,12 +178,14 @@ if (containersNearSources.length > 0) {
 ## When to Use
 
 **Appropriate Scenarios**:
+
 - ✅ RCL 3+ rooms with containers available
 - ✅ Established rooms with stable infrastructure
 - ✅ High-throughput energy requirements
 - ✅ Multiple energy sources to exploit
 
 **Indicators**:
+
 - Containers constructed near energy sources
 - CPU budget available for additional role complexity
 - Need for improved energy efficiency
@@ -185,12 +194,14 @@ if (containersNearSources.length > 0) {
 ## When to Avoid
 
 **Inappropriate Scenarios**:
+
 - ❌ RCL 1-2 rooms (no containers available)
 - ❌ Rooms under active attack (container destruction risk)
 - ❌ Temporary remote harvesting (mobile harvesters more flexible)
 - ❌ Testing/simulation where container construction skipped
 
 **Alternative Approaches**:
+
 - Mobile harvesters for early game (RCL 1-2)
 - Hybrid approach (mobile + stationary) during transition
 - Link-based energy transfer for RCL 6+ (even more efficient)
@@ -198,16 +209,19 @@ if (containersNearSources.length > 0) {
 ## Related Patterns
 
 **Builds On**:
+
 - [Bootstrap Phase Implementation](bootstrap-implementation.md) - Bootstrap establishes foundation for containers
 - Role specialization pattern (dedicated roles for specific tasks)
 - Priority-based spawning (ensures harvesters before haulers)
 
 **Enables**:
+
 - Link network optimization (stationary harvesters ideal for link energy sources)
 - Storage manager (haulers can route to storage when spawns full)
 - Road network automation (predictable hauler paths enable road optimization)
 
 **Similar Patterns**:
+
 - Mining operations pattern (specialized extractor + hauler)
 - Remote harvesting (stationary harvester + long-distance hauler)
 
@@ -254,19 +268,23 @@ if (containersNearSources.length > 0) {
 ## See Also
 
 **Code References**:
+
 - `packages/bot/src/runtime/behavior/roles/` - Role implementations (harvester, hauler, repairer)
 - `packages/bot/src/runtime/behavior/SpawnManager.ts` - Role spawning logic
 - `packages/bot/src/runtime/planning/BasePlanner.ts` - Container placement
 
 **Test Coverage**:
+
 - `tests/unit/repairer.test.ts` - 3 unit tests for repairer role
 - `tests/regression/role-adjustment.test.ts` - Dynamic role adjustment tests
 
 **Documentation**:
+
 - [Phase 1: Foundation](../phases/phase-1-foundation.md) - Phase documentation
 - [Strategic Roadmap](../roadmap.md) - Phase progression tracking
 
 **Issues & PRs**:
+
 - #667 - Original issue: Add repairer and hauler to the system with container-based automation
 - #783 - Follow-up: Container placement optimization
 - CHANGELOG v0.54.0 - Implementation details

@@ -16,12 +16,14 @@ Early implementations used fixed role minimums (e.g., 4 harvesters, 2 upgraders,
 **Challenge**: Early-game resource scarcity requires different priorities than established economy.
 
 Specific issues:
+
 - Fixed role minimums don't account for early-game energy limitations
 - Spawning too many non-harvester roles starves the economy
 - Controller downgrade risk if upgraders spawned before sufficient harvester capacity
 - No clear completion criteria for transitioning from bootstrap to normal operation
 
 **Symptoms**:
+
 - Slow RCL progression in fresh rooms
 - Energy starvation cycles (harvest → spawn builder → no energy → wait)
 - Controller downgrade warnings in early game
@@ -74,15 +76,13 @@ interface BootstrapConfig {
 
 ```typescript
 // Bootstrap activation
-if (room.controller && room.energyCapacityAvailable < 300 && 
-    room.extensions.length < 2) {
+if (room.controller && room.energyCapacityAvailable < 300 && room.extensions.length < 2) {
   // Enter bootstrap phase
   // Adjust role minimums: 6 harvesters, 1 upgrader, 0 builders
 }
 
 // Bootstrap completion
-if (room.energyCapacityAvailable >= 300 && 
-    room.extensions.length >= 2) {
+if (room.energyCapacityAvailable >= 300 && room.extensions.length >= 2) {
   // Exit bootstrap phase
   // Restore normal role minimums
 }
@@ -113,17 +113,20 @@ if (room.energyCapacityAvailable >= 300 &&
 ## Trade-offs
 
 **Benefits**:
+
 - Dramatically improved early-game stability
 - Faster RCL progression
 - Reduced controller downgrade risk
 - Clear completion criteria
 
 **Costs**:
+
 - Additional Memory usage (~100 bytes for bootstrap state)
 - Slightly more complex spawning logic
 - Need to tune thresholds for different scenarios
 
 **Limitations**:
+
 - Fixed thresholds may not be optimal for all room layouts
 - Doesn't account for hostile presence during bootstrap
 - Minimal builder support during bootstrap (construction delayed)
@@ -131,12 +134,14 @@ if (room.energyCapacityAvailable >= 300 &&
 ## When to Use
 
 **Appropriate Scenarios**:
+
 - ✅ Fresh room start (new game, new claim)
 - ✅ Respawn recovery
 - ✅ Room lost and reclaimed
 - ✅ Any scenario where room has controller but minimal infrastructure
 
 **Indicators**:
+
 - Room controller exists
 - Energy capacity below 300
 - Fewer than 2 extensions constructed
@@ -145,27 +150,32 @@ if (room.energyCapacityAvailable >= 300 &&
 ## When to Avoid
 
 **Inappropriate Scenarios**:
+
 - ❌ Established rooms with 5+ extensions (bootstrap unnecessary)
 - ❌ Remote rooms without controllers (bootstrap doesn't apply)
 - ❌ Simulator testing (may want to skip bootstrap for faster iteration)
 
 **Alternative Approaches**:
+
 - Manual spawning during testing/development
 - Pre-bootstrapped room templates for simulation
 
 ## Related Patterns
 
 **Builds On**:
+
 - Priority-based spawn queue (ensures harvesters spawn first)
 - Dynamic body part generation (spawns small harvesters when energy limited)
 - Role specialization (dedicated roles for different tasks)
 
 **Enables**:
+
 - [Container-Based Harvesting](container-based-harvesting.md) - Bootstrap establishes foundation for container economy
 - Storage manager (requires stable energy surplus from bootstrap)
 - Link network (requires energy capacity from bootstrap)
 
 **Similar Patterns**:
+
 - Cold boot recovery in spawn queue (emergency creep spawning)
 - Dynamic role adjustment (adaptive role counts based on state)
 
@@ -187,20 +197,24 @@ if (room.energyCapacityAvailable >= 300 &&
 ## See Also
 
 **Code References**:
+
 - `packages/bot/src/runtime/bootstrap/BootstrapPhaseManager.ts` - Implementation
 - `packages/bot/src/runtime/behavior/BehaviorController.ts` - Integration with role system
 - `packages/bot/src/runtime/bootstrap/Kernel.ts` - Bootstrap manager initialization
 
 **Test Coverage**:
+
 - `tests/unit/bootstrap.test.ts` - 37 unit tests
 - `tests/regression/bootstrap-integration.test.ts` - Regression tests
 - `tests/e2e/fresh-room-bootstrap.test.ts` - E2E scenarios
 
 **Documentation**:
+
 - `docs/runtime/bootstrap.md` - Original implementation documentation
 - [Phase 1: Foundation](../phases/phase-1-foundation.md) - Phase documentation
 - [Strategic Roadmap](../roadmap.md) - Phase progression tracking
 
 **Issues & PRs**:
+
 - #530 - Original issue: Implement bootstrap phase for optimal first-room resource utilization
 - CHANGELOG v0.44.0 - Implementation details

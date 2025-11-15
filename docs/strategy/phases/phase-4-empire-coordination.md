@@ -22,14 +22,14 @@ Phase 4 enables empire-level coordination across multiple owned rooms. This incl
 
 ### Success Criteria
 
-| Criterion | Target | Status |
-|-----------|--------|--------|
-| Owned rooms | 2-5 rooms | ⏳ Framework ready |
-| Combat win rate | >80% defensive battles | ⏳ Not yet validated |
-| Inter-room energy balance | ±10k across all rooms | ⏳ Not yet validated |
-| Expansion rate | 1 room per week (when GCL available) | ⏳ Not yet validated |
-| Traffic collision rate | <5% creep collisions | ⏳ Not yet measured |
-| Market profit margin | >10% on trades | ⏳ Not yet implemented |
+| Criterion                 | Target                               | Status                 |
+| ------------------------- | ------------------------------------ | ---------------------- |
+| Owned rooms               | 2-5 rooms                            | ⏳ Framework ready     |
+| Combat win rate           | >80% defensive battles               | ⏳ Not yet validated   |
+| Inter-room energy balance | ±10k across all rooms                | ⏳ Not yet validated   |
+| Expansion rate            | 1 room per week (when GCL available) | ⏳ Not yet validated   |
+| Traffic collision rate    | <5% creep collisions                 | ⏳ Not yet measured    |
+| Market profit margin      | >10% on trades                       | ⏳ Not yet implemented |
 
 ## Implementation Status
 
@@ -46,6 +46,7 @@ Implemented 2024-11-07
 - ✅ Retreat logic for damaged squads
 
 **Key Capabilities**:
+
 - Squad composition (attackers, healers, ranged attackers)
 - Formation maintenance during movement
 - Target prioritization (healers > damage dealers > others)
@@ -53,6 +54,7 @@ Implemented 2024-11-07
 - Integration with spawn system for combat creep spawning
 
 **Lessons Learned**:
+
 - Squad coordination dramatically more effective than individual combat creeps
 - Healers essential for sustained combat operations
 - Simple formation (maintain distance to leader) works well
@@ -69,6 +71,7 @@ Implemented 2024-11-07
 - ✅ Road priority (prefer roads when multiple paths equivalent)
 
 **Key Capabilities**:
+
 - Creep movement priority assignment
 - Position reservation system (prevents multiple creeps targeting same spot)
 - Stuck creep detection (not moved for N ticks)
@@ -76,6 +79,7 @@ Implemented 2024-11-07
 - Road-aware pathfinding
 
 **Lessons Learned**:
+
 - Position reservation dramatically reduces collisions
 - Priority system (haulers > builders > upgraders) improves traffic flow
 - Simple stuck detection (tick counter) effective
@@ -89,6 +93,7 @@ Implemented 2024-11-07
 **Status**: Framework exists, logic incomplete
 
 Current implementation:
+
 - ✅ Multi-room tracking
 - ✅ Basic resource transfer between rooms
 - 🔄 Strategic resource allocation
@@ -96,6 +101,7 @@ Current implementation:
 - ⏳ Coordinated expansion planning
 
 Needed improvements:
+
 - Empire-level resource pooling (treat all rooms as single economy)
 - Strategic priority assignment (which rooms get resources first)
 - Coordinated defense (send combat squads to threatened rooms)
@@ -107,12 +113,14 @@ Needed improvements:
 **Status**: Not yet started
 
 Planned features:
+
 - Expansion candidate evaluation (distance, source count, hostile presence)
 - Claim creep spawning and routing
 - Bootstrap support for newly claimed rooms
 - GCL level tracking and expansion gating
 
 Design considerations:
+
 - When to expand (GCL available, economy stable, defense adequate)
 - Which rooms to target (proximity, resources, strategic value)
 - How to bootstrap new rooms (send resources from parent room)
@@ -124,6 +132,7 @@ Design considerations:
 **Status**: Terminal manager provides foundation, needs enhancement
 
 Current implementation:
+
 - ✅ Terminal-based energy transfers
 - ✅ Resource shipping between rooms
 - 🔄 Strategic resource routing
@@ -131,6 +140,7 @@ Current implementation:
 - ⏳ Automated resource balancing
 
 Needed improvements:
+
 - Automatic mineral/commodity routing to rooms that need them
 - Market buy orders for scarce resources
 - Market sell orders for excess resources
@@ -144,12 +154,14 @@ Needed improvements:
 **Status**: Not yet started
 
 Planned features:
+
 - Power creep spawning and deployment
 - Power bank harvesting
 - Power processing and usage
 - Power creep skill selection
 
 Design considerations:
+
 - When to create power creeps (power available, economy stable)
 - Which skills to prioritize (operator vs commander)
 - Power bank scouting and attack coordination
@@ -161,12 +173,14 @@ Design considerations:
 **Status**: Not yet started
 
 Planned features:
+
 - Automated buy orders for needed resources
 - Automated sell orders for excess resources
 - Market price analysis and trend detection
 - Credit reserve management
 
 Design considerations:
+
 - Price thresholds for buy/sell orders
 - Order expiration and renewal
 - Market manipulation detection
@@ -178,12 +192,14 @@ Design considerations:
 **Status**: Not yet started
 
 Planned features:
+
 - Hostile player tracking
 - Room ownership history
 - Threat level assessment
 - Strategic planning data
 
 Design considerations:
+
 - What data to track (ownership, hostile activity, source availability)
 - How to store intel (Memory, segments, database)
 - How to share intel across rooms/shards
@@ -281,13 +297,13 @@ Phase 5 (Multi-Room & Global Management) depends on Phase 4:
 
 ### Key Performance Indicators
 
-| KPI | Target | Current Status |
-|-----|--------|----------------|
-| Rooms owned | 2-5 | ⏳ Pending expansion |
-| Combat win rate | >80% | ⏳ Not yet measured |
-| Inter-room energy balance | ±10k | ⏳ Not yet measured |
-| Traffic collision rate | <5% | ⏳ Not yet measured |
-| Market profit margin | >10% | ⏳ Not yet implemented |
+| KPI                       | Target | Current Status         |
+| ------------------------- | ------ | ---------------------- |
+| Rooms owned               | 2-5    | ⏳ Pending expansion   |
+| Combat win rate           | >80%   | ⏳ Not yet measured    |
+| Inter-room energy balance | ±10k   | ⏳ Not yet measured    |
+| Traffic collision rate    | <5%    | ⏳ Not yet measured    |
+| Market profit margin      | >10%   | ⏳ Not yet implemented |
 
 ### Current Monitoring
 

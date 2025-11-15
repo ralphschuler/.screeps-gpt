@@ -155,6 +155,7 @@ Key implementation details, code structure, algorithms used.
 ## Outcomes
 
 Results of implementing this pattern:
+
 - Performance improvements
 - CPU savings
 - Complexity reduction

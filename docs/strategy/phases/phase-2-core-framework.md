@@ -24,14 +24,14 @@ Phase 2 builds the core framework for efficient resource management and task exe
 
 ### Success Criteria
 
-| Criterion | Target | Status |
-|-----------|--------|--------|
-| Task completion rate | >90% | ⏳ Pending validation |
-| Spawn queue depth | <5 tasks | ⏳ Pending validation |
-| Storage fill rate | >80% | ⏳ Not yet measured |
-| Link efficiency | >90% energy transferred | ⏳ Not yet measured |
-| Tower uptime | 100% | ⏳ Not yet measured |
-| CPU per creep | <0.5 | ⏳ Not yet measured |
+| Criterion            | Target                  | Status                |
+| -------------------- | ----------------------- | --------------------- |
+| Task completion rate | >90%                    | ⏳ Pending validation |
+| Spawn queue depth    | <5 tasks                | ⏳ Pending validation |
+| Storage fill rate    | >80%                    | ⏳ Not yet measured   |
+| Link efficiency      | >90% energy transferred | ⏳ Not yet measured   |
+| Tower uptime         | 100%                    | ⏳ Not yet measured   |
+| CPU per creep        | <0.5                    | ⏳ Not yet measured   |
 
 ## Implementation Status
 
@@ -48,12 +48,14 @@ Implemented 2024-11-06
 - ✅ Documentation in `docs/automation/overview.md`
 
 **Key Capabilities**:
+
 - Priority-based task ordering
 - Automatic task generation from room state
 - Task assignment tracking
 - Task lifecycle management (generation → assignment → completion)
 
 **Lessons Learned**:
+
 - Task persistence across ticks essential for CPU efficiency
 - Priority levels prevent low-priority tasks from starving critical operations
 - Round-robin creep execution prevents CPU starvation in high-creep-count scenarios
@@ -69,12 +71,14 @@ Implemented 2024-11-06
 - ✅ Documentation in `docs/runtime/operations/spawn-management.md`
 
 **Key Capabilities**:
+
 - Priority-based spawn ordering
 - Energy-adaptive body part generation (spawn larger creeps when energy available)
 - Role minimum enforcement
 - Emergency spawn logic for critical role shortages
 
 **Lessons Learned**:
+
 - Dynamic part generation enables spawning when energy limited while maximizing creep capability when energy abundant
 - Cold boot recovery essential for respawn scenarios and fresh room starts
 - Priority system prevents builder/repairer spam when harvesters needed
@@ -89,11 +93,13 @@ Implemented 2024-11-07
 - ✅ Priority system favoring controller links
 
 **Key Capabilities**:
+
 - Automatic link role detection based on proximity to sources/controller/storage
 - Energy transfer planning to minimize hauler traffic
 - Priority-based consumer selection (controller > storage)
 
 **Lessons Learned**:
+
 - Link classification simplifies transfer logic dramatically
 - Source links filling, controller links emptying is simple but effective heuristic
 - Link network provides massive CPU savings by reducing hauler pathfinding
@@ -107,12 +113,14 @@ Implemented 2024-11-06
 - ✅ Regression tests for defense prioritization
 
 **Key Capabilities**:
+
 - Automatic hostile detection and targeting
 - Friendly creep healing
 - Structure repair (prioritizes ramparts, then other structures)
 - Energy management (only repair when energy >50%)
 
 **Lessons Learned**:
+
 - Simple priority system (attack > heal > repair) handles most scenarios
 - Energy threshold prevents tower from draining room energy on repairs
 - Multiple towers automatically coordinate through shared targeting
@@ -125,12 +133,14 @@ Implemented 2024-11-06
 **Status**: Basic distance-based assignment working, needs improvement
 
 Current implementation:
+
 - ✅ Distance-based assignment (closest idle creep)
 - ⏳ Capability matching (assign tasks to creeps with required parts)
 - ⏳ Load balancing (distribute tasks evenly across creeps)
 - ⏳ Task affinity (prefer assigning similar tasks to same creep)
 
 Planned improvements:
+
 - Capability-based filtering (only assign repair tasks to creeps with WORK parts)
 - Path cost consideration (account for terrain and road availability)
 - Task clustering (group nearby tasks for same creep)
@@ -142,12 +152,14 @@ Planned improvements:
 **Status**: Design phase
 
 Planned features:
+
 - Centralized resource tracking across containers, storage, terminal
 - Withdrawal priority system (prefer storage > containers > terminal)
 - Deposit routing (direct energy to spawns/extensions when needed, storage when surplus)
 - Resource balancing across multiple rooms (future)
 
 Design considerations:
+
 - How to handle mixed resources (energy, minerals, etc.)
 - When to use terminal vs storage
 - Integration with hauler role assignment
@@ -158,12 +170,14 @@ Design considerations:
 **Status**: Not yet started
 
 Planned features:
+
 - TTL-based cache for frequently used paths
 - Cache invalidation when terrain changes (construction, rampart placement)
 - Memory segment storage for persistent caching
 - Cache hit/miss metrics for monitoring
 
 Design considerations:
+
 - Cache storage location (Memory vs RawMemory segments)
 - Cache key format (from/to positions, opts hash)
 - Cache size limits and eviction policy
@@ -174,12 +188,14 @@ Design considerations:
 **Status**: Not yet started
 
 Planned features:
+
 - Unified interface for room operations
 - Manager registry for different room subsystems
 - Room state tracking (owned, reserved, remote, hostile)
 - Room transition handling (claim, unclaim, reservation)
 
 Design considerations:
+
 - How to structure manager hierarchy
 - Communication between managers
 - Room state persistence
@@ -192,6 +208,7 @@ Design considerations:
 **Status**: Not yet started
 
 Use cases:
+
 - Path cache persistence
 - Historical room stats
 - Scouting data for multiple shards
@@ -203,6 +220,7 @@ Use cases:
 **Status**: MemoryManager exists, but not centralized
 
 Potential improvements:
+
 - Automatic garbage collection of stale data
 - Memory budget enforcement
 - Compression for large data structures
@@ -295,13 +313,13 @@ Phase 3 (Advanced Economy) depends on Phase 2:
 
 ### Key Performance Indicators
 
-| KPI | Target | Measurement Method |
-|-----|--------|-------------------|
-| Tasks completed/tick | >10 | TaskManager metrics |
-| Task queue depth | <20 | TaskManager.getTasks().length |
-| Spawn queue depth | <5 | SpawnManager.getQueue().length |
-| Creep idle time | <10% | Track ticks since last task assignment |
-| CPU per task | <0.1 | Profile task generation and assignment |
+| KPI                  | Target | Measurement Method                     |
+| -------------------- | ------ | -------------------------------------- |
+| Tasks completed/tick | >10    | TaskManager metrics                    |
+| Task queue depth     | <20    | TaskManager.getTasks().length          |
+| Spawn queue depth    | <5     | SpawnManager.getQueue().length         |
+| Creep idle time      | <10%   | Track ticks since last task assignment |
+| CPU per task         | <0.1   | Profile task generation and assignment |
 
 ### Current Monitoring
 

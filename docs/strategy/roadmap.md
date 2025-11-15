@@ -10,13 +10,13 @@ This document tracks the current state of bot development, phase completion stat
 
 ### Phase 1 Success Metrics
 
-| Metric | Target | Current Status |
-|--------|--------|----------------|
-| Energy Surplus | >10/tick | ⚠️ Pending telemetry (#791) |
-| CPU Usage | <5/tick | ⚠️ Pending telemetry (#791) |
-| Spawn Uptime | >90% | ⚠️ Pending telemetry (#791) |
-| RCL Level | 2+ | ✅ Achieved |
-| Container Harvesting | Implemented | 🔄 In Progress (#783) |
+| Metric               | Target      | Current Status              |
+| -------------------- | ----------- | --------------------------- |
+| Energy Surplus       | >10/tick    | ⚠️ Pending telemetry (#791) |
+| CPU Usage            | <5/tick     | ⚠️ Pending telemetry (#791) |
+| Spawn Uptime         | >90%        | ⚠️ Pending telemetry (#791) |
+| RCL Level            | 2+          | ✅ Achieved                 |
+| Container Harvesting | Implemented | 🔄 In Progress (#783)       |
 
 ### Phase 1 Blockers
 
@@ -95,21 +95,25 @@ This document tracks the current state of bot development, phase completion stat
 ### Expansion Roadmap
 
 **Phase 1 → Phase 2** (Current)
+
 - Prerequisites: Telemetry restored, container harvesting complete, CPU <5/tick
 - Estimated Duration: 2-3 weeks
 - Key Risks: CPU budget constraints, memory management complexity
 
 **Phase 2 → Phase 3** (Future)
+
 - Prerequisites: Task system stable, storage manager operational, link network deployed
 - Estimated Duration: 4-6 weeks
 - Key Risks: Remote room coordination complexity, defense requirements
 
 **Phase 3 → Phase 4** (Future)
+
 - Prerequisites: Terminal management working, lab automation complete, factory operational
 - Estimated Duration: 6-8 weeks
 - Key Risks: Multi-room logistics, resource balancing across rooms
 
 **Phase 4 → Phase 5** (Future)
+
 - Prerequisites: Empire coordination established, combat system functional
 - Estimated Duration: 8-12 weeks
 - Key Risks: Inter-shard communication, colony expansion algorithms

@@ -53,10 +53,12 @@ What is the issue we're trying to address? What constraints exist?]
 **Description**: [How this option works]
 
 **Pros**:
+
 - [Advantage 1]
 - [Advantage 2]
 
 **Cons**:
+
 - [Disadvantage 1]
 - [Disadvantage 2]
 
@@ -96,6 +98,7 @@ What is the issue we're trying to address? What constraints exist?]
 ## Implementation Notes
 
 [Practical considerations for implementing this decision:
+
 - Which files/modules affected?
 - Migration path from previous approach (if applicable)
 - Testing requirements
@@ -145,10 +148,12 @@ Decision replaced by a newer ADR. Link to the superseding ADR.
 ADRs should be named: `adr-NNN-short-title.md`
 
 Where:
+
 - `NNN` is a sequential number (001, 002, etc.)
 - `short-title` is a kebab-case brief description
 
 Examples:
+
 - `adr-001-manager-based-architecture.md`
 - `adr-002-container-based-harvesting.md`
 - `adr-003-round-robin-task-scheduling.md`
@@ -159,11 +164,11 @@ As ADRs are created, maintain this index for quick reference:
 
 ### Active Decisions
 
-*(No ADRs created yet - this section will be populated as architectural decisions are documented)*
+_(No ADRs created yet - this section will be populated as architectural decisions are documented)_
 
 ### Deprecated Decisions
 
-*(None yet)*
+_(None yet)_
 
 ## Creating a New ADR
 

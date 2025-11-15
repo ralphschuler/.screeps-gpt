@@ -16,6 +16,7 @@ In scenarios with high creep counts (e.g., 25 creeps with CPU allowing only 12/t
 **Challenge**: CPU threshold checking creates permanent creep starvation in high-creep-count scenarios.
 
 Specific issues:
+
 - Creeps processed sequentially from start of creep list each tick
 - CPU threshold check stops processing when budget exhausted
 - Same creeps at start of list execute every tick
@@ -23,6 +24,7 @@ Specific issues:
 - Starved creeps remain idle indefinitely despite having assigned tasks
 
 **Example Scenario**:
+
 - 25 total creeps in room
 - CPU budget allows ~12 creep executions per tick
 - Creeps 0-11 execute every tick
@@ -30,6 +32,7 @@ Specific issues:
 - Starved creeps waste energy, fail to complete tasks, don't contribute to economy
 
 **Symptoms**:
+
 - Some creeps active and completing tasks
 - Other creeps idle despite having assigned tasks
 - Energy inefficiency (paying for creeps that don't work)
@@ -80,35 +83,35 @@ class TaskManager {
   public executeTasks(room: Room): void {
     const creeps = room.find(FIND_MY_CREEPS);
     const creepCount = creeps.length;
-    
+
     // Calculate starting offset (round-robin)
     const tickOffset = Game.time % creepCount;
-    
+
     // Process creeps starting from offset
     for (let i = 0; i < creepCount; i++) {
       // Check CPU budget
       if (Game.cpu.getUsed() > CPU_THRESHOLD) break;
-      
+
       // Get creep with round-robin offset
       const index = (i + tickOffset) % creepCount;
       const creep = creeps[index];
-      
+
       // Execute creep's task
       this.executeCreepTask(creep);
-      
+
       // Track execution
       this.lastExecuted.set(creep.id, Game.time);
     }
   }
-  
+
   public getStarvationStats(): StarvationStats {
     const gaps: number[] = [];
-    
+
     for (const [creepId, lastTick] of this.lastExecuted.entries()) {
       const gap = Game.time - lastTick;
       gaps.push(gap);
     }
-    
+
     return {
       minGap: Math.min(...gaps),
       maxGap: Math.max(...gaps),
@@ -121,6 +124,7 @@ class TaskManager {
 **Behavior Comparison**:
 
 **Old System** (Sequential, no offset):
+
 ```
 Tick 1: Process creeps [0-11], stop at CPU limit
 Tick 2: Process creeps [0-11], stop at CPU limit
@@ -129,9 +133,10 @@ Result: Creeps 12-24 never execute
 ```
 
 **New System** (Round-robin with offset):
+
 ```
 Tick 1: Process creeps [0-11], stop at CPU limit
-Tick 2: Process creeps [1-12], stop at CPU limit  
+Tick 2: Process creeps [1-12], stop at CPU limit
 Tick 3: Process creeps [2-13], stop at CPU limit
 ...
 Result: All creeps execute over sliding window
@@ -149,6 +154,7 @@ Result: All creeps execute over sliding window
 **Performance Comparison** (25 creeps, CPU for 12/tick):
 
 **Old System**:
+
 - Creeps 0-11: Execute every tick (gap = 1)
 - Creeps 12-24: Never execute (gap = ∞)
 - Min gap: 1 tick
@@ -156,6 +162,7 @@ Result: All creeps execute over sliding window
 - Avg gap: N/A (undefined for starved creeps)
 
 **New System**:
+
 - All creeps: Execute in round-robin fashion
 - Min gap: 1 tick
 - Max gap: 14 ticks
@@ -171,6 +178,7 @@ Result: All creeps execute over sliding window
 ## Trade-offs
 
 **Benefits**:
+
 - Eliminates permanent starvation
 - Fair CPU allocation across all creeps
 - Bounded execution gaps (predictable)
@@ -178,11 +186,13 @@ Result: All creeps execute over sliding window
 - No additional memory overhead
 
 **Costs**:
+
 - Slightly more complex task execution loop
 - Need to track last execution per creep (minimal memory)
 - May delay high-priority creep execution by a few ticks
 
 **Limitations**:
+
 - Doesn't prioritize critical creeps (all treated equally)
 - Execution gaps still exist (by design when CPU limited)
 - Optimal for fairness, not necessarily for efficiency
@@ -190,12 +200,14 @@ Result: All creeps execute over sliding window
 ## When to Use
 
 **Appropriate Scenarios**:
+
 - ✅ High creep counts (15+ creeps)
 - ✅ CPU-constrained environments
 - ✅ Fairness important (all creeps should contribute)
 - ✅ Task importance relatively equal across creeps
 
 **Indicators**:
+
 - Creep count exceeds CPU budget for processing all creeps
 - Some creeps consistently idle despite assigned tasks
 - Economy underperforming despite adequate creep count
@@ -204,11 +216,13 @@ Result: All creeps execute over sliding window
 ## When to Avoid
 
 **Inappropriate Scenarios**:
+
 - ❌ Low creep counts (all creeps can execute every tick anyway)
 - ❌ Priority-critical scenarios (emergency response needs immediate execution)
 - ❌ When specific creeps must execute every tick (e.g., defenders during attack)
 
 **Alternative Approaches**:
+
 - Priority-based scheduling (critical creeps first, then round-robin for others)
 - Weighted round-robin (some creeps get more frequent execution)
 - Dynamic scheduling (adjust based on task urgency)
@@ -216,16 +230,19 @@ Result: All creeps execute over sliding window
 ## Related Patterns
 
 **Builds On**:
+
 - Task queue system (Phase 2)
 - CPU threshold checking
 - Sequential creep processing
 
 **Enables**:
+
 - Scalable task execution for large creep populations
 - Fair resource allocation across economy
 - Predictable system behavior under CPU constraints
 
 **Similar Patterns**:
+
 - Priority-based spawn queue (different priority scheme but same queuing concept)
 - Traffic management position reservation (fair resource allocation)
 - Round-robin CPU scheduling in operating systems
@@ -288,19 +305,23 @@ Result: All creeps execute over sliding window
 ## See Also
 
 **Code References**:
+
 - `packages/bot/src/runtime/tasks/TaskManager.ts` - Implementation
 - Task execution loop with offset calculation
 - Starvation stats tracking
 
 **Test Coverage**:
+
 - `tests/unit/taskManager-round-robin.test.ts` - 13 unit tests
 - `tests/regression/task-system-cpu-starvation.test.ts` - 7 regression tests
 
 **Documentation**:
+
 - `docs/runtime/task-system.md` - Task system documentation (original)
 - [Phase 2: Core Framework](../phases/phase-2-core-framework.md) - Phase documentation
 - [Strategic Roadmap](../roadmap.md) - Phase progression tracking
 
 **Related Issues**:
+
 - Issue about task system CPU starvation (resolved by v0.57.1)
 - CHANGELOG v0.57.1 - Implementation details

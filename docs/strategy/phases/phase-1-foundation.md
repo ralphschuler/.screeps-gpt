@@ -21,14 +21,14 @@ Phase 1 establishes the foundational infrastructure for autonomous bot operation
 
 ### Success Criteria
 
-| Criterion | Target | Status |
-|-----------|--------|--------|
-| Energy surplus per tick | >10 | ⚠️ Pending telemetry |
-| CPU usage per tick | <5 | ⚠️ Pending telemetry |
-| Spawn uptime | >90% | ⚠️ Pending telemetry |
-| RCL progression | Reach RCL 2 | ✅ Achieved |
-| Container harvesting | Operational | 🔄 In Progress |
-| Road network | Basic paths | 🔄 Planned |
+| Criterion               | Target      | Status               |
+| ----------------------- | ----------- | -------------------- |
+| Energy surplus per tick | >10         | ⚠️ Pending telemetry |
+| CPU usage per tick      | <5          | ⚠️ Pending telemetry |
+| Spawn uptime            | >90%        | ⚠️ Pending telemetry |
+| RCL progression         | Reach RCL 2 | ✅ Achieved          |
+| Container harvesting    | Operational | 🔄 In Progress       |
+| Road network            | Basic paths | 🔄 Planned           |
 
 ## Implementation Status
 
@@ -97,6 +97,7 @@ Current implementation automatically detects containers and adjusts roles, but o
 **Blocking Phase Completion**: No
 
 Planned features:
+
 - Automated road placement between source → spawn
 - Road placement between spawn → controller
 - Cost/benefit analysis for road construction
@@ -110,6 +111,7 @@ Planned features:
 **Blocking Phase Completion**: No
 
 Planned improvements:
+
 - Energy threshold checks before spawning
 - Emergency spawning for critical roles
 - Spawn queue visualization
@@ -121,6 +123,7 @@ Planned improvements:
 **Blocking Phase Completion**: Partially
 
 Partially implemented through container-based economy transition. Still needed:
+
 - Analysis of current room state (available energy, construction sites, repair needs)
 - Dynamic adjustment of role minimums based on room conditions
 - Adaptive spawning based on task queue depth
@@ -131,6 +134,7 @@ Partially implemented through container-based economy transition. Still needed:
 **Status**: ⚠️ Pending telemetry validation
 
 Optimization efforts:
+
 - ✅ Efficient task assignment
 - ✅ Creep memory cleanup
 - 🔄 Path caching (not yet implemented)
@@ -224,19 +228,20 @@ Phase 2 (Core Framework) depends on Phase 1 completion:
 
 ### Key Performance Indicators
 
-| KPI | Target | Measurement Method |
-|-----|--------|-------------------|
-| Energy/tick | >10 | PTR telemetry (`Game.rooms[room].energyAvailable` delta) |
-| CPU/tick | <5 | PTR telemetry (`Game.cpu.getUsed()`) |
-| Spawn utilization | >90% | PTR telemetry (spawning active ticks / total ticks) |
-| Creep count | 8-12 | Game state (optimal range for RCL 1-2) |
-| Container efficiency | >80% | Energy delivered per CPU spent |
+| KPI                  | Target | Measurement Method                                       |
+| -------------------- | ------ | -------------------------------------------------------- |
+| Energy/tick          | >10    | PTR telemetry (`Game.rooms[room].energyAvailable` delta) |
+| CPU/tick             | <5     | PTR telemetry (`Game.cpu.getUsed()`)                     |
+| Spawn utilization    | >90%   | PTR telemetry (spawning active ticks / total ticks)      |
+| Creep count          | 8-12   | Game state (optimal range for RCL 1-2)                   |
+| Container efficiency | >80%   | Energy delivered per CPU spent                           |
 
 ### Monitoring Status
 
 ⚠️ **Telemetry Blackout**: PTR stats API broken since 2024-11-13. Metrics cannot be validated until #791 resolved.
 
 **Workarounds**:
+
 - Manual console observation in live game
 - Memory inspection for creep counts and role distribution
 - Visual inspection of spawn activity and energy surplus

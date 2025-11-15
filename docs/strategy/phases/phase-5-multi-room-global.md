@@ -21,14 +21,14 @@ Phase 5 implements colony-level management and global analytics systems. This en
 
 ### Success Criteria
 
-| Criterion | Target | Status |
-|-----------|--------|--------|
-| Owned rooms | 5+ across all shards | ✅ Framework supports unlimited |
-| Inter-shard transfers | >1 per day | ✅ Implemented |
-| Analytics uptime | 100% | ✅ Implemented |
-| CPU efficiency | <20 CPU total | ⏳ Pending validation |
-| GCL progression | +1 per week | ⏳ Pending validation |
-| Resource waste | <5% of production | ⏳ Pending validation |
+| Criterion             | Target               | Status                          |
+| --------------------- | -------------------- | ------------------------------- |
+| Owned rooms           | 5+ across all shards | ✅ Framework supports unlimited |
+| Inter-shard transfers | >1 per day           | ✅ Implemented                  |
+| Analytics uptime      | 100%                 | ✅ Implemented                  |
+| CPU efficiency        | <20 CPU total        | ⏳ Pending validation           |
+| GCL progression       | +1 per week          | ⏳ Pending validation           |
+| Resource waste        | <5% of production    | ⏳ Pending validation           |
 
 ## Implementation Status
 
@@ -46,6 +46,7 @@ Implemented 2024-11-07
 - ✅ 34 comprehensive unit and regression tests
 
 **Key Capabilities**:
+
 - Track all owned rooms across all accessible shards
 - Priority-based expansion queue (claim rooms in order of strategic value)
 - Inter-room resource coordination
@@ -54,6 +55,7 @@ Implemented 2024-11-07
 - GCL tracking and expansion gating
 
 **Architecture**:
+
 ```
 ColonyManager
 ├── Room Registry (all owned rooms)
@@ -64,6 +66,7 @@ ColonyManager
 ```
 
 **Lessons Learned**:
+
 - Inter-shard communication enables powerful cross-shard strategies
 - Priority-based expansion prevents wasting GCL on poor rooms
 - Colony-wide resource pooling dramatically improves efficiency
@@ -80,6 +83,7 @@ Implemented 2024-11-07
 - ✅ Performance trend analysis
 
 **Key Capabilities**:
+
 - Collect metrics from all rooms and creeps
 - Aggregate statistics at empire level
 - Report to external analytics services via HTTP
@@ -88,6 +92,7 @@ Implemented 2024-11-07
 - CPU profiling integration
 
 **Metrics Collected**:
+
 - CPU usage (per tick, per room, per manager)
 - Energy production and consumption
 - Creep counts by role
@@ -98,6 +103,7 @@ Implemented 2024-11-07
 - Expansion progress
 
 **Lessons Learned**:
+
 - External analytics dramatically improve visibility
 - HTTP POST enables integration with monitoring services
 - Aggregated metrics more useful than raw tick data
@@ -113,6 +119,7 @@ Implemented 2024-11-07 (as part of ColonyManager)
 - ✅ Cross-shard coordination
 
 **Key Capabilities**:
+
 - Send messages between shards via InterShardMemory
 - Request resources from other shards
 - Advertise available resources
@@ -120,9 +127,10 @@ Implemented 2024-11-07 (as part of ColonyManager)
 - Coordinate expansion across shards
 
 **Protocol Design**:
+
 ```typescript
 interface InterShardMessage {
-  type: 'resource-request' | 'resource-offer' | 'status' | 'threat';
+  type: "resource-request" | "resource-offer" | "status" | "threat";
   from: string; // shard name
   to: string; // shard name or 'broadcast'
   data: any; // message-specific data
@@ -131,6 +139,7 @@ interface InterShardMessage {
 ```
 
 **Lessons Learned**:
+
 - Simple message protocol sufficient for most coordination
 - Broadcast messages enable efficient status sharing
 - Message TTL prevents stale data from accumulating
@@ -146,6 +155,7 @@ interface InterShardMessage {
 - ✅ Surplus redistribution
 
 **Benefits**:
+
 - Newly claimed rooms bootstrap faster (receive resources from established rooms)
 - Resource-poor rooms supported by resource-rich rooms
 - Market activities can leverage entire empire's resources
@@ -159,6 +169,7 @@ interface InterShardMessage {
 - ✅ Performance bottleneck identification
 
 **Strategic Data Provided**:
+
 - Colony size and distribution
 - Resource production rates
 - Expansion capacity (available GCL)
@@ -242,14 +253,14 @@ Phase 5 completes the bot's core architecture. Future enhancements build on this
 
 ### Key Performance Indicators
 
-| KPI | Target | Current Status |
-|-----|--------|----------------|
-| Owned rooms | 5+ | ⏳ Pending expansion |
-| GCL progression | +1 per week | ⏳ Pending validation |
-| CPU per room | <4 average | ⏳ Pending validation |
-| Inter-shard messages | >1 per day | ⏳ Pending validation |
-| Analytics uptime | 100% | ✅ Implemented |
-| Resource waste | <5% | ⏳ Pending validation |
+| KPI                  | Target      | Current Status        |
+| -------------------- | ----------- | --------------------- |
+| Owned rooms          | 5+          | ⏳ Pending expansion  |
+| GCL progression      | +1 per week | ⏳ Pending validation |
+| CPU per room         | <4 average  | ⏳ Pending validation |
+| Inter-shard messages | >1 per day  | ⏳ Pending validation |
+| Analytics uptime     | 100%        | ✅ Implemented        |
+| Resource waste       | <5%         | ⏳ Pending validation |
 
 ### Current Monitoring
 
