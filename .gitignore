@@ -23,6 +23,9 @@ screeps.json
 /docs-build/package-lock.json
 /docs-build/public
 /docs-build/db.json
+/packages/docs/node_modules
+/packages/docs/public
+/packages/docs/db.json
 
 # Copilot workflow logs and cache (ephemeral artifacts)
 /reports/copilot/
