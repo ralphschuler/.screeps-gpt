@@ -17,12 +17,14 @@ Performance baselines establish reference points for normal operation, enabling 
 ### Data Collection
 
 **Minimum Requirements:**
+
 - At least 24 hours of stable operation data
 - Recommended: 48 hours for statistical confidence
 - Collected during normal operations (not during bootstrap or respawn)
 - Sampling interval: Every 30 minutes (via screeps-monitoring.yml workflow)
 
 **Data Sources:**
+
 - Bot state snapshots from `reports/bot-snapshots/`
 - Stats collection from Memory.stats (via StatsCollector)
 - PTR telemetry data
@@ -39,14 +41,17 @@ For each performance metric:
 ### Threshold Determination
 
 **Warning Threshold:** μ ± 2σ (95% confidence interval)
+
 - Indicates significant deviation from normal operation
 - Triggers investigation but not critical alert
 
 **Critical Threshold:** μ ± 3σ (99.7% confidence interval)
+
 - Indicates severe deviation requiring immediate attention
 - Triggers critical alerts and potential automated remediation
 
 **Directional Thresholds:**
+
 - For metrics where lower is better (e.g., CPU usage): `μ + 2σ` for warning
 - For metrics where higher is better (e.g., bucket level): `μ - 2σ` for warning
 
@@ -55,12 +60,14 @@ For each performance metric:
 ### CPU Usage
 
 **Metrics:**
+
 - `cpu.used.mean`: Average CPU per tick
 - `cpu.used.percentile95`: 95th percentile CPU usage
 - `cpu.bucket.mean`: Average bucket level
 - `cpu.bucket.trendRate`: Bucket growth/decay rate
 
 **Alert Conditions:**
+
 - Warning: CPU > μ + 2σ sustained for 10+ ticks
 - Critical: CPU > μ + 3σ or bucket < critical threshold
 - Objective: Maintain CPU efficiency while maximizing throughput
@@ -68,11 +75,13 @@ For each performance metric:
 ### Energy Economy
 
 **Metrics:**
+
 - `energy.incomePerRoom.mean`: Average energy per room
 - `energy.storageTotal.mean`: Total energy storage
 - `energy.storageTotal.accumulationRate`: Energy accumulation trend
 
 **Alert Conditions:**
+
 - Warning: Income deviation > 20% from baseline (μ ± 2σ)
 - Critical: Income deviation > 30% from baseline (μ ± 3σ)
 - Objective: Maintain positive energy balance
@@ -80,10 +89,12 @@ For each performance metric:
 ### Creep Population
 
 **Metrics:**
+
 - `creeps.total.mean`: Average total creep count
 - `creeps.byRole`: Per-role population baselines
 
 **Alert Conditions:**
+
 - Warning: Population deviation > 30% from baseline
 - Critical: Critical role missing or severe population collapse
 - Objective: Maintain optimal creep distribution
@@ -91,10 +102,12 @@ For each performance metric:
 ### Room Control
 
 **Metrics:**
+
 - `rooms.controlledCount.mean`: Average number of controlled rooms
 - `rooms.rclProgressRate.mean`: RCL upgrade rate
 
 **Alert Conditions:**
+
 - Warning: RCL progress stalled > 50 ticks
 - Critical: Room control lost or upgrade rate near zero
 - Objective: Steady expansion and RCL progression
@@ -102,9 +115,11 @@ For each performance metric:
 ### Spawn Efficiency
 
 **Metrics:**
+
 - `spawns.uptimePercentage.mean`: Spawn utilization rate
 
 **Alert Conditions:**
+
 - Warning: Uptime < μ - 2σ (underutilization) or > μ + 2σ (overutilization)
 - Critical: Spawn uptime extremes indicating spawn starvation or inefficiency
 - Objective: Balanced spawn utilization
@@ -120,6 +135,7 @@ npx tsx packages/utilities/scripts/establish-baselines.ts
 ```
 
 **Prerequisites:**
+
 - Stats collection must be operational (issue #684)
 - Minimum 24 hours of bot snapshot data in `reports/bot-snapshots/`
 - Normal operation state (not during respawn or major disruption)
@@ -178,9 +194,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 // Load baselines
-const baselines = JSON.parse(
-  readFileSync(resolve("reports/monitoring/baselines.json"), "utf-8")
-);
+const baselines = JSON.parse(readFileSync(resolve("reports/monitoring/baselines.json"), "utf-8"));
 
 // Check current CPU usage
 const currentCpuUsed = Memory.stats.cpu.used;
@@ -196,10 +210,12 @@ if (currentCpuUsed > baselines.cpu.used.criticalThreshold) {
 ### When to Recalibrate
 
 **Scheduled:**
+
 - Weekly automatic recalibration recommended
 - After accumulating 7+ days of new data
 
 **Event-Triggered:**
+
 - After significant code changes (new features, optimizations)
 - After respawn or major disruption
 - When confidence level is "low" (< 48 data points)
@@ -228,11 +244,13 @@ For continuous recalibration, use a rolling window approach:
 ### Baseline Quality Checks
 
 **Statistical Validity:**
+
 - ✓ Sufficient data points (48+ recommended)
 - ✓ Low standard deviation (< 50% of mean for most metrics)
 - ✓ Normal distribution (check for outliers)
 
 **Operational Validity:**
+
 - ✓ Baselines reflect current code performance
 - ✓ No major disruptions during collection period
 - ✓ Thresholds don't generate false positives
@@ -251,6 +269,7 @@ For continuous recalibration, use a rolling window approach:
 **Problem:** Less than 24 hours of snapshots available
 
 **Solution:**
+
 - Wait for more data collection
 - Script will warn about low confidence
 - Baselines can still be generated but marked as "low confidence"
@@ -260,6 +279,7 @@ For continuous recalibration, use a rolling window approach:
 **Problem:** Snapshots contain only timestamps (issue #684)
 
 **Solution:**
+
 - Fix stats collection (see issue #684)
 - Ensure StatsCollector is operational
 - Verify Memory.stats is populated in runtime
@@ -269,6 +289,7 @@ For continuous recalibration, use a rolling window approach:
 **Problem:** Standard deviation is very high (> 50% of mean)
 
 **Solution:**
+
 - Indicates unstable operation or diverse workload
 - May need separate baselines for different operational modes
 - Consider filtering outliers or using median instead of mean
@@ -278,6 +299,7 @@ For continuous recalibration, use a rolling window approach:
 **Problem:** Alerts trigger during normal operation
 
 **Solution:**
+
 - Increase threshold multiplier (e.g., 3σ for warning, 4σ for critical)
 - Recalibrate after collecting more representative data
 - Add hysteresis (require sustained deviation, not single tick)
