@@ -317,4 +317,92 @@ describe("StatsCollector", () => {
     expect(memory.stats.cpu.used).toBe(4.5);
     expect(memory.stats.creeps.count).toBe(2);
   });
+
+  it("should support diagnostic logging when enabled", () => {
+    const collector = new StatsCollector({ enableDiagnostics: true });
+    const game = {
+      time: 12351,
+      cpu: {
+        getUsed: () => 5.0,
+        limit: 10,
+        bucket: 8500
+      },
+      creeps: {
+        harvester1: {}
+      },
+      rooms: {
+        W1N1: {
+          energyAvailable: 300,
+          energyCapacityAvailable: 550,
+          controller: {
+            level: 3,
+            progress: 25000,
+            progressTotal: 45000
+          }
+        }
+      }
+    };
+
+    const snapshot: PerformanceSnapshot = {
+      tick: 12351,
+      cpuUsed: 5.0,
+      cpuLimit: 10,
+      cpuBucket: 8500,
+      creepCount: 1,
+      roomCount: 1,
+      spawnOrders: 0,
+      warnings: [],
+      execution: {
+        processedCreeps: 1,
+        spawnedCreeps: [],
+        tasksExecuted: {}
+      }
+    };
+
+    const memory = {} as Memory;
+    collector.collect(game, memory, snapshot);
+
+    // Verify stats are still collected correctly
+    expect(memory.stats).toBeDefined();
+    expect(memory.stats?.time).toBe(12351);
+    expect(memory.stats?.cpu.used).toBe(5.0);
+    expect(memory.stats?.rooms?.count).toBe(1);
+  });
+
+  it("should allow disabling diagnostic logging", () => {
+    const collector = new StatsCollector({ enableDiagnostics: false });
+    const game = {
+      time: 12352,
+      cpu: {
+        getUsed: () => 4.0,
+        limit: 10,
+        bucket: 8600
+      },
+      creeps: {},
+      rooms: {}
+    };
+
+    const snapshot: PerformanceSnapshot = {
+      tick: 12352,
+      cpuUsed: 4.0,
+      cpuLimit: 10,
+      cpuBucket: 8600,
+      creepCount: 0,
+      roomCount: 0,
+      spawnOrders: 0,
+      warnings: [],
+      execution: {
+        processedCreeps: 0,
+        spawnedCreeps: [],
+        tasksExecuted: {}
+      }
+    };
+
+    const memory = {} as Memory;
+    collector.collect(game, memory, snapshot);
+
+    // Verify stats are still collected correctly
+    expect(memory.stats).toBeDefined();
+    expect(memory.stats?.time).toBe(12352);
+  });
 });

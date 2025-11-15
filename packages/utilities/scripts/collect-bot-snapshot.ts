@@ -1,6 +1,7 @@
 import { mkdirSync, readdirSync, statSync, unlinkSync, writeFileSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { BotSnapshot } from "./types/bot-snapshot";
+import { fetchConsoleTelemetry } from "./fetch-console-telemetry";
 
 const SNAPSHOTS_DIR = resolve("reports", "bot-snapshots");
 const MAX_SNAPSHOTS = 30; // Keep last 30 days of snapshots
@@ -69,6 +70,13 @@ function extractNumericField(
 }
 
 /**
+ * Check if snapshot has meaningful data (more than just timestamp)
+ */
+function hasSubstantiveData(snapshot: BotSnapshot): boolean {
+  return !!(snapshot.cpu || snapshot.rooms || snapshot.creeps || snapshot.spawns || snapshot.tick);
+}
+
+/**
  * Collect bot state snapshot from Screeps stats
  */
 async function collectBotSnapshot(): Promise<void> {
@@ -85,7 +93,7 @@ async function collectBotSnapshot(): Promise<void> {
     const statsContent = readFileSync(statsPath, "utf-8");
     statsData = JSON.parse(statsContent);
   } catch {
-    console.warn("Failed to read Screeps stats, creating empty snapshot");
+    console.warn("Failed to read Screeps stats, will attempt console fallback");
   }
 
   const timestamp = new Date().toISOString();
@@ -170,6 +178,50 @@ async function collectBotSnapshot(): Promise<void> {
           };
         }
       }
+    }
+  }
+
+  // If snapshot is empty (no substantive data), try console API fallback
+  if (!hasSubstantiveData(snapshot)) {
+    console.log("\n⚠ Stats API returned empty data - attempting console API fallback...");
+
+    try {
+      const consoleTelemetry = await fetchConsoleTelemetry();
+      console.log("✓ Console telemetry fetch successful");
+
+      // Populate snapshot from console telemetry
+      snapshot.cpu = {
+        used: consoleTelemetry.cpu.used,
+        limit: consoleTelemetry.cpu.limit,
+        bucket: consoleTelemetry.cpu.bucket
+      };
+
+      // Map rooms from console telemetry
+      if (consoleTelemetry.rooms && consoleTelemetry.rooms.length > 0) {
+        snapshot.rooms = {};
+        for (const room of consoleTelemetry.rooms) {
+          snapshot.rooms[room.name] = {
+            rcl: room.rcl,
+            energy: room.energy,
+            energyCapacity: room.energyCapacity
+          };
+        }
+      }
+
+      // Map creeps from console telemetry
+      snapshot.creeps = {
+        total: consoleTelemetry.creeps.total,
+        byRole: consoleTelemetry.creeps.byRole
+      };
+
+      // Set tick if available from consoleTelemetry, else leave undefined
+      snapshot.tick = typeof consoleTelemetry.tick === "number" ? consoleTelemetry.tick : undefined;
+      console.log(
+        `✓ Enriched snapshot with console data: ${Object.keys(snapshot.rooms || {}).length} rooms, ${snapshot.creeps.total} creeps`
+      );
+    } catch (consoleError) {
+      console.warn("Console API fallback failed:", consoleError);
+      console.warn("Snapshot will contain only timestamp");
     }
   }
 
