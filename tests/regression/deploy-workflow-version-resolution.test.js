@@ -4,39 +4,40 @@ import { readFileSync } from "fs";
 import { join } from "path";
 
 describe("Deploy Workflow Version Resolution - Modernized CI/CD", () => {
-  it("should use workflow_run version resolution logic", () => {
-    // The modernized deploy workflow uses workflow_run version resolution:
-    // - workflow_run events: extract from git describe --tags --abbrev=0
-    // - workflow_dispatch events: use inputs.version or package.json fallback
+  it("should use tag push version resolution logic", () => {
+    // The modernized deploy workflow uses tag push version resolution:
+    // - push events (tags): extract from github.ref_name
+    // - workflow_dispatch events: use inputs.version or git describe fallback
     // - No release event handling (doesn't work with GITHUB_TOKEN)
 
     const workflowContent = readFileSync(join(process.cwd(), ".github/workflows/deploy.yml"), "utf-8");
 
-    // Verify the workflow has the git tags logic for workflow_run
-    expect(workflowContent).toContain("git describe --tags --abbrev=0");
+    // Verify the workflow has the tag ref logic for push events
+    expect(workflowContent).toContain("github.ref_name");
     expect(workflowContent).toContain("github.event_name");
-    expect(workflowContent).toContain("workflow_run");
+    expect(workflowContent).toContain("push");
 
     // Should not have release event handling (doesn't work with GITHUB_TOKEN)
     expect(workflowContent).not.toContain("github.event.release.tag_name");
 
-    // Should not have the old github.ref_name logic (for tag push events)
-    expect(workflowContent).not.toContain("github.ref_name");
+    // Should not have the old workflow_run logic
+    expect(workflowContent).not.toContain("workflow_run");
   });
 
-  it("should trigger on workflow_run events", () => {
+  it("should trigger on tag push events", () => {
     const workflowContent = readFileSync(join(process.cwd(), ".github/workflows/deploy.yml"), "utf-8");
 
-    // Verify trigger mechanism (workflow_run from Post Merge Release)
+    // Verify trigger mechanism (push tags v*)
     expect(workflowContent).toContain("on:");
-    expect(workflowContent).toContain("workflow_run:");
-    expect(workflowContent).toContain("Post Merge Release");
+    expect(workflowContent).toContain("push:");
+    expect(workflowContent).toContain("tags:");
+    expect(workflowContent).toContain("v*");
 
     // Should NOT have release trigger (doesn't work with GITHUB_TOKEN)
     expect(workflowContent).not.toContain("release:");
 
-    // Should NOT have old tag push trigger
-    expect(workflowContent).not.toContain('tags:\n      - "v*"');
+    // Should NOT have workflow_run trigger
+    expect(workflowContent).not.toContain("workflow_run:");
   });
 
   it("should use GitHub production environment", () => {

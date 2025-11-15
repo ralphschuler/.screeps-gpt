@@ -2,14 +2,12 @@
  * Regression test for deploy workflow trigger configuration
  *
  * This test ensures the deploy workflow maintains the correct trigger configuration
- * and prevents regression of the issue where a non-functional release.published
- * trigger caused confusion and skipped workflow runs.
+ * to deploy when version tags are pushed to the repository.
  *
  * Issue Context:
- * GitHub Actions does not trigger release.published events when releases are
- * created by workflows using GITHUB_TOKEN (security measure to prevent recursive
- * workflow execution). The post-merge-release workflow creates releases using
- * GITHUB_TOKEN, so only the push.tags trigger works.
+ * The deployment lifecycle follows: feature branch → PR → main → create tag → deploy
+ * The deploy workflow is triggered by tag pushes (matching v* pattern) which are
+ * created by the post-merge-release workflow after merging to main.
  *
  * Fix Commit: e0714e8
  * Related Issue: #242
@@ -67,39 +65,39 @@ describe("Deploy workflow trigger configuration", () => {
     expect(workflow).toBeDefined();
   });
 
-  it("should have workflow_run trigger", () => {
-    // Deploy workflow is triggered by workflow_run events from post-merge-release workflow
+  it("should have push trigger with tags", () => {
+    // Deploy workflow is triggered by tag pushes (v* pattern)
     expect(workflow.on).toBeDefined();
-    expect(workflow.on.workflow_run).toBeDefined();
-    expect(workflow.on.workflow_run.workflows).toContain("Post Merge Release");
-    expect(workflow.on.workflow_run.types).toContain("completed");
+    expect(workflow.on.push).toBeDefined();
+    expect(workflow.on.push.tags).toBeDefined();
+    expect(workflow.on.push.tags).toContain("v*");
   });
 
   it("should NOT have release trigger", () => {
-    // Using workflow_run trigger instead of release for better integration
+    // Using push.tags trigger instead of release.published
     expect(workflow.on.release).toBeUndefined();
   });
 
-  it("should NOT have push trigger with tags", () => {
-    // Using workflow_run trigger instead of push.tags for better integration
-    expect(workflow.on.push).toBeUndefined();
+  it("should NOT have workflow_run trigger", () => {
+    // Using push.tags trigger instead of workflow_run for simpler integration
+    expect(workflow.on.workflow_run).toBeUndefined();
   });
 
-  it("should extract version from git tags for workflow_run events", () => {
+  it("should extract version from tag ref for push events", () => {
     const getVersionStep = workflow.jobs.deploy.steps.find(step => step.id === "get_version");
 
     expect(getVersionStep).toBeDefined();
-    expect(getVersionStep?.run).toContain("git describe --tags --abbrev=0");
+    expect(getVersionStep?.run).toContain("github.ref_name");
     expect(getVersionStep?.run).toContain('echo "version=$VERSION"');
   });
 
   it("should have conditional logic for different event types", () => {
     const getVersionStep = workflow.jobs.deploy.steps.find(step => step.id === "get_version");
 
-    // Should check for workflow_run vs manual dispatch event types
+    // Should check for push vs manual dispatch event types
     expect(getVersionStep?.run).toContain("github.event_name");
-    expect(getVersionStep?.run).toContain("workflow_run");
-    expect(getVersionStep?.run).toContain("manual dispatch");
+    expect(getVersionStep?.run).toContain("push");
+    expect(getVersionStep?.run).toContain("workflow_dispatch");
   });
 
   it("should include notice logging", () => {
