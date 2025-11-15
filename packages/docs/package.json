@@ -4,7 +4,6 @@
   "description": "Hexo documentation site for Screeps GPT",
   "license": "MIT",
   "author": "OpenAI Automations",
-  "type": "module",
   "scripts": {
     "build": "node build.cjs",
     "clean": "hexo clean",

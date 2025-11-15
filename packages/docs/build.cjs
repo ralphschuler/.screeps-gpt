@@ -4,10 +4,9 @@ const fs = require("fs");
 const yaml = require("yaml");
 const path = require("path");
 
-// Manually load config first
+// Manually load config
 const configPath = path.join(process.cwd(), "_config.yml");
-const configContent = fs.readFileSync(configPath, "utf8");
-const userConfig = yaml.parse(configContent);
+const userConfig = yaml.parse(fs.readFileSync(configPath, "utf8"));
 
 // Create hexo instance
 const hexo = new Hexo(process.cwd(), {});
@@ -15,17 +14,18 @@ const hexo = new Hexo(process.cwd(), {});
 hexo
   .init()
   .then(() => {
-    // Override config after init
+    // Merge user config into hexo config AFTER init
     Object.assign(hexo.config, userConfig);
 
-    // Update theme_dir to match the config
-    hexo.theme_dir = path.join(hexo.base_dir, "themes", hexo.config.theme, path.sep);
-    hexo.theme_script_dir = path.join(hexo.theme_dir, "scripts", path.sep);
+    // Force theme reload with new config
+    hexo.theme_dir = path.join(hexo.base_dir, "themes", hexo.config.theme) + path.sep;
+    hexo.theme_script_dir = path.join(hexo.theme_dir, "scripts") + path.sep;
 
-    console.log("Loaded config - Theme:", hexo.config.theme);
+    console.log("Config merged - Theme:", hexo.config.theme);
     console.log("Theme dir:", hexo.theme_dir);
+    console.log("Theme exists:", fs.existsSync(hexo.theme_dir));
 
-    // Manually load plugins after init
+    // Manually load plugins
     hexo.loadPlugin(require.resolve("hexo-renderer-marked"));
     hexo.loadPlugin(require.resolve("hexo-renderer-ejs"));
     hexo.loadPlugin(require.resolve("hexo-renderer-stylus"));
@@ -35,9 +35,14 @@ hexo
     hexo.loadPlugin(require.resolve("hexo-generator-tag"));
     hexo.loadPlugin(require.resolve("hexo-generator-search"));
     hexo.loadPlugin(require.resolve("hexo-generator-feed"));
+
+    // Load theme and sources
     return hexo.load();
   })
-  .then(() => hexo.call("generate"))
+  .then(() => {
+    console.log("Theme views loaded:", Object.keys(hexo.theme.views || {}).length);
+    return hexo.call("generate");
+  })
   .then(() => {
     console.log("Documentation site generated successfully!");
     process.exit(0);

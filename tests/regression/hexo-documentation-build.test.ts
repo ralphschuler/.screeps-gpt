@@ -19,12 +19,12 @@ import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 import { execSync } from "child_process";
 
-const DOCS_BUILD_DIR = join(process.cwd(), "docs-build");
+const DOCS_BUILD_DIR = join(process.cwd(), "packages/docs");
 const PUBLIC_DIR = join(DOCS_BUILD_DIR, "public");
 
 describe("Hexo documentation build (#252)", () => {
   beforeAll(() => {
-    // Ensure docs-build dependencies are installed (Bun workspace handles this)
+    // Ensure packages/docs dependencies are installed (Bun workspace handles this)
     console.log("Building documentation site...");
     execSync("bun run build", { cwd: DOCS_BUILD_DIR, stdio: "inherit" });
   }, 60000); // 60 second timeout for bun operations and hexo build

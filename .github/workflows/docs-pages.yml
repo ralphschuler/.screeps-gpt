@@ -35,7 +35,7 @@ jobs:
       - name: Install main dependencies
         run: bun install
       - name: Install documentation dependencies
-        working-directory: docs-build
+        working-directory: packages/docs
         run: bun install
       - name: Update versions
         run: bun run versions:update
@@ -44,12 +44,12 @@ jobs:
           npx tsx packages/utilities/scripts/generate-analytics.ts ||
           echo "::warning::Analytics generation failed (no snapshots yet)"
       - name: Generate documentation site
-        working-directory: docs-build
+        working-directory: packages/docs
         run: bun run build
       - name: Copy to build directory
         run: |
           mkdir -p build
-          cp -r docs-build/public build/docs-site
+          cp -r packages/docs/public build/docs-site
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
