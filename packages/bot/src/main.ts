@@ -73,10 +73,17 @@ function validateGameContext(game: Game): GameContext {
 
 export const loop = (): void => {
   try {
-    // Auto-start profiler on first tick if enabled and not running
-    // Check if profiler is not already running by inspecting Memory.profiler.start
+    // Ensure Memory.profiler is initialized on first tick
+    // This must happen inside loop() as Memory is not available at module load time
     if (__PROFILER_ENABLED__ && !profilerAutoStarted) {
-      if (typeof Memory !== "undefined" && Memory.profiler?.start === undefined) {
+      // Initialize Memory.profiler if not present using nullish coalescing assignment
+      Memory.profiler ??= {
+        data: {},
+        total: 0
+      };
+
+      // Auto-start profiler if not already running
+      if (Memory.profiler.start === undefined) {
         profilerInstance.start();
         console.log("[Profiler] Auto-started profiler data collection");
         profilerAutoStarted = true;
