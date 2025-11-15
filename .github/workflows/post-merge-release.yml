@@ -86,6 +86,7 @@ jobs:
       # Create Pull Request for release artifacts
       - name: Create Pull Request for release artifacts
         id: create_pr
+        if: steps.commit.outputs.changes_detected == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
