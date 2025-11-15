@@ -710,7 +710,6 @@ export class BehaviorController {
     // Detect containers near sources and adjust role minimums dynamically
     const adjustedMinimums = this.calculateDynamicRoleMinimums(game);
 
-    // Debug logging removed - detailed logging is in calculateDynamicRoleMinimums
 
     // Get current harvester count for emergency spawn detection
     const harvesterCount = roleCounts["harvester"] ?? 0;
