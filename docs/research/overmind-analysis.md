@@ -30,6 +30,7 @@ Overmind implements a four-tier hierarchy for colony management:
 4. **HiveClusters** - Groups of related structures (energy sources, labs, bunkers)
 
 **Current .screeps-gpt Architecture:**
+
 - Kernel orchestration in `src/runtime/bootstrap/`
 - Manager classes in `src/runtime/` (TaskManager, SpawnManager, etc.)
 - Behavior controllers in `src/runtime/behavior/`
@@ -37,11 +38,13 @@ Overmind implements a four-tier hierarchy for colony management:
 **Integration Potential:** ⭐⭐⭐⭐ (High)
 
 **Compatibility Assessment:**
+
 - **Compatible:** .screeps-gpt already has manager-based architecture
 - **Enhancement:** Add HiveCluster abstraction for structure grouping
 - **Consideration:** RoomManager abstraction mentioned in TASKS.md aligns with Colony concept
 
 **Recommendations:**
+
 - Introduce `Colony` class to wrap room-level management
 - Create `HiveCluster` for structure group coordination (e.g., SourceCluster, StorageCluster)
 - Maintain existing managers but have them report to Colony coordinator
@@ -51,12 +54,14 @@ Overmind implements a four-tier hierarchy for colony management:
 
 **Pattern Description:**  
 Directives are temporary, event-driven tasks placed in response to game stimuli:
+
 - Flag-based signaling for colonization, defense, expansion
 - Dynamic response to threats, opportunities, resource needs
 - Directive spawns appropriate Overlord to handle the situation
 - Acts as intelligent "process table" for colony adaptation
 
 **Current .screeps-gpt Architecture:**
+
 - Task interface in `src/shared/contracts.ts`
 - TaskManager with priority-based generation and assignment
 - 17 regression tests for task scenarios
@@ -64,11 +69,13 @@ Directives are temporary, event-driven tasks placed in response to game stimuli:
 **Integration Potential:** ⭐⭐⭐⭐⭐ (Very High)
 
 **Compatibility Assessment:**
+
 - **Aligned:** Existing task system provides foundation
 - **Gap:** No event-driven directive spawning mechanism
 - **Opportunity:** Enhance task system with directive pattern
 
 **Recommendations:**
+
 - Extend task system to include Directive concept
 - Implement Directive types: Colonize, Defend, Attack, Expand, Emergency
 - Create DirectiveManager to monitor game state and spawn directives
@@ -79,6 +86,7 @@ Directives are temporary, event-driven tasks placed in response to game stimuli:
 
 **Pattern Description:**  
 Overmind's task system features:
+
 - Tasks are transferable, persistent objects assigned to creeps
 - Decouples task assignment from execution
 - Validity checking (isValidTask, isValidTarget) each tick
@@ -86,6 +94,7 @@ Overmind's task system features:
 - Tasks persist between ticks, reducing recalculation overhead
 
 **Current .screeps-gpt Architecture:**
+
 - TaskManager with priority-based assignment
 - Task interface with type, target, priority fields
 - Closest idle creep assignment algorithm
@@ -93,11 +102,13 @@ Overmind's task system features:
 **Integration Potential:** ⭐⭐⭐⭐ (High)
 
 **Compatibility Assessment:**
+
 - **Compatible:** Task interface already exists
 - **Enhancement:** Add task persistence and validity checking
 - **Performance Gain:** Reduce per-tick recalculation by persisting tasks
 
 **Recommendations:**
+
 - Add task validity methods to Task interface
 - Implement task persistence in creep memory
 - Add parent task chaining for multi-step operations
@@ -112,6 +123,7 @@ Overmind's task system features:
 Overmind employs multi-layered caching strategies:
 
 **Memory vs Heap Pattern:**
+
 - **Persistent State (Memory):** Colony info, creep roles, critical data
   - JSON-serializable only
   - Survives global resets
@@ -122,12 +134,14 @@ Overmind employs multi-layered caching strategies:
   - Lost on global reset, must be reconstructable
 
 **Caching Strategies:**
+
 - Path caching with TTL management
 - Cost matrix reuse for pathfinding
 - Pre-filtered game object lists
 - Bucket-aware scheduling for expensive operations
 
 **Current .screeps-gpt Architecture:**
+
 - Memory management in `src/runtime/memory/`
 - CPU tracking in `src/runtime/metrics/`
 - Profiler integration across managers
@@ -136,11 +150,13 @@ Overmind employs multi-layered caching strategies:
 **Integration Potential:** ⭐⭐⭐⭐⭐ (Very High)
 
 **Compatibility Assessment:**
+
 - **Foundation Present:** Memory and metrics infrastructure exists
 - **Enhancement Needed:** Decorator-based caching pattern
 - **Quick Win:** Implement heap caching for frequently accessed data
 
 **Recommendations:**
+
 - **HIGH PRIORITY** - Implement decorator-based caching (relates to #494)
   - Create `@cache(heap)` and `@cache(memory)` decorators
   - Separate persistent vs ephemeral state clearly
@@ -154,6 +170,7 @@ Overmind employs multi-layered caching strategies:
 ### 5. Pathfinding Optimization
 
 **Pattern Description:**
+
 - Cache paths found with PathFinder.search in Memory
 - Pre-calculate and reuse cost matrices
 - Only recompute paths when environment materially changes
@@ -161,12 +178,14 @@ Overmind employs multi-layered caching strategies:
 - Move expensive calculations outside per-creep loops
 
 **Current .screeps-gpt Architecture:**
+
 - No explicit path caching system
 - Standard Screeps pathfinding used in behaviors
 
 **Integration Potential:** ⭐⭐⭐⭐ (High)
 
 **Recommendations:**
+
 - Create PathCache manager for path storage and reuse
 - Implement cost matrix caching for frequently traversed rooms
 - Add path invalidation on room structure changes
@@ -175,18 +194,21 @@ Overmind employs multi-layered caching strategies:
 ### 6. CPU Bucket-Aware Scheduling
 
 **Pattern Description:**
+
 - Monitor CPU bucket levels
 - Defer expensive operations when bucket is low
 - Run heavy calculations (overlays, planning) when bucket is full
 - Spread expensive operations over multiple ticks
 
 **Current .screeps-gpt Architecture:**
+
 - CPU tracking via metrics system
 - Profiler integration for performance monitoring
 
 **Integration Potential:** ⭐⭐⭐⭐ (High)
 
 **Recommendations:**
+
 - **HIGH PRIORITY** - Implement bucket-aware scheduler (relates to #392, #494)
 - Create OperationScheduler with priority queue
 - Add bucket threshold checks (e.g., defer if < 5000)
@@ -200,6 +222,7 @@ Overmind employs multi-layered caching strategies:
 ### 7. Colony Management & Expansion
 
 **Pattern Description:**
+
 - Each owned room becomes a Colony with autonomous management
 - Overseer coordinates multiple colonies
 - Automated expansion queue with priority-based claiming
@@ -207,6 +230,7 @@ Overmind employs multi-layered caching strategies:
 - Room classification by type (Core, Controller, SourceKeeper) and stage
 
 **Current .screeps-gpt Architecture:**
+
 - ColonyManager implemented (Phase 5 complete)
 - Multi-room tracking and coordination
 - Expansion queue with priority-based claiming
@@ -215,11 +239,13 @@ Overmind employs multi-layered caching strategies:
 **Integration Potential:** ⭐⭐⭐ (Medium)
 
 **Compatibility Assessment:**
+
 - **Already Implemented:** ColonyManager exists with similar features
 - **Enhancement:** Room classification and stage management
 - **Opportunity:** Refine expansion criteria and coordination
 
 **Recommendations:**
+
 - Add room classification system (Core/Controller/SourceKeeper/Remote)
 - Implement developmental stage tracking (Early/Infrastructure/Expansion)
 - Enhance expansion site selection with scoring algorithm
@@ -229,6 +255,7 @@ Overmind employs multi-layered caching strategies:
 ### 8. Remote Mining Architecture
 
 **Pattern Description:**
+
 - Office/Territory hierarchical organization
 - Dedicated miner/hauler roles with optimized body parts
 - Automated site selection based on resource/terrain scoring
@@ -237,6 +264,7 @@ Overmind employs multi-layered caching strategies:
 - Scout-based visibility acquisition
 
 **Current .screeps-gpt Architecture:**
+
 - ScoutManager for remote room mapping (Phase 3 complete)
 - RoadPlanner for automated road placement (Phase 3 complete)
 - Remote harvesting mentioned in TASKS.md
@@ -245,11 +273,13 @@ Overmind employs multi-layered caching strategies:
 **Integration Potential:** ⭐⭐⭐⭐ (High)
 
 **Compatibility Assessment:**
+
 - **Foundation Present:** Scout and road systems exist
 - **Gap:** No dedicated remote mining orchestration
 - **Opportunity:** Create specialized remote mining manager
 
 **Recommendations:**
+
 - Create RemoteMiningManager for orchestration
 - Implement remote site scoring (distance, resources, terrain, threats)
 - Add dedicated RemoteMiner and RemoteHauler roles
@@ -260,6 +290,7 @@ Overmind employs multi-layered caching strategies:
 ### 9. Logistics & Resource Coordination
 
 **Pattern Description:**
+
 - Automated pathfinding and hauling between rooms
 - Terminal and trade management for mineral trading
 - Central storage hub pattern for extension/spawn refilling
@@ -267,6 +298,7 @@ Overmind employs multi-layered caching strategies:
 - Separate short-range and long-range hauling
 
 **Current .screeps-gpt Architecture:**
+
 - TerminalManager for inter-room logistics (Phase 3 complete)
 - Energy balancing with configurable reserves
 - Priority-based resource transfer queue
@@ -274,10 +306,12 @@ Overmind employs multi-layered caching strategies:
 **Integration Potential:** ⭐⭐⭐ (Medium)
 
 **Compatibility Assessment:**
+
 - **Already Implemented:** Terminal management exists
 - **Enhancement Opportunity:** Separate hauler types and storage hub pattern
 
 **Recommendations:**
+
 - **MEDIUM PRIORITY** - Separate short-range and long-range hauling (relates to #493)
 - Implement central storage hub for spawn/extension refilling
 - Add spawn uptime monitoring and alerting
@@ -290,6 +324,7 @@ Overmind employs multi-layered caching strategies:
 ### 10. DEFCON System
 
 **Pattern Description:**
+
 - Threat level evaluation system (DEFCON 1-5)
 - Progressive defensive measures based on threat escalation
 - Automated spawning of appropriate defenders
@@ -297,6 +332,7 @@ Overmind employs multi-layered caching strategies:
 - Distributed reinforcement across colonies
 
 **Current .screeps-gpt Architecture:**
+
 - CombatManager for squad-based operations (Phase 4 complete)
 - Threat assessment and engagement logic
 - TowerManager for defense and repair (Phase 2 complete)
@@ -304,11 +340,13 @@ Overmind employs multi-layered caching strategies:
 **Integration Potential:** ⭐⭐⭐ (Medium)
 
 **Compatibility Assessment:**
+
 - **Foundation Present:** Combat and tower systems exist
 - **Enhancement:** Add formal DEFCON threat level system
 - **Opportunity:** Progressive response automation
 
 **Recommendations:**
+
 - Implement DEFCON threat level classification
 - Create progressive response plans for each level
 - Add automated boosting for high-threat scenarios
@@ -318,12 +356,14 @@ Overmind employs multi-layered caching strategies:
 ### 11. Distributed Defense & Reinforcement
 
 **Pattern Description:**
+
 - Colonies can reinforce each other
 - Collective defense net across owned rooms
 - Automated defense creep routing to threatened rooms
 - Resource pooling for defense operations
 
 **Current .screeps-gpt Architecture:**
+
 - CombatManager with squad formation
 - ColonyManager for multi-room coordination
 - No explicit cross-colony defense coordination
@@ -331,6 +371,7 @@ Overmind employs multi-layered caching strategies:
 **Integration Potential:** ⭐⭐⭐⭐ (High)
 
 **Recommendations:**
+
 - Extend ColonyManager to coordinate cross-colony defense
 - Implement defense request/response system
 - Add automated defender routing to threatened colonies
@@ -342,6 +383,7 @@ Overmind employs multi-layered caching strategies:
 ### 12. Market Automation
 
 **Pattern Description:**
+
 - Automated buy/sell orders for minerals, energy, power
 - Market rate tracking and price optimization
 - Terminal cooldown and energy usage optimization
@@ -349,12 +391,14 @@ Overmind employs multi-layered caching strategies:
 - Resource sharing via Assimilator module
 
 **Current .screeps-gpt Architecture:**
+
 - TerminalManager with resource transfer logic
 - No explicit market trading implementation
 
 **Integration Potential:** ⭐⭐⭐ (Medium)
 
 **Recommendations:**
+
 - Create MarketManager for trade automation
 - Implement price tracking and analysis
 - Add automated buy/sell order placement
@@ -366,12 +410,14 @@ Overmind employs multi-layered caching strategies:
 ### Quick Wins (High Value, Low-Medium Complexity)
 
 #### 1. Task Persistence & Validity (Phase 2)
+
 **Priority:** HIGH  
 **Complexity:** Low  
 **Related Issues:** #478  
 **Impact:** Reduces CPU overhead by persisting tasks between ticks
 
 **Implementation Steps:**
+
 - Add `isValid()` and `isValidTarget()` methods to Task interface
 - Store assigned tasks in creep memory
 - Implement task reuse pool
@@ -380,12 +426,14 @@ Overmind employs multi-layered caching strategies:
 **Estimated Effort:** 1-2 days
 
 #### 2. Decorator-Based Caching Pattern (Phase 2)
+
 **Priority:** HIGH  
 **Complexity:** Medium  
 **Related Issues:** #487, #494  
 **Impact:** Major CPU savings through intelligent caching
 
 **Implementation Steps:**
+
 - Create `@cache(heap)` and `@cache(memory)` decorators
 - Implement cache invalidation logic
 - Separate persistent vs ephemeral state clearly
@@ -394,12 +442,14 @@ Overmind employs multi-layered caching strategies:
 **Estimated Effort:** 2-3 days
 
 #### 3. Directive System (Phase 2)
+
 **Priority:** HIGH  
 **Complexity:** Medium  
 **Related Issues:** #478  
 **Impact:** Event-driven task spawning, improved adaptability
 
 **Implementation Steps:**
+
 - Create Directive base class
 - Implement directive types (Colonize, Defend, Attack, Expand)
 - Create DirectiveManager for game state monitoring
@@ -410,12 +460,14 @@ Overmind employs multi-layered caching strategies:
 ### Medium-Term Improvements (High Value, Medium Complexity)
 
 #### 4. CPU Bucket-Aware Scheduling (Phase 2-3)
+
 **Priority:** HIGH  
 **Complexity:** Medium  
 **Related Issues:** #392, #426, #494, #495  
 **Impact:** Prevents CPU limit issues, enables expensive operations
 
 **Implementation Steps:**
+
 - Create OperationScheduler with priority queue
 - Add bucket threshold monitoring
 - Implement operation deferral when bucket is low
@@ -425,12 +477,14 @@ Overmind employs multi-layered caching strategies:
 **Estimated Effort:** 3-5 days
 
 #### 5. Path Caching System (Phase 2-3)
+
 **Priority:** HIGH  
 **Complexity:** Medium  
 **Related Issues:** #392, #494  
 **Impact:** Significant CPU savings on pathfinding
 
 **Implementation Steps:**
+
 - Create PathCache manager
 - Implement path storage with TTL
 - Add cost matrix caching
@@ -440,12 +494,14 @@ Overmind employs multi-layered caching strategies:
 **Estimated Effort:** 3-4 days
 
 #### 6. Remote Mining Manager (Phase 3-4)
+
 **Priority:** MEDIUM  
 **Complexity:** Medium  
 **Related Issues:** None specific (new feature)  
 **Impact:** Expanded resource income, better empire scaling
 
 **Implementation Steps:**
+
 - Create RemoteMiningManager
 - Implement site scoring algorithm
 - Add RemoteMiner and RemoteHauler roles
@@ -457,12 +513,14 @@ Overmind employs multi-layered caching strategies:
 ### Long-Term Enhancements (Medium Value, Medium-High Complexity)
 
 #### 7. HiveCluster Abstraction (Phase 3-4)
+
 **Priority:** MEDIUM  
 **Complexity:** Medium-High  
 **Related Issues:** None specific (architectural)  
 **Impact:** Better structure coordination, cleaner architecture
 
 **Implementation Steps:**
+
 - Create HiveCluster base class
 - Implement SourceCluster, StorageCluster, LabCluster
 - Refactor existing managers to use clusters
@@ -471,12 +529,14 @@ Overmind employs multi-layered caching strategies:
 **Estimated Effort:** 5-7 days
 
 #### 8. DEFCON Threat System (Phase 4-5)
+
 **Priority:** MEDIUM  
 **Complexity:** Medium  
 **Related Issues:** None specific (new feature)  
 **Impact:** Progressive defense response, better threat handling
 
 **Implementation Steps:**
+
 - Implement DEFCON level classification
 - Create progressive response plans
 - Add automated boosting logic
@@ -486,12 +546,14 @@ Overmind employs multi-layered caching strategies:
 **Estimated Effort:** 4-6 days
 
 #### 9. Hauling Optimization (Phase 3-4)
+
 **Priority:** MEDIUM  
 **Complexity:** Medium  
 **Related Issues:** #493, #607, #614  
 **Impact:** Better energy logistics, prevents spawn starvation
 
 **Implementation Steps:**
+
 - Separate short-range and long-range hauling roles
 - Implement central storage hub pattern
 - Add spawn uptime monitoring
@@ -501,12 +563,14 @@ Overmind employs multi-layered caching strategies:
 **Estimated Effort:** 4-5 days
 
 #### 10. Market Automation (Phase 5+)
+
 **Priority:** LOW  
 **Complexity:** Medium  
 **Related Issues:** None specific (new feature)  
 **Impact:** Automated resource trading, economic optimization
 
 **Implementation Steps:**
+
 - Create MarketManager
 - Implement price tracking
 - Add automated order placement
@@ -540,21 +604,25 @@ Overmind employs multi-layered caching strategies:
 ## Integration Risks & Considerations
 
 ### Complexity Management
+
 - **Risk:** Overmind is feature-rich but complex; avoid over-engineering
 - **Mitigation:** Implement patterns incrementally, focus on high-value items
 - **Reference:** TASKS.md mentions "Great Purge" philosophy - simplify over-engineered abstractions
 
 ### Testing Requirements
+
 - **Need:** Comprehensive tests for each new pattern
 - **Approach:** Follow existing test structure (unit, regression, e2e)
 - **Coverage:** Maintain test coverage above 70% for new code
 
 ### Documentation Maintenance
+
 - **Need:** Update architecture documentation for each integration
 - **Files:** README.md, DOCS.md, AGENTS.md, docs/automation/overview.md
 - **Frequency:** After each major pattern implementation
 
 ### Performance Validation
+
 - **Method:** Use PTR monitoring and regression testing
 - **Metrics:** CPU usage, bucket stability, room performance
 - **Baseline:** Establish performance baselines before/after changes
@@ -616,6 +684,7 @@ Overmind's architecture provides excellent patterns for improving .screeps-gpt, 
 4. **Defensive Architecture** - DEFCON system and distributed defense
 
 The recommended implementation order prioritizes:
+
 1. Task system improvements (quick wins)
 2. CPU and memory optimization (high impact)
 3. Remote mining and logistics (scaling)
@@ -638,4 +707,4 @@ This phased approach ensures incremental value delivery while maintaining code q
 
 ---
 
-*This document was created as part of issue research to identify integration patterns from competitive Screeps bots. It serves as a reference for future implementation work and architectural decisions.*
+_This document was created as part of issue research to identify integration patterns from competitive Screeps bots. It serves as a reference for future implementation work and architectural decisions._
