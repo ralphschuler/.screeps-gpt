@@ -50,6 +50,16 @@ export interface TrafficManagerConfig {
   trafficDecayRate?: number;
   /** Minimum traffic count before cleanup (default: 1) */
   trafficCleanupThreshold?: number;
+  /** Maximum traffic positions per room (default: 500) */
+  maxPositionsPerRoom?: number;
+  /** Maximum total traffic positions across all rooms (default: 2000) */
+  maxTotalPositions?: number;
+  /** Threshold to trigger aggressive decay (default: 0.8, meaning 80% of maxTotalPositions) */
+  aggressiveDecayThreshold?: number;
+  /** Multiplier for decay rate under memory pressure (default: 0.9, makes decay 10% faster) */
+  aggressiveDecayMultiplier?: number;
+  /** Threshold for warning logs (default: 0.9, meaning 90% of maxTotalPositions) */
+  warningThreshold?: number;
 }
 
 /**
@@ -70,6 +80,17 @@ export class TrafficManager {
   private readonly enableTrafficAnalysis: boolean;
   private readonly trafficDecayRate: number;
   private readonly trafficCleanupThreshold: number;
+  private readonly maxPositionsPerRoom: number;
+  private readonly maxTotalPositions: number;
+  private readonly aggressiveDecayThreshold: number;
+  private readonly aggressiveDecayMultiplier: number;
+  private readonly warningThreshold: number;
+
+  /**
+   * Estimated bytes per traffic position entry (key + TrafficData object)
+   * Based on typical JSON serialization: "roomName:x:y" (15-20 chars) + count/lastUpdated (20-30 chars)
+   */
+  private static readonly BYTES_PER_POSITION_ESTIMATE = 50;
 
   public constructor(config: TrafficManagerConfig = {}) {
     this.logger = config.logger ?? console;
@@ -77,6 +98,11 @@ export class TrafficManager {
     this.enableTrafficAnalysis = config.enableTrafficAnalysis ?? true;
     this.trafficDecayRate = config.trafficDecayRate ?? 0.98;
     this.trafficCleanupThreshold = config.trafficCleanupThreshold ?? 1;
+    this.maxPositionsPerRoom = config.maxPositionsPerRoom ?? 500;
+    this.maxTotalPositions = config.maxTotalPositions ?? 2000;
+    this.aggressiveDecayThreshold = config.aggressiveDecayThreshold ?? 0.8;
+    this.aggressiveDecayMultiplier = config.aggressiveDecayMultiplier ?? 0.9;
+    this.warningThreshold = config.warningThreshold ?? 0.9;
 
     // Load state from Memory if provided
     if (this.memoryRef) {
@@ -342,14 +368,24 @@ export class TrafficManager {
 
   /**
    * Apply decay to traffic data (call periodically to fade old traffic patterns)
+   * Also enforces size limits to prevent unbounded memory growth
    */
   public applyTrafficDecay(): void {
     if (!this.enableTrafficAnalysis) {
       return;
     }
 
+    // Check if we're approaching memory pressure
+    const totalPositions = this.trafficData.size;
+    const isUnderMemoryPressure = totalPositions >= this.maxTotalPositions * this.aggressiveDecayThreshold;
+
+    // Apply decay (more aggressive under memory pressure)
+    const effectiveDecayRate = isUnderMemoryPressure
+      ? this.trafficDecayRate * this.aggressiveDecayMultiplier
+      : this.trafficDecayRate;
+
     for (const [posKey, data] of this.trafficData.entries()) {
-      const decayedCount = data.count * this.trafficDecayRate;
+      const decayedCount = data.count * effectiveDecayRate;
 
       if (decayedCount < this.trafficCleanupThreshold) {
         this.trafficData.delete(posKey);
@@ -358,6 +394,75 @@ export class TrafficManager {
           count: decayedCount,
           lastUpdated: data.lastUpdated
         });
+      }
+    }
+
+    // Enforce hard size limit by removing lowest-traffic positions
+    if (this.trafficData.size > this.maxTotalPositions) {
+      this.pruneStaleTrafficData(this.trafficData.size - this.maxTotalPositions);
+    }
+
+    // Enforce per-room limits
+    this.enforcePerRoomLimits();
+
+    // Log warnings if size is still excessive
+    if (this.trafficData.size > this.maxTotalPositions * this.warningThreshold) {
+      this.logger.warn?.(
+        `[TrafficManager] Traffic data at ${this.trafficData.size}/${this.maxTotalPositions} positions (${((this.trafficData.size / this.maxTotalPositions) * 100).toFixed(1)}%)`
+      );
+    }
+  }
+
+  /**
+   * Prune stale traffic data by removing positions with lowest traffic counts
+   * @param count Number of positions to remove
+   */
+  private pruneStaleTrafficData(count: number): void {
+    if (count <= 0) return;
+
+    // Sort positions by traffic count (ascending) to remove least-used first
+    const sorted = Array.from(this.trafficData.entries()).sort((a, b) => a[1].count - b[1].count);
+
+    // Remove the lowest traffic positions
+    const toRemove = sorted.slice(0, Math.min(count, sorted.length));
+    for (const [posKey] of toRemove) {
+      this.trafficData.delete(posKey);
+    }
+
+    if (toRemove.length > 0) {
+      this.logger.warn?.(`[TrafficManager] Pruned ${toRemove.length} low-traffic positions to enforce size limit`);
+    }
+  }
+
+  /**
+   * Enforce per-room position limits
+   */
+  private enforcePerRoomLimits(): void {
+    // Group positions by room
+    const roomPositions = new Map<string, Array<[string, TrafficData]>>();
+
+    for (const [posKey, data] of this.trafficData.entries()) {
+      const roomName = posKey.split(":")[0];
+      if (!roomPositions.has(roomName)) {
+        roomPositions.set(roomName, []);
+      }
+      roomPositions.get(roomName)?.push([posKey, data]);
+    }
+
+    // Check each room and prune if over limit
+    for (const [roomName, positions] of roomPositions.entries()) {
+      if (positions.length > this.maxPositionsPerRoom) {
+        // Sort by traffic count and remove lowest
+        positions.sort((a, b) => a[1].count - b[1].count);
+        const toRemove = positions.slice(0, positions.length - this.maxPositionsPerRoom);
+
+        for (const [posKey] of toRemove) {
+          this.trafficData.delete(posKey);
+        }
+
+        this.logger.warn?.(
+          `[TrafficManager] Pruned ${toRemove.length} positions in room ${roomName} (exceeded ${this.maxPositionsPerRoom} limit)`
+        );
       }
     }
   }
@@ -409,5 +514,29 @@ export class TrafficManager {
    */
   public getTrackedPositionCount(): number {
     return this.trafficData.size;
+  }
+
+  /**
+   * Get memory usage statistics for monitoring
+   * @returns Statistics about traffic data memory usage
+   */
+  public getMemoryUsageStats(): {
+    positionCount: number;
+    estimatedBytes: number;
+    maxTotalPositions: number;
+    maxPositionsPerRoom: number;
+    utilizationPercent: number;
+  } {
+    const positionCount = this.trafficData.size;
+    const estimatedBytes = positionCount * TrafficManager.BYTES_PER_POSITION_ESTIMATE;
+    const utilizationPercent = (positionCount / this.maxTotalPositions) * 100;
+
+    return {
+      positionCount,
+      estimatedBytes,
+      maxTotalPositions: this.maxTotalPositions,
+      maxPositionsPerRoom: this.maxPositionsPerRoom,
+      utilizationPercent
+    };
   }
 }
