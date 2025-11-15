@@ -214,6 +214,8 @@ async function collectBotSnapshot(): Promise<void> {
         byRole: consoleTelemetry.creeps.byRole
       };
 
+      // Set tick if available from consoleTelemetry, else leave undefined
+      snapshot.tick = typeof consoleTelemetry.tick === "number" ? consoleTelemetry.tick : undefined;
       console.log(
         `✓ Enriched snapshot with console data: ${Object.keys(snapshot.rooms || {}).length} rooms, ${snapshot.creeps.total} creeps`
       );
