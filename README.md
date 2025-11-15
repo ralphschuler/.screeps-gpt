@@ -230,8 +230,10 @@ Multiple specialized Copilot agents collaborate on different aspects of developm
 
 ### 🎯 Strategy & Development
 
-- **[Development Roadmap](docs/strategy/roadmap.md)** - Comprehensive evolution plan from RCL 1-2 to multi-shard operations
-- **[Architecture Alignment](docs/strategy/architecture.md)** - Roadmap integration with existing codebase
+- **[Strategic Roadmap](docs/strategy/roadmap.md)** - Current phase status, success metrics, and strategic priorities (Phase 1-5)
+- **[Phase Documentation](docs/strategy/phases/)** - Detailed objectives and implementation status for each development phase
+- **[Learning Insights](docs/strategy/learning/)** - Documented patterns, lessons learned, and strategic insights
+- **[Architectural Decisions](docs/strategy/decisions/)** - ADRs documenting significant design choices
 - **[Creep Roles](docs/runtime/strategy/creep-roles.md)** - Bot behavior documentation
 - **[Task System Architecture](docs/runtime/task-system.md)** - Priority-based task management system (experimental)
 - **[Task Prioritization](docs/runtime/strategy/task-prioritization.md)** - Decision-making logic

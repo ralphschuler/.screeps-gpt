@@ -47,7 +47,13 @@ All agents should reference these documents before making changes:
    - [`docs/operations/respawn-handling.md`](docs/operations/respawn-handling.md) - Automatic respawn detection and handling
    - [`docs/changelog/versions.md`](docs/changelog/versions.md) - Generated release history (do not edit manually)
 
-3. **Workflow Configuration**
+3. **Strategic Documentation (`docs/strategy/`)**
+   - [`docs/strategy/roadmap.md`](docs/strategy/roadmap.md) - Current phase status, success metrics, and strategic priorities
+   - [`docs/strategy/phases/`](docs/strategy/phases/) - Phase-specific documentation (Phase 1-5)
+   - [`docs/strategy/learning/`](docs/strategy/learning/) - Documented patterns and lessons learned
+   - [`docs/strategy/decisions/`](docs/strategy/decisions/) - Architectural Decision Records (ADRs)
+
+4. **Workflow Configuration**
    - `.github/workflows/*.yml` - GitHub Actions workflow definitions
    - `.github/copilot/prompts/*` - Prompt templates for Copilot automation
    - `.github/actions/copilot-exec/action.yml` - Shared Copilot CLI execution action
