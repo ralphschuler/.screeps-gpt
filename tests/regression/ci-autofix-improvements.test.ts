@@ -50,7 +50,7 @@ interface AgentAction {
 describe("CI Autofix Workflow Improvements", () => {
   const promptPath = resolve(__dirname, "../../.github/copilot/prompts/ci-autofix");
   const workflowPath = resolve(__dirname, "../../.github/workflows/copilot-ci-autofix.yml");
-  const docsPath = resolve(__dirname, "../../docs/automation/overview.md");
+  const docsPath = resolve(__dirname, "../../packages/docs/docs/automation/overview.md");
 
   describe("Enhanced Failure Classification", () => {
     it("should include comprehensive failure type categories", () => {

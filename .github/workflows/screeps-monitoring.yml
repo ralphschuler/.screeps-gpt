@@ -152,7 +152,7 @@ jobs:
             git add reports/bot-snapshots/
           fi
 
-          # Add analytics data if generated
+          # Add analytics data when generated
           if [ -f "source/docs/analytics/data.json" ]; then
             git add source/docs/analytics/data.json
           fi
@@ -162,7 +162,7 @@ jobs:
             git add reports/monitoring/health.json
           fi
 
-          # Commit if there are changes
+          # Commit when there are changes
           if git diff --cached --quiet; then
             echo "No snapshot or health state changes to commit"
           else

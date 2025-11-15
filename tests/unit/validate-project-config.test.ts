@@ -3,7 +3,7 @@ import { readFile, access } from "node:fs/promises";
 import { resolve } from "node:path";
 
 describe("Project configuration validator script", () => {
-  const scriptPath = resolve("scripts", "validate-project-config.ts");
+  const scriptPath = resolve("packages/utilities/scripts", "validate-project-config.ts");
 
   it("should exist and be readable", async () => {
     await expect(access(scriptPath)).resolves.toBeUndefined();
