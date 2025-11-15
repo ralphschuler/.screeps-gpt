@@ -665,6 +665,9 @@ export class BehaviorController {
       // Spawn 1 repairer per controlled room
       adjustedMinimums.repairer = controlledRoomCount;
 
+      // Maintain builder minimum for construction and repairs
+      adjustedMinimums.builder = ROLE_DEFINITIONS["builder"].minimum;
+
       // Reduce regular harvesters - use optimal count for room
       const firstRoom = Object.values(game.rooms).find(r => r.controller?.my);
       if (firstRoom) {
@@ -706,6 +709,8 @@ export class BehaviorController {
 
     // Detect containers near sources and adjust role minimums dynamically
     const adjustedMinimums = this.calculateDynamicRoleMinimums(game);
+
+    // Debug logging removed - detailed logging is in calculateDynamicRoleMinimums
 
     // Get current harvester count for emergency spawn detection
     const harvesterCount = roleCounts["harvester"] ?? 0;
