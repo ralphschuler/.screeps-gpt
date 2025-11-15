@@ -50,6 +50,16 @@ jobs:
         working-directory: packages/docs
         run: npm ci
 
+      - name: Clone Hexo Cactus theme
+        working-directory: packages/docs/themes
+        run: |
+          if [ ! -d "cactus/.git" ]; then
+            rm -rf cactus
+            git clone \
+              https://github.com/probberechts/hexo-theme-cactus.git \
+              cactus
+          fi
+
       - name: Documentation tests
         run: bun run test:docs
 

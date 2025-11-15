@@ -22,6 +22,7 @@ screeps.json
 /packages/docs/node_modules
 /packages/docs/public
 /packages/docs/db.json
+/packages/docs/themes/cactus
 
 # Copilot workflow logs and cache (ephemeral artifacts)
 /reports/copilot/
