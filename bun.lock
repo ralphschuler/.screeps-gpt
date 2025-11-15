@@ -69,24 +69,21 @@
       "version": "0.45.4",
     },
     "packages/docs": {
-      "name": "@ralphschuler/screeps-gpt-docs",
-      "version": "0.45.4",
+      "name": "hexo-site",
+      "version": "0.0.0",
       "dependencies": {
         "hexo": "^8.0.0",
+        "hexo-feed": "^1.1.2",
         "hexo-generator-archive": "^2.0.0",
         "hexo-generator-category": "^2.0.0",
-        "hexo-generator-feed": "^3.0.0",
         "hexo-generator-index": "^4.0.0",
-        "hexo-generator-search": "^2.4.3",
         "hexo-generator-tag": "^2.0.0",
+        "hexo-graph": "^1.0.13",
         "hexo-renderer-ejs": "^2.0.0",
-        "hexo-renderer-marked": "^7.0.1",
+        "hexo-renderer-marked": "^7.0.0",
         "hexo-renderer-stylus": "^3.0.1",
         "hexo-server": "^3.0.0",
-        "marked": "^16.4.1",
-      },
-      "devDependencies": {
-        "hexo-cli": "^4.3.2",
+        "hexo-theme-landscape": "^1.0.0",
       },
     },
     "packages/screeps-agent": {
@@ -358,8 +355,6 @@
     "@ralphschuler/screeps-gpt-bot": ["@ralphschuler/screeps-gpt-bot@workspace:packages/bot"],
 
     "@ralphschuler/screeps-gpt-console": ["@ralphschuler/screeps-gpt-console@workspace:packages/console"],
-
-    "@ralphschuler/screeps-gpt-docs": ["@ralphschuler/screeps-gpt-docs@workspace:packages/docs"],
 
     "@ralphschuler/screeps-gpt-utilities": ["@ralphschuler/screeps-gpt-utilities@workspace:packages/utilities"],
 
@@ -911,6 +906,8 @@
 
     "hexo-cli": ["hexo-cli@4.3.2", "", { "dependencies": { "abbrev": "^2.0.0", "bluebird": "^3.7.2", "command-exists": "^1.2.9", "hexo-fs": "^4.1.1", "hexo-log": "^4.0.1", "hexo-util": "^3.3.0", "minimist": "^1.2.5", "picocolors": "^1.0.0", "resolve": "^1.20.0", "tildify": "^2.0.0" }, "bin": { "hexo": "bin/hexo" } }, "sha512-druJeBgLpG9ncDS5AhBHdAXk0G4CFj8Qes09pApyZ6bR+nJW1JYiDMuilhudaKDdq+1l49jWXVTidkcb7p0Jbw=="],
 
+    "hexo-feed": ["hexo-feed@1.1.2", "", { "peerDependencies": { "chalk": "^4.1.0", "hexo": "^4.2.0 || ^5.2.0 || ^6.1.0 || ^7.0.0" } }, "sha512-7uK+9r3btleHpVbuuP0I13ETSRiVsBtQghPNyyBl9HJ8D23jXcWq5lLe4KUlhOql35mlIYErNv1iZIbJMNilEQ=="],
+
     "hexo-front-matter": ["hexo-front-matter@4.2.1", "", { "dependencies": { "js-yaml": "^4.1.0" } }, "sha512-sJJI0GNmejYiwBvgnGRKn5V3sbODB4dNPr8jyw2Qp0PRHr4Uuyv8iyxw6WfK3+T7yvzYvJOh+tZ7jnwr2BYARA=="],
 
     "hexo-fs": ["hexo-fs@5.0.1", "", { "dependencies": { "bluebird": "^3.7.2", "chokidar": "^4.0.3", "graceful-fs": "^4.2.10", "hexo-util": "^3.3.0" } }, "sha512-Zm4m21coQA7TtL9JL0oNZF+ypY/HbqwVdaqGqoKD+GEV7HH2Y1YObNBgl1o/lV1tzStC8f15AoRcHdS2jiWp0w=="],
@@ -927,6 +924,8 @@
 
     "hexo-generator-tag": ["hexo-generator-tag@2.0.0", "", { "dependencies": { "hexo-pagination": "3.0.0" } }, "sha512-1px/hF3veEohWDN8jjzchQhaiz+uOStUvvMaBJC9vWOlALh30UFcapL8IrvAwwJZjFRVA+WqGgDRqoQ8+yaaFw=="],
 
+    "hexo-graph": ["hexo-graph@1.0.13", "", {}, "sha512-Mcaut3xg24oS+BmTr5lhfKiptuyyL7CsGiEiJbvG5PdE/bNBW7m8FcGmQHuEt4gYNMwUtHTijmGgnBIjmeG2Mw=="],
+
     "hexo-i18n": ["hexo-i18n@2.0.0", "", { "dependencies": { "sprintf-js": "^1.1.2" } }, "sha512-dkUXecEtChaQMdTHN4WR13c8GwKqjbSOZPJS9qDqV6Ebnb77Wa/nQzWFckhP0dCps3a9lUQBd8hYGOMbOosiQQ=="],
 
     "hexo-log": ["hexo-log@4.1.0", "", { "dependencies": { "picocolors": "^1.0.0" } }, "sha512-i2Sgxk8Cgx5viSjq5qW5N/rBFfwoCKQcH8qnnW1fawCapcdEAhIsq+Y3vbrs9bssyDlyU6Vqm4oQmosREaNI7Q=="],
@@ -940,6 +939,10 @@
     "hexo-renderer-stylus": ["hexo-renderer-stylus@3.0.1", "", { "dependencies": { "nib": "^1.2.0", "stylus": "^0.62.0" } }, "sha512-cFm8ZwShBBeFcQwOXc8EK7lIZnSYVD6OJykdL4GBw99hxc4eD5Hlsi32nRzE8sgKv00jhX1s9Da3GVVFMPAVQg=="],
 
     "hexo-server": ["hexo-server@3.0.0", "", { "dependencies": { "bluebird": "^3.5.5", "compression": "^1.7.4", "connect": "^3.7.0", "mime": "^3.0.0", "morgan": "^1.9.1", "open": "^8.0.9", "picocolors": "^1.0.0", "serve-static": "^1.14.1" } }, "sha512-u4s0ty9Aew6jV+a9oMrXBwhrRpUQ0U8PWM/88a5aHgDru58VY81mVrxOFxs788NAsWQ8OvsJtF5m7mnXoRnSIA=="],
+
+    "hexo-site": ["hexo-site@workspace:packages/docs"],
+
+    "hexo-theme-landscape": ["hexo-theme-landscape@1.1.0", "", {}, "sha512-nszjixBEiEDZjf7glAGbHg0nKGHZdUDwzFVVdRDeu4FeHfGcY5CZNl9sF4vSligjnD8IwFXpDfx5E+GRmNKvWg=="],
 
     "hexo-util": ["hexo-util@3.3.0", "", { "dependencies": { "camel-case": "^4.1.2", "cross-spawn": "^7.0.3", "deepmerge": "^4.2.2", "highlight.js": "^11.6.0", "htmlparser2": "^9.0.0", "prismjs": "^1.29.0", "strip-indent": "^3.0.0" } }, "sha512-YvGngXijE2muEh5L/VI4Fmjqb+/yAkmY+VuyhWVoRwQu1X7bmWodsfYRXX7CUYhi5LqsvH8FAe/yBW1+f6ZX4Q=="],
 

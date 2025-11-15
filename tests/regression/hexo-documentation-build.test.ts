@@ -147,8 +147,7 @@ describe("Hexo documentation build (#252)", () => {
       expect(content.length).toBeGreaterThan(100);
     });
 
-    it.skip("should generate atom.xml for RSS feed", () => {
-      // TODO: Install hexo-generator-feed plugin
+    it("should generate atom.xml for RSS feed", () => {
       const atomPath = join(PUBLIC_DIR, "atom.xml");
       expect(existsSync(atomPath)).toBe(true);
 

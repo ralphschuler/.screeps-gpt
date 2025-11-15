@@ -134,3 +134,20 @@ feed:
   icon: icon.png
   autodiscovery: true
   template:
+
+# Hexo Feed Plugin (replaces hexo-generator-feed)
+# RSS/Atom feed generation
+hexo_feed:
+  type: atom
+  path: atom.xml
+  limit: 20
+  hub:
+  content: true
+  content_limit: 500
+  content_limit_delim: " "
+  order_by: -date
+
+# Graph Plugin
+# Generates relationship graphs
+graph:
+  enable: true
