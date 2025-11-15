@@ -169,6 +169,49 @@
 - [ ] Create resource-aware task allocation system
 - [ ] Implement "questioning everything" architecture review process
 
+### Overmind Architecture Research (2025-11-15)
+
+**Research Documentation:** [`docs/research/overmind-analysis.md`](docs/research/overmind-analysis.md)
+
+**Quick Wins - High Value, Low-Medium Complexity**:
+
+- [ ] Task Persistence & Validity (Phase 2) - Related: #478
+  - Add isValid() and isValidTarget() methods to Task interface
+  - Store assigned tasks in creep memory
+  - Implement task reuse pool and parent task chaining
+- [ ] Decorator-Based Caching Pattern (Phase 2) - Related: #487, #494
+  - Create @cache(heap) and @cache(memory) decorators
+  - Implement cache invalidation and TTL management
+  - Separate persistent vs ephemeral state clearly
+- [ ] Directive System (Phase 2) - Related: #478
+  - Create Directive base class and types (Colonize, Defend, Attack, Expand)
+  - Create DirectiveManager for game state monitoring
+  - Integrate with existing task system
+
+**Medium-Term Improvements**:
+
+- [ ] CPU Bucket-Aware Scheduling (Phase 2-3) - Related: #392, #426, #494, #495
+  - Create OperationScheduler with priority queue
+  - Add bucket threshold monitoring and operation deferral
+  - Create CPU usage dashboard with RoomVisuals
+- [ ] Path Caching System (Phase 2-3) - Related: #392, #494
+  - Create PathCache manager with TTL
+  - Implement cost matrix caching
+  - Add invalidation on structure changes
+- [ ] Remote Mining Manager (Phase 3-4)
+  - Create RemoteMiningManager with site scoring
+  - Add RemoteMiner and RemoteHauler roles
+  - Automated container placement and defense coordination
+
+**Long-Term Enhancements**:
+
+- [ ] HiveCluster Abstraction (Phase 3-4) - Architectural refactoring
+- [ ] DEFCON Threat System (Phase 4-5) - Progressive defense response
+- [ ] Hauling Optimization (Phase 3-4) - Related: #493, #607, #614
+- [ ] Market Automation (Phase 5+) - Automated resource trading
+
+**Note:** See full analysis in `docs/research/overmind-analysis.md` for detailed patterns, compatibility assessment, and implementation recommendations.
+
 ## In Progress
 
 - [ ] Measure Copilot-driven change quality and feed outcomes into system evaluation reports.
