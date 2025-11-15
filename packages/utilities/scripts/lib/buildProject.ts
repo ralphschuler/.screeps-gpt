@@ -13,10 +13,14 @@ const srcDir = resolve("packages/bot/src");
  * Note: esbuild's define expects string values containing JavaScript expressions.
  * For booleans, use "true" or "false" (which become boolean literals in output),
  * not JSON.stringify(true) which would create the string "true".
+ *
+ * Default values:
+ * - TASK_SYSTEM_ENABLED: "true" (enabled by default as of v0.32.0)
+ * - ROOM_VISUALS_ENABLED: "false" (disabled by default for performance)
  */
 const RUNTIME_DEFINES = {
   __PROFILER_ENABLED__: process.env.PROFILER_ENABLED === "false" ? "false" : "true",
-  "process.env.TASK_SYSTEM_ENABLED": JSON.stringify(process.env.TASK_SYSTEM_ENABLED ?? "false"),
+  "process.env.TASK_SYSTEM_ENABLED": JSON.stringify(process.env.TASK_SYSTEM_ENABLED ?? "true"),
   "process.env.ROOM_VISUALS_ENABLED": JSON.stringify(process.env.ROOM_VISUALS_ENABLED ?? "false")
 } as const;
 
