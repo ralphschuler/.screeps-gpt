@@ -56,6 +56,10 @@ export interface TrafficManagerConfig {
   maxTotalPositions?: number;
   /** Threshold to trigger aggressive decay (default: 0.8, meaning 80% of maxTotalPositions) */
   aggressiveDecayThreshold?: number;
+  /** Multiplier for decay rate under memory pressure (default: 0.9, makes decay 10% faster) */
+  aggressiveDecayMultiplier?: number;
+  /** Threshold for warning logs (default: 0.9, meaning 90% of maxTotalPositions) */
+  warningThreshold?: number;
 }
 
 /**
@@ -79,6 +83,14 @@ export class TrafficManager {
   private readonly maxPositionsPerRoom: number;
   private readonly maxTotalPositions: number;
   private readonly aggressiveDecayThreshold: number;
+  private readonly aggressiveDecayMultiplier: number;
+  private readonly warningThreshold: number;
+
+  /**
+   * Estimated bytes per traffic position entry (key + TrafficData object)
+   * Based on typical JSON serialization: "roomName:x:y" (15-20 chars) + count/lastUpdated (20-30 chars)
+   */
+  private static readonly BYTES_PER_POSITION_ESTIMATE = 50;
 
   public constructor(config: TrafficManagerConfig = {}) {
     this.logger = config.logger ?? console;
@@ -89,6 +101,8 @@ export class TrafficManager {
     this.maxPositionsPerRoom = config.maxPositionsPerRoom ?? 500;
     this.maxTotalPositions = config.maxTotalPositions ?? 2000;
     this.aggressiveDecayThreshold = config.aggressiveDecayThreshold ?? 0.8;
+    this.aggressiveDecayMultiplier = config.aggressiveDecayMultiplier ?? 0.9;
+    this.warningThreshold = config.warningThreshold ?? 0.9;
 
     // Load state from Memory if provided
     if (this.memoryRef) {
@@ -366,7 +380,9 @@ export class TrafficManager {
     const isUnderMemoryPressure = totalPositions >= this.maxTotalPositions * this.aggressiveDecayThreshold;
 
     // Apply decay (more aggressive under memory pressure)
-    const effectiveDecayRate = isUnderMemoryPressure ? this.trafficDecayRate * 0.9 : this.trafficDecayRate;
+    const effectiveDecayRate = isUnderMemoryPressure
+      ? this.trafficDecayRate * this.aggressiveDecayMultiplier
+      : this.trafficDecayRate;
 
     for (const [posKey, data] of this.trafficData.entries()) {
       const decayedCount = data.count * effectiveDecayRate;
@@ -390,7 +406,7 @@ export class TrafficManager {
     this.enforcePerRoomLimits();
 
     // Log warnings if size is still excessive
-    if (this.trafficData.size > this.maxTotalPositions * 0.9) {
+    if (this.trafficData.size > this.maxTotalPositions * this.warningThreshold) {
       this.logger.warn?.(
         `[TrafficManager] Traffic data at ${this.trafficData.size}/${this.maxTotalPositions} positions (${((this.trafficData.size / this.maxTotalPositions) * 100).toFixed(1)}%)`
       );
@@ -512,8 +528,7 @@ export class TrafficManager {
     utilizationPercent: number;
   } {
     const positionCount = this.trafficData.size;
-    // Rough estimate: each position entry ~50 bytes (key + traffic data)
-    const estimatedBytes = positionCount * 50;
+    const estimatedBytes = positionCount * TrafficManager.BYTES_PER_POSITION_ESTIMATE;
     const utilizationPercent = (positionCount / this.maxTotalPositions) * 100;
 
     return {

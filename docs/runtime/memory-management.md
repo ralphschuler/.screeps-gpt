@@ -31,7 +31,7 @@ Traffic data undergoes periodic decay and pruning:
    - Positions below cleanup threshold (default: 1) are removed
 
 2. **Aggressive Decay**: Triggered at 80% capacity (configurable via `aggressiveDecayThreshold`)
-   - Decay rate becomes more aggressive (90% of normal rate)
+   - Decay multiplier increased to 0.9 (positions decay 10% faster)
    - Helps prevent reaching hard limits
 
 3. **Hard Limit Enforcement**: When limits are exceeded
@@ -61,6 +61,10 @@ interface TrafficManagerConfig {
   // Decay Settings
   trafficDecayRate?: number; // Default: 0.98
   trafficCleanupThreshold?: number; // Default: 1
+  aggressiveDecayMultiplier?: number; // Default: 0.9 (10% faster decay)
+
+  // Warning Thresholds
+  warningThreshold?: number; // Default: 0.9 (90% of max)
 
   // Traffic Analysis
   enableTrafficAnalysis?: boolean; // Default: true
