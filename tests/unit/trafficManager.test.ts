@@ -168,4 +168,184 @@ describe("TrafficManager", () => {
       expect(manager2.getTrackedPositionCount()).toBe(1);
     });
   });
+
+  describe("Memory Management and Size Limits", () => {
+    it("should enforce global position limit", () => {
+      const manager = new TrafficManager({
+        enableTrafficAnalysis: true,
+        maxTotalPositions: 10,
+        trafficCleanupThreshold: 0.1 // Prevent decay cleanup
+      });
+
+      // Add 15 positions with varying traffic counts
+      for (let i = 0; i < 15; i++) {
+        const pos = { roomName: "W1N1", x: i, y: i } as RoomPosition;
+        // Give different traffic counts (higher index = higher traffic)
+        for (let j = 0; j <= i; j++) {
+          manager.recordMovement(pos);
+        }
+      }
+
+      expect(manager.getTrackedPositionCount()).toBe(15);
+
+      // Apply decay which should enforce limits
+      manager.applyTrafficDecay();
+
+      // Should be capped at maxTotalPositions
+      expect(manager.getTrackedPositionCount()).toBeLessThanOrEqual(10);
+
+      // Highest traffic positions should be preserved
+      const pos14 = { roomName: "W1N1", x: 14, y: 14 } as RoomPosition;
+      expect(manager.getTrafficAt(pos14)).toBeGreaterThan(0);
+    });
+
+    it("should enforce per-room position limit", () => {
+      const manager = new TrafficManager({
+        enableTrafficAnalysis: true,
+        maxPositionsPerRoom: 5,
+        maxTotalPositions: 100,
+        trafficCleanupThreshold: 0.1
+      });
+
+      // Add 10 positions in one room
+      for (let i = 0; i < 10; i++) {
+        const pos = { roomName: "W1N1", x: i, y: i } as RoomPosition;
+        for (let j = 0; j <= i; j++) {
+          manager.recordMovement(pos);
+        }
+      }
+
+      expect(manager.getTrackedPositionCount()).toBe(10);
+
+      // Apply decay which should enforce per-room limits
+      manager.applyTrafficDecay();
+
+      // Count positions in W1N1 room
+      let roomPositionCount = 0;
+      for (let i = 0; i < 10; i++) {
+        const pos = { roomName: "W1N1", x: i, y: i } as RoomPosition;
+        if (manager.getTrafficAt(pos) > 0) {
+          roomPositionCount++;
+        }
+      }
+
+      expect(roomPositionCount).toBeLessThanOrEqual(5);
+    });
+
+    it("should apply aggressive decay under memory pressure", () => {
+      const manager = new TrafficManager({
+        enableTrafficAnalysis: true,
+        maxTotalPositions: 10,
+        aggressiveDecayThreshold: 0.8, // Trigger at 8 positions
+        trafficDecayRate: 0.9,
+        trafficCleanupThreshold: 0.5
+      });
+
+      // Add 9 positions (above aggressive threshold)
+      for (let i = 0; i < 9; i++) {
+        const pos = { roomName: "W1N1", x: i, y: i } as RoomPosition;
+        manager.recordMovement(pos);
+      }
+
+      const pos0 = { roomName: "W1N1", x: 0, y: 0 } as RoomPosition;
+      const trafficBefore = manager.getTrafficAt(pos0);
+
+      // Apply decay (should be more aggressive)
+      manager.applyTrafficDecay();
+
+      const trafficAfter = manager.getTrafficAt(pos0);
+
+      // Traffic should decay more than normal rate (0.9) due to memory pressure
+      expect(trafficAfter).toBeLessThan(trafficBefore * 0.9);
+    });
+
+    it("should provide memory usage statistics", () => {
+      const manager = new TrafficManager({
+        enableTrafficAnalysis: true,
+        maxTotalPositions: 100,
+        maxPositionsPerRoom: 50
+      });
+
+      // Add some positions
+      for (let i = 0; i < 10; i++) {
+        const pos = { roomName: "W1N1", x: i, y: i } as RoomPosition;
+        manager.recordMovement(pos);
+      }
+
+      const stats = manager.getMemoryUsageStats();
+
+      expect(stats.positionCount).toBe(10);
+      expect(stats.estimatedBytes).toBeGreaterThan(0);
+      expect(stats.maxTotalPositions).toBe(100);
+      expect(stats.maxPositionsPerRoom).toBe(50);
+      expect(stats.utilizationPercent).toBe(10);
+    });
+
+    it("should prune lowest traffic positions first", () => {
+      const manager = new TrafficManager({
+        enableTrafficAnalysis: true,
+        maxTotalPositions: 5,
+        trafficCleanupThreshold: 0.1
+      });
+
+      // Add positions with specific traffic counts
+      const lowTrafficPos = { roomName: "W1N1", x: 0, y: 0 } as RoomPosition;
+      const highTrafficPos = { roomName: "W1N1", x: 1, y: 1 } as RoomPosition;
+
+      // Low traffic: 2 movements
+      manager.recordMovement(lowTrafficPos);
+      manager.recordMovement(lowTrafficPos);
+
+      // High traffic: 10 movements
+      for (let i = 0; i < 10; i++) {
+        manager.recordMovement(highTrafficPos);
+      }
+
+      // Add more positions to exceed limit
+      for (let i = 2; i < 8; i++) {
+        const pos = { roomName: "W1N1", x: i, y: i } as RoomPosition;
+        for (let j = 0; j < 5; j++) {
+          manager.recordMovement(pos);
+        }
+      }
+
+      // Apply decay to trigger pruning
+      manager.applyTrafficDecay();
+
+      // High traffic position should be preserved
+      expect(manager.getTrafficAt(highTrafficPos)).toBeGreaterThan(0);
+
+      // Low traffic position likely pruned
+      expect(manager.getTrackedPositionCount()).toBeLessThanOrEqual(5);
+    });
+
+    it("should handle multiple rooms independently for per-room limits", () => {
+      const manager = new TrafficManager({
+        enableTrafficAnalysis: true,
+        maxPositionsPerRoom: 3,
+        maxTotalPositions: 100,
+        trafficCleanupThreshold: 0.1
+      });
+
+      // Add 5 positions in room W1N1
+      for (let i = 0; i < 5; i++) {
+        const pos = { roomName: "W1N1", x: i, y: i } as RoomPosition;
+        manager.recordMovement(pos);
+      }
+
+      // Add 5 positions in room W2N2
+      for (let i = 0; i < 5; i++) {
+        const pos = { roomName: "W2N2", x: i, y: i } as RoomPosition;
+        manager.recordMovement(pos);
+      }
+
+      expect(manager.getTrackedPositionCount()).toBe(10);
+
+      // Apply decay to enforce per-room limits
+      manager.applyTrafficDecay();
+
+      // Should have at most 3 positions per room, so max 6 total
+      expect(manager.getTrackedPositionCount()).toBeLessThanOrEqual(6);
+    });
+  });
 });
