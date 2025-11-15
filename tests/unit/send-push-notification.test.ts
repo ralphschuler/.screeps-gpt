@@ -24,14 +24,16 @@ describe("send-push-notification", () => {
 
   describe("Rate limiting", () => {
     it("should allow notifications within rate limits", async () => {
-      const { checkRateLimit } = await import("../../scripts/send-push-notification.js");
+      const { checkRateLimit } = await import("../../packages/utilities/scripts/send-push-notification.js");
 
       // First notification should be allowed
       expect(checkRateLimit()).toBe(true);
     });
 
     it("should prevent notifications that are too frequent", async () => {
-      const { checkRateLimit, updateRateLimit } = await import("../../scripts/send-push-notification.js");
+      const { checkRateLimit, updateRateLimit } = await import(
+        "../../packages/utilities/scripts/send-push-notification.js"
+      );
 
       // Send first notification
       expect(checkRateLimit()).toBe(true);
@@ -47,7 +49,7 @@ describe("send-push-notification", () => {
       delete process.env.PUSH_TOKEN;
       const consoleSpy = vi.spyOn(console, "log");
 
-      const { sendPushNotification } = await import("../../scripts/send-push-notification.js");
+      const { sendPushNotification } = await import("../../packages/utilities/scripts/send-push-notification.js");
 
       await sendPushNotification({
         title: "Test",
@@ -60,7 +62,7 @@ describe("send-push-notification", () => {
     it("should validate required fields", async () => {
       process.env.PUSH_TOKEN = "test-token";
 
-      const { sendPushNotification } = await import("../../scripts/send-push-notification.js");
+      const { sendPushNotification } = await import("../../packages/utilities/scripts/send-push-notification.js");
 
       await expect(sendPushNotification({ title: "", body: "" })).rejects.toThrow("Title and body are required");
     });
@@ -90,7 +92,7 @@ describe("send-push-notification", () => {
 
       const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
-      const { sendPushNotification } = await import("../../scripts/send-push-notification.js");
+      const { sendPushNotification } = await import("../../packages/utilities/scripts/send-push-notification.js");
 
       await sendPushNotification({
         title: "Test Title",
@@ -138,7 +140,7 @@ describe("send-push-notification", () => {
 
       const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-      const { sendPushNotification } = await import("../../scripts/send-push-notification.js");
+      const { sendPushNotification } = await import("../../packages/utilities/scripts/send-push-notification.js");
 
       // Should not throw
       await sendPushNotification({
@@ -167,7 +169,7 @@ describe("send-push-notification", () => {
 
       const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-      const { sendPushNotification } = await import("../../scripts/send-push-notification.js");
+      const { sendPushNotification } = await import("../../packages/utilities/scripts/send-push-notification.js");
 
       // Should not throw
       await sendPushNotification({

@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import process from "node:process";
-import { checkBotAliveness } from "../../../scripts/check-bot-aliveness.js";
+import { checkBotAliveness } from "./check-bot-aliveness.js";
 import type { PTRStatsSnapshot } from "./check-ptr-alerts.js";
 
 /**

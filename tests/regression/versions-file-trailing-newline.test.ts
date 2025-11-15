@@ -12,7 +12,7 @@ import { describe, it, expect } from "vitest";
 
 describe("versions.md format requirements", () => {
   it("should end with trailing newline to satisfy versions:update script", () => {
-    const versionsPath = resolve(__dirname, "../../docs/changelog/versions.md");
+    const versionsPath = resolve(__dirname, "../../packages/docs/docs/changelog/versions.md");
     const content = readFileSync(versionsPath, "utf-8");
 
     // File should end with newline

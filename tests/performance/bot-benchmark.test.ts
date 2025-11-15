@@ -66,7 +66,7 @@ describe("Bot Performance Benchmark", () => {
         console.warn("   Skipping performance tests (requires docker-compose.test.yml)");
         return;
       }
-    } catch (_error) {
+    } catch {
       console.warn("⚠️  Screeps test server not reachable, skipping performance tests");
       return;
     }
@@ -82,7 +82,7 @@ describe("Bot Performance Benchmark", () => {
     // Authenticate (or create user if doesn't exist)
     try {
       await api.auth(testConfig.username, testConfig.password);
-    } catch (_error) {
+    } catch {
       console.log("Creating test user...");
       // User creation would need admin API access
       // This is a placeholder - actual implementation depends on server setup

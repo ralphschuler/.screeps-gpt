@@ -1,5 +1,6 @@
 import { RoadPlanner } from "./RoadPlanner";
 import { TrafficManager } from "./TrafficManager";
+import { ContainerPlacement } from "./ContainerPlacement";
 import type { GameContext } from "@runtime/types/GameContext";
 import { profile } from "@profiler";
 
@@ -14,6 +15,9 @@ export interface InfrastructureMemory {
   roadPlanning?: {
     lastPlanned: Record<string, number>; // roomName -> tick
   };
+  containerPlanning?: {
+    lastPlanned: Record<string, number>; // roomName -> tick
+  };
 }
 
 /**
@@ -23,6 +27,7 @@ export interface InfrastructureManagerConfig {
   logger?: Pick<Console, "log" | "warn">;
   memory?: InfrastructureMemory;
   roadPlanningInterval?: number; // Ticks between road planning (default: 100)
+  containerPlanningInterval?: number; // Ticks between container planning (default: 500)
   trafficDecayInterval?: number; // Ticks between traffic decay (default: 50)
   maxRoadsPerTick?: number; // Max road construction sites per tick (default: 1)
   enableTrafficAnalysis?: boolean; // Enable traffic recording (default: true)
@@ -37,8 +42,10 @@ export class InfrastructureManager {
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly roadPlanner: RoadPlanner;
   private readonly trafficManager: TrafficManager;
+  private readonly containerPlacement: ContainerPlacement;
   private readonly memoryRef?: InfrastructureMemory;
   private readonly roadPlanningInterval: number;
+  private readonly containerPlanningInterval: number;
   private readonly trafficDecayInterval: number;
   private lastTrafficDecay: number = 0;
 
@@ -46,6 +53,7 @@ export class InfrastructureManager {
     this.logger = config.logger ?? console;
     this.memoryRef = config.memory;
     this.roadPlanningInterval = config.roadPlanningInterval ?? 100;
+    this.containerPlanningInterval = config.containerPlanningInterval ?? 500;
     this.trafficDecayInterval = config.trafficDecayInterval ?? 50;
 
     // Initialize infrastructure memory structures if memory reference provided
@@ -58,6 +66,9 @@ export class InfrastructureManager {
 
       // Initialize road planning memory
       this.memoryRef.roadPlanning ??= { lastPlanned: {} };
+
+      // Initialize container planning memory
+      this.memoryRef.containerPlanning ??= { lastPlanned: {} };
     }
 
     // Initialize traffic manager with memory reference
@@ -71,21 +82,30 @@ export class InfrastructureManager {
     // Initialize road planner and connect to traffic manager
     this.roadPlanner = new RoadPlanner(this.logger, config.maxRoadsPerTick ?? 1);
     this.roadPlanner.setTrafficManager(this.trafficManager);
+
+    // Initialize container placement
+    this.containerPlacement = new ContainerPlacement(this.logger);
   }
 
   /**
    * Main execution loop - called each tick from kernel
-   * Handles traffic tracking, decay, and periodic road planning
+   * Handles traffic tracking, decay, periodic road planning, and container placement
    */
-  public run(game: GameContext): { roadsPlanned: number; trafficPositions: number } {
+  public run(game: GameContext): {
+    roadsPlanned: number;
+    containersPlanned: number;
+    trafficPositions: number;
+  } {
     // Apply traffic decay periodically
     if (game.time - this.lastTrafficDecay >= this.trafficDecayInterval) {
       this.trafficManager.applyTrafficDecay();
       this.lastTrafficDecay = game.time;
     }
 
-    // Plan roads for each owned room
     let totalRoadsPlanned = 0;
+    let totalContainersPlanned = 0;
+
+    // Process each owned room
     for (const roomName in game.rooms) {
       const room = game.rooms[roomName];
 
@@ -93,9 +113,21 @@ export class InfrastructureManager {
         continue;
       }
 
-      // Check if it's time to plan roads for this room
-      const lastPlanned = this.memoryRef?.roadPlanning?.lastPlanned[roomName] ?? 0;
-      if (game.time - lastPlanned >= this.roadPlanningInterval) {
+      // Plan containers for sources (less frequent than roads)
+      const lastContainerPlanned = this.memoryRef?.containerPlanning?.lastPlanned[roomName] ?? 0;
+      if (game.time - lastContainerPlanned >= this.containerPlanningInterval) {
+        const containersPlanned = this.containerPlacement.planSourceContainers(room);
+        totalContainersPlanned += containersPlanned;
+
+        // Update last planned time
+        if (this.memoryRef?.containerPlanning) {
+          this.memoryRef.containerPlanning.lastPlanned[roomName] = game.time;
+        }
+      }
+
+      // Plan roads (existing logic)
+      const lastRoadPlanned = this.memoryRef?.roadPlanning?.lastPlanned[roomName] ?? 0;
+      if (game.time - lastRoadPlanned >= this.roadPlanningInterval) {
         const result = this.roadPlanner.autoPlaceRoads(room, game);
         totalRoadsPlanned += result.created;
 
@@ -117,6 +149,7 @@ export class InfrastructureManager {
 
     return {
       roadsPlanned: totalRoadsPlanned,
+      containersPlanned: totalContainersPlanned,
       trafficPositions: this.trafficManager.getTrackedPositionCount()
     };
   }

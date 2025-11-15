@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 
 describe("Semantic Version Bump Script", () => {
   it("should export a valid version bump script", async () => {
-    const scriptPath = resolve("scripts/bump-version-semantic.ts");
+    const scriptPath = resolve("packages/utilities/scripts/bump-version-semantic.ts");
     const content = await readFile(scriptPath, "utf8");
 
     // Verify script contains key functionality
@@ -15,7 +15,7 @@ describe("Semantic Version Bump Script", () => {
   });
 
   it("should handle conventional commit format detection", async () => {
-    const scriptPath = resolve("scripts/bump-version-semantic.ts");
+    const scriptPath = resolve("packages/utilities/scripts/bump-version-semantic.ts");
     const content = await readFile(scriptPath, "utf8");
 
     // Verify conventional commit patterns are present
@@ -25,7 +25,7 @@ describe("Semantic Version Bump Script", () => {
   });
 
   it("should handle pre-1.0 version major bump conversion", async () => {
-    const scriptPath = resolve("scripts/bump-version-semantic.ts");
+    const scriptPath = resolve("packages/utilities/scripts/bump-version-semantic.ts");
     const content = await readFile(scriptPath, "utf8");
 
     // Verify pre-release handling
@@ -34,7 +34,7 @@ describe("Semantic Version Bump Script", () => {
   });
 
   it("should use semver library for version calculations", async () => {
-    const scriptPath = resolve("scripts/bump-version-semantic.ts");
+    const scriptPath = resolve("packages/utilities/scripts/bump-version-semantic.ts");
     const content = await readFile(scriptPath, "utf8");
 
     // Verify semver usage

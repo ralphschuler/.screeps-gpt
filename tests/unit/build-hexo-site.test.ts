@@ -16,7 +16,7 @@ import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 
 describe("Hexo build script validation (#252)", () => {
-  const scriptPath = join(process.cwd(), "scripts/build-hexo-site.ts");
+  const scriptPath = join(process.cwd(), "packages/utilities/scripts/build-hexo-site.ts");
 
   it("should have build-hexo-site.ts script", () => {
     expect(existsSync(scriptPath)).toBe(true);
@@ -139,9 +139,9 @@ describe("Hexo build script validation (#252)", () => {
   });
 
   describe("Main documentation configuration", () => {
-    const configPath = join(process.cwd(), "_config.yml");
+    const configPath = join(process.cwd(), "packages/docs/_config.yml");
 
-    it("should have _config.yml in repository root", () => {
+    it("should have _config.yml in packages/docs", () => {
       expect(existsSync(configPath)).toBe(true);
     });
 
