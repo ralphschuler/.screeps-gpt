@@ -106,7 +106,7 @@ describe("Adaptive Spawning System", () => {
   });
 
   describe("Energy Reserve Validation", () => {
-    it("should maintain 20% energy reserve when spawning (with sufficient harvesters)", () => {
+    it("should bypass reserve for essential roles when capacity is limited", () => {
       const controller = new BehaviorController({ log: vi.fn(), warn: vi.fn() });
 
       const room = {
@@ -139,10 +139,10 @@ describe("Adaptive Spawning System", () => {
 
       controller.execute(game, memory, roleCounts);
 
-      // Should not spawn if it would deplete reserves below 20% (60 energy)
-      // 250 - 200 (spawn cost) = 50 < 60 (20% of 300)
-      // Emergency spawn mode is disabled with 4+ harvesters
-      expect(spawn.spawnCreep).not.toHaveBeenCalled();
+      // Essential roles (builder) should bypass reserve when reserve would block spawning
+      // 250 (builder cost) + 60 (20% reserve) = 310 > 300 (capacity)
+      // Since capacity is limited, essential role should spawn anyway
+      expect(spawn.spawnCreep).toHaveBeenCalled();
     });
 
     it("should allow spawning when reserves are sufficient", () => {

@@ -229,12 +229,12 @@ describe("Builder Spawning with Containers", () => {
     }
 
     const roleCounts: Record<string, number> = {
-      harvester: 2,
-      upgrader: 1,
+      harvester: 4, // Harvesters satisfied
+      upgrader: 3, // Upgraders satisfied
       builder: 0, // Start with no builders
       stationaryHarvester: 2,
       hauler: 2,
-      repairer: 0
+      repairer: 1 // Repairer satisfied
     };
 
     // Execute once to check that builder is recognized as needing to spawn
@@ -242,6 +242,36 @@ describe("Builder Spawning with Containers", () => {
 
     // Should attempt to spawn builder (either spawn it or identify it as needed)
     // With all higher priority roles satisfied, builder should be next in queue
+    const builderSpawned = result.spawnedCreeps.some(name => name.includes("builder"));
+    expect(builderSpawned).toBe(true);
+  });
+
+  it("should spawn builders at RCL 2 with realistic energy capacity (550)", () => {
+    // This test reproduces the real-world bug where builders cannot spawn at RCL 2
+    // because the reserve threshold (110) + body cost (450) exceeds capacity (550)
+
+    // Set realistic RCL 2 values
+    mockRoom.energyCapacityAvailable = 550; // RCL 2: 1 spawn + 5 extensions
+    mockRoom.energyAvailable = 550; // Full energy, no extra buffer
+
+    if (mockRoom.controller) {
+      mockRoom.controller.level = 2;
+    }
+
+    const roleCounts: Record<string, number> = {
+      harvester: 4, // Harvesters satisfied
+      upgrader: 3, // Upgraders satisfied
+      builder: 0, // No builders yet - needs to spawn
+      stationaryHarvester: 2, // Container economy active
+      hauler: 2, // Haulers present
+      repairer: 1 // Repairer present
+    };
+
+    // Execute behavior controller
+    const result = behaviorController.execute(mockGame, mockMemory, roleCounts);
+
+    // Builder should spawn even with exact capacity (no extra buffer)
+    // The reserve threshold should not block essential infrastructure roles
     const builderSpawned = result.spawnedCreeps.some(name => name.includes("builder"));
     expect(builderSpawned).toBe(true);
   });
