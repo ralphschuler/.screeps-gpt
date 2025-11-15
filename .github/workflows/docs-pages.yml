@@ -42,7 +42,9 @@ jobs:
         run: |
           if [ ! -d "cactus/.git" ]; then
             rm -rf cactus
-            git clone https://github.com/probberechts/hexo-theme-cactus.git cactus
+            git clone \
+              https://github.com/probberechts/hexo-theme-cactus.git \
+              cactus
           fi
       - name: Update versions
         run: bun run versions:update
