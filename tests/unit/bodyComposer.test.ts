@@ -37,9 +37,11 @@ describe("BodyComposer", () => {
         expect(composer.calculateBodyCost(body)).toBeGreaterThanOrEqual(1000); // Base + patterns
       });
 
-      it("should return empty array if insufficient energy", () => {
+      it("should return emergency body with 150 energy for critical roles", () => {
+        // With emergency spawn logic, harvesters get ultra-minimal body at 150 energy
         const body = composer.generateBody("harvester", 150);
-        expect(body).toEqual([]);
+        expect(body).toEqual([WORK, MOVE]); // Emergency ultra-minimal body
+        expect(composer.calculateBodyCost(body)).toBe(150);
       });
     });
 
@@ -153,9 +155,11 @@ describe("BodyComposer", () => {
         expect(composer.calculateBodyCost(body)).toBe(200);
       });
 
-      it("should return empty array for unknown role with insufficient energy", () => {
+      it("should return emergency body for unknown role with 150 energy", () => {
+        // Unknown roles fallback to emergency body generation
         const body = composer.generateBody("unknown", 150);
-        expect(body).toEqual([]);
+        expect(body).toEqual([WORK, MOVE]); // Emergency ultra-minimal body
+        expect(composer.calculateBodyCost(body)).toBe(150);
       });
     });
   });
