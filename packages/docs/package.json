@@ -6,7 +6,7 @@
   "author": "OpenAI Automations",
   "type": "module",
   "scripts": {
-    "build": "hexo generate",
+    "build": "node build.cjs",
     "clean": "hexo clean",
     "server": "hexo server"
   },

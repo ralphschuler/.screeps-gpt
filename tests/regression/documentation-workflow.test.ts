@@ -93,7 +93,7 @@ describe("Documentation workflow configuration (#252)", () => {
       const stepNames = steps.map(s => s.name);
       expect(stepNames).toContain("Checkout");
       expect(stepNames).toContain("Setup Bun");
-      expect(stepNames).toContain("Setup Node.js for documentation build");
+
       expect(stepNames).toContain("Install documentation dependencies");
       expect(stepNames).toContain("Generate documentation site");
     });
@@ -103,7 +103,7 @@ describe("Documentation workflow configuration (#252)", () => {
 
       // Verify working directory is set for docs-build
       expect(content).toContain("working-directory: docs-build");
-      expect(content).toContain("npm ci");
+      expect(content).toContain("bun install");
     });
 
     it("should generate documentation site", () => {
@@ -111,7 +111,7 @@ describe("Documentation workflow configuration (#252)", () => {
 
       // Verify documentation build step
       expect(content).toContain("Generate documentation site");
-      expect(content).toContain("npm run build");
+      expect(content).toContain("bun run build");
     });
 
     it("should copy build output to correct location", () => {
