@@ -1,6 +1,6 @@
 {
   "name": "@ralphschuler/screeps-gpt",
-  "version": "0.81.0",
+  "version": "0.83.0",
   "description": "Autonomously evolving Screeps AI with automated development and deployment workflows.",
   "license": "MIT",
   "author": "OpenAI Automations",
