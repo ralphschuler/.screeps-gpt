@@ -599,6 +599,18 @@ export class BehaviorController {
     // Calculate reserve threshold (20% of capacity, minimum 50 energy)
     const reserveThreshold = Math.max(50, energyCapacity * 0.2);
 
+    // Essential Roles Bypass: Allow spawning essential infrastructure roles even when
+    // reserve threshold would block it. This is critical at low RCL where energy capacity
+    // is limited (e.g., RCL 2 has 550 capacity, but builder costs 450 + 110 reserve = 560).
+    // Essential roles: harvester, upgrader, builder (needed for room progression)
+    const isEssentialRole = role === "harvester" || role === "upgrader" || role === "builder";
+    const wouldReserveBlockSpawn = spawnCost + reserveThreshold > energyCapacity;
+
+    if (isEssentialRole && wouldReserveBlockSpawn) {
+      // For essential roles, only check if we have enough energy for the spawn
+      return energyAvailable >= spawnCost;
+    }
+
     // Check if spawning would leave enough reserves
     return energyAvailable - spawnCost >= reserveThreshold;
   }
