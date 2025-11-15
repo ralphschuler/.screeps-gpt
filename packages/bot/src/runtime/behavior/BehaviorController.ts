@@ -616,7 +616,7 @@ export class BehaviorController {
           continue;
         }
 
-        const nearbyStructures = sourcePos.findInRange(FIND_STRUCTURES, 1, {
+        const nearbyStructures = sourcePos.findInRange(FIND_STRUCTURES, 2, {
           filter: (s: Structure) => s.structureType === STRUCTURE_CONTAINER
         }) as Structure[];
         const hasContainer = nearbyStructures.length > 0;
@@ -828,6 +828,42 @@ function findClosestOrFirst<T extends _HasRoomPosition>(creep: CreepLike, target
   return creep.pos.findClosestByPath(targets) ?? targets[0];
 }
 
+/**
+ * Helper function to pick up nearby dropped energy if the creep has capacity.
+ * Returns true if the creep picked up or is moving to pick up energy.
+ *
+ * @param creep - The creep that should pick up energy
+ * @param minAmount - Minimum amount of energy to consider picking up (default: 50)
+ * @returns true if energy pickup is in progress, false otherwise
+ */
+function tryPickupDroppedEnergy(creep: ManagedCreep, minAmount = 50): boolean {
+  // Only pick up if creep has capacity
+  if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+    return false;
+  }
+
+  const droppedEnergy = creep.room.find(FIND_DROPPED_RESOURCES, {
+    filter: r => r.resourceType === RESOURCE_ENERGY && r.amount >= minAmount
+  }) as Resource[];
+
+  if (droppedEnergy.length === 0) {
+    return false;
+  }
+
+  const closest = creep.pos.findClosestByPath(droppedEnergy);
+  const target = closest ?? droppedEnergy[0];
+
+  const result = creep.pickup(target);
+  if (result === ERR_NOT_IN_RANGE) {
+    creep.moveTo(target, { range: 1, reusePath: 10 });
+    return true;
+  } else if (result === OK) {
+    return true;
+  }
+
+  return false;
+}
+
 function ensureHarvesterTask(memory: HarvesterMemory, creep: CreepLike): HarvesterTask {
   if (memory.task !== HARVEST_TASK && memory.task !== DELIVER_TASK && memory.task !== UPGRADE_TASK) {
     memory.task = HARVEST_TASK;
@@ -856,6 +892,11 @@ function runHarvester(creep: ManagedCreep): string {
       comm?.say(creep, "full");
     } else {
       comm?.say(creep, "harvest");
+    }
+
+    // Try to pick up dropped energy first
+    if (tryPickupDroppedEnergy(creep)) {
+      return HARVEST_TASK;
     }
 
     const sources = creep.room.find(FIND_SOURCES_ACTIVE) as Source[];
@@ -944,7 +985,12 @@ function runUpgrader(creep: ManagedCreep): string {
   if (task === RECHARGE_TASK) {
     comm?.say(creep, "gather");
 
-    // Use energy priority manager to get available sources (respecting reserves)
+    // Priority 1: Pick up dropped energy
+    if (tryPickupDroppedEnergy(creep)) {
+      return RECHARGE_TASK;
+    }
+
+    // Priority 2: Use energy priority manager to get available sources (respecting reserves)
     const energySources = energyMgr
       ? energyMgr.getAvailableEnergySources(creep.room, 0, true)
       : creep.room.find(FIND_STRUCTURES, {
@@ -960,22 +1006,7 @@ function runUpgrader(creep: ManagedCreep): string {
       return RECHARGE_TASK;
     }
 
-    // Fallback: Check for dropped energy
-    const droppedEnergy = creep.room.find(FIND_DROPPED_RESOURCES, {
-      filter: r => r.resourceType === RESOURCE_ENERGY && r.amount > 50
-    }) as Resource[];
-
-    if (droppedEnergy.length > 0) {
-      const closest = creep.pos.findClosestByPath(droppedEnergy);
-      const droppedTarget = closest ?? droppedEnergy[0];
-      const result = creep.pickup(droppedTarget);
-      if (result === ERR_NOT_IN_RANGE) {
-        creep.moveTo(droppedTarget, { range: 1, reusePath: 30 });
-      }
-      return RECHARGE_TASK;
-    }
-
-    // Fallback: Harvest from sources directly if no other options
+    // Priority 3: Harvest from sources directly if no other options
     const sources = creep.room.find(FIND_SOURCES_ACTIVE) as Source[];
     const source = sources.length > 0 ? (creep.pos.findClosestByPath(sources) ?? sources[0]) : null;
     if (source) {
@@ -1029,7 +1060,12 @@ function runBuilder(creep: ManagedCreep): string {
   if (task === BUILDER_GATHER_TASK) {
     comm?.say(creep, "gather");
 
-    // Use energy priority manager to get available sources (respecting reserves)
+    // Priority 1: Pick up dropped energy
+    if (tryPickupDroppedEnergy(creep)) {
+      return BUILDER_GATHER_TASK;
+    }
+
+    // Priority 2: Use energy priority manager to get available sources (respecting reserves)
     const energySources = energyMgr
       ? energyMgr.getAvailableEnergySources(creep.room, 0, true)
       : creep.room.find(FIND_STRUCTURES, {
@@ -1045,22 +1081,7 @@ function runBuilder(creep: ManagedCreep): string {
       return BUILDER_GATHER_TASK;
     }
 
-    // Fallback: Check for dropped energy
-    const droppedEnergy = creep.room.find(FIND_DROPPED_RESOURCES, {
-      filter: r => r.resourceType === RESOURCE_ENERGY && r.amount > 50
-    }) as Resource[];
-
-    if (droppedEnergy.length > 0) {
-      const closest = creep.pos.findClosestByPath(droppedEnergy);
-      const droppedTarget = closest ?? droppedEnergy[0];
-      const result = creep.pickup(droppedTarget);
-      if (result === ERR_NOT_IN_RANGE) {
-        creep.moveTo(droppedTarget, { range: 1, reusePath: 30 });
-      }
-      return BUILDER_GATHER_TASK;
-    }
-
-    // Fallback: Harvest from sources directly if no other options
+    // Priority 3: Harvest from sources directly if no other options
     const sources = creep.room.find(FIND_SOURCES_ACTIVE) as Source[];
     const source = sources.length > 0 ? (creep.pos.findClosestByPath(sources) ?? sources[0]) : null;
     if (source) {
@@ -1219,6 +1240,11 @@ function runRemoteMiner(creep: ManagedCreep): string {
       return REMOTE_RETURN_TASK;
     }
 
+    // Try to pick up dropped energy first
+    if (tryPickupDroppedEnergy(creep)) {
+      return REMOTE_MINE_TASK;
+    }
+
     const source = resolveRemoteSource(creep, memory);
     if (source) {
       const result = creep.harvest(source);
@@ -1310,9 +1336,9 @@ function runStationaryHarvester(creep: ManagedCreep): string {
     return STATIONARY_HARVEST_TASK;
   }
 
-  // Find or remember container adjacent to source
+  // Find or remember container near source (within range 2 = 1 space away)
   if (!memory.containerId) {
-    const nearbyStructures = source.pos.findInRange(FIND_STRUCTURES, 1);
+    const nearbyStructures = source.pos.findInRange(FIND_STRUCTURES, 2);
     const containers = nearbyStructures.filter((s): s is StructureContainer => s.structureType === STRUCTURE_CONTAINER);
 
     if (containers.length > 0) {
@@ -1407,29 +1433,21 @@ function runHauler(creep: ManagedCreep): string {
   if (task === HAULER_PICKUP_TASK) {
     comm?.say(creep, "pickup");
 
-    // Priority: Pick up from containers near sources
+    // Priority 1: Pick up dropped energy
+    if (tryPickupDroppedEnergy(creep)) {
+      return HAULER_PICKUP_TASK;
+    }
+
+    // Priority 2: Pick up from containers near sources
     const containers = creep.room.find(FIND_STRUCTURES, {
       filter: s =>
         s.structureType === STRUCTURE_CONTAINER && (s as StructureContainer).store.getUsedCapacity(RESOURCE_ENERGY) > 0
     }) as StructureContainer[];
 
-    // Also check for dropped energy near sources
-    const droppedEnergy = creep.room.find(FIND_DROPPED_RESOURCES, {
-      filter: r => r.resourceType === RESOURCE_ENERGY && r.amount > 50
-    }) as Resource[];
-
     if (containers.length > 0) {
       const closest = creep.pos.findClosestByPath(containers);
       const target = closest ?? containers[0];
       const result = creep.withdraw(target, RESOURCE_ENERGY);
-      if (result === ERR_NOT_IN_RANGE) {
-        creep.moveTo(target, { range: 1, reusePath: 30 });
-      }
-    } else if (droppedEnergy.length > 0) {
-      const closest = creep.pos.findClosestByPath(droppedEnergy);
-      const target = closest ?? droppedEnergy[0];
-
-      const result = creep.pickup(target);
       if (result === ERR_NOT_IN_RANGE) {
         creep.moveTo(target, { range: 1, reusePath: 30 });
       }
@@ -1600,21 +1618,12 @@ function runRepairer(creep: ManagedCreep): string {
       return REPAIRER_GATHER_TASK;
     }
 
-    // Fallback: Check for dropped energy
-    const droppedEnergy = creep.room.find(FIND_DROPPED_RESOURCES, {
-      filter: r => r.resourceType === RESOURCE_ENERGY && r.amount > 50
-    }) as Resource[];
-
-    const droppedTarget = findClosestOrFirst(creep, droppedEnergy);
-    if (droppedTarget) {
-      const result = creep.pickup(droppedTarget);
-      if (result === ERR_NOT_IN_RANGE) {
-        creep.moveTo(droppedTarget, { range: 1, reusePath: 30 });
-      }
+    // Priority 2: Pick up dropped energy
+    if (tryPickupDroppedEnergy(creep)) {
       return REPAIRER_GATHER_TASK;
     }
 
-    // Fallback: Harvest from sources directly if no other options
+    // Priority 3: Harvest from sources directly if no other options
     const sources = creep.room.find(FIND_SOURCES_ACTIVE) as Source[];
     const source = findClosestOrFirst(creep, sources);
     if (source) {

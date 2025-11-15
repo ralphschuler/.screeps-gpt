@@ -17,7 +17,7 @@ export class ContainerPlacement {
    * Only places containers if:
    * - Room is RCL 2+
    * - Source doesn't already have a container nearby
-   * - Valid walkable position exists adjacent to source
+   * - Valid walkable position exists 1 space away from source (range 2)
    */
   public planSourceContainers(room: Room): number {
     // Only place containers at RCL 2+
@@ -29,12 +29,12 @@ export class ContainerPlacement {
     let containersPlanned = 0;
 
     for (const source of sources) {
-      // Check if container already exists or is planned
-      const existingContainers = source.pos.findInRange(FIND_STRUCTURES, 1, {
+      // Check if container already exists or is planned (range 2 = 1 space away)
+      const existingContainers = source.pos.findInRange(FIND_STRUCTURES, 2, {
         filter: s => s.structureType === STRUCTURE_CONTAINER
       });
 
-      const containerSites = source.pos.findInRange(FIND_CONSTRUCTION_SITES, 1, {
+      const containerSites = source.pos.findInRange(FIND_CONSTRUCTION_SITES, 2, {
         filter: s => s.structureType === STRUCTURE_CONTAINER
       });
 
@@ -60,7 +60,7 @@ export class ContainerPlacement {
 
   /**
    * Find the optimal position for a container near a source
-   * Prioritizes positions closest to spawn while being adjacent to source
+   * Prioritizes positions closest to spawn while being 1 space away from source (range 2)
    */
   private findOptimalContainerPosition(source: Source, room: Room): RoomPosition | null {
     const spawn = room.find(FIND_MY_SPAWNS)[0];
@@ -68,18 +68,22 @@ export class ContainerPlacement {
       return null; // No spawn to optimize for
     }
 
-    // Get all positions adjacent to source
-    const adjacentPositions: RoomPosition[] = [];
-    for (let dx = -1; dx <= 1; dx++) {
-      for (let dy = -1; dy <= 1; dy++) {
-        if (dx === 0 && dy === 0) continue;
+    // Get all positions at range 2 (1 space away) from source
+    const candidatePositions: RoomPosition[] = [];
+    for (let dx = -2; dx <= 2; dx++) {
+      for (let dy = -2; dy <= 2; dy++) {
+        // Skip the source itself and adjacent positions
+        if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1) continue;
+        // Only include positions at exactly range 2 (Chebyshev distance)
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== 2) continue;
+
         const pos = new RoomPosition(source.pos.x + dx, source.pos.y + dy, room.name);
-        adjacentPositions.push(pos);
+        candidatePositions.push(pos);
       }
     }
 
     // Filter to walkable positions and sort by distance to spawn
-    const walkablePositions = adjacentPositions.filter(pos => this.isWalkable(pos, room));
+    const walkablePositions = candidatePositions.filter(pos => this.isWalkable(pos, room));
 
     if (walkablePositions.length === 0) {
       return null;
