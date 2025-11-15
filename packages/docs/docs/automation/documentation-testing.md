@@ -120,7 +120,7 @@ Tests the deployed documentation site at https://nyphon.de/.screeps-gpt/:
 
 The `guard-test-docs.yml` workflow runs automatically on PRs that modify:
 
-- Documentation source files (`docs-build/`, `source/`)
+- Documentation source files (`packages/docs/`, `source/`)
 - Hexo configuration (`_config.yml`)
 - Build scripts (`packages/utilities/scripts/build-hexo-site.ts`)
 - Test files
@@ -188,8 +188,8 @@ tests/
 **"Documentation build failed - index.html not generated"**
 
 - Check Hexo configuration in `_config.yml`
-- Verify `docs-build/package.json` has correct dependencies
-- Run `npm ci` in `docs-build/` directory
+- Verify `packages/docs/package.json` has correct dependencies
+- Run `npm ci` in `packages/docs/` directory
 
 **"Generated blank or minimal index.html"**
 
@@ -221,7 +221,7 @@ tests/
 Build documentation locally:
 
 ```bash
-cd docs-build
+cd packages/docs
 npm run clean
 npm run build
 
@@ -233,7 +233,7 @@ cat public/index.html | head -50
 Serve documentation locally:
 
 ```bash
-cd docs-build
+cd packages/docs
 npm run server
 # Visit http://localhost:4000/.screeps-gpt/
 ```

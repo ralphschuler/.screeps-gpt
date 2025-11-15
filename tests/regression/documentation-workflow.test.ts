@@ -98,11 +98,11 @@ describe("Documentation workflow configuration (#252)", () => {
       expect(stepNames).toContain("Generate documentation site");
     });
 
-    it("should install documentation dependencies in docs-build directory", () => {
+    it("should install documentation dependencies in packages/docs directory", () => {
       const content = readFileSync(workflowPath, "utf-8");
 
-      // Verify working directory is set for docs-build
-      expect(content).toContain("working-directory: docs-build");
+      // Verify working directory is set for packages/docs
+      expect(content).toContain("working-directory: packages/docs");
       expect(content).toContain("bun install");
     });
 
@@ -119,7 +119,7 @@ describe("Documentation workflow configuration (#252)", () => {
 
       // Verify copy step for GitHub Pages
       expect(content).toContain("Copy to build directory");
-      expect(content).toContain("docs-build/public");
+      expect(content).toContain("packages/docs/public");
       expect(content).toContain("build/docs-site");
     });
 

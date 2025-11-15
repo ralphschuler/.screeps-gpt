@@ -8,7 +8,7 @@ node_modules/
 reports/
 
 # Hexo scaffolds use {{ }} template syntax that Prettier breaks
-docs-build/scaffolds/
+packages/docs/scaffolds/
 
 # GitHub workflows need workflows:write permission to modify
 .github/workflows/

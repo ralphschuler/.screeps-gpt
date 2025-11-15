@@ -621,7 +621,7 @@ progress: '45%'
 }
 };
 
-fs.writeFileSync('docs-build/metrics.json', JSON.stringify(metrics, null, 2));
+fs.writeFileSync('packages/docs/metrics.json', JSON.stringify(metrics, null, 2));
 }
 \`\`\`
 

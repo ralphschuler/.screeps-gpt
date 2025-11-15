@@ -23,7 +23,7 @@ _config.yml
 
 # Documentation build artifacts
 /docs
-/docs-build
+/packages/docs
 /public
 /themes
 hexo-source/

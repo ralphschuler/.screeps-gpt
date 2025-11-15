@@ -6,7 +6,6 @@ on:
     branches:
       - main
     paths:
-      - "docs-build/**"
       - "packages/docs/**"
       - "packages/utilities/scripts/build-hexo-site.ts"
       - "packages/utilities/scripts/validate-docs-links.ts"
@@ -42,13 +41,13 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
-          cache-dependency-path: docs-build/package-lock.json
+          cache-dependency-path: packages/docs/package-lock.json
 
       - name: Install main dependencies
         run: bun install --no-optional
 
       - name: Install documentation dependencies
-        working-directory: docs-build
+        working-directory: packages/docs
         run: npm ci
 
       - name: Documentation tests
@@ -61,7 +60,7 @@ jobs:
 
       - name: Verify documentation builds successfully
         run: |
-          cd docs-build
+          cd packages/docs
           npm run clean
           npm run build
 

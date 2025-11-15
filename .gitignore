@@ -19,10 +19,6 @@ screeps.json
 # Hexo build artifacts
 /public
 /themes/landscape
-/docs-build/node_modules
-/docs-build/package-lock.json
-/docs-build/public
-/docs-build/db.json
 /packages/docs/node_modules
 /packages/docs/public
 /packages/docs/db.json
