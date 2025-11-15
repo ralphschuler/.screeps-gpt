@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { describe, it, expect, vi } from "vitest";
 import { MemoryGarbageCollector } from "../../packages/bot/src/runtime/memory/MemoryGarbageCollector";
 import { MemoryMigrationManager } from "../../packages/bot/src/runtime/memory/MemoryMigrationManager";

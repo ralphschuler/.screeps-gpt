@@ -1,5 +1,5 @@
 import { StatsCollector } from "@runtime/metrics/StatsCollector";
-import type { PerformanceSnapshot } from "@shared/contracts";
+import type { PerformanceSnapshot, SystemReport } from "@shared/contracts";
 
 /**
  * Console-accessible diagnostics for validating stats collection pipeline.
@@ -163,7 +163,7 @@ export class Diagnostics {
    * // Returns: { tick: 12345, cpuUsed: 45.2, ... }
    * ```
    */
-  public static getLastSnapshot(): object | string {
+  public static getLastSnapshot(): { lastGenerated: number; report: SystemReport } | string {
     try {
       // Validate Memory object availability
       if (typeof Memory === "undefined") {
@@ -176,9 +176,13 @@ export class Diagnostics {
       }
 
       // Return the full systemReport including report and metadata
+      // Extract to local variable - type assertion is safe after existence check
+      const memorySystemReport = Memory.systemReport;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const report: SystemReport = memorySystemReport.report;
       return {
-        lastGenerated: Memory.systemReport.lastGenerated,
-        report: Memory.systemReport.report
+        lastGenerated: memorySystemReport.lastGenerated,
+        report: report
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);

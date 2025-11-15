@@ -17,7 +17,11 @@ const taskSystemEnabled =
         : true; // Default to enabled
 
 const kernel = createKernel({
-  repositorySignalProvider: () => Memory.systemReport?.report.repository,
+  repositorySignalProvider: () => {
+    const systemReport = Memory.systemReport;
+    if (!systemReport) return undefined;
+    return systemReport.report.repository;
+  },
   behavior: new BehaviorController({
     useTaskSystem: taskSystemEnabled,
     cpuSafetyMargin: 0.8,

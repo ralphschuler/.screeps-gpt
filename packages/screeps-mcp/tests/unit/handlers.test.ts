@@ -15,7 +15,7 @@ import {
 import { listTools, handleConsole, handleMemoryGet, handleMemorySet, handleStats } from "../../src/handlers/tools.js";
 
 describe("Resource Handlers", () => {
-  let mockClient: ScreepsClient;
+  let mockClient: Pick<ScreepsClient, "getRooms" | "getCreeps" | "getSpawns" | "getStats" | "getMemory">;
 
   beforeEach(() => {
     mockClient = {
@@ -24,7 +24,7 @@ describe("Resource Handlers", () => {
       getSpawns: vi.fn(),
       getStats: vi.fn(),
       getMemory: vi.fn()
-    } as any;
+    };
   });
 
   describe("getRoomsResource", () => {
@@ -149,7 +149,7 @@ describe("Resource Handlers", () => {
 });
 
 describe("Tool Handlers", () => {
-  let mockClient: ScreepsClient;
+  let mockClient: Pick<ScreepsClient, "executeConsole" | "getMemory" | "setMemory" | "getStats">;
 
   beforeEach(() => {
     mockClient = {
@@ -157,7 +157,7 @@ describe("Tool Handlers", () => {
       getMemory: vi.fn(),
       setMemory: vi.fn(),
       getStats: vi.fn()
-    } as any;
+    };
   });
 
   describe("listTools", () => {
