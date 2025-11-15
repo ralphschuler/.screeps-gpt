@@ -7,6 +7,8 @@
  * Fix: Added backup/rollback, validation, and preview capabilities
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { MemoryMigrationManager } from "../../packages/bot/src/runtime/memory/MemoryMigrationManager";
 

@@ -275,6 +275,7 @@ describe("Task Assignment System", () => {
       taskManager.generateTasks(mockRoom as Room);
 
       // Override getObjectById to return null
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       global.Game.getObjectById = () => null;
 
       const creeps = [mockCreep as Creep];

@@ -184,7 +184,7 @@ describe("TaskManager", () => {
       manager.assignTasks(creeps);
 
       // Mock Game.getObjectById to return the source
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-deprecated
       (global.Game.getObjectById as ReturnType<typeof vi.fn>).mockImplementation((id: Id<any>) => {
         if (id === mockSource.id) return mockSource;
         return null;

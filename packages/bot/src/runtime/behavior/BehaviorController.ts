@@ -358,7 +358,8 @@ export class BehaviorController {
     // Use task system if enabled, otherwise use legacy role-based system
     const result = this.options.useTaskSystem
       ? this.executeWithTaskSystem(game, memory)
-      : this.executeWithRoleSystem(game, memory);
+      : // eslint-disable-next-line @typescript-eslint/no-deprecated
+        this.executeWithRoleSystem(game, memory);
 
     memory.roles = roleCounts;
 
