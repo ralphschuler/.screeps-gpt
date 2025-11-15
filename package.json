@@ -43,6 +43,7 @@
     "format": "prettier .",
     "format:check": "prettier --check .",
     "format:write": "prettier --write .",
+    "baselines:establish": "tsx packages/utilities/scripts/establish-baselines.ts",
     "test": "bun run test:unit",
     "test:actions": "tsx packages/utilities/scripts/test-actions.ts",
     "test:unit": "vitest run --dir tests/unit",
