@@ -14,6 +14,7 @@ All notable changes to this project are documented here. This changelog now main
   - Added regression test `memory-stats-interface.test.ts` to prevent future interface conflicts
   - Resolves issue #684 (Memory.stats collection failure) and unblocks strategic monitoring capabilities
   - Restores PTR telemetry collection, enabling performance analysis and anomaly detection
+## [0.83.5] - 2025-11-15
 
 ### Added
 
