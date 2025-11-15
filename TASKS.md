@@ -212,6 +212,32 @@
 
 **Note:** See full analysis in `docs/research/overmind-analysis.md` for detailed patterns, compatibility assessment, and implementation recommendations.
 
+### Overmind-RL Reinforcement Learning Research (2025-11-15)
+
+**Research Documentation:** [`docs/research/overmind-rl-analysis.md`](docs/research/overmind-rl-analysis.md)
+
+**Decision: NOT RECOMMENDED for Current Integration**
+
+**Key Findings:**
+
+- RL integration requires 870 hours + $10,000 (realistic estimate)
+- Proven Overmind patterns require 140 hours + $0
+- RL is 6x more expensive with uncertain ROI
+- Architecture misalignment: Python dependency conflicts with TypeScript-only runtime
+- Training complexity: GPU infrastructure, distributed training, specialized expertise
+- Runtime overhead: Python inference bridge introduces 10-200ms latency
+
+**Alternative Recommendation:** Focus on proven Overmind architectural patterns (task persistence, caching, CPU scheduling) that provide clearer ROI and align with current architecture.
+
+**Revisit Conditions:**
+
+- Bot reaches top-tier competitive performance (12-24 months)
+- Specific high-value RL use case identified with quantified benefit
+- Team acquires RL expertise or hires specialist
+- Infrastructure budget supports $10k+ annual RL costs
+
+**Note:** See full analysis in `docs/research/overmind-rl-analysis.md` for comprehensive architecture evaluation, cost breakdown, use case analysis, and integration roadmap.
+
 ## In Progress
 
 - [ ] Measure Copilot-driven change quality and feed outcomes into system evaluation reports.
