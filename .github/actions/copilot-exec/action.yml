@@ -132,7 +132,10 @@ runs:
         set -euo pipefail
         if [ -f package.json ]; then
           echo "📦 Installing project dependencies with Bun"
-          bun install --frozen-lockfile || bun install
+          if ! bun install --frozen-lockfile; then
+            echo "⚠️ Frozen lockfile install failed, falling back to regular install"
+            bun install
+          fi
         else
           echo "ℹ️ No package.json found, skipping dependency install"
         fi
