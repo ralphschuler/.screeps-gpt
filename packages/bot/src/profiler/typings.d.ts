@@ -1,8 +1,4 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-interface Memory {
-  profiler: ProfilerMemory;
-}
-
 interface ProfilerMemory {
   data: { [name: string]: ProfilerData };
   start?: number;
