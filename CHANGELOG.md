@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.83.1] - 2025-11-15
+
 ### Added
 
 - **Overmind Architecture Research**: Comprehensive analysis of Overmind bot patterns for potential integration
