@@ -69,11 +69,27 @@ interface GameLike {
  */
 @profile
 export class StatsCollector {
+  private diagnosticLoggingEnabled: boolean;
+  private lastLogTick: number = 0;
+  private readonly LOG_INTERVAL: number = 100; // Log every 100 ticks to avoid spam
+
+  public constructor(options: { enableDiagnostics?: boolean } = {}) {
+    this.diagnosticLoggingEnabled = options.enableDiagnostics ?? true;
+  }
+
   /**
    * Collect performance metrics and store them in Memory.stats for the current tick.
    * This data is consumed by external monitoring systems via the Screeps API.
    */
   public collect(game: GameLike, memory: Memory, snapshot: PerformanceSnapshot): void {
+    const startCpu = game.cpu.getUsed();
+    const shouldLog = this.diagnosticLoggingEnabled && game.time - this.lastLogTick >= this.LOG_INTERVAL;
+
+    if (shouldLog) {
+      console.log(`[StatsCollector] Starting stats collection for tick ${game.time}`);
+      this.lastLogTick = game.time;
+    }
+
     try {
       const stats: StatsData = {
         time: game.time,
@@ -90,7 +106,15 @@ export class StatsCollector {
         }
       };
 
+      if (shouldLog) {
+        console.log(
+          `[StatsCollector] Base stats: time=${stats.time}, cpu=${stats.cpu.used.toFixed(2)}/${stats.cpu.limit}, ` +
+            `bucket=${stats.cpu.bucket}, creeps=${stats.creeps.count}, rooms=${stats.rooms.count}`
+        );
+      }
+
       // Add per-room statistics with error handling
+      let roomsProcessed = 0;
       try {
         for (const roomName in game.rooms) {
           const room = game.rooms[roomName];
@@ -106,6 +130,11 @@ export class StatsCollector {
           }
 
           stats.rooms[roomName] = roomStats;
+          roomsProcessed++;
+        }
+
+        if (shouldLog && roomsProcessed > 0) {
+          console.log(`[StatsCollector] Processed ${roomsProcessed} room(s)`);
         }
       } catch (roomError) {
         console.log(`[StatsCollector] Error collecting room stats: ${String(roomError)}`);
@@ -120,6 +149,24 @@ export class StatsCollector {
 
       // Store stats in Memory for API access
       memory.stats = stats;
+
+      // Validate write succeeded
+      if (shouldLog) {
+        const writeSuccessful = memory.stats !== undefined && memory.stats.time === game.time;
+        console.log(`[StatsCollector] Memory.stats write: ${writeSuccessful ? "SUCCESS" : "FAILED"}`);
+
+        if (writeSuccessful) {
+          const statsSize = JSON.stringify(memory.stats).length;
+          console.log(`[StatsCollector] Stats data size: ${statsSize} bytes`);
+        }
+      }
+
+      const endCpu = game.cpu.getUsed();
+      const cpuCost = endCpu - startCpu;
+
+      if (shouldLog) {
+        console.log(`[StatsCollector] Collection completed in ${cpuCost.toFixed(3)} CPU`);
+      }
     } catch (error) {
       console.log(`[StatsCollector] CRITICAL: Failed to collect stats: ${String(error)}`);
       // Ensure Memory.stats exists even if collection fails
@@ -129,6 +176,10 @@ export class StatsCollector {
         creeps: { count: 0 },
         rooms: { count: 0 }
       };
+
+      if (shouldLog) {
+        console.log(`[StatsCollector] Fallback stats written to Memory.stats`);
+      }
     }
   }
 }
