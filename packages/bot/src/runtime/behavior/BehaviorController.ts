@@ -496,14 +496,95 @@ export class BehaviorController {
   }
 
   /**
-   * Calculates dynamic role minimums based on room infrastructure.
+   * Detects the number of energy sources in a room.
+   *
+   * @param room - The room to analyze
+   * @returns The number of energy sources in the room
+   */
+  private detectEnergySources(room: RoomLike): number {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    const sources = room.find(FIND_SOURCES);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
+    return sources.length;
+  }
+
+  /**
+   * Calculates the optimal harvester count based on energy sources.
+   * Single-source rooms need fewer harvesters than multi-source rooms.
+   *
+   * @param room - The room to analyze
+   * @returns Optimal harvester count for the room
+   */
+  private calculateOptimalHarvesterCount(room: RoomLike): number {
+    const sourceCount = this.detectEnergySources(room);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+    const controller = room.controller;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+    const rcl = controller ? controller.level : 1;
+
+    // Single source rooms: 2-3 harvesters depending on RCL
+    // Multi-source rooms: 1-2 harvesters per source
+    if (sourceCount === 1) {
+      return rcl >= 3 ? 3 : 2;
+    }
+
+    // Multi-source: scale with RCL
+    return sourceCount * (rcl >= 3 ? 2 : 1);
+  }
+
+  /**
+   * Calculates the optimal hauler count based on room layout.
+   * More sources require more haulers for efficient logistics.
+   *
+   * @param room - The room to analyze
+   * @returns Optimal hauler count for the room
+   */
+  private calculateOptimalHaulerCount(room: RoomLike): number {
+    const sourceCount = this.detectEnergySources(room);
+    // At least 1 hauler per source, more for multi-source rooms
+    return Math.max(1, sourceCount);
+  }
+
+  /**
+   * Checks if the room can afford to spawn a creep while maintaining energy reserves.
+   * Ensures 20% energy reserve is maintained for emergencies, construction, and repairs.
+   *
+   * @param room - The room to check energy reserves (must be actual Room type for energy checks)
+   * @param spawnCost - Cost of the creep to spawn
+   * @returns true if the room can afford the creep while maintaining reserves
+   */
+  private canAffordCreepWithReserve(room: Room | undefined, spawnCost: number): boolean {
+    if (!room) {
+      // For test mocks without room property, allow spawning
+      return true;
+    }
+
+    // Type guard: check if room has energy properties
+    // Some test mocks may not have these properties
+    const energyAvailable = (room as { energyAvailable?: number }).energyAvailable;
+    const energyCapacity = (room as { energyCapacityAvailable?: number }).energyCapacityAvailable;
+
+    if (typeof energyAvailable !== "number" || typeof energyCapacity !== "number") {
+      // For test mocks without energy properties, allow spawning if cost is affordable
+      return true;
+    }
+
+    // Calculate reserve threshold (20% of capacity, minimum 50 energy)
+    const reserveThreshold = Math.max(50, energyCapacity * 0.2);
+
+    // Check if spawning would leave enough reserves
+    return energyAvailable - spawnCost >= reserveThreshold;
+  }
+
+  /**
+   * Calculates dynamic role minimums based on room infrastructure and energy sources.
    *
    * When containers exist near energy sources, the system transitions to a more
    * efficient harvesting model:
    * - Stationary harvesters: 1 per source with adjacent container
-   * - Haulers: 2 per room (transport energy from containers)
+   * - Haulers: 1+ per room (transport energy from containers)
    * - Repairers: 1 per room (maintain infrastructure)
-   * - Regular harvesters: reduced from 4 to 2
+   * - Regular harvesters: scaled based on source count and RCL
    *
    * @param game - The game context
    * @returns Adjusted role minimums for the current room state
@@ -513,6 +594,7 @@ export class BehaviorController {
 
     // Count sources with adjacent containers across all controlled rooms
     let totalSourcesWithContainers = 0;
+    let totalSources = 0;
     let controlledRoomCount = 0;
 
     for (const room of Object.values(game.rooms)) {
@@ -523,19 +605,18 @@ export class BehaviorController {
       controlledRoomCount++;
 
       // Find all sources in the room
-      const sources = room.find(FIND_SOURCES);
+      const sources = room.find(FIND_SOURCES) as Source[];
+      totalSources += sources.length;
 
       for (const source of sources) {
         // Check for containers adjacent to this source
         // Safety check: ensure pos has findInRange method (may not exist in test mocks)
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const sourcePos = source.pos;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        const sourcePos = source.pos as RoomPosition | undefined;
         if (!sourcePos || typeof sourcePos.findInRange !== "function") {
           continue;
         }
 
-        const nearbyStructures = (sourcePos as RoomPosition).findInRange(FIND_STRUCTURES, 1, {
+        const nearbyStructures = sourcePos.findInRange(FIND_STRUCTURES, 1, {
           filter: (s: Structure) => s.structureType === STRUCTURE_CONTAINER
         }) as Structure[];
         const hasContainer = nearbyStructures.length > 0;
@@ -551,14 +632,26 @@ export class BehaviorController {
       // Spawn 1 stationary harvester per source with container
       adjustedMinimums.stationaryHarvester = totalSourcesWithContainers;
 
-      // Spawn 2 haulers per controlled room
-      adjustedMinimums.hauler = controlledRoomCount * 2;
+      // Spawn haulers based on total sources (at least 1 per source)
+      adjustedMinimums.hauler = Math.max(totalSources, controlledRoomCount);
 
       // Spawn 1 repairer per controlled room
       adjustedMinimums.repairer = controlledRoomCount;
 
-      // Reduce regular harvesters from 4 to 2
-      adjustedMinimums.harvester = 2;
+      // Reduce regular harvesters - use optimal count for room
+      const firstRoom = Object.values(game.rooms).find(r => r.controller?.my);
+      if (firstRoom) {
+        adjustedMinimums.harvester = this.calculateOptimalHarvesterCount(firstRoom);
+      } else {
+        adjustedMinimums.harvester = 2;
+      }
+    } else {
+      // No containers yet - use source-based harvester count
+      const firstRoom = Object.values(game.rooms).find(r => r.controller?.my);
+      if (firstRoom) {
+        const optimalHarvesters = this.calculateOptimalHarvesterCount(firstRoom);
+        adjustedMinimums.harvester = optimalHarvesters;
+      }
     }
 
     return adjustedMinimums;
@@ -615,6 +708,12 @@ export class BehaviorController {
       const spawnCost = this.bodyComposer.calculateBodyCost(body);
       if (spawn.room && spawn.room.energyAvailable < spawnCost) {
         continue; // Not enough energy yet
+      }
+
+      // Check if we can afford the creep while maintaining energy reserves (20% buffer)
+      if (!this.canAffordCreepWithReserve(spawn.room as Room | undefined, spawnCost)) {
+        // Skip spawning to maintain emergency reserves
+        continue;
       }
 
       const name = `${role}-${game.time}-${memory.creepCounter}`;
