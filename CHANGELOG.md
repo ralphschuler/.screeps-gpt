@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.83.7] - 2025-11-15
+
 ### Fixed
 
 - **Memory.stats Collection Failure**: Fixed TypeScript interface conflict preventing stats collection and causing monitoring blackout
