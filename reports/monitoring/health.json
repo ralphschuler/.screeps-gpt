@@ -1,0 +1,65 @@
+{
+  "last_successful_ping": "2025-11-15T23:06:22.586Z",
+  "last_failed_ping": null,
+  "consecutive_failures": 0,
+  "health_status": "operational",
+  "last_known_tick": null,
+  "last_bot_status": "active",
+  "detection_history": [
+    {
+      "timestamp": "2025-11-15T17:31:17.201Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-15T18:28:03.327Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-15T18:40:20.565Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-15T19:49:43.346Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-15T20:05:50.583Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-15T21:21:10.841Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-15T21:34:10.037Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-15T22:05:17.998Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-15T22:36:48.862Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-15T23:03:47.736Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-15T23:06:22.586Z",
+      "status": "success",
+      "aliveness": "active"
+    }
+  ]
+}
