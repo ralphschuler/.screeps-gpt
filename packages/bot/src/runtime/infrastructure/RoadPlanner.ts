@@ -247,4 +247,72 @@ export class RoadPlanner {
 
     return plans;
   }
+
+  /**
+   * Calculate the value of building a road at a position based on traffic and terrain
+   * @param pos Position to evaluate
+   * @param traffic Traffic count at the position
+   * @param terrain Room terrain for terrain type lookup
+   * @returns Road value score (higher = more beneficial)
+   */
+  public calculateRoadValue(pos: RoomPosition, traffic: number, terrain: RoomTerrain): number {
+    // Get terrain type at position
+    const terrainType = terrain.get(pos.x, pos.y);
+
+    // Determine terrain cost (fatigue per move)
+    let terrainCost: number;
+    if (terrainType === TERRAIN_MASK_WALL) {
+      return 0; // Cannot build on walls
+    } else if (terrainType === TERRAIN_MASK_SWAMP) {
+      terrainCost = 5; // Swamps have 5x fatigue
+    } else {
+      terrainCost = 1; // Plains have 1x fatigue
+    }
+
+    const roadCost = 1; // Roads always cost 1 fatigue
+    const savings = terrainCost - roadCost;
+
+    // Value = traffic × savings per move
+    return traffic * savings;
+  }
+
+  /**
+   * Prioritize road construction based on cost-benefit analysis
+   * @param room Room to analyze
+   * @param minValueThreshold Minimum value threshold for road construction (default: 10)
+   * @returns Sorted array of road plans by value (highest first)
+   */
+  public prioritizeRoadConstruction(room: RoomLike, minValueThreshold: number = 10): RoadPlan[] {
+    if (!this.trafficManager) {
+      return [];
+    }
+
+    const terrain = room.getTerrain();
+    const allTraffic = this.trafficManager.getHighTrafficPositions(0);
+
+    // Calculate value for each position in this room
+    const valuedPlans: Array<{ plan: RoadPlan; value: number }> = [];
+
+    for (const { pos, count } of allTraffic) {
+      if (pos.roomName !== room.name) {
+        continue;
+      }
+
+      const value = this.calculateRoadValue(pos, count, terrain);
+
+      if (value >= minValueThreshold) {
+        valuedPlans.push({
+          plan: {
+            pos: { x: pos.x, y: pos.y },
+            roomName: pos.roomName,
+            priority: value
+          },
+          value
+        });
+      }
+    }
+
+    // Sort by value descending and return plans
+    return valuedPlans.sort((a, b) => b.value - a.value).map(vp => vp.plan);
+  }
 }

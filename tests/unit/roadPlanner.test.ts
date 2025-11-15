@@ -537,4 +537,123 @@ describe("RoadPlanner", () => {
       expect(mockRoom.createConstructionSite).toHaveBeenCalledWith(11, 11, STRUCTURE_ROAD);
     });
   });
+
+  describe("Cost-benefit analysis", () => {
+    it("should calculate road value based on traffic and terrain", () => {
+      const mockTerrain = {
+        get: (x: number) => {
+          // Position 10 is swamp, position 11 is plain
+          return x === 10 ? TERRAIN_MASK_SWAMP : 0;
+        }
+      } as RoomTerrain;
+
+      const swampPos = { roomName: "W0N0", x: 10, y: 10 } as RoomPosition;
+      const plainPos = { roomName: "W0N0", x: 11, y: 11 } as RoomPosition;
+
+      const trafficCount = 10;
+
+      // Swamp: savings = 5 - 1 = 4, value = 10 * 4 = 40
+      const swampValue = roadPlanner.calculateRoadValue(swampPos, trafficCount, mockTerrain);
+      expect(swampValue).toBe(40);
+
+      // Plain: savings = 1 - 1 = 0, value = 10 * 0 = 0
+      const plainValue = roadPlanner.calculateRoadValue(plainPos, trafficCount, mockTerrain);
+      expect(plainValue).toBe(0);
+    });
+
+    it("should return zero value for walls", () => {
+      const mockTerrain = {
+        get: () => TERRAIN_MASK_WALL
+      } as RoomTerrain;
+
+      const wallPos = { roomName: "W0N0", x: 10, y: 10 } as RoomPosition;
+      const value = roadPlanner.calculateRoadValue(wallPos, 100, mockTerrain);
+
+      expect(value).toBe(0);
+    });
+
+    it("should prioritize road construction by value", () => {
+      const trafficManager = new TrafficManager({ enableTrafficAnalysis: true });
+
+      // Record traffic: high on swamp, medium on plain
+      const swampPos = { roomName: "W0N0", x: 10, y: 10 } as RoomPosition;
+      const plainPos = { roomName: "W0N0", x: 11, y: 11 } as RoomPosition;
+
+      for (let i = 0; i < 20; i++) trafficManager.recordMovement(swampPos);
+      for (let i = 0; i < 50; i++) trafficManager.recordMovement(plainPos);
+
+      roadPlanner.setTrafficManager(trafficManager);
+
+      const mockRoom: RoomLike = {
+        name: "W0N0",
+        getTerrain: vi.fn(() => ({
+          get: (x: number) => (x === 10 ? TERRAIN_MASK_SWAMP : 0)
+        })) as () => RoomTerrain
+      };
+
+      const plans = roadPlanner.prioritizeRoadConstruction(mockRoom, 10);
+
+      // Swamp with less traffic should be prioritized over plain with more traffic
+      // Swamp: 20 * 4 = 80 value
+      // Plain: 50 * 0 = 0 value
+      expect(plans).toHaveLength(1);
+      expect(plans[0].pos.x).toBe(10);
+      expect(plans[0].priority).toBe(80);
+    });
+
+    it("should filter by minimum value threshold", () => {
+      const trafficManager = new TrafficManager({ enableTrafficAnalysis: true });
+
+      const pos = { roomName: "W0N0", x: 10, y: 10 } as RoomPosition;
+      for (let i = 0; i < 5; i++) trafficManager.recordMovement(pos);
+
+      roadPlanner.setTrafficManager(trafficManager);
+
+      const mockRoom: RoomLike = {
+        name: "W0N0",
+        getTerrain: vi.fn(() => ({
+          get: () => TERRAIN_MASK_SWAMP
+        })) as () => RoomTerrain
+      };
+
+      // Value = 5 * 4 = 20
+      const plansWithLowThreshold = roadPlanner.prioritizeRoadConstruction(mockRoom, 10);
+      expect(plansWithLowThreshold).toHaveLength(1);
+
+      const plansWithHighThreshold = roadPlanner.prioritizeRoadConstruction(mockRoom, 30);
+      expect(plansWithHighThreshold).toHaveLength(0);
+    });
+
+    it("should sort plans by value descending", () => {
+      const trafficManager = new TrafficManager({ enableTrafficAnalysis: true });
+
+      const pos1 = { roomName: "W0N0", x: 10, y: 10 } as RoomPosition;
+      const pos2 = { roomName: "W0N0", x: 11, y: 11 } as RoomPosition;
+      const pos3 = { roomName: "W0N0", x: 12, y: 12 } as RoomPosition;
+
+      for (let i = 0; i < 10; i++) trafficManager.recordMovement(pos1);
+      for (let i = 0; i < 20; i++) trafficManager.recordMovement(pos2);
+      for (let i = 0; i < 5; i++) trafficManager.recordMovement(pos3);
+
+      roadPlanner.setTrafficManager(trafficManager);
+
+      const mockRoom: RoomLike = {
+        name: "W0N0",
+        getTerrain: vi.fn(() => ({
+          get: () => TERRAIN_MASK_SWAMP
+        })) as () => RoomTerrain
+      };
+
+      const plans = roadPlanner.prioritizeRoadConstruction(mockRoom, 10);
+
+      // Values: pos1=40, pos2=80, pos3=20
+      expect(plans).toHaveLength(3);
+      expect(plans[0].pos.x).toBe(11); // Highest value
+      expect(plans[0].priority).toBe(80);
+      expect(plans[1].pos.x).toBe(10);
+      expect(plans[1].priority).toBe(40);
+      expect(plans[2].pos.x).toBe(12); // Lowest value
+      expect(plans[2].priority).toBe(20);
+    });
+  });
 });

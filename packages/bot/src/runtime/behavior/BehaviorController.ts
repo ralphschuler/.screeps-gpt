@@ -976,8 +976,29 @@ function runBuilder(creep: ManagedCreep): string {
   if (task === BUILDER_BUILD_TASK) {
     comm?.say(creep, "build");
 
+    // Prioritize construction sites by structure type
+    const constructionPriorities = [
+      STRUCTURE_SPAWN,
+      STRUCTURE_EXTENSION,
+      STRUCTURE_TOWER,
+      STRUCTURE_CONTAINER,
+      STRUCTURE_STORAGE,
+      STRUCTURE_ROAD, // Roads lower priority but still automated
+      STRUCTURE_RAMPART,
+      STRUCTURE_WALL
+    ];
+
     const sites = creep.room.find(FIND_CONSTRUCTION_SITES) as ConstructionSite[];
-    const site = sites.length > 0 ? (creep.pos.findClosestByPath(sites) ?? sites[0]) : null;
+
+    // Find highest priority site
+    let site: ConstructionSite | null = null;
+    for (const structureType of constructionPriorities) {
+      const prioritySites = sites.filter(s => s.structureType === structureType);
+      if (prioritySites.length > 0) {
+        site = creep.pos.findClosestByPath(prioritySites) ?? prioritySites[0];
+        break;
+      }
+    }
 
     if (site) {
       const result = creep.build(site);
