@@ -1,0 +1,76 @@
+{
+  "version": "1.0.0",
+  "generatedAt": "2025-11-15T06:40:00.000Z",
+  "dataPointCount": 0,
+  "collectionPeriod": {
+    "startDate": "1970-01-01T00:00:00.000Z",
+    "endDate": "1970-01-01T00:00:00.000Z",
+    "durationHours": 0
+  },
+  "cpu": {
+    "used": {
+      "mean": 0,
+      "stdDev": 0,
+      "percentile95": 0,
+      "warningThreshold": 0,
+      "criticalThreshold": 0
+    },
+    "bucket": {
+      "mean": 0,
+      "stdDev": 0,
+      "trendRate": 0,
+      "warningThreshold": 0,
+      "criticalThreshold": 0
+    }
+  },
+  "energy": {
+    "incomePerRoom": {
+      "mean": 0,
+      "stdDev": 0,
+      "warningThreshold": 0,
+      "criticalThreshold": 0
+    },
+    "storageTotal": {
+      "mean": 0,
+      "stdDev": 0,
+      "accumulationRate": 0,
+      "warningThreshold": 0,
+      "criticalThreshold": 0
+    }
+  },
+  "creeps": {
+    "total": {
+      "mean": 0,
+      "stdDev": 0,
+      "warningThreshold": 0,
+      "criticalThreshold": 0
+    },
+    "byRole": {}
+  },
+  "rooms": {
+    "controlledCount": {
+      "mean": 0,
+      "stdDev": 0
+    },
+    "rclProgressRate": {
+      "mean": 0,
+      "stdDev": 0,
+      "warningThreshold": 0,
+      "criticalThreshold": 0
+    }
+  },
+  "spawns": {
+    "uptimePercentage": {
+      "mean": 0,
+      "stdDev": 0,
+      "warningThreshold": 0,
+      "criticalThreshold": 0
+    }
+  },
+  "metadata": {
+    "methodology": "Mean and standard deviation calculated from historical snapshots. Warning threshold: μ ± 2σ (95% CI). Critical threshold: μ ± 3σ (99.7% CI).",
+    "confidenceLevel": "none",
+    "recalibrationRecommended": "Weekly or after significant code changes",
+    "_note": "This is a placeholder baseline file with zero values. Run 'npx tsx packages/utilities/scripts/establish-baselines.ts' after stats collection is restored (issue #684) and 24-48 hours of data is collected."
+  }
+}

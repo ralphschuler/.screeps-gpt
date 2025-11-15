@@ -148,32 +148,53 @@ Object.values(Game.creeps).length;
 
 Analyze the PTR telemetry snapshot for critical anomalies:
 
-**Anomaly Detection Criteria:**
+**Baseline-Driven Anomaly Detection:**
 
-Create issues for metrics exceeding these thresholds:
+**Load Performance Baselines:**
+```bash
+# Check if baselines exist
+cat reports/monitoring/baselines.json
+```
+
+If baselines exist with `confidenceLevel != "none"`, use data-driven thresholds:
+- **Warning**: Metric deviates beyond warning threshold (μ ± 2σ)
+- **Critical**: Metric deviates beyond critical threshold (μ ± 3σ)
+
+**Baseline-Driven Criteria:**
 
 **Critical Priority Anomalies** (`priority/critical`):
-- CPU usage > 95% for 3+ consecutive ticks
+- CPU usage > baselines.cpu.used.criticalThreshold for 3+ consecutive ticks
+- CPU bucket < baselines.cpu.bucket.criticalThreshold (severe bucket depletion)
 - Memory crashes or persistent errors
 - Zero creep spawning for 10+ ticks when resources available
 - Room abandonment without explicit strategy
+- Creep population < baselines.creeps.total.criticalThreshold (severe population collapse)
 
 **High Priority Anomalies** (`priority/high`):
-- CPU usage > 80% for 10+ consecutive ticks  
-- Energy efficiency drop > 20% from baseline
-- Creep population deviation > 30% from target
+- CPU usage > baselines.cpu.used.warningThreshold for 10+ consecutive ticks
+- Energy income per room < baselines.energy.incomePerRoom.warningThreshold (>20% drop)
+- Creep population < baselines.creeps.total.warningThreshold (>30% deviation)
+- RCL progress rate < baselines.rooms.rclProgressRate.warningThreshold (stalled progression)
 - Construction progress stalled for 50+ ticks
 
 **Medium Priority Anomalies** (`priority/medium`):
 - Suboptimal resource allocation patterns
-- Minor performance degradations < 10%
+- Minor performance degradations within 1-2σ of baseline
 - Non-critical strategy execution delays
+
+**Fallback Criteria (if baselines unavailable or confidenceLevel == "none"):**
+- CPU usage > 95% for 3+ consecutive ticks (critical)
+- CPU usage > 80% for 10+ consecutive ticks (high)
+- Energy efficiency drop > 20% from historical average (high)
+- Creep population deviation > 30% from historical target (high)
 
 **Requirements:**
 - [ ] All anomaly issues MUST have concrete evidence with exact metric values and thresholds
+- [ ] If using baselines, MUST reference baseline values (e.g., "CPU 25.3 exceeds warning threshold 19.4 (μ+2σ)")
 - [ ] All issue titles MUST start with `PTR:` to identify monitoring findings
 - [ ] All severity labels MUST be justified with specific impact assessment  
 - [ ] All analysis MUST be reproducible with stored snapshot data
+- [ ] If baselines are placeholder (confidenceLevel == "none"), note in issue that thresholds are estimates
 
 ### PHASE 3.5: PROFILER DATA ANALYSIS (IF AVAILABLE)
 
@@ -336,12 +357,17 @@ For each identified action:
 Generate a strategic summary covering:
 - **Overall bot health score** (0-100 scale with justification)
 - **PTR performance status** (operational/degraded/critical)
+- **Baseline status**: Check `reports/monitoring/baselines.json` metadata.confidenceLevel
+  - If "none" or missing: Recommend running baseline establishment after stats restoration
+  - If "low" (< 48 data points): Recommend waiting for more data collection
+  - If "high": Note that baselines are statistically valid
+  - If last recalibration > 7 days: Recommend baseline recalibration
 - **Top 3 priorities** for improving game performance
 - **Top 3 priorities** for improving development infrastructure
 - **Emerging opportunities** (expansion, optimization, automation)
 - **Risks and mitigation strategies**
 
-Store this analysis in a timestamped report file.
+Store this analysis in a timestamped report file at `reports/monitoring/strategic-analysis-<timestamp>.md`.
 
 ## SAFETY CONTROLS & CONSTRAINTS
 
@@ -384,6 +410,9 @@ At completion, print minified JSON summary:
   "bot_status": "<operational|degraded|critical>",
   "ptr_status": "<healthy|degraded|critical>",
   "repository_health": "<healthy|needs-attention|critical>",
+  "baselines_status": "<none|low|high>",
+  "baselines_available": <true|false>,
+  "baseline_driven_detection": <true|false>,
   "ptr_snapshot_path": "reports/copilot/ptr-stats.json",
   "profiler_status": "<enabled|disabled|no-data|unavailable>",
   "profiler_snapshot_path": "reports/profiler/latest.json",
