@@ -57,7 +57,7 @@ async function fetchResilientTelemetry(): Promise<TelemetryResult> {
   // Phase 0: Start profiler for CPU analysis (non-blocking)
   console.log("Phase 0: Starting profiler data collection...");
   try {
-    const profilerResult = await executeScript("scripts/collect-profiler-data.ts");
+    const profilerResult = await executeScript("packages/utilities/scripts/fetch-profiler-data.ts");
 
     if (profilerResult.exitCode === 0) {
       console.log("✓ Profiler start command successful");
@@ -75,7 +75,7 @@ async function fetchResilientTelemetry(): Promise<TelemetryResult> {
   // Phase 1: Try Stats API
   console.log("Phase 1: Attempting Stats API telemetry...");
   try {
-    const statsResult = await executeScript("scripts/fetch-screeps-stats.mjs");
+    const statsResult = await executeScript("packages/utilities/scripts/fetch-screeps-stats.mjs");
 
     if (statsResult.exitCode === 0) {
       console.log("✓ Stats API telemetry successful");
@@ -92,7 +92,7 @@ async function fetchResilientTelemetry(): Promise<TelemetryResult> {
   // Phase 2: Fall back to Console Telemetry
   console.log("\nPhase 2: Falling back to Console telemetry...");
   try {
-    const consoleResult = await executeScript("scripts/fetch-console-telemetry.ts");
+    const consoleResult = await executeScript("packages/utilities/scripts/fetch-console-telemetry.ts");
 
     if (consoleResult.exitCode === 0) {
       console.log("✓ Console telemetry successful (fallback activated)");
