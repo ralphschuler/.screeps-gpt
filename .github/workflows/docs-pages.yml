@@ -37,6 +37,13 @@ jobs:
       - name: Install documentation dependencies
         working-directory: packages/docs
         run: bun install
+      - name: Clone Hexo Cactus theme
+        working-directory: packages/docs/themes
+        run: |
+          if [ ! -d "cactus/.git" ]; then
+            rm -rf cactus
+            git clone https://github.com/probberechts/hexo-theme-cactus.git cactus
+          fi
       - name: Update versions
         run: bun run versions:update
       - name: Generate analytics data
