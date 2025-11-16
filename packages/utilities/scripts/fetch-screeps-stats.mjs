@@ -82,7 +82,7 @@ async function main() {
   );
 
   const responseData = await response.json();
-  
+
   // The Memory API returns data in gzipped format prefixed with "gz:"
   // We need to decompress it to get the actual stats
   let stats;
