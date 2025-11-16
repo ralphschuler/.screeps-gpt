@@ -91,10 +91,7 @@ export class Kernel {
       config.infrastructureManager ??
       new InfrastructureManager({
         logger: this.logger,
-        memory:
-          typeof Memory !== "undefined" && Memory.infrastructure
-            ? (Memory.infrastructure as Parameters<typeof InfrastructureManager>[0]["memory"])
-            : undefined
+        memory: typeof Memory !== "undefined" ? Memory.infrastructure : undefined
       });
     this.bootstrapManager = config.bootstrapManager ?? new BootstrapPhaseManager({}, this.logger);
     this.enableGarbageCollection = config.enableGarbageCollection ?? true;
