@@ -270,8 +270,20 @@ The repository uses 14 GitHub Actions workflows orchestrating the agent swarm:
 - **Copilot Agents** - Issue triage, Todo automation, code review, CI autofix
 - **PTR Monitor** - Continuous bot performance monitoring
 - **Spec-Kit** - Specification-driven development workflow
+- **Stale Issue Management** - Automated cleanup of inactive issues (60-day inactivity threshold)
 
 **[Complete Workflow Documentation →](docs/automation/overview.md)**
+
+### Stale Issue Policy
+
+Issues inactive for **60 days** are automatically labeled as `stale` and will be closed after **14 additional days** of inactivity. This helps maintain a clean issue backlog and ensures active issues remain visible.
+
+**Exempt Issues:** Issues labeled with `pinned`, `security`, `priority/critical`, or `priority/high` are never marked as stale.
+
+**Preventing Auto-Close:** To keep an issue open, either:
+- Add a comment to show continued interest
+- Remove the `stale` label manually
+- Add one of the exempt labels
 
 ## Configuration
 
