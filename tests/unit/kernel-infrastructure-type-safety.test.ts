@@ -131,11 +131,7 @@ describe("Kernel InfrastructureManager Type Safety", () => {
       }).not.toThrow();
     } finally {
       // Always restore original state
-      if (originalMemory !== undefined) {
-        vi.stubGlobal("Memory", originalMemory);
-      } else {
-        vi.unstubAllGlobals();
-      }
+      vi.unstubAllGlobals();
     }
   });
 
