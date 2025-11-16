@@ -42,6 +42,7 @@ describe("Workflow concurrency controls", () => {
     // Singleton workflows
     "dependabot-automerge.yml",
     "label-sync.yml",
+    "stale-issue-management.yml",
     // Project management workflows
     "project-sync-items.yml",
     "project-pr-status.yml",
@@ -175,7 +176,7 @@ describe("Workflow concurrency controls", () => {
   });
 
   describe("Singleton workflows", () => {
-    const singletonWorkflows = ["label-sync.yml", "dependabot-automerge.yml"];
+    const singletonWorkflows = ["label-sync.yml", "dependabot-automerge.yml", "stale-issue-management.yml"];
 
     for (const workflowFile of singletonWorkflows) {
       it(`${workflowFile} should use workflow-level concurrency with cancellation`, () => {

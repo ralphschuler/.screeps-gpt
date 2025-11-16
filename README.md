@@ -281,6 +281,7 @@ Issues inactive for **60 days** are automatically labeled as `stale` and will be
 **Exempt Issues:** Issues labeled with `pinned`, `security`, `priority/critical`, or `priority/high` are never marked as stale.
 
 **Preventing Auto-Close:** To keep an issue open, either:
+
 - Add a comment to show continued interest
 - Remove the `stale` label manually
 - Add one of the exempt labels

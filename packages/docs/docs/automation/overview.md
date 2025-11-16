@@ -883,8 +883,8 @@ Potential improvements for report storage infrastructure:
   - `security` - Security-related concerns
   - `priority/critical` - Critical priority items
   - `priority/high` - High priority items
-- Stale Warning Message: *"This issue has been inactive for 60 days and will be closed in 14 days unless there is activity. If this issue is still relevant, please comment or remove the `stale` label."*
-- Close Message: *"This issue was automatically closed due to inactivity. If this issue is still relevant, please reopen it or create a new issue with updated context."*
+- Stale Warning Message: _"This issue has been inactive for 60 days and will be closed in 14 days unless there is activity. If this issue is still relevant, please comment or remove the `stale` label."_
+- Close Message: _"This issue was automatically closed due to inactivity. If this issue is still relevant, please reopen it or create a new issue with updated context."_
 - Configuration:
   - Processes up to 100 issues per run for efficiency
   - Does not process pull requests (issues only)
