@@ -679,8 +679,10 @@ export class HealAction extends TaskAction {
     }
 
     if (result === OK) {
-      // Continue healing until target is fully healed
-      return target.hits === target.hitsMax;
+      // Check if target is fully healed after the heal action
+      // Need to re-fetch the target to get updated hits value
+      const updatedTarget = Game.getObjectById(this.targetId);
+      return !updatedTarget || updatedTarget.hits === updatedTarget.hitsMax;
     }
 
     // Error occurred, end task
@@ -723,8 +725,10 @@ export class RangedHealAction extends TaskAction {
     }
 
     if (result === OK) {
-      // Continue healing until target is fully healed
-      return target.hits === target.hitsMax;
+      // Check if target is fully healed after the heal action
+      // Need to re-fetch the target to get updated hits value
+      const updatedTarget = Game.getObjectById(this.targetId);
+      return !updatedTarget || updatedTarget.hits === updatedTarget.hitsMax;
     }
 
     // Error occurred, end task
@@ -881,9 +885,19 @@ export class TowerAttackAction extends TaskAction {
       return true; // Tower or target doesn't exist
     }
 
+    if (tower.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+      return true; // Tower is out of energy
+    }
+
     const result = tower.attack(target);
-    // Continue attacking until target is destroyed or tower is out of energy
-    return result !== OK || tower.store.getUsedCapacity(RESOURCE_ENERGY) === 0;
+    
+    // Only complete on terminal errors, not recoverable ones
+    if (result === OK || result === ERR_NOT_ENOUGH_RESOURCES) {
+      return false; // Continue attacking
+    }
+
+    // Terminal error occurred, end task
+    return true;
   }
 }
 
@@ -923,8 +937,20 @@ export class TowerHealAction extends TaskAction {
     }
 
     const result = tower.heal(target);
-    // Continue healing until target is fully healed
-    return result !== OK || target.hits === target.hitsMax;
+    
+    if (result === OK) {
+      // Check if target is fully healed after the heal action
+      const updatedTarget = Game.getObjectById(this.targetId);
+      return !updatedTarget || updatedTarget.hits === updatedTarget.hitsMax;
+    }
+
+    // Only complete on terminal errors, not recoverable ones
+    if (result === ERR_NOT_ENOUGH_RESOURCES) {
+      return false; // Keep trying when out of energy
+    }
+
+    // Terminal error occurred, end task
+    return true;
   }
 }
 
@@ -964,8 +990,24 @@ export class TowerRepairAction extends TaskAction {
     }
 
     const result = tower.repair(target);
-    // Continue repairing until target is fully repaired
-    return result !== OK || target.hits === target.hitsMax;
+
+    if (result === OK) {
+      // Check if target is fully repaired after the repair action
+      const updatedTarget = Game.getObjectById(this.targetId);
+      return !updatedTarget || updatedTarget.hits === updatedTarget.hitsMax;
+    }
+
+    // Only complete on terminal errors
+    if (
+      result === ERR_INVALID_TARGET ||
+      result === ERR_RCL_NOT_ENOUGH ||
+      result === ERR_NOT_OWNER
+    ) {
+      return true;
+    }
+
+    // For recoverable errors (e.g., not enough energy), keep trying
+    return false;
   }
 }
 
@@ -975,12 +1017,10 @@ export class TowerRepairAction extends TaskAction {
 export class BoostCreepAction extends TaskAction {
   public prereqs: TaskPrerequisite[] = [];
   private labId: Id<StructureLab>;
-  private boostType: MineralBoostConstant;
 
-  public constructor(labId: Id<StructureLab>, boostType: MineralBoostConstant) {
+  public constructor(labId: Id<StructureLab>) {
     super();
     this.labId = labId;
-    this.boostType = boostType;
   }
 
   public getLabId(): Id<StructureLab> {
@@ -1097,7 +1137,7 @@ export class LinkTransferAction extends TaskAction {
       targetLink.store.getFreeCapacity(RESOURCE_ENERGY)
     );
 
-    const result = sourceLink.transferEnergy(targetLink, amount);
+    sourceLink.transferEnergy(targetLink, amount);
     // Task complete on success or error
     return true;
   }

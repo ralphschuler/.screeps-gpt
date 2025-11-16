@@ -171,7 +171,7 @@ describe("Advanced Task Actions", () => {
       (Game.getObjectById as any).mockReturnValue(mockLab);
       (mockCreep.pos.getRangeTo as any).mockReturnValue(1);
 
-      const action = new BoostCreepAction(mockLab.id, "UO" as MineralBoostConstant);
+      const action = new BoostCreepAction(mockLab.id);
       const result = action.action(mockCreep);
 
       expect(mockLab.boostCreep).toHaveBeenCalledWith(mockCreep);
@@ -188,7 +188,7 @@ describe("Advanced Task Actions", () => {
       (Game.getObjectById as any).mockReturnValue(mockLab);
       (mockCreep.pos.getRangeTo as any).mockReturnValue(5);
 
-      const action = new BoostCreepAction(mockLab.id, "UO" as MineralBoostConstant);
+      const action = new BoostCreepAction(mockLab.id);
       const result = action.action(mockCreep);
 
       expect(mockCreep.moveTo).toHaveBeenCalled();

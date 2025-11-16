@@ -248,13 +248,13 @@ const task = new TowerRepairAction(towerId, structureId);
 ### Lab Operations
 
 #### BoostCreepAction
-Boosts a creep with a mineral compound at a lab.
+Boosts a creep with a mineral compound at a lab. The lab must already have the appropriate mineral compound loaded.
 
 **Prerequisites:** None
 
 **Usage:**
 ```typescript
-const task = new BoostCreepAction(labId, RESOURCE_CATALYZED_GHODIUM_ACID);
+const task = new BoostCreepAction(labId);
 ```
 
 #### RunReactionAction
@@ -398,6 +398,6 @@ export class CustomAction extends TaskAction {
 
 ## See Also
 
-- [TaskRequest](./TaskRequest.ts) - Task wrapper with status and priority
-- [TaskManager](./TaskManager.ts) - Task generation and assignment
-- [TaskPrerequisite](./TaskPrerequisite.ts) - Prerequisite definitions
+- [TaskRequest](../../packages/bot/src/runtime/tasks/TaskRequest.ts) - Task wrapper with status and priority
+- [TaskManager](../../packages/bot/src/runtime/tasks/TaskManager.ts) - Task generation and assignment
+- [TaskPrerequisite](../../packages/bot/src/runtime/tasks/TaskPrerequisite.ts) - Prerequisite definitions
