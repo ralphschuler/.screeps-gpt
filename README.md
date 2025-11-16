@@ -108,6 +108,16 @@ bun run docker:build
 bun run docker:test:unit
 ```
 
+**Option 3: Private Screeps Server**
+
+Run a local Screeps server for testing and development:
+
+```bash
+docker compose up screeps-server
+```
+
+Server available at `http://localhost:21025`. See [Docker Guide](docs/operations/docker-guide.md) for details.
+
 ### Deploy to Screeps
 
 ```bash

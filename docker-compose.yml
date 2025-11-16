@@ -76,6 +76,19 @@ services:
     working_dir: /workspace
     command: npm run format:check
 
+  # Screeps private server (Node.js 16 + Python 2 for native modules)
+  screeps-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.screeps-server
+    ports:
+      - "21025:21025"
+    volumes:
+      - ./server-data:/screeps
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+
   # Screeps agent service
   screeps-agent:
     build:

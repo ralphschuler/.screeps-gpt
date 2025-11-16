@@ -1,0 +1,18 @@
+# Dockerfile.screeps-server - Custom Screeps server with screeps-launcher
+# This image provides a private Screeps server instance using screepers/screeps-launcher
+# which includes Node.js 16, Python 2, and all necessary build tools pre-configured
+
+FROM screepers/screeps-launcher:latest
+
+# Set working directory
+WORKDIR /screeps
+
+# Expose Screeps server port
+EXPOSE 21025
+
+# Health check to ensure server is ready
+HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=5 \
+  CMD curl --fail --silent http://127.0.0.1:21025/ || exit 1
+
+# Start Screeps server using screeps-launcher
+CMD ["screeps-launcher"]

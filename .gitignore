@@ -30,6 +30,7 @@ screeps.json
 
 # ScreepsServer data from integration tests
 /server
+/server-data
 
 # Performance test artifacts (except baseline)
 /reports/performance/*
