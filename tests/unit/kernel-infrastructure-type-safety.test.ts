@@ -115,7 +115,6 @@ describe("Kernel InfrastructureManager Type Safety", () => {
 
   it("should not throw type errors with undefined Memory global", () => {
     // Use vitest's stubGlobal for safer global mocking
-    const originalMemory = global.Memory;
     vi.stubGlobal("Memory", undefined);
 
     try {

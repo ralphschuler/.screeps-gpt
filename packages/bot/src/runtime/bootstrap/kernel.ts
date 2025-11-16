@@ -89,8 +89,10 @@ export class Kernel {
     this.constructionManager = config.constructionManager ?? new ConstructionManager(this.logger);
 
     // Extract infrastructure memory with proper type narrowing for ESLint strict rules
-    const infrastructureMemory: InfrastructureMemory | undefined =
-      typeof Memory !== "undefined" ? Memory.infrastructure : undefined;
+    let infrastructureMemory: InfrastructureMemory | undefined;
+    if (typeof Memory !== "undefined") {
+      infrastructureMemory = Memory.infrastructure;
+    }
 
     this.infrastructureManager =
       config.infrastructureManager ??
