@@ -876,6 +876,30 @@ Potential improvements for report storage infrastructure:
 - **Output Metrics**: JSON output includes failure_type, fix_strategy, validation_commands, and files_changed for performance tracking and improvement analysis.
 - Action Enforcement: Mandatory root cause analysis, failure classification, minimal targeted fixes with validation, explicit criteria for fix appropriateness, and comprehensive failure handling for complex issues.
 
+## Stale Issue Management (`stale-issue-management.yml`)
+
+- Trigger: Daily schedule (midnight UTC) + manual dispatch.
+- Behaviour: Automatically identifies and manages inactive issues to prevent backlog accumulation:
+  - Issues inactive for **60 days** are labeled as `stale` with warning message
+  - Stale issues receive **14-day grace period** before auto-close
+  - Auto-closed issues include message explaining closure and reopening process
+  - Removes `stale` label automatically when issues receive activity
+- Exempt Issues: Issues with the following labels are never marked as stale:
+  - `pinned` - Permanently relevant issues
+  - `security` - Security-related concerns
+  - `priority/critical` - Critical priority items
+  - `priority/high` - High priority items
+- Stale Warning Message: _"This issue has been inactive for 60 days and will be closed in 14 days unless there is activity. If this issue is still relevant, please comment or remove the `stale` label."_
+- Close Message: _"This issue was automatically closed due to inactivity. If this issue is still relevant, please reopen it or create a new issue with updated context."_
+- Configuration:
+  - Processes up to 100 issues per run for efficiency
+  - Does not process pull requests (issues only)
+  - Concurrency controlled to prevent overlapping runs
+- Integration: Works seamlessly with label-sync workflow and existing label system
+- Permissions: Requires `issues: write` and `pull-requests: write` (PR write for future extensibility)
+- Action: Uses `actions/stale@v9` for reliable stale detection and management
+- Notes: Users can prevent auto-close by commenting on the issue, removing the `stale` label, or adding an exempt label. This automation helps maintain issue backlog visibility and reduces maintenance burden.
+
 Keep this file accurate—workflows load these expectations via the Copilot CLI when planning fixes.
 
 ---

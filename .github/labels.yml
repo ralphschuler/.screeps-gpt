@@ -11,6 +11,9 @@
 - name: needs/regression-test
   color: E99695
   description: Reports missing coverage; add a regression test before merging.
+- name: stale
+  color: FBCA04
+  description: Inactive 60+ days; auto-closes in 14 days unless reactivated.
 
 # Domain Labels - Technical area or component
 - name: automation
