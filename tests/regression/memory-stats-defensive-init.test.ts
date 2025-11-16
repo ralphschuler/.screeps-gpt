@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 
 /**
  * Regression test for issue #863
@@ -20,6 +20,25 @@ import { describe, it, expect } from "vitest";
  * coalescing assignment operator (??=), matching the pattern used for Memory.profiler.
  */
 describe("Regression: Memory.stats Defensive Initialization (#863)", () => {
+  // Store original global state to restore after each test
+  let originalGame: any;
+  let originalMemory: any;
+  let originalProfilerEnabled: any;
+
+  beforeEach(() => {
+    // Save original global state
+    originalGame = (global as any).Game;
+    originalMemory = (global as any).Memory;
+    originalProfilerEnabled = (global as any).__PROFILER_ENABLED__;
+  });
+
+  afterEach(() => {
+    // Restore original global state to prevent test pollution
+    (global as any).Game = originalGame;
+    (global as any).Memory = originalMemory;
+    (global as any).__PROFILER_ENABLED__ = originalProfilerEnabled;
+  });
+
   it("should initialize Memory.stats structure in loop function", async () => {
     // Import the main module which exports loop
     const mainModule = await import("../../packages/bot/src/main");
@@ -96,15 +115,18 @@ describe("Regression: Memory.stats Defensive Initialization (#863)", () => {
     // Mock __PROFILER_ENABLED__ as false
     (global as any).__PROFILER_ENABLED__ = false;
 
-    // Execute loop - should NOT overwrite existing stats
+    // Execute loop - defensive init should skip since stats already exists (??= operator)
+    // However, StatsCollector will replace it with fresh data during kernel.run()
     mainModule.loop();
 
-    // Verify existing stats were preserved (not overwritten by defensive init)
-    // The StatsCollector will update it during kernel.run(), but the defensive
-    // init should use ??= which only assigns if undefined
+    // Verify stats are still defined and updated by kernel
+    // The defensive init (??=) didn't replace it because it was already defined,
+    // but StatsCollector did replace it with current tick data (this is expected)
     expect(mockMemory.stats).toBeDefined();
-    // After kernel.run(), stats will be updated with current tick data
-    // The important thing is that defensive init didn't replace it with default values
+    expect(mockMemory.stats?.time).toBe(12345); // Updated by StatsCollector to current tick
+    expect(mockMemory.stats?.cpu).toBeDefined();
+    expect(mockMemory.stats?.creeps).toBeDefined();
+    expect(mockMemory.stats?.rooms).toBeDefined();
   });
 
   it("should re-initialize Memory.stats if it becomes undefined mid-execution", async () => {
