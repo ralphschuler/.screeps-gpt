@@ -45,9 +45,7 @@ describe("Advanced Task Actions", () => {
         pos: { x: 15, y: 15 }
       } as Creep;
 
-      (Game.getObjectById as any)
-        .mockReturnValueOnce(mockTower)
-        .mockReturnValueOnce(mockTarget);
+      (Game.getObjectById as any).mockReturnValueOnce(mockTower).mockReturnValueOnce(mockTarget);
 
       const action = new TowerAttackAction(mockTower.id, mockTarget.id);
       const result = action.action(mockCreep);
@@ -71,9 +69,7 @@ describe("Advanced Task Actions", () => {
         pos: { x: 15, y: 15 }
       } as Creep;
 
-      (Game.getObjectById as any)
-        .mockReturnValueOnce(mockTower)
-        .mockReturnValueOnce(mockTarget);
+      (Game.getObjectById as any).mockReturnValueOnce(mockTower).mockReturnValueOnce(mockTarget);
 
       const action = new TowerAttackAction(mockTower.id, mockTarget.id);
       const result = action.action(mockCreep);
@@ -97,9 +93,7 @@ describe("Advanced Task Actions", () => {
         hitsMax: 100
       } as Creep;
 
-      (Game.getObjectById as any)
-        .mockReturnValueOnce(mockTower)
-        .mockReturnValueOnce(mockTarget);
+      (Game.getObjectById as any).mockReturnValueOnce(mockTower).mockReturnValueOnce(mockTarget);
 
       const action = new TowerHealAction(mockTower.id, mockTarget.id);
       const result = action.action(mockCreep);
@@ -122,9 +116,7 @@ describe("Advanced Task Actions", () => {
         hitsMax: 100
       } as Creep;
 
-      (Game.getObjectById as any)
-        .mockReturnValueOnce(mockTower)
-        .mockReturnValueOnce(mockTarget);
+      (Game.getObjectById as any).mockReturnValueOnce(mockTower).mockReturnValueOnce(mockTarget);
 
       const action = new TowerHealAction(mockTower.id, mockTarget.id);
       const result = action.action(mockCreep);
@@ -148,9 +140,7 @@ describe("Advanced Task Actions", () => {
         hitsMax: 1000
       } as Structure;
 
-      (Game.getObjectById as any)
-        .mockReturnValueOnce(mockTower)
-        .mockReturnValueOnce(mockStructure);
+      (Game.getObjectById as any).mockReturnValueOnce(mockTower).mockReturnValueOnce(mockStructure);
 
       const action = new TowerRepairAction(mockTower.id, mockStructure.id);
       const result = action.action(mockCreep);
@@ -270,9 +260,7 @@ describe("Advanced Task Actions", () => {
         }
       } as unknown as StructureLink;
 
-      (Game.getObjectById as any)
-        .mockReturnValueOnce(mockSourceLink)
-        .mockReturnValueOnce(mockTargetLink);
+      (Game.getObjectById as any).mockReturnValueOnce(mockSourceLink).mockReturnValueOnce(mockTargetLink);
 
       const action = new LinkTransferAction(mockSourceLink.id, mockTargetLink.id);
       const result = action.action(mockCreep);
@@ -298,9 +286,7 @@ describe("Advanced Task Actions", () => {
         }
       } as unknown as StructureLink;
 
-      (Game.getObjectById as any)
-        .mockReturnValueOnce(mockSourceLink)
-        .mockReturnValueOnce(mockTargetLink);
+      (Game.getObjectById as any).mockReturnValueOnce(mockSourceLink).mockReturnValueOnce(mockTargetLink);
 
       const action = new LinkTransferAction(mockSourceLink.id, mockTargetLink.id);
       const result = action.action(mockCreep);

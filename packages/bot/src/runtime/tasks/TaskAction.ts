@@ -471,7 +471,7 @@ export class DropAction extends TaskAction {
 
   public action(creep: Creep): boolean {
     const amountToDrop = this.amount ?? creep.store.getUsedCapacity(this.resourceType);
-    
+
     if (amountToDrop === 0) {
       return true; // Nothing to drop
     }
@@ -890,7 +890,7 @@ export class TowerAttackAction extends TaskAction {
     }
 
     const result = tower.attack(target);
-    
+
     // Only complete on terminal errors, not recoverable ones
     if (result === OK || result === ERR_NOT_ENOUGH_RESOURCES) {
       return false; // Continue attacking
@@ -937,7 +937,7 @@ export class TowerHealAction extends TaskAction {
     }
 
     const result = tower.heal(target);
-    
+
     if (result === OK) {
       // Check if target is fully healed after the heal action
       const updatedTarget = Game.getObjectById(this.targetId);
@@ -998,11 +998,7 @@ export class TowerRepairAction extends TaskAction {
     }
 
     // Only complete on terminal errors
-    if (
-      result === ERR_INVALID_TARGET ||
-      result === ERR_RCL_NOT_ENOUGH ||
-      result === ERR_NOT_OWNER
-    ) {
+    if (result === ERR_INVALID_TARGET || result === ERR_RCL_NOT_ENOUGH || result === ERR_NOT_OWNER) {
       return true;
     }
 
