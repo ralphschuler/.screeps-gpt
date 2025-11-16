@@ -229,15 +229,17 @@ export class TaskManager {
     const sites = room.find(FIND_CONSTRUCTION_SITES);
 
     for (const site of sites) {
-      // Check if there's already a build task for this site
-      const existingTask = Array.from(this.tasks.values()).find(t => {
+      // Count existing build tasks for this specific site
+      const existingTasks = Array.from(this.tasks.values()).filter(t => {
         if (t.status === "COMPLETE" || !(t.task instanceof BuildAction)) {
           return false;
         }
         return t.task.getSiteId() === site.id;
       });
 
-      if (!existingTask) {
+      // Generate up to 2 build tasks per construction site to allow multiple builders
+      const tasksNeeded = 2 - existingTasks.length;
+      for (let i = 0; i < tasksNeeded; i++) {
         const task = this.configureTaskAction(new BuildAction(site.id));
         const priority = site.structureType === STRUCTURE_SPAWN ? TaskPriority.HIGH : TaskPriority.NORMAL;
         const request = new TaskRequest(this.getNextTaskId(), task, priority, Game.time + 100);
@@ -264,14 +266,17 @@ export class TaskManager {
     const prioritized = [...roads.slice(0, 2), ...otherStructures.slice(0, 1)];
 
     for (const structure of prioritized) {
-      const existingTask = Array.from(this.tasks.values()).find(t => {
+      // Count existing repair tasks for this specific structure
+      const existingTasks = Array.from(this.tasks.values()).filter(t => {
         if (t.status === "COMPLETE" || !(t.task instanceof RepairAction)) {
           return false;
         }
         return t.task.getStructureId() === structure.id;
       });
 
-      if (!existingTask) {
+      // Generate up to 2 repair tasks per structure to allow multiple repairers
+      const tasksNeeded = 2 - existingTasks.length;
+      for (let i = 0; i < tasksNeeded; i++) {
         const task = this.configureTaskAction(new RepairAction(structure.id));
         // Roads get normal priority, other structures get low priority
         const priority = structure.structureType === STRUCTURE_ROAD ? TaskPriority.NORMAL : TaskPriority.LOW;
@@ -285,12 +290,14 @@ export class TaskManager {
     const controller = room.controller;
     if (!controller?.my) return;
 
-    // Always keep one upgrade task available
-    const existingTask = Array.from(this.tasks.values()).find(
+    // Count existing upgrade tasks for this controller
+    const existingTasks = Array.from(this.tasks.values()).filter(
       t => t.status !== "COMPLETE" && t.task instanceof UpgradeAction
     );
 
-    if (!existingTask) {
+    // Generate up to 3 upgrade tasks to allow multiple creeps to upgrade simultaneously
+    const tasksNeeded = 3 - existingTasks.length;
+    for (let i = 0; i < tasksNeeded; i++) {
       const task = this.configureTaskAction(new UpgradeAction(controller.id));
       const request = new TaskRequest(this.getNextTaskId(), task, TaskPriority.NORMAL, Game.time + 100);
       this.tasks.set(request.id, request);
