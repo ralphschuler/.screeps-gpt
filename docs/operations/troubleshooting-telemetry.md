@@ -251,7 +251,115 @@ npx tsx packages/utilities/scripts/telemetry-health-check.ts 2>&1 | \
    - If Screeps infrastructure is down
    - Open issue with diagnostic information
 
-### Issue 5: High Fallback Rate
+### Issue 5: Bot Aliveness Check JSON Parse Error
+
+**Symptoms**:
+
+- Bot aliveness check fails with "undefined" is not valid JSON error
+- Script exits with error code 2 (unknown status)
+- Lifecycle detection blocked (respawn/spawn-placement-needed states)
+- Monitoring reports "FAILING" status despite bot being active
+
+**Root Causes**:
+
+1. Screeps console API returns "undefined" string when bot has no game presence
+2. Empty response from `/api/user/console` endpoint
+3. Malformed JSON response from console command
+4. Network timeout or authentication failure
+
+**Diagnosis**:
+
+```bash
+# Check bot aliveness status
+cat reports/copilot/bot-aliveness.json
+
+# Look for parsing errors in workflow logs
+gh run view --log | grep "JSON parse"
+
+# Test aliveness check manually
+SCREEPS_TOKEN=$SCREEPS_TOKEN \
+SCREEPS_SHARD=shard3 \
+npx tsx packages/utilities/scripts/check-bot-aliveness.ts
+```
+
+**Resolution Steps**:
+
+1. **Check Raw Response**:
+   - Script now logs first 200 chars of raw response
+   - Look for "undefined", empty string, or malformed JSON
+   - Review console command output format
+
+2. **Verify Bot Game Presence**:
+
+   ```bash
+   # Check if bot has spawns
+   cat reports/copilot/bot-aliveness.json | jq '.aliveness'
+
+   # Expected values:
+   # - "active": Bot has spawns and is executing
+   # - "respawn_needed": Bot has rooms but no spawns
+   # - "spawn_placement_needed": Bot needs to place spawn
+   # - "unknown": Unable to determine status
+   ```
+
+3. **Review Error Details**:
+
+   ```bash
+   # Check error reason
+   cat reports/copilot/bot-aliveness.json | jq '.error'
+
+   # Common errors:
+   # - "Console returned empty response": API returned undefined/empty
+   # - "JSON parse error": Malformed response
+   # - "Console command failed": API returned ok: 0
+   ```
+
+4. **Validate Environment**:
+
+   ```bash
+   # Ensure token is valid
+   echo $SCREEPS_TOKEN
+
+   # Test console access
+   curl -X POST https://screeps.com/api/user/console \
+     -H "X-Token: $SCREEPS_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"expression":"Game.time","shard":"shard3"}'
+   ```
+
+**Defensive Parsing (Implemented)**:
+
+The script now handles edge cases gracefully:
+
+- **Empty/undefined responses**: Returns `spawn_placement_needed` status
+- **Malformed JSON**: Returns `unknown` status with parse error details
+- **Non-object responses**: Returns `spawn_placement_needed` with invalid structure error
+- **API failures**: Returns `unknown` status with API error message
+
+**Expected Behavior**:
+
+```json
+{
+  "timestamp": "2025-11-16T22:00:00.000Z",
+  "aliveness": "active",
+  "status": "normal",
+  "error": null,
+  "interpretation": {
+    "active": "Bot is executing game logic and has active spawns"
+  }
+}
+```
+
+**Fallback Strategy**:
+
+When aliveness check fails, monitoring workflow should:
+
+1. Check `bot-aliveness.json` for error details
+2. Fall back to Memory.stats collection as secondary indicator
+3. Report lifecycle state as "unknown" but continue monitoring
+4. Alert if both aliveness check and Memory.stats fail
+
+### Issue 6: High Fallback Rate
 
 **Symptoms**:
 
