@@ -181,16 +181,16 @@ docker compose up screeps-server test
 
 ### Available Services
 
-| Service | Dockerfile | Purpose | Command |
-|---------|-----------|---------|---------|
-| `dev` | Dockerfile.test | Hot-reload development | `npm run build:watch` |
-| `test` | Dockerfile.test | Unit testing | `npm run test:unit` |
-| `mockup` | Dockerfile.mockup | Mockup tests (Node 16) | `npm run test:mockup` |
-| `build` | Dockerfile.build | Production builds | `npm run build` |
-| `lint` | Dockerfile.test | Code linting | `npm run lint` |
-| `format` | Dockerfile.test | Format checking | `npm run format:check` |
-| `screeps-server` | Dockerfile.screeps-server | Private Screeps server | `screeps start` |
-| `screeps-agent` | packages/screeps-agent/Dockerfile | Screeps agent | Custom agent tasks |
+| Service          | Dockerfile                        | Purpose                | Command                |
+| ---------------- | --------------------------------- | ---------------------- | ---------------------- |
+| `dev`            | Dockerfile.test                   | Hot-reload development | `npm run build:watch`  |
+| `test`           | Dockerfile.test                   | Unit testing           | `npm run test:unit`    |
+| `mockup`         | Dockerfile.mockup                 | Mockup tests (Node 16) | `npm run test:mockup`  |
+| `build`          | Dockerfile.build                  | Production builds      | `npm run build`        |
+| `lint`           | Dockerfile.test                   | Code linting           | `npm run lint`         |
+| `format`         | Dockerfile.test                   | Format checking        | `npm run format:check` |
+| `screeps-server` | Dockerfile.screeps-server         | Private Screeps server | `screeps start`        |
+| `screeps-agent`  | packages/screeps-agent/Dockerfile | Screeps agent          | Custom agent tasks     |
 
 ### Environment Variables
 
@@ -259,9 +259,9 @@ Example:
 
 ```yaml
 volumes:
-  - .:/workspace           # Mount source code
+  - .:/workspace # Mount source code
   - /workspace/node_modules # Use container's node_modules
-  - ./server-data:/screeps  # Persist server data
+  - ./server-data:/screeps # Persist server data
 ```
 
 ## Troubleshooting
@@ -277,15 +277,17 @@ docker compose logs screeps-server
 **Common issues:**
 
 1. **Port already in use**: Another process is using port 21025
+
    ```bash
    # Check what's using the port
    lsof -i :21025
-   
+
    # Use different port
    docker compose run -p 21026:21025 screeps-server
    ```
 
 2. **Permission issues**: Server data directory not writable
+
    ```bash
    # Fix permissions
    chmod -R 755 ./server-data
@@ -382,7 +384,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '2'
+          cpus: "2"
           memory: 2G
 ```
 
