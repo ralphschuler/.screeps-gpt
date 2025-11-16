@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.83.23] - 2025-11-16
+
 ### Fixed
 
 - **Task System Default State Inconsistency**: Aligned build-time default with runtime default and documentation
