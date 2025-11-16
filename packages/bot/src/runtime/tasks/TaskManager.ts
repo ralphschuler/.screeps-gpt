@@ -164,20 +164,56 @@ export class TaskManager {
   }
 
   /**
-   * Find the best task for a creep based on prerequisites and priority
+   * Find the best task for a creep based on prerequisites, priority, and distance.
+   * Prioritizes high-priority tasks, but among tasks of the same priority,
+   * prefers closer tasks to minimize travel time and improve efficiency.
    */
   private findBestTask(creep: Creep): TaskRequest | null {
     const availableTasks = Array.from(this.tasks.values())
       .filter(t => t.status === "PENDING")
-      .sort((a, b) => b.priority - a.priority);
+      .filter(t => t.canAssign(creep));
 
-    for (const task of availableTasks) {
-      if (task.canAssign(creep)) {
-        return task;
-      }
+    if (availableTasks.length === 0) {
+      return null;
     }
 
-    return null;
+    // Sort by priority (descending), then by distance (ascending)
+    availableTasks.sort((a, b) => {
+      // Primary sort: priority (higher is better)
+      if (a.priority !== b.priority) {
+        return b.priority - a.priority;
+      }
+
+      // Secondary sort: distance (shorter is better)
+      const distA = this.calculateTaskDistance(creep, a);
+      const distB = this.calculateTaskDistance(creep, b);
+
+      // If either distance is Infinity (task target not found), deprioritize it
+      if (distA === Infinity && distB === Infinity) return 0;
+      if (distA === Infinity) return 1;
+      if (distB === Infinity) return -1;
+
+      return distA - distB;
+    });
+
+    return availableTasks[0];
+  }
+
+  /**
+   * Calculate the distance from a creep to a task's target.
+   * Uses linear range calculation for efficiency.
+   * @returns Distance in tiles, or Infinity if target position cannot be determined
+   */
+  private calculateTaskDistance(creep: Creep, task: TaskRequest): number {
+    const targetPos = task.task.getTargetPos();
+
+    if (!targetPos) {
+      return Infinity; // Target doesn't exist or can't be determined
+    }
+
+    // Use linear range for efficiency (avoids pathfinding cost)
+    // This is sufficient for task assignment; actual pathfinding happens during movement
+    return creep.pos.getRangeTo(targetPos);
   }
 
   private generateHarvestTasks(room: Room): void {

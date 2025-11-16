@@ -26,6 +26,13 @@ export abstract class TaskAction {
   public abstract action(creep: Creep): boolean;
 
   /**
+   * Get the target position for this action.
+   * Used for distance calculations during task assignment.
+   * @returns RoomPosition of the task target, or null if target doesn't exist
+   */
+  public abstract getTargetPos(): RoomPosition | null;
+
+  /**
    * Move creep towards the action target if needed
    * Uses pathfinding manager if available, otherwise falls back to default creep.moveTo
    */
@@ -56,6 +63,11 @@ export class HarvestAction extends TaskAction {
 
   public getSourceId(): Id<Source> {
     return this.sourceId;
+  }
+
+  public getTargetPos(): RoomPosition | null {
+    const source = Game.getObjectById(this.sourceId);
+    return source ? source.pos : null;
   }
 
   public action(creep: Creep): boolean {
@@ -97,6 +109,11 @@ export class BuildAction extends TaskAction {
     return this.siteId;
   }
 
+  public getTargetPos(): RoomPosition | null {
+    const site = Game.getObjectById(this.siteId);
+    return site ? site.pos : null;
+  }
+
   public action(creep: Creep): boolean {
     const site = Game.getObjectById(this.siteId);
     if (!site) {
@@ -136,6 +153,11 @@ export class RepairAction extends TaskAction {
     return this.structureId;
   }
 
+  public getTargetPos(): RoomPosition | null {
+    const structure = Game.getObjectById(this.structureId);
+    return structure ? structure.pos : null;
+  }
+
   public action(creep: Creep): boolean {
     const structure = Game.getObjectById(this.structureId);
     if (!structure || structure.hits === structure.hitsMax) {
@@ -169,6 +191,11 @@ export class UpgradeAction extends TaskAction {
     super();
     this.controllerId = controllerId;
     this.prereqs = [new MinionHasEnergy(), new MinionHasBodyParts({ [WORK]: 1 })];
+  }
+
+  public getTargetPos(): RoomPosition | null {
+    const controller = Game.getObjectById(this.controllerId);
+    return controller ? controller.pos : null;
   }
 
   public action(creep: Creep): boolean {
@@ -216,6 +243,11 @@ export class TransferAction extends TaskAction {
     return this.targetId;
   }
 
+  public getTargetPos(): RoomPosition | null {
+    const target = Game.getObjectById(this.targetId);
+    return target ? target.pos : null;
+  }
+
   public action(creep: Creep): boolean {
     const target = Game.getObjectById(this.targetId);
     if (!target || target.store.getFreeCapacity(this.resourceType) === 0) {
@@ -251,6 +283,11 @@ export class WithdrawAction extends TaskAction {
     this.targetId = targetId;
     this.resourceType = resourceType;
     this.prereqs = [new MinionHasFreeCapacity(), new MinionHasBodyParts({ [CARRY]: 1 })];
+  }
+
+  public getTargetPos(): RoomPosition | null {
+    const target = Game.getObjectById(this.targetId);
+    return target ? target.pos : null;
   }
 
   public action(creep: Creep): boolean {
@@ -289,6 +326,10 @@ export class MoveAction extends TaskAction {
     this.range = range;
   }
 
+  public getTargetPos(): RoomPosition | null {
+    return this.targetPos;
+  }
+
   public action(creep: Creep): boolean {
     if (creep.pos.getRangeTo(this.targetPos) <= this.range) {
       return true; // Already at destination
@@ -317,6 +358,11 @@ export class SpawnAction extends TaskAction {
     this.memory = memory;
   }
 
+  public getTargetPos(): RoomPosition | null {
+    const spawn = Game.getObjectById(this.spawnId);
+    return spawn ? spawn.pos : null;
+  }
+
   public action(_creep: Creep): boolean {
     const spawn = Game.getObjectById(this.spawnId);
     if (!spawn || spawn.spawning) {
@@ -340,6 +386,10 @@ export class PlaceConstructionSiteAction extends TaskAction {
     super();
     this.pos = pos;
     this.structureType = structureType;
+  }
+
+  public getTargetPos(): RoomPosition | null {
+    return this.pos;
   }
 
   public action(_creep: Creep): boolean {
