@@ -93,7 +93,10 @@ describe("Advanced Task Actions", () => {
         hitsMax: 100
       } as Creep;
 
-      (Game.getObjectById as any).mockReturnValueOnce(mockTower).mockReturnValueOnce(mockTarget);
+      (Game.getObjectById as any)
+        .mockReturnValueOnce(mockTower)
+        .mockReturnValueOnce(mockTarget)
+        .mockReturnValueOnce(mockTarget); // updatedTarget check
 
       const action = new TowerHealAction(mockTower.id, mockTarget.id);
       const result = action.action(mockCreep);
@@ -140,7 +143,10 @@ describe("Advanced Task Actions", () => {
         hitsMax: 1000
       } as Structure;
 
-      (Game.getObjectById as any).mockReturnValueOnce(mockTower).mockReturnValueOnce(mockStructure);
+      (Game.getObjectById as any)
+        .mockReturnValueOnce(mockTower)
+        .mockReturnValueOnce(mockStructure)
+        .mockReturnValueOnce(mockStructure); // updatedStructure check
 
       const action = new TowerRepairAction(mockTower.id, mockStructure.id);
       const result = action.action(mockCreep);

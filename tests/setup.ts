@@ -28,6 +28,7 @@ globals.ERR_FULL = -8;
 globals.ERR_NOT_IN_RANGE = -9;
 globals.ERR_NO_PATH = -2;
 globals.ERR_RCL_NOT_ENOUGH = -14;
+globals.ERR_NOT_ENOUGH_RESOURCES = -6;
 globals.TERRAIN_MASK_WALL = 1;
 globals.TERRAIN_MASK_SWAMP = 2;
 globals.FIND_SOURCES = 105;
@@ -98,3 +99,23 @@ globals.PathFinder = {
     incomplete: false
   })
 };
+
+// Mock RoomPosition class for test compatibility
+globals.RoomPosition = class RoomPosition {
+  public x: number;
+  public y: number;
+  public roomName: string;
+
+  public constructor(x: number, y: number, roomName: string) {
+    this.x = x;
+    this.y = y;
+    this.roomName = roomName;
+  }
+
+  public getRangeTo(target: RoomPosition | { pos: RoomPosition }): number {
+    const targetPos = target instanceof RoomPosition ? target : target.pos;
+    const dx = Math.abs(this.x - targetPos.x);
+    const dy = Math.abs(this.y - targetPos.y);
+    return Math.max(dx, dy);
+  }
+} as unknown as typeof RoomPosition;
