@@ -15,6 +15,12 @@ export interface TaskManagerConfig {
 const DEFAULT_MAX_TASKS = 25;
 
 /**
+ * Maximum percentage of queue that can be occupied by a single task type
+ * This prevents any one task type from dominating the queue
+ */
+const MAX_TASK_TYPE_RATIO = 0.4;
+
+/**
  * Manages task creation, assignment, and execution for a room.
  * Based on Jon Winsley's task management architecture.
  * Enhanced with CPU threshold management for tick budget control.
@@ -191,7 +197,12 @@ export class TaskManager {
       for (let i = 0; i < tasksNeeded; i++) {
         const task = this.configureTaskAction(new HarvestAction(source.id));
         const request = new TaskRequest(this.getNextTaskId(), task, TaskPriority.NORMAL, Game.time + 50);
-        this.addTaskWithEviction(request);
+        const added = this.addTaskWithEviction(request);
+        if (!added) {
+          this.logger.warn?.(
+            `[TaskManager] Failed to add harvest task for source ${source.id} in room ${room.name} at tick ${Game.time}`
+          );
+        }
       }
     }
   }
@@ -383,17 +394,20 @@ export class TaskManager {
   private addTaskWithEviction(request: TaskRequest): boolean {
     const taskType = request.task.constructor.name;
 
-    // Check for task type spam - limit each task type to 40% of max queue size
-    const maxTasksPerType = Math.floor(this.maxTasks * 0.4);
-    const existingTasksOfType = Array.from(this.tasks.values()).filter(t => t.task.constructor.name === taskType);
+    // Check for task type spam - limit each task type to MAX_TASK_TYPE_RATIO of max queue size
+    const maxTasksPerType = Math.floor(this.maxTasks * MAX_TASK_TYPE_RATIO);
+    // Only count active tasks (PENDING or INPROCESS), not COMPLETE tasks which will be cleaned up
+    const existingTasksOfType = Array.from(this.tasks.values()).filter(
+      t => t.task.constructor.name === taskType && (t.status === "PENDING" || t.status === "INPROCESS")
+    );
 
     if (existingTasksOfType.length >= maxTasksPerType) {
       // Too many tasks of this type already - check if we can evict one
       const pendingTasksOfSameType = existingTasksOfType.filter(t => t.status === "PENDING");
 
       if (pendingTasksOfSameType.length > 0) {
-        // Find the lowest priority task of the same type
-        const lowestPrioritySameType = pendingTasksOfSameType.sort((a, b) => a.priority - b.priority)[0];
+        // Find the lowest priority task of the same type (avoid mutating original array)
+        const lowestPrioritySameType = [...pendingTasksOfSameType].sort((a, b) => a.priority - b.priority)[0];
 
         // Only evict if the new task has higher priority
         if (request.priority > lowestPrioritySameType.priority) {
@@ -418,9 +432,8 @@ export class TaskManager {
     }
 
     // Queue is full - find the lowest priority PENDING task (any type)
-    const pendingTasks = Array.from(this.tasks.values())
-      .filter(t => t.status === "PENDING")
-      .sort((a, b) => a.priority - b.priority); // Sort ascending (lowest priority first)
+    // Use reduce to find minimum without sorting for better performance
+    const pendingTasks = Array.from(this.tasks.values()).filter(t => t.status === "PENDING");
 
     // If there are no pending tasks, we can't evict anything (all tasks are in progress)
     if (pendingTasks.length === 0) {
@@ -430,7 +443,7 @@ export class TaskManager {
       return false;
     }
 
-    const lowestPriorityTask = pendingTasks[0];
+    const lowestPriorityTask = pendingTasks.reduce((min, task) => (task.priority < min.priority ? task : min));
 
     // Only evict if the new task has higher priority than the lowest priority task
     if (request.priority <= lowestPriorityTask.priority) {
