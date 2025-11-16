@@ -231,4 +231,117 @@ export class Diagnostics {
       return `❌ Error retrieving system info: ${errorMessage}`;
     }
   }
+
+  /**
+   * Debug stats collection by forcing immediate collection and validation.
+   * Provides detailed logging and diagnostic output for troubleshooting.
+   *
+   * @returns Detailed diagnostic report including collection status, Memory.stats validation, and execution flow
+   *
+   * @example
+   * ```
+   * // In Screeps console:
+   * Diagnostics.debugStatsCollection()
+   * // Returns comprehensive diagnostic report with collection status
+   * ```
+   */
+  public static debugStatsCollection(): string {
+    try {
+      console.log("=== Stats Collection Debug Session ===");
+
+      // 1. Validate runtime environment
+      if (typeof Game === "undefined") {
+        return "❌ Game object not available - cannot debug stats collection";
+      }
+
+      if (typeof Memory === "undefined") {
+        return "❌ Memory object not available - cannot debug stats collection";
+      }
+
+      console.log(`✓ Runtime environment validated (tick: ${Game.time})`);
+
+      // 2. Check Memory.stats state BEFORE collection
+      const statsExistedBefore = !!Memory.stats;
+      const statsKeysBefore = Memory.stats ? Object.keys(Memory.stats).join(", ") : "none";
+      console.log(`Memory.stats before collection: ${statsExistedBefore ? "exists" : "missing"}`);
+      if (statsExistedBefore) {
+        console.log(`  Keys before: ${statsKeysBefore}`);
+        console.log(`  Time before: ${Memory.stats?.time ?? "undefined"}`);
+      }
+
+      // 3. Attempt stats collection
+      console.log("Attempting forced stats collection...");
+      const collectionResult = Diagnostics.testStatsCollection();
+      console.log(`Collection result: ${collectionResult}`);
+
+      // 4. Check Memory.stats state AFTER collection
+      const statsExistsAfter = !!Memory.stats;
+      const statsKeysAfter = Memory.stats ? Object.keys(Memory.stats).join(", ") : "none";
+      console.log(`Memory.stats after collection: ${statsExistsAfter ? "exists" : "MISSING"}`);
+      if (statsExistsAfter) {
+        console.log(`  Keys after: ${statsKeysAfter}`);
+        console.log(`  Time after: ${Memory.stats?.time ?? "undefined"}`);
+        console.log(`  Data size: ${JSON.stringify(Memory.stats).length} bytes`);
+      }
+
+      // 5. Validate structure if stats exist
+      if (statsExistsAfter) {
+        const validationResult = Diagnostics.validateMemoryStats();
+        console.log(`Validation result: ${validationResult}`);
+      }
+
+      // 6. Check system state
+      const systemInfo = Diagnostics.getSystemInfo();
+      if (typeof systemInfo === "object") {
+        console.log("System state:");
+        // Type guard to ensure we have the expected structure
+        const info = systemInfo as {
+          game: {
+            cpu: { used: number; limit: number; bucket: number };
+            creepCount: number;
+            roomCount: number;
+            spawnCount: number;
+          };
+        };
+        console.log(`  CPU: ${info.game.cpu.used.toFixed(2)}/${info.game.cpu.limit} (bucket: ${info.game.cpu.bucket})`);
+        console.log(
+          `  Creeps: ${info.game.creepCount}, Rooms: ${info.game.roomCount}, Spawns: ${info.game.spawnCount}`
+        );
+      }
+
+      // 7. Generate summary report
+      console.log("=== Debug Session Complete ===");
+
+      if (!statsExistsAfter) {
+        return (
+          "❌ CRITICAL: Memory.stats is MISSING after collection attempt\n" +
+          "This indicates stats collection is failing silently.\n" +
+          "Check console logs above for error messages."
+        );
+      }
+
+      if (!statsExistedBefore && statsExistsAfter) {
+        return (
+          "✅ Stats collection SUCCESS: Memory.stats created and populated\n" +
+          `Keys: ${statsKeysAfter}\n` +
+          "Stats collection is working correctly."
+        );
+      }
+
+      if (statsExistedBefore && statsExistsAfter) {
+        return (
+          "✅ Stats collection SUCCESS: Memory.stats updated\n" +
+          `Before: ${statsKeysBefore}\n` +
+          `After: ${statsKeysAfter}\n` +
+          "Stats collection is working correctly."
+        );
+      }
+
+      return "⚠️ Unexpected state - review console logs above";
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.log(`❌ Debug session error: ${errorMessage}`);
+      return `❌ Debug session failed: ${errorMessage}`;
+    }
+  }
 }
