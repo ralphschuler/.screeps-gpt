@@ -403,6 +403,12 @@ function createMockCreep(name: string, role: string): Creep {
     find: vi.fn(() => [])
   } as unknown as Room;
 
+  // Builders and upgraders should have full energy to be assigned build/upgrade tasks
+  // Harvesters should have empty inventory to be assigned harvest tasks
+  const hasFullEnergy = role === "builder" || role === "upgrader";
+  const energyAmount = hasFullEnergy ? 50 : 0;
+  const freeCapacity = hasFullEnergy ? 0 : 50;
+
   return {
     id: `${name}_id` as Id<Creep>,
     name,
@@ -417,8 +423,8 @@ function createMockCreep(name: string, role: string): Creep {
       { type: MOVE, hits: 100 }
     ],
     store: {
-      getUsedCapacity: vi.fn((resource?: ResourceConstant) => (resource === RESOURCE_ENERGY ? 25 : 0)),
-      getFreeCapacity: vi.fn(() => 25)
+      getUsedCapacity: vi.fn((resource?: ResourceConstant) => (resource === RESOURCE_ENERGY ? energyAmount : 0)),
+      getFreeCapacity: vi.fn(() => freeCapacity)
     },
     pos: {
       x: 25,
