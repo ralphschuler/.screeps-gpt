@@ -44,9 +44,9 @@ jobs:
           SCREEPS_SHARD: ${{ secrets.SCREEPS_SHARD }}
           SCREEPS_PORT: ${{ secrets.SCREEPS_PORT }}
           SCREEPS_PROTOCOL: ${{ secrets.SCREEPS_PROTOCOL }}
-          SCREEPS_STATS_TOKEN: ${{ secrets.SCREEPS_STATS_TOKEN }}
-          SCREEPS_STATS_HOST: ${{ secrets.SCREEPS_STATS_HOST }}
-          SCREEPS_STATS_API: ${{ secrets.SCREEPS_STATS_API }}
+          SCREEPS_STATS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
+          SCREEPS_STATS_HOST: ${{ secrets.SCREEPS_HOST }}
+          SCREEPS_STATS_API: ${{ secrets.SCREEPS_API }}
         with:
           copilot-token: ${{ secrets.COPILOT_TOKEN }}
           prompt-path: .github/copilot/prompts/screeps-monitor
@@ -60,6 +60,12 @@ jobs:
       - name: Collect bot state snapshot
         id: collect_snapshot
         if: success()
+        env:
+          SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
+          SCREEPS_HOST: ${{ secrets.SCREEPS_HOST }}
+          SCREEPS_SHARD: ${{ secrets.SCREEPS_SHARD }}
+          SCREEPS_PORT: ${{ secrets.SCREEPS_PORT }}
+          SCREEPS_PROTOCOL: ${{ secrets.SCREEPS_PROTOCOL }}
         run: |
           npx tsx packages/utilities/scripts/collect-bot-snapshot.ts || \
             echo "::warning::Snapshot collection failed (stats may not \
