@@ -1,5 +1,15 @@
 import { TaskRequest, TaskPriority } from "./TaskRequest";
-import { BuildAction, HarvestAction, RepairAction, TransferAction, UpgradeAction, WithdrawAction } from "./TaskAction";
+import {
+  BuildAction,
+  HarvestAction,
+  RepairAction,
+  TransferAction,
+  UpgradeAction,
+  WithdrawAction,
+  PickupAction,
+  DismantleAction,
+  RecycleAction
+} from "./TaskAction";
 import { PathfindingManager } from "@runtime/pathfinding";
 
 export interface TaskManagerConfig {
@@ -74,6 +84,12 @@ export class TaskManager {
 
     // Generate energy distribution tasks
     this.generateEnergyDistributionTasks(room);
+
+    // Generate pickup tasks for dropped resources
+    this.generatePickupTasks(room);
+
+    // Generate recycle tasks for old/wounded creeps
+    this.generateRecycleTasks(room);
 
     // Cleanup expired tasks
     this.cleanupExpiredTasks();
@@ -563,5 +579,67 @@ export class TaskManager {
       maxTicksSinceExecution,
       avgTicksSinceExecution
     };
+  }
+
+  /**
+   * Generate tasks for picking up dropped resources
+   */
+  private generatePickupTasks(room: Room): void {
+    const droppedResources = room.find(FIND_DROPPED_RESOURCES, {
+      filter: r => r.amount > 50 // Only pick up resources with significant amounts
+    });
+
+    for (const resource of droppedResources) {
+      // Count existing pickup tasks for this specific resource
+      const existingTasks = Array.from(this.tasks.values()).filter(t => {
+        if (t.status === "COMPLETE" || !(t.task instanceof PickupAction)) {
+          return false;
+        }
+        return t.task.getResourceId() === resource.id;
+      });
+
+      // Generate 1 pickup task per resource
+      if (existingTasks.length === 0) {
+        const task = this.configureTaskAction(new PickupAction(resource.id));
+        const priority = resource.resourceType === RESOURCE_ENERGY ? TaskPriority.NORMAL : TaskPriority.LOW;
+        const request = new TaskRequest(this.getNextTaskId(), task, priority, Game.time + 20);
+        this.addTaskWithEviction(request);
+      }
+    }
+  }
+
+  /**
+   * Generate tasks for recycling old or wounded creeps
+   */
+  private generateRecycleTasks(room: Room): void {
+    const spawns = room.find(FIND_MY_SPAWNS);
+    if (spawns.length === 0) return;
+
+    const spawn = spawns[0];
+
+    // Find creeps that should be recycled
+    const creepsToRecycle = room.find(FIND_MY_CREEPS, {
+      filter: c => {
+        // Recycle if TTL is very low or if critically damaged
+        const lowTTL = c.ticksToLive !== undefined && c.ticksToLive < 50;
+        const criticallyDamaged = c.hits < c.hitsMax * 0.3;
+        return lowTTL || criticallyDamaged;
+      }
+    });
+
+    for (const creep of creepsToRecycle) {
+      // Check if creep already has a recycle task
+      if (creep.memory.taskId) {
+        const existingTask = this.tasks.get(creep.memory.taskId);
+        if (existingTask && existingTask.task instanceof RecycleAction) {
+          continue; // Already has recycle task
+        }
+      }
+
+      // Generate recycle task
+      const task = this.configureTaskAction(new RecycleAction(spawn.id));
+      const request = new TaskRequest(this.getNextTaskId(), task, TaskPriority.LOW, Game.time + 100);
+      this.addTaskWithEviction(request);
+    }
   }
 }

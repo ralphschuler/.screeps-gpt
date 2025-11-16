@@ -405,3 +405,443 @@ export class PlaceConstructionSiteAction extends TaskAction {
     return result === OK || result === ERR_INVALID_TARGET;
   }
 }
+
+/**
+ * Pickup a dropped resource
+ */
+export class PickupAction extends TaskAction {
+  public prereqs: TaskPrerequisite[];
+  private resourceId: Id<Resource>;
+
+  public constructor(resourceId: Id<Resource>) {
+    super();
+    this.resourceId = resourceId;
+    this.prereqs = [new MinionHasFreeCapacity(), new MinionHasBodyParts({ [CARRY]: 1 })];
+  }
+
+  public getResourceId(): Id<Resource> {
+    return this.resourceId;
+  }
+
+  public getTargetPos(): RoomPosition | null {
+    const resource = Game.getObjectById(this.resourceId);
+    return resource ? resource.pos : null;
+  }
+
+  public action(creep: Creep): boolean {
+    const resource = Game.getObjectById(this.resourceId);
+    if (!resource) {
+      return true; // Resource doesn't exist or was picked up
+    }
+
+    const result = creep.pickup(resource);
+    if (result === ERR_NOT_IN_RANGE) {
+      this.moveToTarget(creep, resource, 1);
+      return false;
+    }
+
+    if (result === OK) {
+      // Task complete after pickup
+      return true;
+    }
+
+    // Error occurred, end task
+    return true;
+  }
+}
+
+/**
+ * Drop a resource at current position
+ */
+export class DropAction extends TaskAction {
+  public prereqs: TaskPrerequisite[] = [];
+  private resourceType: ResourceConstant;
+  private amount?: number;
+
+  public constructor(resourceType: ResourceConstant, amount?: number) {
+    super();
+    this.resourceType = resourceType;
+    this.amount = amount;
+  }
+
+  public getTargetPos(): RoomPosition | null {
+    // Drop happens at creep's current position
+    return null;
+  }
+
+  public action(creep: Creep): boolean {
+    const amountToDrop = this.amount ?? creep.store.getUsedCapacity(this.resourceType);
+    
+    if (amountToDrop === 0) {
+      return true; // Nothing to drop
+    }
+
+    const result = creep.drop(this.resourceType, amountToDrop);
+    return result === OK || result === ERR_NOT_ENOUGH_RESOURCES;
+  }
+}
+
+/**
+ * Claim a controller
+ */
+export class ClaimAction extends TaskAction {
+  public prereqs: TaskPrerequisite[];
+  private controllerId: Id<StructureController>;
+
+  public constructor(controllerId: Id<StructureController>) {
+    super();
+    this.controllerId = controllerId;
+    this.prereqs = [new MinionHasBodyParts({ [CLAIM]: 1 })];
+  }
+
+  public getTargetPos(): RoomPosition | null {
+    const controller = Game.getObjectById(this.controllerId);
+    return controller ? controller.pos : null;
+  }
+
+  public action(creep: Creep): boolean {
+    const controller = Game.getObjectById(this.controllerId);
+    if (!controller) {
+      return true; // Controller doesn't exist
+    }
+
+    const result = creep.claimController(controller);
+    if (result === ERR_NOT_IN_RANGE) {
+      this.moveToTarget(creep, controller, 1);
+      return false;
+    }
+
+    // Task complete on success or if already claimed
+    return result === OK || result === ERR_GCL_NOT_ENOUGH;
+  }
+}
+
+/**
+ * Reserve a controller
+ */
+export class ReserveAction extends TaskAction {
+  public prereqs: TaskPrerequisite[];
+  private controllerId: Id<StructureController>;
+
+  public constructor(controllerId: Id<StructureController>) {
+    super();
+    this.controllerId = controllerId;
+    this.prereqs = [new MinionHasBodyParts({ [CLAIM]: 1 })];
+  }
+
+  public getTargetPos(): RoomPosition | null {
+    const controller = Game.getObjectById(this.controllerId);
+    return controller ? controller.pos : null;
+  }
+
+  public action(creep: Creep): boolean {
+    const controller = Game.getObjectById(this.controllerId);
+    if (!controller) {
+      return true; // Controller doesn't exist
+    }
+
+    const result = creep.reserveController(controller);
+    if (result === ERR_NOT_IN_RANGE) {
+      this.moveToTarget(creep, controller, 1);
+      return false;
+    }
+
+    if (result === OK) {
+      // Continue reserving until out of CLAIM parts or max reservation reached
+      return false;
+    }
+
+    // Error occurred or max reservation reached, end task
+    return true;
+  }
+}
+
+/**
+ * Attack a target
+ */
+export class AttackAction extends TaskAction {
+  public prereqs: TaskPrerequisite[];
+  private targetId: Id<Creep | Structure>;
+
+  public constructor(targetId: Id<Creep | Structure>) {
+    super();
+    this.targetId = targetId;
+    this.prereqs = [new MinionHasBodyParts({ [ATTACK]: 1 })];
+  }
+
+  public getTargetId(): Id<Creep | Structure> {
+    return this.targetId;
+  }
+
+  public getTargetPos(): RoomPosition | null {
+    const target = Game.getObjectById(this.targetId);
+    return target ? target.pos : null;
+  }
+
+  public action(creep: Creep): boolean {
+    const target = Game.getObjectById(this.targetId);
+    if (!target) {
+      return true; // Target doesn't exist or was destroyed
+    }
+
+    const result = creep.attack(target);
+    if (result === ERR_NOT_IN_RANGE) {
+      this.moveToTarget(creep, target, 1);
+      return false;
+    }
+
+    if (result === OK) {
+      // Continue attacking until target is destroyed
+      return false;
+    }
+
+    // Error occurred, end task
+    return true;
+  }
+}
+
+/**
+ * Ranged attack a target
+ */
+export class RangedAttackAction extends TaskAction {
+  public prereqs: TaskPrerequisite[];
+  private targetId: Id<Creep | Structure>;
+
+  public constructor(targetId: Id<Creep | Structure>) {
+    super();
+    this.targetId = targetId;
+    this.prereqs = [new MinionHasBodyParts({ [RANGED_ATTACK]: 1 })];
+  }
+
+  public getTargetId(): Id<Creep | Structure> {
+    return this.targetId;
+  }
+
+  public getTargetPos(): RoomPosition | null {
+    const target = Game.getObjectById(this.targetId);
+    return target ? target.pos : null;
+  }
+
+  public action(creep: Creep): boolean {
+    const target = Game.getObjectById(this.targetId);
+    if (!target) {
+      return true; // Target doesn't exist or was destroyed
+    }
+
+    const result = creep.rangedAttack(target);
+    if (result === ERR_NOT_IN_RANGE) {
+      this.moveToTarget(creep, target, 3);
+      return false;
+    }
+
+    if (result === OK) {
+      // Continue attacking until target is destroyed
+      return false;
+    }
+
+    // Error occurred, end task
+    return true;
+  }
+}
+
+/**
+ * Heal a creep
+ */
+export class HealAction extends TaskAction {
+  public prereqs: TaskPrerequisite[];
+  private targetId: Id<Creep>;
+
+  public constructor(targetId: Id<Creep>) {
+    super();
+    this.targetId = targetId;
+    this.prereqs = [new MinionHasBodyParts({ [HEAL]: 1 })];
+  }
+
+  public getTargetId(): Id<Creep> {
+    return this.targetId;
+  }
+
+  public getTargetPos(): RoomPosition | null {
+    const target = Game.getObjectById(this.targetId);
+    return target ? target.pos : null;
+  }
+
+  public action(creep: Creep): boolean {
+    const target = Game.getObjectById(this.targetId);
+    if (!target || target.hits === target.hitsMax) {
+      return true; // Target doesn't exist or is fully healed
+    }
+
+    const result = creep.heal(target);
+    if (result === ERR_NOT_IN_RANGE) {
+      this.moveToTarget(creep, target, 1);
+      return false;
+    }
+
+    if (result === OK) {
+      // Continue healing until target is fully healed
+      return target.hits === target.hitsMax;
+    }
+
+    // Error occurred, end task
+    return true;
+  }
+}
+
+/**
+ * Ranged heal a creep
+ */
+export class RangedHealAction extends TaskAction {
+  public prereqs: TaskPrerequisite[];
+  private targetId: Id<Creep>;
+
+  public constructor(targetId: Id<Creep>) {
+    super();
+    this.targetId = targetId;
+    this.prereqs = [new MinionHasBodyParts({ [HEAL]: 1 })];
+  }
+
+  public getTargetId(): Id<Creep> {
+    return this.targetId;
+  }
+
+  public getTargetPos(): RoomPosition | null {
+    const target = Game.getObjectById(this.targetId);
+    return target ? target.pos : null;
+  }
+
+  public action(creep: Creep): boolean {
+    const target = Game.getObjectById(this.targetId);
+    if (!target || target.hits === target.hitsMax) {
+      return true; // Target doesn't exist or is fully healed
+    }
+
+    const result = creep.rangedHeal(target);
+    if (result === ERR_NOT_IN_RANGE) {
+      this.moveToTarget(creep, target, 3);
+      return false;
+    }
+
+    if (result === OK) {
+      // Continue healing until target is fully healed
+      return target.hits === target.hitsMax;
+    }
+
+    // Error occurred, end task
+    return true;
+  }
+}
+
+/**
+ * Dismantle a structure
+ */
+export class DismantleAction extends TaskAction {
+  public prereqs: TaskPrerequisite[];
+  private structureId: Id<Structure>;
+
+  public constructor(structureId: Id<Structure>) {
+    super();
+    this.structureId = structureId;
+    this.prereqs = [new MinionHasBodyParts({ [WORK]: 1 })];
+  }
+
+  public getStructureId(): Id<Structure> {
+    return this.structureId;
+  }
+
+  public getTargetPos(): RoomPosition | null {
+    const structure = Game.getObjectById(this.structureId);
+    return structure ? structure.pos : null;
+  }
+
+  public action(creep: Creep): boolean {
+    const structure = Game.getObjectById(this.structureId);
+    if (!structure) {
+      return true; // Structure doesn't exist or was dismantled
+    }
+
+    const result = creep.dismantle(structure);
+    if (result === ERR_NOT_IN_RANGE) {
+      this.moveToTarget(creep, structure, 1);
+      return false;
+    }
+
+    if (result === OK) {
+      // Continue dismantling until structure is destroyed
+      return false;
+    }
+
+    // Error occurred, end task
+    return true;
+  }
+}
+
+/**
+ * Sign a controller
+ */
+export class SignControllerAction extends TaskAction {
+  public prereqs: TaskPrerequisite[] = [];
+  private controllerId: Id<StructureController>;
+  private text: string;
+
+  public constructor(controllerId: Id<StructureController>, text: string) {
+    super();
+    this.controllerId = controllerId;
+    this.text = text;
+  }
+
+  public getTargetPos(): RoomPosition | null {
+    const controller = Game.getObjectById(this.controllerId);
+    return controller ? controller.pos : null;
+  }
+
+  public action(creep: Creep): boolean {
+    const controller = Game.getObjectById(this.controllerId);
+    if (!controller) {
+      return true; // Controller doesn't exist
+    }
+
+    const result = creep.signController(controller, this.text);
+    if (result === ERR_NOT_IN_RANGE) {
+      this.moveToTarget(creep, controller, 1);
+      return false;
+    }
+
+    // Task complete on success or error
+    return true;
+  }
+}
+
+/**
+ * Recycle creep at spawn
+ */
+export class RecycleAction extends TaskAction {
+  public prereqs: TaskPrerequisite[] = [];
+  private spawnId: Id<StructureSpawn>;
+
+  public constructor(spawnId: Id<StructureSpawn>) {
+    super();
+    this.spawnId = spawnId;
+  }
+
+  public getTargetPos(): RoomPosition | null {
+    const spawn = Game.getObjectById(this.spawnId);
+    return spawn ? spawn.pos : null;
+  }
+
+  public action(creep: Creep): boolean {
+    const spawn = Game.getObjectById(this.spawnId);
+    if (!spawn) {
+      return true; // Spawn doesn't exist
+    }
+
+    const result = spawn.recycleCreep(creep);
+    if (result === ERR_NOT_IN_RANGE) {
+      this.moveToTarget(creep, spawn, 1);
+      return false;
+    }
+
+    // Task complete on success (creep will be recycled) or error
+    return true;
+  }
+}
