@@ -65,7 +65,40 @@ async function checkBotAliveness(): Promise<{
       };
     }
 
-    const data = JSON.parse(response.data);
+    // Defensive parsing: handle undefined/empty responses when bot has no game presence
+    let data;
+    try {
+      if (response.data === "undefined" || response.data === "" || response.data === "null") {
+        console.log("⚠️  Console returned undefined/empty response, treating as no spawns");
+        console.log(`   Raw response: "${response.data}"`);
+        return {
+          aliveness: "spawn_placement_needed",
+          status: "empty",
+          error: "Console returned empty response - bot may have no game presence"
+        };
+      }
+
+      data = JSON.parse(response.data);
+
+      // Validate parsed structure
+      if (typeof data !== "object" || data === null) {
+        console.log("⚠️  Console returned non-object response, treating as no spawns");
+        console.log(`   Raw response: "${response.data.substring(0, 200)}"`);
+        return {
+          aliveness: "spawn_placement_needed",
+          status: "invalid",
+          error: "Console returned invalid response structure"
+        };
+      }
+    } catch (parseError) {
+      console.error("❌ JSON parse failed:", parseError);
+      console.error(`   Raw response (first 200 chars): "${response.data.substring(0, 200)}"`);
+      return {
+        aliveness: "unknown",
+        error: `JSON parse error: ${parseError instanceof Error ? parseError.message : String(parseError)}`
+      };
+    }
+
     console.log(`📊 Bot status: spawns=${data.spawnCount}, rooms=${data.rooms}`);
 
     // Determine aliveness based on spawn count
