@@ -1550,19 +1550,97 @@ function runHauler(creep: ManagedCreep): string {
     return HAULER_PICKUP_TASK;
   }
 
-  // HAULER_DELIVER_TASK: Priority-based delivery
+  // HAULER_DELIVER_TASK: Threshold-based delivery for balanced energy distribution
   comm?.say(creep, "deliver");
 
-  // Priority 1: Spawns and extensions (critical)
-  const criticalTargets = creep.room.find(FIND_STRUCTURES, {
+  const energyMgr = getEnergyManager();
+
+  // Priority 1: Critical spawns/extensions (below 50% capacity)
+  // These need immediate attention to prevent spawn starvation
+  const criticalSpawns = creep.room.find(FIND_STRUCTURES, {
+    filter: (structure: AnyStructure) => {
+      if (structure.structureType !== STRUCTURE_SPAWN && structure.structureType !== STRUCTURE_EXTENSION) {
+        return false;
+      }
+      const store = (structure as AnyStoreStructure).store;
+      const capacity = store.getCapacity(RESOURCE_ENERGY);
+      const used = store.getUsedCapacity(RESOURCE_ENERGY);
+      return capacity > 0 && used < capacity * 0.5;
+    }
+  });
+
+  if (criticalSpawns.length > 0) {
+    const closest = creep.pos.findClosestByPath(criticalSpawns);
+    const target = closest !== null ? closest : criticalSpawns[0];
+    const result = creep.transfer(target, RESOURCE_ENERGY);
+    if (result === ERR_NOT_IN_RANGE) {
+      creep.moveTo(target, { range: 1, reusePath: 30 });
+    }
+    return HAULER_DELIVER_TASK;
+  }
+
+  // Priority 2: Towers below 50% capacity (defense)
+  const lowTowers = creep.room.find(FIND_STRUCTURES, {
+    filter: (structure: AnyStructure) => {
+      if (structure.structureType !== STRUCTURE_TOWER) return false;
+      const tower = structure;
+      const capacity = tower.store.getCapacity(RESOURCE_ENERGY);
+      const used = tower.store.getUsedCapacity(RESOURCE_ENERGY);
+      return capacity > 0 && used < capacity * 0.5;
+    }
+  }) as StructureTower[];
+
+  if (lowTowers.length > 0) {
+    const closest = creep.pos.findClosestByPath(lowTowers);
+    const target = closest ?? lowTowers[0];
+    const result = creep.transfer(target, RESOURCE_ENERGY);
+    if (result === ERR_NOT_IN_RANGE) {
+      creep.moveTo(target, { range: 1, reusePath: 30 });
+    }
+    return HAULER_DELIVER_TASK;
+  }
+
+  // Priority 3: Spawn-adjacent containers below reserve (300 energy)
+  if (energyMgr) {
+    const spawns = creep.room.find(FIND_MY_SPAWNS) as StructureSpawn[];
+    const lowSpawnContainers: StructureContainer[] = [];
+
+    for (const spawn of spawns) {
+      const nearbyStructures = spawn.pos.findInRange(FIND_STRUCTURES, 1, {
+        filter: (s: Structure) => s.structureType === STRUCTURE_CONTAINER
+      });
+
+      for (const structure of nearbyStructures) {
+        const container = structure as StructureContainer;
+        const currentEnergy = container.store.getUsedCapacity(RESOURCE_ENERGY);
+        const targetReserve = 300; // Match DEFAULT_ENERGY_CONFIG.spawnContainerReserve
+        if (currentEnergy < targetReserve && container.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+          lowSpawnContainers.push(container);
+        }
+      }
+    }
+
+    if (lowSpawnContainers.length > 0) {
+      const closest = creep.pos.findClosestByPath(lowSpawnContainers);
+      const target = closest ?? lowSpawnContainers[0];
+      const result = creep.transfer(target, RESOURCE_ENERGY);
+      if (result === ERR_NOT_IN_RANGE) {
+        creep.moveTo(target, { range: 1, reusePath: 30 });
+      }
+      return HAULER_DELIVER_TASK;
+    }
+  }
+
+  // Priority 4: Top off spawns and extensions to full capacity
+  const spawnsExtensions = creep.room.find(FIND_STRUCTURES, {
     filter: (structure: AnyStructure) =>
       (structure.structureType === STRUCTURE_SPAWN || structure.structureType === STRUCTURE_EXTENSION) &&
       (structure as AnyStoreStructure).store.getFreeCapacity(RESOURCE_ENERGY) > 0
   });
 
-  if (criticalTargets.length > 0) {
-    const closest = creep.pos.findClosestByPath(criticalTargets);
-    const target = closest !== null ? closest : criticalTargets[0];
+  if (spawnsExtensions.length > 0) {
+    const closest = creep.pos.findClosestByPath(spawnsExtensions);
+    const target = closest !== null ? closest : spawnsExtensions[0];
     const result = creep.transfer(target, RESOURCE_ENERGY);
     if (result === ERR_NOT_IN_RANGE) {
       creep.moveTo(target, { range: 1, reusePath: 30 });
@@ -1570,19 +1648,17 @@ function runHauler(creep: ManagedCreep): string {
     return HAULER_DELIVER_TASK;
   }
 
-  // Priority 2: Towers (defense)
+  // Priority 5: Top off towers to full capacity
   const towers = creep.room.find(FIND_STRUCTURES, {
     filter: (structure: AnyStructure) => {
       if (structure.structureType !== STRUCTURE_TOWER) return false;
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      const tower = structure as StructureTower;
-      return tower.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
+      return structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
     }
-  });
+  }) as StructureTower[];
 
   if (towers.length > 0) {
     const closest = creep.pos.findClosestByPath(towers);
-    const target = closest !== null ? closest : towers[0];
+    const target = closest ?? towers[0];
     const result = creep.transfer(target, RESOURCE_ENERGY);
     if (result === ERR_NOT_IN_RANGE) {
       creep.moveTo(target, { range: 1, reusePath: 30 });
@@ -1590,8 +1666,7 @@ function runHauler(creep: ManagedCreep): string {
     return HAULER_DELIVER_TASK;
   }
 
-  // Priority 3: Spawn-adjacent containers (spawn reserves)
-  const energyMgr = getEnergyManager();
+  // Priority 6: Fill spawn-adjacent containers to full capacity
   if (energyMgr) {
     const spawns = creep.room.find(FIND_MY_SPAWNS) as StructureSpawn[];
     const spawnContainers: StructureContainer[] = [];
@@ -1620,7 +1695,7 @@ function runHauler(creep: ManagedCreep): string {
     }
   }
 
-  // Priority 4: Storage (surplus)
+  // Priority 7: Storage (surplus)
 
   const storage = creep.room.storage;
 
