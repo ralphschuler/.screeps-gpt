@@ -177,6 +177,16 @@ export class ScreepsClient {
         value: response?.data
       };
     } catch (error) {
+      console.error(`❌ Failed to get memory at path: ${path}`);
+      if (error instanceof Error) {
+        console.error(`   Error: ${error.message}`);
+        // Log response data if available (for API errors)
+        const apiError = error as Error & { response?: { status?: number; data?: unknown } };
+        if (apiError.response) {
+          console.error(`   Status: ${apiError.response.status}`);
+          console.error(`   Response data:`, apiError.response.data);
+        }
+      }
       return {
         success: false,
         path,
@@ -214,6 +224,16 @@ export class ScreepsClient {
         value
       };
     } catch (error) {
+      console.error(`❌ Failed to set memory at path: ${path}`);
+      if (error instanceof Error) {
+        console.error(`   Error: ${error.message}`);
+        // Log response data if available (for API errors)
+        const apiError = error as Error & { response?: { status?: number; data?: unknown } };
+        if (apiError.response) {
+          console.error(`   Status: ${apiError.response.status}`);
+          console.error(`   Response data:`, apiError.response.data);
+        }
+      }
       return {
         success: false,
         path,
@@ -239,6 +259,16 @@ export class ScreepsClient {
         output: response?.data ?? ""
       };
     } catch (error) {
+      console.error(`❌ Failed to execute console command: ${command.substring(0, 50)}...`);
+      if (error instanceof Error) {
+        console.error(`   Error: ${error.message}`);
+        // Log response data if available (for API errors)
+        const apiError = error as Error & { response?: { status?: number; data?: unknown } };
+        if (apiError.response) {
+          console.error(`   Status: ${apiError.response.status}`);
+          console.error(`   Response data:`, apiError.response.data);
+        }
+      }
       return {
         success: false,
         output: "",

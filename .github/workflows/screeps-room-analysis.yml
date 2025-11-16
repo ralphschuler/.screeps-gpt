@@ -1,0 +1,129 @@
+---
+name: Screeps Room Analysis
+
+on:
+  schedule:
+    # Run every 6 hours
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+    inputs:
+      shard:
+        description: "Shard to analyze (e.g., shard3)"
+        required: false
+        default: "shard3"
+
+concurrency:
+  group: screeps-room-analysis
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  analyze-rooms:
+    name: Analyze Occupied and Adjacent Rooms
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run room analysis
+        env:
+          SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
+          SCREEPS_HOST: ${{ secrets.SCREEPS_HOST || 'screeps.com' }}
+          SCREEPS_PROTOCOL: ${{ secrets.SCREEPS_PROTOCOL || 'https' }}
+          SCREEPS_PORT: ${{ secrets.SCREEPS_PORT || '443' }}
+          SCREEPS_PATH: ${{ secrets.SCREEPS_PATH || '/' }}
+          SCREEPS_SHARD: ${{ inputs.shard || 'shard3' }}
+        run: |
+          bun run packages/utilities/scripts/fetch-room-analysis.ts
+
+      - name: Upload room analysis artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: room-analysis-${{ github.run_number }}
+          path: |
+            reports/room-analysis/latest.json
+            reports/room-analysis/analysis-*.json
+          retention-days: 30
+
+      - name: Commit and push room analysis
+        if: success()
+        run: |
+          EMAIL="github-actions[bot]@users.noreply.github.com"
+          NAME="github-actions[bot]"
+          git config --local user.email "$EMAIL"
+          git config --local user.name "$NAME"
+
+          # Add only the room analysis reports
+          git add reports/room-analysis/ || true
+
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            MSG="chore: update room analysis report [skip ci]"
+            git commit -m "$MSG"
+            git push
+          fi
+
+      - name: Create analysis summary
+        if: success()
+        run: |
+          SUMMARY="${GITHUB_STEP_SUMMARY}"
+          echo "# Room Analysis Summary" >> "$SUMMARY"
+          echo "" >> "$SUMMARY"
+
+          if [ -f reports/room-analysis/latest.json ]; then
+            echo "✅ Room analysis completed successfully" >> "$SUMMARY"
+            echo "" >> "$SUMMARY"
+
+            # Extract summary using jq
+            FILE="reports/room-analysis/latest.json"
+            TOTAL_OCCUPIED=$(jq -r '.summary.totalOccupied // 0' "$FILE")
+            TOTAL_ADJACENT=$(jq -r '.summary.totalAdjacent // 0' "$FILE")
+            HOSTILE=$(jq -r '.summary.hostileAdjacent // 0' "$FILE")
+            NEUTRAL=$(jq -r '.summary.neutralAdjacent // 0' "$FILE")
+            FRIENDLY=$(jq -r '.summary.friendlyAdjacent // 0' "$FILE")
+
+            echo "## Summary" >> "$SUMMARY"
+            echo "- **Occupied Rooms**: ${TOTAL_OCCUPIED}" >> "$SUMMARY"
+            echo "- **Adjacent Rooms**: ${TOTAL_ADJACENT}" >> "$SUMMARY"
+            echo "  - Hostile: ${HOSTILE}" >> "$SUMMARY"
+            echo "  - Neutral: ${NEUTRAL}" >> "$SUMMARY"
+            echo "  - Friendly: ${FRIENDLY}" >> "$SUMMARY"
+            echo "" >> "$SUMMARY"
+
+            # List occupied rooms
+            echo "## Occupied Rooms" >> "$SUMMARY"
+            ROOMS_QUERY='.occupiedRooms[]'
+            ROOMS_FORMAT='- **\(.name)** (RCL \(.controller.level))'
+            ROOMS_FORMAT="${ROOMS_FORMAT}"': \(.structures.spawns) spawns'
+            ROOMS_FORMAT="${ROOMS_FORMAT}"', \(.structures.extensions) ext'
+            ROOMS_FORMAT="${ROOMS_FORMAT}"', \(.structures.towers) towers'
+            jq -r "$ROOMS_QUERY | \"$ROOMS_FORMAT\"" "$FILE" >> "$SUMMARY"
+            echo "" >> "$SUMMARY"
+
+            # List hostile adjacent rooms if any
+            if [ "$HOSTILE" -gt 0 ]; then
+              echo "## ⚠️ Hostile Adjacent Rooms" >> "$SUMMARY"
+              HOSTILE_QUERY='.adjacentRooms[] | select(.hostile == true)'
+              HOSTILE_FORMAT='- **\(.name)** - Owner: \(.owner // "?")'
+              HOSTILE_FORMAT="${HOSTILE_FORMAT}"', Level: \(.level // "?")'
+              jq -r "$HOSTILE_QUERY | \"$HOSTILE_FORMAT\"" "$FILE" \
+                >> "$SUMMARY"
+            fi
+          else
+            echo "❌ Room analysis failed - no report" >> "$SUMMARY"
+          fi

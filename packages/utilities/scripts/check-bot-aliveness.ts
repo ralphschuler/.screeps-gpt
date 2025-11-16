@@ -105,7 +105,18 @@ async function checkBotAliveness(): Promise<{
       return { aliveness: "unknown", status };
     }
   } catch (error) {
-    console.error("❌ Failed to check bot aliveness:", error);
+    console.error("❌ Failed to check bot aliveness:");
+    if (error instanceof Error) {
+      console.error(`   Error: ${error.message}`);
+      // Log response data if available (for API errors)
+      const apiError = error as Error & { response?: { status?: number; data?: unknown } };
+      if (apiError.response) {
+        console.error(`   Status: ${apiError.response.status}`);
+        console.error(`   Response data:`, apiError.response.data);
+      }
+    } else {
+      console.error(`   Error: ${String(error)}`);
+    }
     return {
       aliveness: "unknown",
       error: error instanceof Error ? error.message : String(error)
