@@ -20,7 +20,7 @@ describe("Kernel InfrastructureManager Type Safety", () => {
       rooms: {}
     };
 
-    // Initialize basic memory structure
+    // Initialize basic memory structure matching Memory interface
     mockMemory = {
       creeps: {},
       roles: {},
@@ -30,7 +30,7 @@ describe("Kernel InfrastructureManager Type Safety", () => {
         creeps: { count: 0 },
         rooms: { count: 0 }
       }
-    } as unknown as Memory;
+    } as Memory;
   });
 
   it("should initialize without infrastructure memory", () => {
@@ -114,24 +114,28 @@ describe("Kernel InfrastructureManager Type Safety", () => {
   });
 
   it("should not throw type errors with undefined Memory global", () => {
-    // Simulate environment where Memory is undefined during initialization
+    // Use vitest's stubGlobal for safer global mocking
     const originalMemory = global.Memory;
-    delete (global as { Memory?: Memory }).Memory;
+    vi.stubGlobal("Memory", undefined);
 
-    const kernel = new Kernel({
-      logger: { log: vi.fn(), warn: vi.fn() }
-    });
+    try {
+      const kernel = new Kernel({
+        logger: { log: vi.fn(), warn: vi.fn() }
+      });
 
-    // Restore Memory before running
-    (global as { Memory?: Memory }).Memory = mockMemory;
+      // Restore Memory before running
+      vi.stubGlobal("Memory", mockMemory);
 
-    expect(() => {
-      kernel.run(mockGame, mockMemory);
-    }).not.toThrow();
-
-    // Restore original state
-    if (originalMemory) {
-      (global as { Memory?: Memory }).Memory = originalMemory;
+      expect(() => {
+        kernel.run(mockGame, mockMemory);
+      }).not.toThrow();
+    } finally {
+      // Always restore original state
+      if (originalMemory !== undefined) {
+        vi.stubGlobal("Memory", originalMemory);
+      } else {
+        vi.unstubAllGlobals();
+      }
     }
   });
 
