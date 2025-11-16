@@ -109,6 +109,17 @@ export class Kernel {
       });
     this.repositorySignalProvider = config.repositorySignalProvider;
     this.cpuEmergencyThreshold = config.cpuEmergencyThreshold ?? 0.9;
+
+    // Initialize Memory.stats if it doesn't exist
+    if (typeof Memory !== "undefined" && !Memory.stats) {
+      this.logger.log?.("[Kernel] Initializing Memory.stats structure");
+      Memory.stats = {
+        time: 0,
+        cpu: { used: 0, limit: 0, bucket: 0 },
+        creeps: { count: 0 },
+        rooms: { count: 0 }
+      };
+    }
   }
 
   /**
@@ -132,6 +143,7 @@ export class Kernel {
           spawnedCreeps: [],
           tasksExecuted: {}
         });
+        this.logger.log?.("[Kernel] Collecting stats after emergency reset");
         this.statsCollector.collect(game, memory, snapshot);
         this.evaluator.evaluateAndStore(memory, snapshot, repository);
         return;
@@ -166,6 +178,7 @@ export class Kernel {
         spawnedCreeps: [],
         tasksExecuted: {}
       });
+      this.logger.log?.("[Kernel] Collecting stats after CPU emergency abort");
       this.statsCollector.collect(game, memory, snapshot);
       this.evaluator.evaluateAndStore(memory, snapshot, repository);
       return;
@@ -180,6 +193,7 @@ export class Kernel {
         spawnedCreeps: [],
         tasksExecuted: {}
       });
+      this.logger.log?.("[Kernel] Collecting stats after respawn detection");
       this.statsCollector.collect(game, memory, snapshot);
       this.evaluator.evaluateAndStore(memory, snapshot, repository);
       return;
@@ -196,6 +210,7 @@ export class Kernel {
         spawnedCreeps: [],
         tasksExecuted: {}
       });
+      this.logger.log?.("[Kernel] Collecting stats after CPU threshold (post-respawn)");
       this.statsCollector.collect(game, memory, snapshot);
       this.evaluator.evaluateAndStore(memory, snapshot, repository);
       return;
@@ -223,6 +238,7 @@ export class Kernel {
         spawnedCreeps: [],
         tasksExecuted: {}
       });
+      this.logger.log?.("[Kernel] Collecting stats after CPU threshold (post-memory)");
       this.statsCollector.collect(game, memory, snapshot);
       this.evaluator.evaluateAndStore(memory, snapshot, repository, memoryUtilization);
       return;
@@ -242,6 +258,7 @@ export class Kernel {
         spawnedCreeps: [],
         tasksExecuted: {}
       });
+      this.logger.log?.("[Kernel] Collecting stats after CPU threshold (post-construction)");
       this.statsCollector.collect(game, memory, snapshot);
       this.evaluator.evaluateAndStore(memory, snapshot, repository, memoryUtilization);
       return;
@@ -267,6 +284,7 @@ export class Kernel {
         spawnedCreeps: [],
         tasksExecuted: {}
       });
+      this.logger.log?.("[Kernel] Collecting stats after CPU threshold (post-infrastructure)");
       this.statsCollector.collect(game, memory, snapshot);
       this.evaluator.evaluateAndStore(memory, snapshot, repository, memoryUtilization);
       return;
@@ -276,7 +294,18 @@ export class Kernel {
     const bootstrapMinimums = this.bootstrapManager.getBootstrapRoleMinimums(bootstrapStatus.isActive);
     const behaviorSummary = this.behavior.execute(game, memory, roleCounts, bootstrapMinimums);
     const snapshot = this.tracker.end(game, behaviorSummary);
+
+    // Collect stats for monitoring (with bootstrap logging every 100 ticks)
+    if (game.time % 100 === 0) {
+      this.logger.log?.(`[Kernel] Executing stats collection phase (tick ${game.time})`);
+    }
     this.statsCollector.collect(game, memory, snapshot);
+    if (game.time % 100 === 0 && memory.stats) {
+      this.logger.log?.(
+        `[Kernel] Stats collection completed: time=${memory.stats.time}, keys=${Object.keys(memory.stats).join(",")}`
+      );
+    }
+
     const result = this.evaluator.evaluateAndStore(memory, snapshot, repository, memoryUtilization);
 
     // Generate pixel if bucket is full
