@@ -32,15 +32,11 @@ const kernel = createKernel({
 // Initialize profiler and expose it globally for console access
 const profilerInstance = initProfiler();
 if (typeof global !== "undefined") {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (global as any).Profiler = profilerInstance;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (global as any).Diagnostics = Diagnostics;
+  global.Profiler = profilerInstance;
+  global.Diagnostics = Diagnostics;
 } else if (typeof window !== "undefined") {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).Profiler = profilerInstance;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).Diagnostics = Diagnostics;
+  window.Profiler = profilerInstance;
+  window.Diagnostics = Diagnostics;
 }
 
 // Auto-start profiler if __PROFILER_ENABLED__ is true and not already running
