@@ -27,12 +27,12 @@ describe("fetch-screeps-stats", () => {
   });
 
   describe("Parameter validation", () => {
-    it("should use default interval of 180 when not specified", async () => {
+    it("should use documented Memory API endpoint", async () => {
       process.env.SCREEPS_TOKEN = "test-token";
 
       const mockResponse = {
         ok: true,
-        json: vi.fn().mockResolvedValue({ stats: {} })
+        json: vi.fn().mockResolvedValue({ ok: 1, data: { cpu: { used: 10, limit: 100 } } })
       };
       mockFetch.mockResolvedValue(mockResponse);
 
@@ -45,33 +45,27 @@ describe("fetch-screeps-stats", () => {
       });
 
       const fetchCall = mockFetch.mock.calls[0] as [string, RequestInit];
-      expect(fetchCall[0]).toContain("interval=180");
+      expect(fetchCall[0]).toContain("/api/user/memory");
+      expect(fetchCall[0]).toContain("path=stats");
     });
 
-    it("should accept valid interval values", async () => {
-      const validIntervals = ["8", "180", "1440"];
+    it("should use default shard when not specified", async () => {
+      process.env.SCREEPS_TOKEN = "test-token";
 
-      for (const interval of validIntervals) {
-        vi.resetModules();
-        vi.clearAllMocks();
-        process.env.SCREEPS_TOKEN = "test-token";
-        process.env.SCREEPS_STATS_INTERVAL = interval;
+      const mockResponse = {
+        ok: true,
+        json: vi.fn().mockResolvedValue({ ok: 1, data: { cpu: { used: 10, limit: 100 } } })
+      };
+      mockFetch.mockResolvedValue(mockResponse);
 
-        const mockResponse = {
-          ok: true,
-          json: vi.fn().mockResolvedValue({ stats: {} })
-        };
-        mockFetch.mockResolvedValue(mockResponse);
+      await import("../../packages/utilities/scripts/fetch-screeps-stats.mjs");
 
-        await import("../../packages/utilities/scripts/fetch-screeps-stats.mjs");
+      await vi.waitFor(() => {
+        expect(mockFetch).toHaveBeenCalled();
+      });
 
-        await vi.waitFor(() => {
-          expect(mockFetch).toHaveBeenCalled();
-        });
-
-        const fetchCall = mockFetch.mock.calls[0] as [string, RequestInit];
-        expect(fetchCall[0]).toContain(`interval=${interval}`);
-      }
+      const fetchCall = mockFetch.mock.calls[0] as [string, RequestInit];
+      expect(fetchCall[0]).toContain("shard=shard3");
     });
   });
 
@@ -119,12 +113,12 @@ describe("fetch-screeps-stats", () => {
   });
 
   describe("Endpoint construction", () => {
-    it("should construct correct endpoint with default host", async () => {
+    it("should construct correct Memory API endpoint with default host", async () => {
       process.env.SCREEPS_TOKEN = "test-token";
 
       const mockResponse = {
         ok: true,
-        json: vi.fn().mockResolvedValue({ stats: {} })
+        json: vi.fn().mockResolvedValue({ ok: 1, data: { cpu: { used: 10, limit: 100 } } })
       };
       mockFetch.mockResolvedValue(mockResponse);
 
@@ -135,7 +129,7 @@ describe("fetch-screeps-stats", () => {
       });
 
       const fetchCall = mockFetch.mock.calls[0] as [string, RequestInit];
-      expect(fetchCall[0]).toBe("https://screeps.com/api/user/stats?interval=180");
+      expect(fetchCall[0]).toBe("https://screeps.com/api/user/memory?path=stats&shard=shard3");
     });
 
     it("should use custom host when specified", async () => {
@@ -144,7 +138,7 @@ describe("fetch-screeps-stats", () => {
 
       const mockResponse = {
         ok: true,
-        json: vi.fn().mockResolvedValue({ stats: {} })
+        json: vi.fn().mockResolvedValue({ ok: 1, data: { cpu: { used: 10, limit: 100 } } })
       };
       mockFetch.mockResolvedValue(mockResponse);
 
@@ -155,7 +149,7 @@ describe("fetch-screeps-stats", () => {
       });
 
       const fetchCall = mockFetch.mock.calls[0] as [string, RequestInit];
-      expect(fetchCall[0]).toContain("https://custom.screeps.com/api/user/stats");
+      expect(fetchCall[0]).toContain("https://custom.screeps.com/api/user/memory");
     });
   });
 
@@ -189,7 +183,7 @@ describe("fetch-screeps-stats", () => {
 
       const mockResponse = {
         ok: true,
-        json: vi.fn().mockResolvedValue({ stats: { "12345": { cpu: { used: 10, limit: 100 } } } })
+        json: vi.fn().mockResolvedValue({ ok: 1, data: { cpu: { used: 10, limit: 100 } } })
       };
       mockFetch.mockResolvedValue(mockResponse);
 
@@ -202,6 +196,33 @@ describe("fetch-screeps-stats", () => {
       const mockWriteFileSync = writeFileSync as ReturnType<typeof vi.fn>;
       const writeCall = mockWriteFileSync.mock.calls[0] as [string, string];
       expect(writeCall[0]).toContain("reports/screeps-stats/latest.json");
+    });
+
+    it("should handle gzipped Memory data", async () => {
+      process.env.SCREEPS_TOKEN = "test-token";
+
+      // Create a simple gzipped payload
+      const data = { cpu: { used: 10, limit: 100 } };
+      const zlib = await import("node:zlib");
+      const gzipped = zlib.gzipSync(JSON.stringify(data));
+      const gzBase64 = "gz:" + gzipped.toString("base64");
+
+      const mockResponse = {
+        ok: true,
+        json: vi.fn().mockResolvedValue({ ok: 1, data: gzBase64 })
+      };
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await import("../../packages/utilities/scripts/fetch-screeps-stats.mjs");
+
+      await vi.waitFor(() => {
+        expect(writeFileSync).toHaveBeenCalled();
+      });
+
+      const mockWriteFileSync = writeFileSync as ReturnType<typeof vi.fn>;
+      const writeCall = mockWriteFileSync.mock.calls[0] as [string, string];
+      const savedData = JSON.parse(writeCall[1]);
+      expect(savedData.source).toBe("memory");
     });
   });
 });
