@@ -14,7 +14,7 @@ import { PixelGenerator } from "@runtime/metrics/PixelGenerator";
 import { RespawnManager } from "@runtime/respawn/RespawnManager";
 import { ConstructionManager } from "@runtime/planning/ConstructionManager";
 import { RoomVisualManager } from "@runtime/visuals/RoomVisualManager";
-import { InfrastructureManager } from "@runtime/infrastructure/InfrastructureManager";
+import { InfrastructureManager, type InfrastructureMemory } from "@runtime/infrastructure/InfrastructureManager";
 import { BootstrapPhaseManager } from "./BootstrapPhaseManager";
 import type { GameContext } from "@runtime/types/GameContext";
 import { profile } from "@profiler";
@@ -87,11 +87,16 @@ export class Kernel {
     this.evaluator = config.evaluator ?? new SystemEvaluator({}, this.logger);
     this.respawnManager = config.respawnManager ?? new RespawnManager(this.logger);
     this.constructionManager = config.constructionManager ?? new ConstructionManager(this.logger);
+
+    // Extract infrastructure memory with proper type narrowing for ESLint strict rules
+    const infrastructureMemory: InfrastructureMemory | undefined =
+      typeof Memory !== "undefined" ? Memory.infrastructure : undefined;
+
     this.infrastructureManager =
       config.infrastructureManager ??
       new InfrastructureManager({
         logger: this.logger,
-        memory: typeof Memory !== "undefined" ? Memory.infrastructure : undefined
+        memory: infrastructureMemory
       });
     this.bootstrapManager = config.bootstrapManager ?? new BootstrapPhaseManager({}, this.logger);
     this.enableGarbageCollection = config.enableGarbageCollection ?? true;
