@@ -172,9 +172,10 @@ describe("TaskManager Container Deposit", () => {
 
     const transferTasks = tasks.filter(t => t.task.constructor.name === "TransferAction");
 
-    // All container deposit tasks should have HIGH priority (75)
+    // All container deposit tasks should have NORMAL priority (50)
+    // This is lower than CRITICAL spawn refill tasks (100) to prevent starvation
     for (const task of transferTasks) {
-      expect(task.priority).toBe(75); // TaskPriority.HIGH = 75
+      expect(task.priority).toBe(50); // TaskPriority.NORMAL = 50
     }
   });
 
