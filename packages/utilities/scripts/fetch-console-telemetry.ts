@@ -51,12 +51,25 @@ async function executeConsoleCommand(
       const response = (await api.console(command, shard)) as ConsoleResponse;
 
       if (!response.ok) {
+        console.error(`  ❌ Console command failed (attempt ${attempt}/${retries})`);
+        console.error(`     Error: ${response.error || "Unknown error"}`);
+        console.error(`     Response data:`, response);
         throw new Error(response.error || "Console command failed");
       }
 
       return response.data;
     } catch (error) {
       if (attempt === retries) {
+        console.error(`  ❌ All retry attempts exhausted`);
+        if (error instanceof Error) {
+          console.error(`     Error: ${error.message}`);
+          // Log response data if available (for API errors)
+          const apiError = error as Error & { response?: { status?: number; data?: unknown } };
+          if (apiError.response) {
+            console.error(`     Status: ${apiError.response.status}`);
+            console.error(`     Response data:`, apiError.response.data);
+          }
+        }
         throw error;
       }
 
@@ -154,9 +167,18 @@ async function fetchConsoleTelemetry(): Promise<ConsoleTelemetry> {
 
     return telemetry;
   } catch (error) {
+    console.error(`❌ Failed to fetch console telemetry:`);
     if (error instanceof Error) {
+      console.error(`   Error: ${error.message}`);
+      // Log response data if available (for API errors)
+      const apiError = error as Error & { response?: { status?: number; data?: unknown } };
+      if (apiError.response) {
+        console.error(`   Status: ${apiError.response.status}`);
+        console.error(`   Response data:`, apiError.response.data);
+      }
       throw new Error(`Failed to fetch console telemetry: ${error.message}`);
     }
+    console.error(`   Error: ${String(error)}`);
     throw error;
   }
 }
