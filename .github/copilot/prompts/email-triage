@@ -52,6 +52,7 @@ Follow this process:
 ## FINAL OUTPUT VALIDATION
 
 Verify the following before completion:
+
 - [ ] All actionable items resulted in well-structured issues
 - [ ] All created issues have appropriate labels and clear descriptions
 - [ ] Email analysis decision properly documented
@@ -60,9 +61,9 @@ Verify the following before completion:
 Finish by printing minified JSON so the workflow log captures the decision:
 
 {
-  "run_url": "${EVENT_URL}",
-  "issues_created": ["#123", ...],
-  "notes": "short triage summary"
+"run_url": "${EVENT_URL}",
+"issues_created": ["#123", ...],
+"notes": "short triage summary"
 }
 
 Rules:

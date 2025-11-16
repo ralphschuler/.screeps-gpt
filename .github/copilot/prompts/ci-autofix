@@ -26,6 +26,7 @@ The workflow has provided:
 Before attempting any fix, classify the failure type by analyzing logs and workflow context:
 
 **Automatic Fix Categories (High Confidence):**
+
 1. **Linting Failures** (`guard-lint.yml`, `guard-yaml-lint.yml`)
    - ESLint violations (unused variables, unused eslint-disable, formatting)
    - YAML syntax errors or validation failures
@@ -58,18 +59,16 @@ Before attempting any fix, classify the failure type by analyzing logs and workf
    - Fix Strategy: Run `bun run versions:update`
 
 **Manual Review Required (Create Issue):**
+
 1. **Test Failures** (logic issues, API changes)
    - Unit/E2E/regression test failures requiring code logic changes
    - Exception: Simple assertion updates due to expected behavior changes
-   
 2. **Build Failures** (complex errors)
    - esbuild errors indicating architectural issues
    - Missing modules requiring new dependencies
-   
 3. **Security Issues**
    - Vulnerabilities requiring careful review
    - Authentication/authorization failures
-   
 4. **Performance Issues**
    - Timeout failures, CPU/memory limits
    - Requires profiling and optimization strategy
@@ -83,6 +82,7 @@ Before attempting any fix, classify the failure type by analyzing logs and workf
 Collect comprehensive context before attempting fixes:
 
 1. **Download Full Logs**
+
    ```bash
    gh run download ${RUN_ID} --dir /tmp/workflow-logs
    ```
@@ -119,6 +119,7 @@ Collect comprehensive context before attempting fixes:
 ## FIX APPROPRIATENESS CRITERIA
 
 Only attempt automatic fixes for:
+
 - ✅ Linting/formatting violations (ESLint, Prettier, YAML lint)
 - ✅ Simple compilation errors (missing imports, typos, unused variables)
 - ✅ Broken tests due to trivial changes (assertion updates, test fixture paths)
@@ -127,7 +128,8 @@ Only attempt automatic fixes for:
 - ✅ Version index synchronization (changelog alignment)
 
 Do NOT attempt automatic fixes for:
-- ❌ Complex logic errors requiring design decisions  
+
+- ❌ Complex logic errors requiring design decisions
 - ❌ Security vulnerabilities requiring careful review
 - ❌ Breaking changes affecting public APIs
 - ❌ Performance regressions requiring profiling
@@ -140,21 +142,23 @@ The workflow provides `TRIGGER_EVENT` (from `${TRIGGER_EVENT}`) indicating the e
 
 **Decision Matrix for Fix Application:**
 
-| Trigger Event | Source Branch | Action Strategy |
-|--------------|---------------|-----------------|
-| `pull_request` | PR head branch | Push directly to the existing PR branch |
-| `push` to `main` | `main` | Create new PR (`copilot/autofix-${RUN_ID}`) targeting `main` |
-| `push` to feature branch | Feature branch | Push directly to the feature branch |
-| `schedule` | Default branch | Create new PR with fix for review |
-| `workflow_dispatch` | Triggering branch | Create new PR with fix for review |
+| Trigger Event            | Source Branch     | Action Strategy                                              |
+| ------------------------ | ----------------- | ------------------------------------------------------------ |
+| `pull_request`           | PR head branch    | Push directly to the existing PR branch                      |
+| `push` to `main`         | `main`            | Create new PR (`copilot/autofix-${RUN_ID}`) targeting `main` |
+| `push` to feature branch | Feature branch    | Push directly to the feature branch                          |
+| `schedule`               | Default branch    | Create new PR with fix for review                            |
+| `workflow_dispatch`      | Triggering branch | Create new PR with fix for review                            |
 
 **Protected Branch Security:**
+
 - **NEVER push directly to `main` or production branches** - always create a PR instead
 - Avoid direct commits to protected branches to maintain audit trail and review process
 - Feature branches and PR branches can receive direct commits for faster iteration
 - All PR creation must include labels: `automation`, `copilot`, `type/chore`, `priority/high`
 
 **Branch Determination Process:**
+
 1. Parse `EVENT_PATH` JSON to extract `workflow_run.head_branch` and `workflow_run.pull_requests[]`
 2. If `pull_requests` array is non-empty → PR-triggered workflow
 3. If `head_branch` is `main` or matches protected branch pattern → Protected branch
@@ -169,11 +173,13 @@ Follow this step-by-step process:
 ### Phase 1: Authentication & Context Gathering
 
 1. **Authenticate GitHub CLI**
+
    ```bash
    gh auth status
    ```
 
 2. **Load Event Payload & Extract Context**
+
    ```bash
    TRIGGER_EVENT=$(jq -r '.workflow_run.event' "${EVENT_PATH}")
    HEAD_BRANCH=$(jq -r '.workflow_run.head_branch' "${EVENT_PATH}")
@@ -182,6 +188,7 @@ Follow this step-by-step process:
    ```
 
 3. **Download Failure Logs**
+
    ```bash
    # Download logs to a consistent directory structure
    mkdir -p /tmp/workflow-logs
@@ -203,10 +210,11 @@ Follow this step-by-step process:
    - **CRITICAL**: If classification is uncertain or failure is complex, STOP and create issue
 
 6. **Gather Additional Context**
+
    ```bash
    # Check recent workflow runs for patterns
    gh run list --workflow="${WORKFLOW_NAME}" --limit=10 --json conclusion,headBranch,createdAt
-   
+
    # View recent commits on the branch
    gh api repos/${REPO_NAME}/commits?sha=${HEAD_BRANCH}&per_page=5
    ```
@@ -214,11 +222,12 @@ Follow this step-by-step process:
 ### Phase 3: Repository Setup & Fix Application
 
 7. **Clone Repository & Checkout Working Branch**
+
    ```bash
    cd ${WORKSPACE}
    gh repo clone ${REPO_NAME} repo
    cd repo
-   
+
    # Determine branch strategy
    if [ "$PR_COUNT" -gt 0 ]; then
      # PR-triggered: checkout PR head branch
@@ -235,6 +244,7 @@ Follow this step-by-step process:
 8. **Apply Specialized Fix Based on Failure Type**
 
    **For Linting Failures:**
+
    ```bash
    bun install --no-optional
    bun run lint:fix
@@ -243,6 +253,7 @@ Follow this step-by-step process:
    ```
 
    **For Formatting Failures:**
+
    ```bash
    bun install --no-optional
    bun run format:write
@@ -251,6 +262,7 @@ Follow this step-by-step process:
    ```
 
    **For Version Index Sync:**
+
    ```bash
    bun install --no-optional
    bun run versions:update
@@ -267,6 +279,7 @@ Follow this step-by-step process:
    - Verify with: `bun run test:docs` or `bun run build:docs-site`
 
    **For Dependency Conflicts:**
+
    ```bash
    bun install --no-optional
    # Or for specific lockfile updates
@@ -287,10 +300,11 @@ Follow this step-by-step process:
     - Add regression test if fixing a bug
 
 11. **Commit Changes with Proper Reference**
+
     ```bash
     git add .
     git commit -m "fix: resolve ${WORKFLOW_NAME} failure (run #${RUN_ID})
-    
+
     - Fixed [specific error description]
     - Validated with [validation commands]
     - Failure type: [linting|formatting|build|test|etc]"
@@ -301,11 +315,13 @@ Follow this step-by-step process:
 12. **Push Fix According to Decision Matrix**
 
     **For Direct Push (PR branches, feature branches):**
+
     ```bash
     git push origin ${HEAD_BRANCH}
     ```
 
     **For PR Creation (main branch, scheduled workflows):**
+
     ```bash
     git push origin copilot/autofix-${RUN_ID}
     gh pr create \
@@ -313,21 +329,21 @@ Follow this step-by-step process:
       --body "**Automated Fix**
 
     Fixes workflow run: ${RUN_HTML_URL}
-    
+
     **Failure Analysis:**
     - Workflow: ${WORKFLOW_NAME}
     - Trigger: ${TRIGGER_EVENT}
     - Branch: ${HEAD_BRANCH}
     - Failure Type: [category]
-    
+
     **Fix Applied:**
     [description of what was fixed and how]
-    
+
     **Validation:**
     - [x] Fix validated locally
     - [x] Related tests passing
     - [x] Changelog updated (if applicable)
-    
+
     **Related Issues:** None (automated fix)" \
       --label "automation,copilot,type/chore,priority/high" \
       --base main
@@ -341,6 +357,7 @@ Follow this step-by-step process:
 ## FINAL OUTPUT VALIDATION
 
 Verify the following before completion:
+
 - [ ] Root cause identified and documented with failure classification
 - [ ] Fix applied and validated successfully using appropriate test commands
 - [ ] Changes committed with proper run ID reference in commit message
@@ -369,6 +386,7 @@ Finally, print minified JSON so the workflow log records the results:
 ```
 
 **Rules:**
+
 - Do not wrap the JSON in Markdown fences.
 - Use empty arrays/nulls when appropriate.
 - Keep edits tightly scoped to the failure being remediated.

@@ -32,24 +32,28 @@ the repository into `$GITHUB_WORKSPACE/repo`, and audit it end-to-end with empha
 ## ACTIONABLE FINDING CRITERIA
 
 An issue should be created only if it meets ALL criteria:
+
 1. **Specific Impact**: Clear description of what breaks or degrades
-2. **Concrete Steps**: Reproducible steps or specific file references  
+2. **Concrete Steps**: Reproducible steps or specific file references
 3. **Severity Justification**: High/Medium/Low with reasoning
 4. **Non-Duplicate**: Not already covered by existing open issues
 
 ## SEVERITY ASSESSMENT GUIDELINES
 
 **High Severity (`severity/high`)**:
+
 - Blocks deployment or causes runtime failures
 - Critical security vulnerabilities
 - Broken CI/CD preventing releases
 
 **Medium Severity (`severity/medium`)**:
+
 - Degrades performance or user experience
 - Missing tests for critical functionality
 - Documentation gaps blocking development
 
 **Low Severity (`severity/low`)**:
+
 - Code quality improvements
 - Minor documentation updates
 - Optimization opportunities
@@ -71,6 +75,7 @@ Whenever you identify an actionable finding:
 ## FINAL OUTPUT VALIDATION
 
 Verify the following before completion:
+
 - [ ] All actionable findings resulted in issues or updates
 - [ ] All created issues have appropriate labels and clear descriptions
 - [ ] No duplicate issues were created

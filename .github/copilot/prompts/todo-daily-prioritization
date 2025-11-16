@@ -29,15 +29,17 @@ The workflow has already provided `GITHUB_TOKEN`/`GH_TOKEN` for authentication.
 ## ACTIONABILITY CRITERIA
 
 An issue is actionable if ALL conditions are met:
+
 1. **No Todo label currently applied**
 2. **No incomplete sub-tasks or blocking dependencies**
-3. **Clear acceptance criteria or requirements defined**  
+3. **Clear acceptance criteria or requirements defined**
 4. **Not waiting for external decisions or clarifications**
 5. **Technically feasible with current repository state**
 
 ## DEPENDENCY VALIDATION
 
 Check for the following blocking relationships:
+
 - **Sub-issues**: Task lists in issue body with unchecked items
 - **Linked issues**: References to other issues that must be completed first
 - **External dependencies**: Waiting for third-party responses or decisions
@@ -80,6 +82,7 @@ Execution checklist:
 ## FINAL OUTPUT VALIDATION
 
 Verify the following before completion:
+
 - [ ] All open issues analyzed for actionability using explicit criteria
 - [ ] Todo label applied to at most one issue
 - [ ] Explanatory comment added to any newly labeled issue

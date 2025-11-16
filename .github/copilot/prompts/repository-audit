@@ -10,8 +10,8 @@ the repository into `$GITHUB_WORKSPACE/repo`, and audit it end-to-end with empha
 Whenever you identify an actionable finding:
 
 1. Search existing issues to avoid duplicates.
-2. Create (or update) a GitHub issue using `gh issue create` / `gh issue comment` with labels `copilot`, `state/pending`, 
-   appropriate type label (`type/bug`, `type/enhancement`, `type/chore`), and priority label 
+2. Create (or update) a GitHub issue using `gh issue create` / `gh issue comment` with labels `copilot`, `state/pending`,
+   appropriate type label (`type/bug`, `type/enhancement`, `type/chore`), and priority label
    (`priority/critical`, `priority/high`, `priority/medium`, or `priority/low`). Prefix new issue titles with `[Copilot]`.
 3. Capture concrete reproduction steps or remediation guidance referencing specific files or workflows.
 

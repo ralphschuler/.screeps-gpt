@@ -4,8 +4,8 @@ Resolve GitHub issue #${ISSUE_NUMBER} titled `${ISSUE_TITLE}` (${ISSUE_HTML_URL}
 below for reference:
 
 ---
-${ISSUE_BODY}
----
+
+## ${ISSUE_BODY}
 
 The workflow has already provided `GITHUB_TOKEN`/`GH_TOKEN`. Authenticate the GitHub CLI, clone the repository into
 `$GITHUB_WORKSPACE/repo`, and create a working branch named `copilot/todo-${ISSUE_NUMBER}`.
@@ -13,7 +13,7 @@ The workflow has already provided `GITHUB_TOKEN`/`GH_TOKEN`. Authenticate the Gi
 ## MANDATORY ACTIONS (failure to complete any item is a workflow failure)
 
 - [ ] **MUST authenticate GitHub CLI** with provided token and verify permissions
-- [ ] **MUST validate issue dependencies** using GitHub MCP server before proceeding  
+- [ ] **MUST validate issue dependencies** using GitHub MCP server before proceeding
 - [ ] **MUST create draft pull request** immediately after first commit for transparency
 - [ ] **MUST implement required changes** following every rule in `AGENTS.md`
 - [ ] **MUST run validation tests** and report results via `report_progress`
@@ -80,6 +80,7 @@ The workflow has already provided `GITHUB_TOKEN`/`GH_TOKEN`. Authenticate the Gi
 ## FINAL OUTPUT VALIDATION
 
 Verify the following before marking complete:
+
 - [ ] All mandatory actions completed successfully
 - [ ] PR created and properly labeled
 - [ ] All validation tests passed

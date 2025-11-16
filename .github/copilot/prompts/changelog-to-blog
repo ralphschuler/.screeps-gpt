@@ -3,6 +3,7 @@ You are GitHub Copilot CLI acting as a technical writer for the Screeps GPT repo
 Your task is to convert the latest CHANGELOG.md entry for version ${VERSION} into a comprehensive blog post that documents the release.
 
 ## Input
+
 - Repository: ${REPO_NAME}
 - Version: ${VERSION}
 - CHANGELOG.md path: CHANGELOG.md (in repository root)
@@ -18,6 +19,7 @@ Your task is to convert the latest CHANGELOG.md entry for version ${VERSION} int
    Create a markdown blog post with the following structure:
 
    **Front Matter** (YAML):
+
    ```yaml
    ---
    title: "Release ${VERSION}: [Compelling Title Based on Main Features]"

@@ -112,7 +112,6 @@ Follow this process:
    - If parent-child relationships were detected, use GitHub CLI to establish sub-issue connections:
      - For sub-tasks: Use `gh issue edit <child-issue> --body` to add task list references in parent
      - Document the relationship in both issue comments for visibility
-   
 7. **Apply Labels**
    - Apply appropriate labels from the repository set based on the issue content:
      - Type labels: `type/bug`, `type/feature`, `type/enhancement`, `type/chore`, `type/question`
@@ -121,7 +120,7 @@ Follow this process:
      - Domain labels: `automation`, `documentation`, `runtime`, `monitoring`, `dependencies`, `regression`
      - Process labels: `needs/regression-test`, `good-first-issue`, `help-wanted`
    - **IMPORTANT**: Do NOT automatically apply the `Todo` label - this should be a deliberate manual decision by maintainers
-   - **NOTE**: Legacy labels (bug, enhancement, severity/*) are deprecated; use the new type/* and priority/* labels instead
+   - **NOTE**: Legacy labels (bug, enhancement, severity/_) are deprecated; use the new type/_ and priority/\* labels instead
 
 8. **Add Triage Comment**
    - Add a SINGLE comment to the issue explaining:
@@ -134,6 +133,7 @@ Follow this process:
 ## FINAL OUTPUT VALIDATION
 
 Verify the following before completion:
+
 - [ ] Issue content reformulated with clear structure
 - [ ] Appropriate labels applied (excluding Todo)
 - [ ] Relationships detected and documented
