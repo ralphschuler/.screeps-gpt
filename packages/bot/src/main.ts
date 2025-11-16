@@ -89,6 +89,16 @@ export const loop = (): void => {
       }
     }
 
+    // Defensive initialization of Memory.stats to prevent telemetry blackout
+    // This ensures stats structure exists on every tick, even if Memory is reset
+    // between script loads. Critical for /api/user/stats endpoint to receive data.
+    Memory.stats ??= {
+      time: 0,
+      cpu: { used: 0, limit: 0, bucket: 0 },
+      creeps: { count: 0 },
+      rooms: { count: 0 }
+    };
+
     const gameContext = validateGameContext(Game);
     kernel.run(gameContext, Memory);
   } catch (error) {
