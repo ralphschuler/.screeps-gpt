@@ -1,5 +1,20 @@
 [
   {
+    "version": "0.89.5",
+    "date": "2025-11-16",
+    "notes": [
+      "**Context-Aware Build Validation Thresholds**: Implemented context-aware MIN_SIZE validation to strengthen build safety",
+      "Monolithic `main.js` now requires 50KB minimum (ensures kernel + runtime components present)",
+      "Modular components maintain 500B minimum (preserves flexibility for type-only exports)",
+      "Validation leverages existing `checkLoopExport` parameter to distinguish file types",
+      "Added regression tests validating both threshold scenarios",
+      "Prevents broken bundler output from deploying to production",
+      "Resolves issue ralphschuler/.screeps-gpt#731 (context-aware MIN_SIZE validation)"
+    ],
+    "anchor": "0895---2025-11-16",
+    "slug": "v0-89-5"
+  },
+  {
     "version": "0.83.23",
     "date": "2025-11-16",
     "notes": [
