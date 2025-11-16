@@ -8,7 +8,10 @@ import {
   WithdrawAction,
   PickupAction,
   DismantleAction,
-  RecycleAction
+  RecycleAction,
+  TowerAttackAction,
+  TowerRepairAction,
+  LinkTransferAction
 } from "./TaskAction";
 import { PathfindingManager } from "@runtime/pathfinding";
 
@@ -90,6 +93,12 @@ export class TaskManager {
 
     // Generate recycle tasks for old/wounded creeps
     this.generateRecycleTasks(room);
+
+    // Generate tower tasks for defense and repair
+    this.generateTowerTasks(room);
+
+    // Generate link transfer tasks
+    this.generateLinkTransferTasks(room);
 
     // Cleanup expired tasks
     this.cleanupExpiredTasks();
@@ -639,6 +648,105 @@ export class TaskManager {
       // Generate recycle task
       const task = this.configureTaskAction(new RecycleAction(spawn.id));
       const request = new TaskRequest(this.getNextTaskId(), task, TaskPriority.LOW, Game.time + 100);
+      this.addTaskWithEviction(request);
+    }
+  }
+
+  /**
+   * Generate tasks for towers (defense and repair)
+   * Note: This generates task requests that can be used to track tower actions,
+   * but actual tower logic is typically handled by TowerManager for immediate response.
+   * These tasks are useful for strategic planning and metrics tracking.
+   */
+  private generateTowerTasks(room: Room): void {
+    const towers = room.find(FIND_MY_STRUCTURES, {
+      filter: s => s.structureType === STRUCTURE_TOWER
+    }) as StructureTower[];
+
+    if (towers.length === 0) return;
+
+    // Generate attack tasks for hostile creeps
+    const hostiles = room.find(FIND_HOSTILE_CREEPS);
+    if (hostiles.length > 0) {
+      for (const tower of towers) {
+        // Only create one attack task per tower
+        const existingTasks = Array.from(this.tasks.values()).filter(
+          t => t.status !== "COMPLETE" && t.task instanceof TowerAttackAction && t.task.getTowerId() === tower.id
+        );
+
+        if (existingTasks.length === 0) {
+          const closestHostile = tower.pos.findClosestByRange(hostiles);
+          if (closestHostile) {
+            const task = this.configureTaskAction(new TowerAttackAction(tower.id, closestHostile.id));
+            const request = new TaskRequest(this.getNextTaskId(), task, TaskPriority.CRITICAL, Game.time + 10);
+            this.addTaskWithEviction(request);
+          }
+        }
+      }
+    }
+
+    // Generate repair tasks for damaged structures
+    const damagedStructures = room.find(FIND_STRUCTURES, {
+      filter: (s: Structure) => {
+        if (!("hits" in s) || typeof s.hits !== "number") return false;
+        if (s.structureType === STRUCTURE_WALL || s.structureType === STRUCTURE_RAMPART) return false;
+        return s.hits < s.hitsMax * 0.7;
+      }
+    });
+
+    if (damagedStructures.length > 0) {
+      for (const tower of towers) {
+        // Only create one repair task per tower
+        const existingTasks = Array.from(this.tasks.values()).filter(
+          t => t.status !== "COMPLETE" && t.task instanceof TowerRepairAction && t.task.getTowerId() === tower.id
+        );
+
+        if (existingTasks.length === 0) {
+          const closestDamaged = tower.pos.findClosestByRange(damagedStructures);
+          if (closestDamaged) {
+            const task = this.configureTaskAction(new TowerRepairAction(tower.id, closestDamaged.id));
+            const request = new TaskRequest(this.getNextTaskId(), task, TaskPriority.LOW, Game.time + 50);
+            this.addTaskWithEviction(request);
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Generate tasks for transferring energy between links
+   */
+  private generateLinkTransferTasks(room: Room): void {
+    const links = room.find(FIND_MY_STRUCTURES, {
+      filter: s => s.structureType === STRUCTURE_LINK
+    }) as StructureLink[];
+
+    if (links.length < 2) return;
+
+    // Find source links (near sources or storage) with energy
+    const sourceLinks = links.filter(
+      link => link.store.getUsedCapacity(RESOURCE_ENERGY) > link.store.getCapacity(RESOURCE_ENERGY) * 0.8
+    );
+
+    // Find target links (near controller or extensions) with free capacity
+    const targetLinks = links.filter(
+      link => link.store.getFreeCapacity(RESOURCE_ENERGY) > link.store.getCapacity(RESOURCE_ENERGY) * 0.5
+    );
+
+    if (sourceLinks.length === 0 || targetLinks.length === 0) return;
+
+    // Check for existing link transfer tasks
+    const existingTasks = Array.from(this.tasks.values()).filter(
+      t => t.status !== "COMPLETE" && t.task instanceof LinkTransferAction
+    );
+
+    // Limit to 2 concurrent link transfer tasks
+    if (existingTasks.length < 2) {
+      const sourceLink = sourceLinks[0];
+      const targetLink = targetLinks[0];
+
+      const task = this.configureTaskAction(new LinkTransferAction(sourceLink.id, targetLink.id));
+      const request = new TaskRequest(this.getNextTaskId(), task, TaskPriority.NORMAL, Game.time + 20);
       this.addTaskWithEviction(request);
     }
   }

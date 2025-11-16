@@ -30,7 +30,14 @@ export {
   RangedHealAction,
   DismantleAction,
   SignControllerAction,
-  RecycleAction
+  RecycleAction,
+  TowerAttackAction,
+  TowerHealAction,
+  TowerRepairAction,
+  BoostCreepAction,
+  RunReactionAction,
+  LinkTransferAction,
+  GenerateSafeModeAction
 } from "./TaskAction";
 export { TaskRequest, TaskPriority, type TaskStatus } from "./TaskRequest";
 export { TaskManager, type TaskManagerConfig } from "./TaskManager";

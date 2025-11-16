@@ -845,3 +845,294 @@ export class RecycleAction extends TaskAction {
     return true;
   }
 }
+
+/**
+ * Attack with tower
+ */
+export class TowerAttackAction extends TaskAction {
+  public prereqs: TaskPrerequisite[] = [];
+  private towerId: Id<StructureTower>;
+  private targetId: Id<Creep | Structure>;
+
+  public constructor(towerId: Id<StructureTower>, targetId: Id<Creep | Structure>) {
+    super();
+    this.towerId = towerId;
+    this.targetId = targetId;
+  }
+
+  public getTowerId(): Id<StructureTower> {
+    return this.towerId;
+  }
+
+  public getTargetId(): Id<Creep | Structure> {
+    return this.targetId;
+  }
+
+  public getTargetPos(): RoomPosition | null {
+    const tower = Game.getObjectById(this.towerId);
+    return tower ? tower.pos : null;
+  }
+
+  public action(_creep: Creep): boolean {
+    const tower = Game.getObjectById(this.towerId);
+    const target = Game.getObjectById(this.targetId);
+
+    if (!tower || !target) {
+      return true; // Tower or target doesn't exist
+    }
+
+    const result = tower.attack(target);
+    // Continue attacking until target is destroyed or tower is out of energy
+    return result !== OK || tower.store.getUsedCapacity(RESOURCE_ENERGY) === 0;
+  }
+}
+
+/**
+ * Heal with tower
+ */
+export class TowerHealAction extends TaskAction {
+  public prereqs: TaskPrerequisite[] = [];
+  private towerId: Id<StructureTower>;
+  private targetId: Id<Creep>;
+
+  public constructor(towerId: Id<StructureTower>, targetId: Id<Creep>) {
+    super();
+    this.towerId = towerId;
+    this.targetId = targetId;
+  }
+
+  public getTowerId(): Id<StructureTower> {
+    return this.towerId;
+  }
+
+  public getTargetId(): Id<Creep> {
+    return this.targetId;
+  }
+
+  public getTargetPos(): RoomPosition | null {
+    const tower = Game.getObjectById(this.towerId);
+    return tower ? tower.pos : null;
+  }
+
+  public action(_creep: Creep): boolean {
+    const tower = Game.getObjectById(this.towerId);
+    const target = Game.getObjectById(this.targetId);
+
+    if (!tower || !target || target.hits === target.hitsMax) {
+      return true; // Tower or target doesn't exist, or target is fully healed
+    }
+
+    const result = tower.heal(target);
+    // Continue healing until target is fully healed
+    return result !== OK || target.hits === target.hitsMax;
+  }
+}
+
+/**
+ * Repair with tower
+ */
+export class TowerRepairAction extends TaskAction {
+  public prereqs: TaskPrerequisite[] = [];
+  private towerId: Id<StructureTower>;
+  private targetId: Id<Structure>;
+
+  public constructor(towerId: Id<StructureTower>, targetId: Id<Structure>) {
+    super();
+    this.towerId = towerId;
+    this.targetId = targetId;
+  }
+
+  public getTowerId(): Id<StructureTower> {
+    return this.towerId;
+  }
+
+  public getTargetId(): Id<Structure> {
+    return this.targetId;
+  }
+
+  public getTargetPos(): RoomPosition | null {
+    const tower = Game.getObjectById(this.towerId);
+    return tower ? tower.pos : null;
+  }
+
+  public action(_creep: Creep): boolean {
+    const tower = Game.getObjectById(this.towerId);
+    const target = Game.getObjectById(this.targetId);
+
+    if (!tower || !target || target.hits === target.hitsMax) {
+      return true; // Tower or target doesn't exist, or target is fully repaired
+    }
+
+    const result = tower.repair(target);
+    // Continue repairing until target is fully repaired
+    return result !== OK || target.hits === target.hitsMax;
+  }
+}
+
+/**
+ * Boost creep at lab
+ */
+export class BoostCreepAction extends TaskAction {
+  public prereqs: TaskPrerequisite[] = [];
+  private labId: Id<StructureLab>;
+  private boostType: MineralBoostConstant;
+
+  public constructor(labId: Id<StructureLab>, boostType: MineralBoostConstant) {
+    super();
+    this.labId = labId;
+    this.boostType = boostType;
+  }
+
+  public getLabId(): Id<StructureLab> {
+    return this.labId;
+  }
+
+  public getTargetPos(): RoomPosition | null {
+    const lab = Game.getObjectById(this.labId);
+    return lab ? lab.pos : null;
+  }
+
+  public action(creep: Creep): boolean {
+    const lab = Game.getObjectById(this.labId);
+    if (!lab) {
+      return true; // Lab doesn't exist
+    }
+
+    const result = lab.boostCreep(creep);
+    if (result === ERR_NOT_IN_RANGE) {
+      this.moveToTarget(creep, lab, 1);
+      return false;
+    }
+
+    // Task complete on success or error
+    return true;
+  }
+}
+
+/**
+ * Run reaction at lab
+ */
+export class RunReactionAction extends TaskAction {
+  public prereqs: TaskPrerequisite[] = [];
+  private labId: Id<StructureLab>;
+  private lab1Id: Id<StructureLab>;
+  private lab2Id: Id<StructureLab>;
+
+  public constructor(labId: Id<StructureLab>, lab1Id: Id<StructureLab>, lab2Id: Id<StructureLab>) {
+    super();
+    this.labId = labId;
+    this.lab1Id = lab1Id;
+    this.lab2Id = lab2Id;
+  }
+
+  public getLabId(): Id<StructureLab> {
+    return this.labId;
+  }
+
+  public getTargetPos(): RoomPosition | null {
+    const lab = Game.getObjectById(this.labId);
+    return lab ? lab.pos : null;
+  }
+
+  public action(_creep: Creep): boolean {
+    const lab = Game.getObjectById(this.labId);
+    const lab1 = Game.getObjectById(this.lab1Id);
+    const lab2 = Game.getObjectById(this.lab2Id);
+
+    if (!lab || !lab1 || !lab2) {
+      return true; // Lab doesn't exist
+    }
+
+    const result = lab.runReaction(lab1, lab2);
+    // Continue running reaction until resources are depleted or cooldown
+    return result !== OK;
+  }
+}
+
+/**
+ * Transfer energy between links
+ */
+export class LinkTransferAction extends TaskAction {
+  public prereqs: TaskPrerequisite[] = [];
+  private sourceLinkId: Id<StructureLink>;
+  private targetLinkId: Id<StructureLink>;
+
+  public constructor(sourceLinkId: Id<StructureLink>, targetLinkId: Id<StructureLink>) {
+    super();
+    this.sourceLinkId = sourceLinkId;
+    this.targetLinkId = targetLinkId;
+  }
+
+  public getSourceLinkId(): Id<StructureLink> {
+    return this.sourceLinkId;
+  }
+
+  public getTargetLinkId(): Id<StructureLink> {
+    return this.targetLinkId;
+  }
+
+  public getTargetPos(): RoomPosition | null {
+    const sourceLink = Game.getObjectById(this.sourceLinkId);
+    return sourceLink ? sourceLink.pos : null;
+  }
+
+  public action(_creep: Creep): boolean {
+    const sourceLink = Game.getObjectById(this.sourceLinkId);
+    const targetLink = Game.getObjectById(this.targetLinkId);
+
+    if (!sourceLink || !targetLink) {
+      return true; // Link doesn't exist
+    }
+
+    if (sourceLink.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+      return true; // Source link is empty
+    }
+
+    if (targetLink.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+      return true; // Target link is full
+    }
+
+    const amount = Math.min(
+      sourceLink.store.getUsedCapacity(RESOURCE_ENERGY),
+      targetLink.store.getFreeCapacity(RESOURCE_ENERGY)
+    );
+
+    const result = sourceLink.transferEnergy(targetLink, amount);
+    // Task complete on success or error
+    return true;
+  }
+}
+
+/**
+ * Generate safe mode at controller
+ */
+export class GenerateSafeModeAction extends TaskAction {
+  public prereqs: TaskPrerequisite[] = [];
+  private controllerId: Id<StructureController>;
+
+  public constructor(controllerId: Id<StructureController>) {
+    super();
+    this.controllerId = controllerId;
+  }
+
+  public getTargetPos(): RoomPosition | null {
+    const controller = Game.getObjectById(this.controllerId);
+    return controller ? controller.pos : null;
+  }
+
+  public action(creep: Creep): boolean {
+    const controller = Game.getObjectById(this.controllerId);
+    if (!controller) {
+      return true; // Controller doesn't exist
+    }
+
+    const result = creep.generateSafeMode(controller);
+    if (result === ERR_NOT_IN_RANGE) {
+      this.moveToTarget(creep, controller, 1);
+      return false;
+    }
+
+    // Task complete on success or error
+    return true;
+  }
+}
