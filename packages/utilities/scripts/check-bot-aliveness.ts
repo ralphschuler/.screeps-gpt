@@ -3,55 +3,25 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import process from "node:process";
 
-interface WorldStatusResponse {
+interface ConsoleResponse {
   ok: number;
-  status: "normal" | "lost" | "empty";
-}
-
-interface ScreepsRawUserAPI {
-  worldStatus(): Promise<WorldStatusResponse>;
-}
-
-interface ScreepsRawAPI {
-  user: ScreepsRawUserAPI;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-function isScreepsRawAPI(raw: unknown): raw is ScreepsRawAPI {
-  if (!isRecord(raw)) {
-    return false;
-  }
-
-  const user = (raw as { user?: unknown }).user;
-  if (!isRecord(user)) {
-    return false;
-  }
-
-  const { worldStatus } = user;
-  return typeof worldStatus === "function";
-}
-
-function ensureRawApi(api: ScreepsAPI): ScreepsRawAPI {
-  const rawCandidate = (api as { raw?: unknown }).raw;
-  if (isScreepsRawAPI(rawCandidate)) {
-    return rawCandidate;
-  }
-  throw new Error("ScreepsAPI raw interface is missing expected methods");
+  data: string;
+  error?: string;
 }
 
 /**
- * Check bot aliveness using the world-status API
+ * Check bot aliveness using the documented console API
  *
  * This provides a definitive answer about whether the bot is active in the game,
  * independent of Memory.stats availability.
  *
+ * Uses POST /api/user/console which is officially documented at:
+ * https://docs.screeps.com/auth-tokens.html
+ *
  * Returns:
- * - "active": Bot has spawns and is executing (status: "normal")
- * - "respawn_needed": Bot lost all spawns (status: "lost")
- * - "spawn_placement_needed": Bot respawned but spawn not placed (status: "empty")
+ * - "active": Bot has spawns and is executing
+ * - "respawn_needed": Bot lost all spawns
+ * - "spawn_placement_needed": Bot respawned but spawn not placed
  * - "unknown": API call failed or returned unexpected status
  */
 async function checkBotAliveness(): Promise<{
@@ -71,38 +41,46 @@ async function checkBotAliveness(): Promise<{
   const protocol = process.env.SCREEPS_PROTOCOL || "https";
   const port = Number(process.env.SCREEPS_PORT || 443);
   const path = process.env.SCREEPS_PATH || "/";
+  const shard = process.env.SCREEPS_SHARD || "shard3";
 
   try {
-    console.log(`🔍 Checking bot aliveness on ${hostname}:${port}${path}...`);
+    console.log(`🔍 Checking bot aliveness on ${hostname}:${port}${path} (${shard})...`);
 
     const api = new ScreepsAPI({ token, hostname, protocol, port, path });
-    const raw = ensureRawApi(api);
 
-    const statusResult = await raw.user.worldStatus();
+    // Check if we have spawns using the documented console API
+    const command = `
+      JSON.stringify({
+        hasSpawns: !!Object.keys(Game.spawns).length,
+        spawnCount: Object.keys(Game.spawns).length,
+        rooms: Object.keys(Game.rooms).filter(r => Game.rooms[r].controller?.my).length
+      })
+    `.trim();
+    const response = (await api.console(command, shard)) as ConsoleResponse;
 
-    if (!statusResult.ok) {
+    if (!response.ok) {
       return {
         aliveness: "unknown",
-        error: "API returned ok: 0 (failed to retrieve world status)"
+        error: response.error || "Console command failed"
       };
     }
 
-    const { status } = statusResult;
-    console.log(`📊 Bot status: ${status}`);
+    const data = JSON.parse(response.data);
+    console.log(`📊 Bot status: spawns=${data.spawnCount}, rooms=${data.rooms}`);
 
-    // Map status to aliveness
-    if (status === "normal") {
+    // Determine aliveness based on spawn count
+    if (data.hasSpawns && data.spawnCount > 0) {
       console.log("✅ Bot is ACTIVE and executing in game");
-      return { aliveness: "active", status };
-    } else if (status === "lost") {
-      console.log("⚠️ Bot lost all spawns - respawn needed");
-      return { aliveness: "respawn_needed", status };
-    } else if (status === "empty") {
-      console.log("⚠️ Bot respawned but spawn not placed yet");
-      return { aliveness: "spawn_placement_needed", status };
+      return { aliveness: "active", status: "normal" };
+    } else if (data.rooms > 0 && data.spawnCount === 0) {
+      console.log("⚠️ Bot has rooms but no spawns - respawn may be needed");
+      return { aliveness: "respawn_needed", status: "lost" };
+    } else if (data.rooms === 0 && data.spawnCount === 0) {
+      console.log("⚠️ Bot has no rooms or spawns - respawn placement needed");
+      return { aliveness: "spawn_placement_needed", status: "empty" };
     } else {
-      console.log(`❓ Unknown bot status: ${status}`);
-      return { aliveness: "unknown", status };
+      console.log(`❓ Unknown bot status: spawns=${data.spawnCount}, rooms=${data.rooms}`);
+      return { aliveness: "unknown", status: "unknown" };
     }
   } catch (error) {
     console.error("❌ Failed to check bot aliveness:");

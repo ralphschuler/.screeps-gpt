@@ -264,21 +264,27 @@ async function fetchAdjacentRoomInfo(
 }
 
 /**
- * Get username from the API
+ * Get username from the console (using documented API)
  */
-async function getUsername(api: ScreepsAPI): Promise<string> {
+async function getUsername(api: ScreepsAPI, shard: string): Promise<string> {
   try {
-    // Use the raw API to get user info
-    const raw = (api as unknown as { raw?: { user?: { name: () => Promise<{ username: string }> } } }).raw;
-    if (raw?.user?.name) {
-      const userInfo = await raw.user.name();
-      return userInfo.username;
+    // Use the documented POST /api/user/console endpoint
+    // This is officially documented in https://docs.screeps.com/auth-tokens.html
+    const command =
+      "JSON.stringify({username:Object.keys(Game.spawns).length?Object.values(Game.spawns)[0]?.owner?.username:'unknown'})";
+    const response = (await api.console(command, shard)) as ConsoleResponse;
+
+    if (response.ok && response.data) {
+      const data = JSON.parse(response.data);
+      if (data.username) {
+        return data.username;
+      }
     }
-  } catch {
-    console.error("  ⚠ Failed to get username from API, using fallback");
+  } catch (error) {
+    console.error("  ⚠ Failed to get username from console, using fallback");
   }
 
-  // Fallback: try to get from console
+  // Fallback: return unknown
   return "unknown";
 }
 
@@ -303,7 +309,7 @@ async function performRoomAnalysis(): Promise<RoomAnalysis> {
 
   try {
     // Get username
-    const username = await getUsername(api);
+    const username = await getUsername(api, shard);
     console.log(`  Username: ${username}`);
 
     // Fetch occupied rooms
