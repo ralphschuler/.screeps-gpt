@@ -42,4 +42,10 @@ describe("GitHub Packages Configuration", () => {
     expect(packageJson.scripts.prepublishOnly).toBeDefined();
     expect(packageJson.scripts.prepublishOnly).toContain("build");
   });
+
+  it("should not have private field set to true (blocks npm publish)", () => {
+    // Package must not be private to allow publishing to GitHub Packages
+    // See: https://github.com/ralphschuler/.screeps-gpt/issues/XXX
+    expect(packageJson.private).not.toBe(true);
+  });
 });
