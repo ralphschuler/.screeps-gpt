@@ -26,14 +26,17 @@ declare global {
   namespace NodeJS {
     interface Global {
       Profiler?: Profiler;
+      Diagnostics?: typeof import("@runtime/utils/Diagnostics").Diagnostics;
     }
   }
 
   interface Window {
     Profiler?: Profiler;
+    Diagnostics?: typeof import("@runtime/utils/Diagnostics").Diagnostics;
   }
 
   let Profiler: Profiler | undefined;
+  let Diagnostics: typeof import("@runtime/utils/Diagnostics").Diagnostics | undefined;
 }
 
 export {};
