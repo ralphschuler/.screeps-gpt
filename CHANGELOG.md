@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.89.5] - 2025-11-16
+
 ### Added
 
 - **Context-Aware Build Validation Thresholds**: Implemented context-aware MIN_SIZE validation to strengthen build safety
