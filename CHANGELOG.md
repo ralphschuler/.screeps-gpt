@@ -5,6 +5,16 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Fixed
+
+- **Task System Default State Inconsistency**: Aligned build-time default with runtime default and documentation
+  - Changed `buildProject.ts` default from `"false"` to `"true"` to match v0.32.0+ enabled-by-default design
+  - Updated build configuration comments to document default values explicitly
+  - Task system is now truly enabled by default at build time (matches runtime fallback behavior)
+  - Set `TASK_SYSTEM_ENABLED=false` at build time to disable if needed
+  - Added regression test to validate default task system state matches expected behavior
+  - Resolves confusion between code comments claiming "enabled by default" and actual disabled behavior
+
 ## [0.83.7] - 2025-11-15
 
 ### Fixed
