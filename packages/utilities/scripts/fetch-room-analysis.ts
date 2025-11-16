@@ -172,7 +172,24 @@ async function fetchOccupiedRooms(api: ScreepsAPI, shard: string): Promise<Occup
   `.trim();
 
   const data = await executeConsoleCommand(api, roomsCommand, shard);
-  const rooms = JSON.parse(data) as OccupiedRoom[];
+
+  // Defensive parsing: handle undefined/empty responses when bot has no game presence
+  let rooms: OccupiedRoom[];
+  try {
+    if (data === "undefined" || data === "" || data === "null") {
+      console.log("  ⚠ Console returned undefined/empty response, treating as no rooms");
+      rooms = [];
+    } else {
+      rooms = JSON.parse(data) as OccupiedRoom[];
+      if (!Array.isArray(rooms)) {
+        console.log("  ⚠ Console returned non-array, using empty array");
+        rooms = [];
+      }
+    }
+  } catch (parseError) {
+    console.error("  ❌ JSON parse failed, treating as no rooms:", parseError);
+    rooms = [];
+  }
 
   console.log(`  ✓ Found ${rooms.length} occupied room(s)`);
   return rooms;
@@ -280,8 +297,11 @@ async function getUsername(api: ScreepsAPI, shard: string): Promise<string> {
         return data.username;
       }
     }
-  } catch (error) {
-    console.error("  ⚠ Failed to get username from console, using fallback");
+  } catch (err) {
+    console.error(
+      "  ⚠ Failed to get username from console, using fallback:",
+      err instanceof Error ? err.message : String(err)
+    );
   }
 
   // Fallback: return unknown
@@ -308,6 +328,32 @@ async function performRoomAnalysis(): Promise<RoomAnalysis> {
   console.log(`Analyzing rooms on ${hostname} shard ${shard}...`);
 
   try {
+    // Check for bot presence first to avoid unnecessary API calls
+    const presenceCheck = await executeConsoleCommand(api, "Object.keys(Game.rooms).length", shard);
+    const visibleRooms = parseInt(presenceCheck, 10);
+
+    if (isNaN(visibleRooms) || visibleRooms === 0) {
+      console.log("  ⚠ Bot has no visible rooms - skipping detailed analysis");
+      console.log("  💡 Bot may have lost spawn or needs respawn");
+      console.log("  💡 Check bot spawn status: https://github.com/ralphschuler/.screeps-gpt/issues/826");
+      return {
+        fetchedAt: new Date().toISOString(),
+        shard,
+        occupiedRooms: [],
+        adjacentRooms: [],
+        summary: {
+          totalOccupied: 0,
+          totalAdjacent: 0,
+          hostileAdjacent: 0,
+          neutralAdjacent: 0,
+          friendlyAdjacent: 0,
+          noviceZones: 0
+        }
+      };
+    }
+
+    console.log(`  ℹ Bot has visibility of ${visibleRooms} room(s)`);
+
     // Get username
     const username = await getUsername(api, shard);
     console.log(`  Username: ${username}`);
@@ -316,7 +362,8 @@ async function performRoomAnalysis(): Promise<RoomAnalysis> {
     const occupiedRooms = await fetchOccupiedRooms(api, shard);
 
     if (occupiedRooms.length === 0) {
-      console.log("  ⚠ No occupied rooms found");
+      console.log("  ⚠ No occupied rooms found (bot may have no spawns)");
+      console.log("  💡 Check bot spawn status: https://github.com/ralphschuler/.screeps-gpt/issues/826");
       return {
         fetchedAt: new Date().toISOString(),
         shard,
