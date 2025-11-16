@@ -1,3 +1,24 @@
+/**
+ * Screeps Auto-Spawn Script
+ *
+ * IMPORTANT: This script uses undocumented Screeps API endpoints for respawn functionality.
+ *
+ * According to https://docs.screeps.com/auth-tokens.html, only documented endpoints should be used.
+ * However, the respawn functionality requires the following undocumented endpoints:
+ * - POST /api/user/respawn
+ * - GET /api/user/world-status
+ * - GET /api/user/world-start-room
+ * - GET /api/game/room-terrain (documented, but used for respawn)
+ * - POST /api/game/place-spawn
+ *
+ * These endpoints are necessary for automatic respawn and cannot be replaced with documented
+ * alternatives (console commands cannot trigger respawn or place spawns).
+ *
+ * This is a known limitation where the official documentation does not cover respawn automation,
+ * but the screeps-api library provides access to these endpoints through the raw API interface.
+ *
+ * If Screeps officially documents respawn endpoints in the future, this script should be updated.
+ */
 import process from "node:process";
 import { writeFile } from "node:fs/promises";
 import { ScreepsAPI } from "screeps-api";

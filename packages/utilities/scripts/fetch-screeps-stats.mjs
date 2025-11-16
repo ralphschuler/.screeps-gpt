@@ -1,6 +1,10 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import process from "node:process";
+import zlib from "node:zlib";
+import { promisify } from "node:util";
+
+const gunzip = promisify(zlib.gunzip);
 
 const token = process.env.SCREEPS_STATS_TOKEN || process.env.SCREEPS_TOKEN;
 if (!token) {
@@ -8,21 +12,13 @@ if (!token) {
   process.exit(1);
 }
 
-// Validate interval parameter
-const interval = process.env.SCREEPS_STATS_INTERVAL || "180"; // Default to 1 day
-const validIntervals = ["8", "180", "1440"];
-if (!validIntervals.includes(interval)) {
-  console.error(`Invalid SCREEPS_STATS_INTERVAL: ${interval}`);
-  console.error(`Valid values are: ${validIntervals.join(", ")} (8=1hr, 180=1day, 1440=1week)`);
-  process.exit(1);
-}
-
 const baseHost = process.env.SCREEPS_STATS_HOST || process.env.SCREEPS_HOST || "https://screeps.com";
 const basePath = process.env.SCREEPS_STATS_API || `${baseHost.replace(/\/$/, "")}/api`;
+const shard = process.env.SCREEPS_SHARD || "shard3";
 
-// Interval parameter is required by Screeps API:
-// 8 = 1 hour stats, 180 = 1 day stats (24 hours), 1440 = 1 week stats (7 days)
-const endpoint = `${basePath.replace(/\/$/, "")}/user/stats?interval=${interval}`;
+// Use documented GET /api/user/memory endpoint to fetch Memory.stats
+// This endpoint is officially documented in https://docs.screeps.com/auth-tokens.html
+const endpoint = `${basePath.replace(/\/$/, "")}/user/memory?path=stats&shard=${shard}`;
 
 const headers = {
   "X-Token": token,
@@ -72,7 +68,7 @@ async function main() {
 
       if (!res.ok) {
         const text = await res.text();
-        const error = new Error(`Failed to fetch Screeps stats (${res.status} ${res.statusText}): ${text}`);
+        const error = new Error(`Failed to fetch Memory.stats (${res.status} ${res.statusText}): ${text}`);
         error.status = res.status;
         error.statusText = res.statusText;
         error.responseBody = text;
@@ -85,7 +81,30 @@ async function main() {
     1000
   );
 
-  const payload = await response.json();
+  const responseData = await response.json();
+  
+  // The Memory API returns data in gzipped format prefixed with "gz:"
+  // We need to decompress it to get the actual stats
+  let stats;
+  if (responseData.data && typeof responseData.data === "string" && responseData.data.startsWith("gz:")) {
+    const compressed = Buffer.from(responseData.data.slice(3), "base64");
+    const decompressed = await gunzip(compressed);
+    stats = JSON.parse(decompressed.toString());
+  } else {
+    // Fallback for non-gzipped response
+    stats = responseData.data || responseData;
+  }
+
+  // Convert Memory.stats format to match the old /api/user/stats format
+  // Memory.stats contains current tick data, we'll format it similarly
+  const currentTick = Game?.time || Date.now();
+  const payload = {
+    ok: 1,
+    stats: {
+      [currentTick]: stats
+    }
+  };
+
   const fetchedAt = new Date().toISOString();
   const outputDir = resolve("reports", "screeps-stats");
   mkdirSync(outputDir, { recursive: true });
@@ -93,6 +112,8 @@ async function main() {
   const snapshot = {
     fetchedAt,
     endpoint,
+    source: "memory",
+    shard,
     payload
   };
   writeFileSync(filePath, JSON.stringify(snapshot, null, 2));
@@ -100,7 +121,7 @@ async function main() {
 }
 
 main().catch(error => {
-  console.error("Unexpected error fetching Screeps stats");
+  console.error("Unexpected error fetching Memory.stats");
   console.error(`Endpoint: ${endpoint}`);
 
   // Determine failure type for proper categorization
@@ -120,7 +141,8 @@ main().catch(error => {
       console.error("   - The token has proper permissions");
     } else if (error.status === 400 || error.status === 422) {
       console.error("\n❌ Invalid request parameters. Please verify:");
-      console.error(`   - Interval value is valid (8, 180, or 1440): current=${interval}`);
+      console.error("   - Shard value is correct");
+      console.error("   - Memory path 'stats' exists");
       console.error("   - API endpoint is correct");
     }
   } else {
@@ -141,13 +163,14 @@ main().catch(error => {
     const filePath = resolve(outputDir, "latest.json");
 
     const failureSnapshot = {
-      status: "api_unavailable",
+      status: "memory_unavailable",
       failureType,
       timestamp: new Date().toISOString(),
       error: failureDetails,
       attempted_endpoint: endpoint,
       httpStatus: error.status || null,
-      httpStatusText: error.statusText || null
+      httpStatusText: error.statusText || null,
+      source: "memory"
     };
 
     writeFileSync(filePath, JSON.stringify(failureSnapshot, null, 2));
