@@ -5,6 +5,14 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Fixed
+
+- **Send Push Notification Action Path**: Fixed composite action script path after monorepo migration
+  - Updated `.github/actions/send-push-notification/action.yml` to reference `packages/utilities/scripts/send-push-notification.ts`
+  - Deployment workflow notifications will now succeed instead of failing with ERR_MODULE_NOT_FOUND
+  - Resolves issue #835 (deployment notification failures)
+  - Part of systematic fix for incomplete monorepo migration paths (related to #774, #792, #815)
+
 ## [0.83.23] - 2025-11-16
 
 ### Fixed

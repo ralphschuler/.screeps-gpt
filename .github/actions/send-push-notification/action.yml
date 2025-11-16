@@ -35,4 +35,4 @@ runs:
         PUSH_PRIORITY: ${{ inputs.priority }}
       run: |
         cd ${{ github.action_path }}/../../..
-        npx tsx scripts/send-push-notification.ts
+        npx tsx packages/utilities/scripts/send-push-notification.ts
