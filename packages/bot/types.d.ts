@@ -2,6 +2,7 @@ import type { SystemReport } from "./packages/bot/src/shared/contracts";
 import type { ColonyManagerMemory } from "./packages/bot/src/runtime/planning/ColonyManager";
 import type { ProfilerMemory } from "./packages/bot/src/shared/profiler-types";
 import type { CommunicationVerbosity } from "./packages/bot/src/runtime/behavior/CreepCommunicationManager";
+import type { InfrastructureMemory } from "./packages/bot/src/runtime/infrastructure/InfrastructureManager";
 
 declare global {
   interface Memory {
@@ -68,6 +69,12 @@ declare global {
         remainingTime: number;
       }
     >;
+    /**
+     * Infrastructure management memory for road planning and traffic analysis.
+     * Tracks road planning intervals and traffic data for path optimization.
+     * @see src/runtime/infrastructure/InfrastructureManager.ts
+     */
+    infrastructure?: InfrastructureMemory;
     stats?: {
       time: number;
       lastTimeoutTick?: number;
