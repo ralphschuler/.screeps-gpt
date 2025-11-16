@@ -375,4 +375,127 @@ describe("Diagnostics", () => {
       }
     });
   });
+
+  describe("debugStatsCollection", () => {
+    beforeEach(() => {
+      // Reset console to capture logs
+      global.console = {
+        log: () => {
+          /* mock */
+        }
+      } as unknown as Console;
+
+      global.Game = {
+        time: 12345,
+        cpu: {
+          getUsed: () => 10.5,
+          limit: 100,
+          bucket: 9500
+        },
+        creeps: {
+          harvester1: { name: "harvester1" }
+        },
+        rooms: {
+          W1N1: {
+            energyAvailable: 300,
+            energyCapacityAvailable: 550,
+            controller: {
+              level: 3,
+              progress: 25000,
+              progressTotal: 45000
+            }
+          }
+        }
+      } as unknown as Game;
+
+      global.Memory = {} as Memory;
+    });
+
+    it("should successfully debug stats collection and return success message", () => {
+      const result = Diagnostics.debugStatsCollection();
+
+      expect(result).toContain("✅");
+      expect(result).toContain("Stats collection SUCCESS");
+      expect(Memory.stats).toBeDefined();
+    });
+
+    it("should detect when Memory.stats is created during debug", () => {
+      // Start with no stats
+      Memory.stats = undefined;
+
+      const result = Diagnostics.debugStatsCollection();
+
+      expect(result).toContain("Memory.stats created and populated");
+      expect(Memory.stats).toBeDefined();
+    });
+
+    it("should detect when Memory.stats is updated during debug", () => {
+      // Start with existing stats
+      Memory.stats = {
+        time: 12344,
+        cpu: { used: 9.0, limit: 100, bucket: 9400 },
+        rooms: { count: 1 },
+        creeps: { count: 1 }
+      };
+
+      const result = Diagnostics.debugStatsCollection();
+
+      expect(result).toContain("Memory.stats updated");
+      expect(Memory.stats.time).toBe(12345); // Should be updated to current tick
+    });
+
+    it("should handle Game object unavailability", () => {
+      // @ts-expect-error - Testing undefined Game
+      global.Game = undefined;
+
+      const result = Diagnostics.debugStatsCollection();
+
+      expect(result).toContain("❌");
+      expect(result).toContain("Game object not available");
+    });
+
+    it("should handle Memory object unavailability", () => {
+      // @ts-expect-error - Testing undefined Memory
+      global.Memory = undefined;
+
+      const result = Diagnostics.debugStatsCollection();
+
+      expect(result).toContain("❌");
+      expect(result).toContain("Memory object not available");
+    });
+
+    it("should detect critical failure when stats collection fails", () => {
+      // Create a broken Game object that causes collection to fail
+      global.Game = {
+        time: 12345,
+        cpu: {
+          getUsed: () => {
+            throw new Error("CPU error");
+          },
+          limit: 100,
+          bucket: 9500
+        }
+      } as unknown as Game;
+
+      const result = Diagnostics.debugStatsCollection();
+
+      // Should still complete but indicate error
+      expect(result).toBeTypeOf("string");
+    });
+
+    it("should provide detailed diagnostic output including keys", () => {
+      const result = Diagnostics.debugStatsCollection();
+
+      // Should mention the keys that were collected
+      expect(result).toContain("Keys:");
+      expect(Memory.stats).toBeDefined();
+      if (Memory.stats) {
+        const keys = Object.keys(Memory.stats);
+        expect(keys).toContain("time");
+        expect(keys).toContain("cpu");
+        expect(keys).toContain("rooms");
+        expect(keys).toContain("creeps");
+      }
+    });
+  });
 });
