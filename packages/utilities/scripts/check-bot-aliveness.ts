@@ -49,8 +49,13 @@ async function checkBotAliveness(): Promise<{
     const api = new ScreepsAPI({ token, hostname, protocol, port, path });
 
     // Check if we have spawns using the documented console API
-    const command =
-      "JSON.stringify({hasSpawns:!!Object.keys(Game.spawns).length,spawnCount:Object.keys(Game.spawns).length,rooms:Object.keys(Game.rooms).filter(r=>Game.rooms[r].controller?.my).length})";
+    const command = `
+      JSON.stringify({
+        hasSpawns: !!Object.keys(Game.spawns).length,
+        spawnCount: Object.keys(Game.spawns).length,
+        rooms: Object.keys(Game.rooms).filter(r => Game.rooms[r].controller?.my).length
+      })
+    `.trim();
     const response = (await api.console(command, shard)) as ConsoleResponse;
 
     if (!response.ok) {

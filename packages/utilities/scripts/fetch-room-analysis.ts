@@ -270,7 +270,8 @@ async function getUsername(api: ScreepsAPI, shard: string): Promise<string> {
   try {
     // Use the documented POST /api/user/console endpoint
     // This is officially documented in https://docs.screeps.com/auth-tokens.html
-    const command = "JSON.stringify({username:Game.spawns?Object.values(Game.spawns)[0]?.owner?.username:'unknown'})";
+    const command =
+      "JSON.stringify({username:Object.keys(Game.spawns).length?Object.values(Game.spawns)[0]?.owner?.username:'unknown'})";
     const response = (await api.console(command, shard)) as ConsoleResponse;
 
     if (response.ok && response.data) {

@@ -8,7 +8,7 @@
  * - POST /api/user/respawn
  * - GET /api/user/world-status
  * - GET /api/user/world-start-room
- * - GET /api/game/room-terrain (documented, but used for respawn)
+ * - GET /api/game/room-terrain
  * - POST /api/game/place-spawn
  *
  * These endpoints are necessary for automatic respawn and cannot be replaced with documented

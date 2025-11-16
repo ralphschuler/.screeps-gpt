@@ -87,9 +87,13 @@ async function main() {
   // We need to decompress it to get the actual stats
   let stats;
   if (responseData.data && typeof responseData.data === "string" && responseData.data.startsWith("gz:")) {
-    const compressed = Buffer.from(responseData.data.slice(3), "base64");
-    const decompressed = await gunzip(compressed);
-    stats = JSON.parse(decompressed.toString());
+    try {
+      const compressed = Buffer.from(responseData.data.slice(3), "base64");
+      const decompressed = await gunzip(compressed);
+      stats = JSON.parse(decompressed.toString());
+    } catch (error) {
+      throw new Error(`Failed to decompress Memory.stats: ${error.message}`);
+    }
   } else {
     // Fallback for non-gzipped response
     stats = responseData.data || responseData;
@@ -97,7 +101,7 @@ async function main() {
 
   // Convert Memory.stats format to match the old /api/user/stats format
   // Memory.stats contains current tick data, we'll format it similarly
-  const currentTick = Game?.time || Date.now();
+  const currentTick = "latest";
   const payload = {
     ok: 1,
     stats: {
