@@ -91,7 +91,7 @@ export class Kernel {
     // Extract infrastructure memory with proper type narrowing for ESLint strict rules
     let infrastructureMemory: InfrastructureMemory | undefined;
     if (typeof Memory !== "undefined") {
-      infrastructureMemory = Memory.infrastructure;
+      infrastructureMemory = Memory.infrastructure as InfrastructureMemory | undefined;
     }
 
     this.infrastructureManager =

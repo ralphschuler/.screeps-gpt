@@ -616,6 +616,43 @@ export class BehaviorController {
   }
 
   /**
+   * Calculates task-based creep demand when using the task system.
+   * Returns the number of additional creeps needed based on pending task count.
+   *
+   * @param totalCreeps - Current number of creeps
+   * @returns Number of additional creeps needed (0 if task system is disabled)
+   */
+  private calculateTaskBasedCreepDemand(totalCreeps: number): number {
+    if (!this.options.useTaskSystem) {
+      return 0;
+    }
+
+    const taskStats = this.taskManager.getTaskStats();
+    const pendingTasks = taskStats.pending;
+
+    // If no pending tasks, no additional demand
+    if (pendingTasks === 0) {
+      return 0;
+    }
+
+    // Assume each creep can handle ~3-5 tasks on average
+    const tasksPerCreep = 4;
+    const idealCreepCount = Math.ceil(pendingTasks / tasksPerCreep);
+
+    // Calculate additional creeps needed (capped at +3 per tick to prevent spawn spam)
+    const additionalNeeded = Math.max(0, Math.min(3, idealCreepCount - totalCreeps));
+
+    if (additionalNeeded > 0) {
+      this.logger.log?.(
+        `[BehaviorController] Task queue has ${pendingTasks} pending tasks, ` +
+          `${totalCreeps} creeps active. Requesting ${additionalNeeded} additional creeps.`
+      );
+    }
+
+    return additionalNeeded;
+  }
+
+  /**
    * Calculates dynamic role minimums based on room infrastructure and energy sources.
    *
    * When containers exist near energy sources, the system transitions to a more
@@ -625,11 +662,16 @@ export class BehaviorController {
    * - Repairers: 1 per room (maintain infrastructure)
    * - Regular harvesters: scaled based on source count and RCL
    *
+   * When using task system: Also increases harvester count based on pending task queue.
+   *
    * @param game - The game context
    * @returns Adjusted role minimums for the current room state
    */
   private calculateDynamicRoleMinimums(game: GameContext): Partial<Record<RoleName, number>> {
     const adjustedMinimums: Partial<Record<RoleName, number>> = {};
+
+    // Calculate total creeps for task-based demand
+    const totalCreeps = Object.keys(game.creeps).length;
 
     // Count sources with adjacent containers across all controlled rooms
     let totalSourcesWithContainers = 0;
