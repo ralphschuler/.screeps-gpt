@@ -6,7 +6,13 @@ export interface TaskManagerConfig {
   cpuThreshold?: number;
   logger?: Pick<Console, "log" | "warn">;
   pathfindingProvider?: "default" | "cartographer";
+  maxTasks?: number;
 }
+
+/**
+ * Maximum number of tasks to keep in the queue to prevent unbounded growth
+ */
+const DEFAULT_MAX_TASKS = 25;
 
 /**
  * Manages task creation, assignment, and execution for a room.
@@ -17,6 +23,7 @@ export class TaskManager {
   private tasks: Map<string, TaskRequest> = new Map();
   private nextTaskId = 0;
   private readonly cpuThreshold: number;
+  private readonly maxTasks: number;
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly pathfindingManager: PathfindingManager;
   private tickOffset = 0;
@@ -24,6 +31,7 @@ export class TaskManager {
 
   public constructor(config: TaskManagerConfig = {}) {
     this.cpuThreshold = config.cpuThreshold ?? 0.8;
+    this.maxTasks = config.maxTasks ?? DEFAULT_MAX_TASKS;
     this.logger = config.logger ?? console;
     this.pathfindingManager = new PathfindingManager({
       provider: config.pathfindingProvider ?? "default",
@@ -183,7 +191,7 @@ export class TaskManager {
       for (let i = 0; i < tasksNeeded; i++) {
         const task = this.configureTaskAction(new HarvestAction(source.id));
         const request = new TaskRequest(this.getNextTaskId(), task, TaskPriority.NORMAL, Game.time + 50);
-        this.tasks.set(request.id, request);
+        this.addTaskWithEviction(request);
       }
     }
   }
@@ -220,7 +228,7 @@ export class TaskManager {
       const task = this.configureTaskAction(new TransferAction(container.id, RESOURCE_ENERGY));
       // Higher priority than general transfer tasks to ensure harvesters deposit quickly
       const request = new TaskRequest(this.getNextTaskId(), task, TaskPriority.HIGH, Game.time + 50);
-      this.tasks.set(request.id, request);
+      this.addTaskWithEviction(request);
       containerTransferTasks.push(request);
     }
   }
@@ -243,7 +251,7 @@ export class TaskManager {
         const task = this.configureTaskAction(new BuildAction(site.id));
         const priority = site.structureType === STRUCTURE_SPAWN ? TaskPriority.HIGH : TaskPriority.NORMAL;
         const request = new TaskRequest(this.getNextTaskId(), task, priority, Game.time + 100);
-        this.tasks.set(request.id, request);
+        this.addTaskWithEviction(request);
       }
     }
   }
@@ -281,7 +289,7 @@ export class TaskManager {
         // Roads get normal priority, other structures get low priority
         const priority = structure.structureType === STRUCTURE_ROAD ? TaskPriority.NORMAL : TaskPriority.LOW;
         const request = new TaskRequest(this.getNextTaskId(), task, priority, Game.time + 50);
-        this.tasks.set(request.id, request);
+        this.addTaskWithEviction(request);
       }
     }
   }
@@ -300,7 +308,7 @@ export class TaskManager {
     for (let i = 0; i < tasksNeeded; i++) {
       const task = this.configureTaskAction(new UpgradeAction(controller.id));
       const request = new TaskRequest(this.getNextTaskId(), task, TaskPriority.NORMAL, Game.time + 100);
-      this.tasks.set(request.id, request);
+      this.addTaskWithEviction(request);
     }
   }
 
@@ -343,12 +351,12 @@ export class TaskManager {
       // Create withdraw task
       const withdrawTask = this.configureTaskAction(new WithdrawAction(source.id, RESOURCE_ENERGY));
       const withdrawRequest = new TaskRequest(this.getNextTaskId(), withdrawTask, TaskPriority.HIGH, Game.time + 50);
-      this.tasks.set(withdrawRequest.id, withdrawRequest);
+      this.addTaskWithEviction(withdrawRequest);
 
       // Create transfer task
       const transferTask = this.configureTaskAction(new TransferAction(target.id, RESOURCE_ENERGY));
       const transferRequest = new TaskRequest(this.getNextTaskId(), transferTask, TaskPriority.HIGH, Game.time + 50);
-      this.tasks.set(transferRequest.id, transferRequest);
+      this.addTaskWithEviction(transferRequest);
     }
   }
 
@@ -362,6 +370,86 @@ export class TaskManager {
 
   private getNextTaskId(): string {
     return `task-${Game.time}-${this.nextTaskId++}`;
+  }
+
+  /**
+   * Add a task to the queue with priority-based eviction and spam prevention.
+   * If the queue is full, drops the lowest priority PENDING task to make room.
+   * Prevents spam by limiting tasks of the same type to a maximum percentage of the queue.
+   * 
+   * @param request - The task request to add
+   * @returns true if task was added, false if it was rejected
+   */
+  private addTaskWithEviction(request: TaskRequest): boolean {
+    const taskType = request.task.constructor.name;
+    
+    // Check for task type spam - limit each task type to 40% of max queue size
+    const maxTasksPerType = Math.floor(this.maxTasks * 0.4);
+    const existingTasksOfType = Array.from(this.tasks.values()).filter(
+      t => t.task.constructor.name === taskType
+    );
+    
+    if (existingTasksOfType.length >= maxTasksPerType) {
+      // Too many tasks of this type already - check if we can evict one
+      const pendingTasksOfSameType = existingTasksOfType.filter(t => t.status === "PENDING");
+      
+      if (pendingTasksOfSameType.length > 0) {
+        // Find the lowest priority task of the same type
+        const lowestPrioritySameType = pendingTasksOfSameType.sort((a, b) => a.priority - b.priority)[0];
+        
+        // Only evict if the new task has higher priority
+        if (request.priority > lowestPrioritySameType.priority) {
+          this.tasks.delete(lowestPrioritySameType.id);
+          this.tasks.set(request.id, request);
+          this.logger.log?.(
+            `[TaskManager] Replaced ${taskType} task ${lowestPrioritySameType.id} (priority ${lowestPrioritySameType.priority}) ` +
+            `with ${request.id} (priority ${request.priority})`
+          );
+          return true;
+        }
+      }
+      
+      // Can't add - too many of this type and none can be evicted
+      return false;
+    }
+
+    // If queue has room, just add the task
+    if (this.tasks.size < this.maxTasks) {
+      this.tasks.set(request.id, request);
+      return true;
+    }
+
+    // Queue is full - find the lowest priority PENDING task (any type)
+    const pendingTasks = Array.from(this.tasks.values())
+      .filter(t => t.status === "PENDING")
+      .sort((a, b) => a.priority - b.priority); // Sort ascending (lowest priority first)
+
+    // If there are no pending tasks, we can't evict anything (all tasks are in progress)
+    if (pendingTasks.length === 0) {
+      this.logger.warn?.(
+        `[TaskManager] Cannot add task ${request.id} - queue full (${this.tasks.size}/${this.maxTasks}) with no PENDING tasks to evict`
+      );
+      return false;
+    }
+
+    const lowestPriorityTask = pendingTasks[0];
+
+    // Only evict if the new task has higher priority than the lowest priority task
+    if (request.priority <= lowestPriorityTask.priority) {
+      // New task is lower or equal priority - reject it
+      return false;
+    }
+
+    // Evict the lowest priority task and add the new one
+    this.tasks.delete(lowestPriorityTask.id);
+    this.tasks.set(request.id, request);
+    
+    this.logger.log?.(
+      `[TaskManager] Evicted task ${lowestPriorityTask.id} (priority ${lowestPriorityTask.priority}) ` +
+      `to make room for ${request.id} (priority ${request.priority})`
+    );
+    
+    return true;
   }
 
   /**
