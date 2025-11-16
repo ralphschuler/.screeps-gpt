@@ -376,39 +376,37 @@ export class TaskManager {
    * Add a task to the queue with priority-based eviction and spam prevention.
    * If the queue is full, drops the lowest priority PENDING task to make room.
    * Prevents spam by limiting tasks of the same type to a maximum percentage of the queue.
-   * 
+   *
    * @param request - The task request to add
    * @returns true if task was added, false if it was rejected
    */
   private addTaskWithEviction(request: TaskRequest): boolean {
     const taskType = request.task.constructor.name;
-    
+
     // Check for task type spam - limit each task type to 40% of max queue size
     const maxTasksPerType = Math.floor(this.maxTasks * 0.4);
-    const existingTasksOfType = Array.from(this.tasks.values()).filter(
-      t => t.task.constructor.name === taskType
-    );
-    
+    const existingTasksOfType = Array.from(this.tasks.values()).filter(t => t.task.constructor.name === taskType);
+
     if (existingTasksOfType.length >= maxTasksPerType) {
       // Too many tasks of this type already - check if we can evict one
       const pendingTasksOfSameType = existingTasksOfType.filter(t => t.status === "PENDING");
-      
+
       if (pendingTasksOfSameType.length > 0) {
         // Find the lowest priority task of the same type
         const lowestPrioritySameType = pendingTasksOfSameType.sort((a, b) => a.priority - b.priority)[0];
-        
+
         // Only evict if the new task has higher priority
         if (request.priority > lowestPrioritySameType.priority) {
           this.tasks.delete(lowestPrioritySameType.id);
           this.tasks.set(request.id, request);
           this.logger.log?.(
             `[TaskManager] Replaced ${taskType} task ${lowestPrioritySameType.id} (priority ${lowestPrioritySameType.priority}) ` +
-            `with ${request.id} (priority ${request.priority})`
+              `with ${request.id} (priority ${request.priority})`
           );
           return true;
         }
       }
-      
+
       // Can't add - too many of this type and none can be evicted
       return false;
     }
@@ -443,12 +441,12 @@ export class TaskManager {
     // Evict the lowest priority task and add the new one
     this.tasks.delete(lowestPriorityTask.id);
     this.tasks.set(request.id, request);
-    
+
     this.logger.log?.(
       `[TaskManager] Evicted task ${lowestPriorityTask.id} (priority ${lowestPriorityTask.priority}) ` +
-      `to make room for ${request.id} (priority ${request.priority})`
+        `to make room for ${request.id} (priority ${request.priority})`
     );
-    
+
     return true;
   }
 
