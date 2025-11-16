@@ -13,6 +13,7 @@ The Screeps monitoring system was broken, with bot snapshots containing only tim
 **Issue:** The code was using `ScreepsAPI.fromConfig(serverUrl)` which doesn't exist in the `screeps-api` library.
 
 **Evidence:**
+
 ```typescript
 // BROKEN CODE:
 const serverUrl = `${this.config.protocol}://${this.config.host}:${this.config.port}`;
@@ -26,6 +27,7 @@ const api = new ScreepsAPI({ token, hostname, protocol, port, path });
 ```
 
 **Fix Applied:**
+
 ```typescript
 // FIXED CODE:
 this.api = new ScreepsAPI({
@@ -40,6 +42,7 @@ this.api = new ScreepsAPI({
 ```
 
 Additionally, fixed the authentication flow:
+
 - Token authentication is configured in the constructor (no separate auth call needed)
 - Email/password authentication requires calling `await api.auth(email, password)`
 
@@ -50,6 +53,7 @@ Additionally, fixed the authentication flow:
 **Issue:** The Copilot monitoring agent was instructed to run scripts using incorrect paths (`scripts/` instead of `packages/utilities/scripts/`).
 
 **Evidence:**
+
 ```bash
 # BROKEN PATH:
 npx tsx scripts/fetch-resilient-telemetry.ts
@@ -59,6 +63,7 @@ The scripts are actually located in `packages/utilities/scripts/`, so this comma
 
 **Fix Applied:**
 Updated all script references in the prompt:
+
 - `scripts/fetch-resilient-telemetry.ts` → `packages/utilities/scripts/fetch-resilient-telemetry.ts`
 - `scripts/fetch-screeps-stats.mjs` → `packages/utilities/scripts/fetch-screeps-stats.mjs`
 - `scripts/check-bot-aliveness.ts` → `packages/utilities/scripts/check-bot-aliveness.ts`
@@ -107,12 +112,14 @@ graph TD
 ## Impact of Fixes
 
 ### Before Fix
+
 - ScreepsClient.connect() would throw error: "ScreepsAPI.fromConfig is not a function"
 - Copilot monitoring would fail to execute telemetry scripts (file not found)
 - No stats data collected → snapshots only had timestamps
 - Monitoring alerts would be generated incorrectly
 
 ### After Fix
+
 - ScreepsClient properly initializes API connection
 - Copilot can execute telemetry scripts successfully
 - Stats API or Console fallback populates data
@@ -124,17 +131,20 @@ graph TD
 To verify the fix works:
 
 1. **Run the monitoring workflow manually:**
+
    ```bash
    gh workflow run screeps-monitoring.yml
    ```
 
 2. **Check that stats are collected:**
+
    ```bash
    cat reports/screeps-stats/latest.json
    # Should contain: fetchedAt, endpoint, payload.stats
    ```
 
 3. **Verify bot snapshots have data:**
+
    ```bash
    cat reports/bot-snapshots/snapshot-$(date +%Y-%m-%d).json
    # Should contain: timestamp, cpu, rooms, creeps, spawns, tick
@@ -151,37 +161,41 @@ To verify the fix works:
 Based on the [node-screeps-api](https://github.com/screepers/node-screeps-api) repository:
 
 ### Initialization
+
 ```javascript
-const ScreepsAPI = require('screeps-api');
+const ScreepsAPI = require("screeps-api");
 const api = new ScreepsAPI({
-  token: 'xxx',
-  hostname: 'screeps.com',
-  protocol: 'https',
+  token: "xxx",
+  hostname: "screeps.com",
+  protocol: "https",
   port: 443,
-  path: '/'
+  path: "/"
 });
 ```
 
 ### Authentication
+
 ```javascript
 // Token auth (set in constructor)
-const api = new ScreepsAPI({ token: 'xxx' });
+const api = new ScreepsAPI({ token: "xxx" });
 
 // Email/password auth (requires auth call)
-const api = new ScreepsAPI({ email: 'user@example.com', password: 'pass' });
+const api = new ScreepsAPI({ email: "user@example.com", password: "pass" });
 await api.auth(email, password);
 ```
 
 ### Console Commands
+
 ```javascript
-const result = await api.console('Game.time', 'shard3');
+const result = await api.console("Game.time", "shard3");
 console.log(result.data); // Command output
 ```
 
 ### Memory Access
+
 ```javascript
-const memory = await api.memory.get('_shard_shard3', 'rooms.W1N1');
-await api.memory.set('_shard_shard3', 'config.autoSpawn', true);
+const memory = await api.memory.get("_shard_shard3", "rooms.W1N1");
+await api.memory.set("_shard_shard3", "config.autoSpawn", true);
 ```
 
 ## Files Modified
@@ -198,6 +212,7 @@ await api.memory.set('_shard_shard3', 'config.autoSpawn', true);
 ## Conclusion
 
 The monitoring system was broken due to two issues:
+
 1. Incorrect API initialization using non-existent method
 2. Wrong script paths preventing Copilot from executing telemetry collection
 
