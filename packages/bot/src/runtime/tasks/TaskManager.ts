@@ -288,8 +288,8 @@ export class TaskManager {
       }
 
       const task = this.configureTaskAction(new TransferAction(container.id, RESOURCE_ENERGY));
-      // Higher priority than general transfer tasks to ensure harvesters deposit quickly
-      const request = new TaskRequest(this.getNextTaskId(), task, TaskPriority.HIGH, Game.time + 50);
+      // NORMAL priority for container deposits (lower than CRITICAL spawn refills)
+      const request = new TaskRequest(this.getNextTaskId(), task, TaskPriority.NORMAL, Game.time + 50);
       this.addTaskWithEviction(request);
       containerTransferTasks.push(request);
     }
@@ -375,7 +375,7 @@ export class TaskManager {
   }
 
   private generateEnergyDistributionTasks(room: Room): void {
-    // Find structures needing energy
+    // Find structures needing energy (spawns and extensions - CRITICAL)
     const needEnergy: AnyStoreStructure[] = room.find(FIND_MY_STRUCTURES, {
       filter: (s: AnyStructure) => {
         if (s.structureType !== STRUCTURE_SPAWN && s.structureType !== STRUCTURE_EXTENSION) {
@@ -401,23 +401,44 @@ export class TaskManager {
 
     if (energySources.length === 0) return;
 
-    // Limit the number of distribution tasks
-    const existingDistributionTasks = Array.from(this.tasks.values()).filter(
-      t => t.status !== "COMPLETE" && (t.task instanceof WithdrawAction || t.task instanceof TransferAction)
-    );
+    // Count ONLY spawn/extension refill tasks (not container deposits or other transfers)
+    // This is critical to prevent spawn starvation when container tasks exist
+    const spawnExtensionIds = new Set(needEnergy.map(s => s.id));
+    const existingSpawnRefillTasks = Array.from(this.tasks.values()).filter(t => {
+      if (t.status === "COMPLETE") return false;
+      if (t.task instanceof TransferAction) {
+        return spawnExtensionIds.has(t.task.getTargetId());
+      }
+      return false;
+    });
 
-    if (existingDistributionTasks.length < 2) {
+    // Generate tasks for up to 3 structures needing energy per tick
+    // This ensures multiple spawns/extensions can be filled simultaneously
+    const structuresToFill = Math.min(3, needEnergy.length);
+    const tasksNeeded = structuresToFill - existingSpawnRefillTasks.length;
+
+    for (let i = 0; i < tasksNeeded && i < needEnergy.length; i++) {
       const source = energySources[0];
-      const target = needEnergy[0];
+      const target = needEnergy[i];
 
-      // Create withdraw task
+      // Create withdraw task with CRITICAL priority (higher than HIGH)
       const withdrawTask = this.configureTaskAction(new WithdrawAction(source.id, RESOURCE_ENERGY));
-      const withdrawRequest = new TaskRequest(this.getNextTaskId(), withdrawTask, TaskPriority.HIGH, Game.time + 50);
+      const withdrawRequest = new TaskRequest(
+        this.getNextTaskId(),
+        withdrawTask,
+        TaskPriority.CRITICAL,
+        Game.time + 50
+      );
       this.addTaskWithEviction(withdrawRequest);
 
-      // Create transfer task
+      // Create transfer task with CRITICAL priority
       const transferTask = this.configureTaskAction(new TransferAction(target.id, RESOURCE_ENERGY));
-      const transferRequest = new TaskRequest(this.getNextTaskId(), transferTask, TaskPriority.HIGH, Game.time + 50);
+      const transferRequest = new TaskRequest(
+        this.getNextTaskId(),
+        transferTask,
+        TaskPriority.CRITICAL,
+        Game.time + 50
+      );
       this.addTaskWithEviction(transferRequest);
     }
   }
