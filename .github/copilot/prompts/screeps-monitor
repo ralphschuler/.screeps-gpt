@@ -18,7 +18,7 @@ Available environment variables:
 - `RUN_URL` - Workflow run URL (${RUN_URL})
 
 Available tools:
-- `scripts/fetch-screeps-stats.mjs` - Node.js script to fetch user stats from Screeps API
+- `packages/utilities/scripts/fetch-screeps-stats.mjs` - Node.js script to fetch user stats from Screeps API
 
 ## MISSION: COMPREHENSIVE AUTONOMOUS MONITORING
 
@@ -42,25 +42,25 @@ This is the "strategic brain" of the project, combining autonomous strategic ana
 
 **Execute the resilient telemetry fetch script:**
 ```bash
-npx tsx scripts/fetch-resilient-telemetry.ts
+npx tsx packages/utilities/scripts/fetch-resilient-telemetry.ts
 ```
 
 **Resilient Multi-Source Strategy:**
 
 This script implements infrastructure resilience by trying multiple telemetry sources:
 
-0. **Bot Aliveness Check** (`scripts/check-bot-aliveness.ts`)
+0. **Bot Aliveness Check** (`packages/utilities/scripts/check-bot-aliveness.ts`)
    - Checks bot status using `/api/user/world-status` endpoint
    - Determines if bot is active, needs respawn, or status is unknown
    - **CRITICAL**: This is the PRIMARY indicator of bot lifecycle health
    - Independent of Memory.stats availability
 
-1. **Primary Source: Stats API** (`scripts/fetch-screeps-stats.mjs`)
+1. **Primary Source: Stats API** (`packages/utilities/scripts/fetch-screeps-stats.mjs`)
    - Fetches historical stats from `/api/user/stats` endpoint
    - Provides comprehensive time-series data
    - Uses `SCREEPS_STATS_TOKEN` or `SCREEPS_TOKEN`
 
-2. **Fallback Source: Console Telemetry** (`scripts/fetch-console-telemetry.ts`)
+2. **Fallback Source: Console Telemetry** (`packages/utilities/scripts/fetch-console-telemetry.ts`)
    - Executes console commands for direct bot telemetry
    - Provides real-time operational data when Stats API fails
    - Uses `SCREEPS_TOKEN` for console access
