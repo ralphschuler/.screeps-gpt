@@ -36,17 +36,26 @@ export class ScreepsClient {
     // Dynamic import to avoid issues with ESM
     const { ScreepsAPI } = await import("screeps-api");
 
-    // Build server URL
-    const serverUrl = `${this.config.protocol}://${this.config.host}:${this.config.port}`;
-
-    this.api = await ScreepsAPI.fromConfig(serverUrl);
-
-    if (this.config.token) {
-      this.api.auth(this.config.token);
-    } else if (this.config.email && this.config.password) {
-      await this.api.auth(this.config.email, this.config.password);
-    } else {
+    // Check for authentication credentials
+    if (!this.config.token && !(this.config.email && this.config.password)) {
       throw new Error("Authentication credentials required (token or email/password)");
+    }
+
+    // Initialize the API with configuration
+    this.api = new ScreepsAPI({
+      token: this.config.token,
+      email: this.config.email,
+      password: this.config.password,
+      hostname: this.config.host,
+      protocol: this.config.protocol,
+      port: this.config.port,
+      path: "/"
+    });
+
+    // For email/password authentication, call auth() to perform login
+    // For token authentication, the token is already set in the constructor
+    if (!this.config.token && this.config.email && this.config.password) {
+      await this.api.auth(this.config.email, this.config.password);
     }
   }
 
