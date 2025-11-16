@@ -4,6 +4,7 @@ import process from "node:process";
 import { ScreepsAPI } from "screeps-api";
 
 interface ConsoleTelemetry {
+  tick: number;
   cpu: {
     used: number;
     limit: number;
@@ -114,12 +115,14 @@ async function fetchConsoleTelemetry(): Promise<ConsoleTelemetry> {
   console.log(`Using chunked queries to avoid expression size limits`);
 
   try {
-    // Query 1: CPU metrics
-    const cpuCommand = `JSON.stringify({used:Game.cpu.getUsed(),limit:Game.cpu.limit,bucket:Game.cpu.bucket})`;
-    validateExpressionSize(cpuCommand);
-    console.log(`  Fetching CPU metrics...`);
-    const cpuData = await executeConsoleCommand(api, cpuCommand, shard);
-    const cpu = JSON.parse(cpuData);
+    // Query 1: Basic game state (tick, CPU)
+    const basicCommand = `JSON.stringify({tick:Game.time,cpu:{used:Game.cpu.getUsed(),limit:Game.cpu.limit,bucket:Game.cpu.bucket}})`;
+    validateExpressionSize(basicCommand);
+    console.log(`  Fetching tick and CPU metrics...`);
+    const basicData = await executeConsoleCommand(api, basicCommand, shard);
+    const basic = JSON.parse(basicData);
+    const tick = basic.tick;
+    const cpu = basic.cpu;
 
     // Query 2: GCL metrics
     const gclCommand = `JSON.stringify({level:Game.gcl.level,progress:Game.gcl.progress,progressTotal:Game.gcl.progressTotal})`;
@@ -151,6 +154,7 @@ async function fetchConsoleTelemetry(): Promise<ConsoleTelemetry> {
 
     // Combine all results
     const telemetry: ConsoleTelemetry = {
+      tick,
       cpu,
       gcl,
       rooms,
@@ -159,6 +163,7 @@ async function fetchConsoleTelemetry(): Promise<ConsoleTelemetry> {
     };
 
     console.log(`✓ Console telemetry collected successfully (5 chunked queries)`);
+    console.log(`  Tick: ${telemetry.tick}`);
     console.log(`  CPU: ${telemetry.cpu.used.toFixed(2)}/${telemetry.cpu.limit} (bucket: ${telemetry.cpu.bucket})`);
     console.log(`  GCL: ${telemetry.gcl.level} (${telemetry.gcl.progress}/${telemetry.gcl.progressTotal})`);
     console.log(`  Rooms: ${telemetry.rooms.length} controlled`);
@@ -193,11 +198,11 @@ function convertToStatsFormat(telemetry: ConsoleTelemetry): {
   source: string;
   payload: {
     ok: number;
-    stats: Record<string, { cpu: { used: number; limit: number }; resources: { energy: number } }>;
+    stats: Record<string, { tick: number; cpu: { used: number; limit: number }; resources: { energy: number } }>;
   };
 } {
-  // Create a single tick entry with current timestamp
-  const tick = Date.now().toString();
+  // Use the actual game tick instead of timestamp
+  const tick = telemetry.tick.toString();
 
   return {
     fetchedAt: new Date().toISOString(),
@@ -207,6 +212,7 @@ function convertToStatsFormat(telemetry: ConsoleTelemetry): {
       ok: 1,
       stats: {
         [tick]: {
+          tick: telemetry.tick,
           cpu: {
             used: telemetry.cpu.used,
             limit: telemetry.cpu.limit

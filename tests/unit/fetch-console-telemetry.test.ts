@@ -33,7 +33,7 @@ describe("Console Telemetry with Chunked Queries", () => {
       mockConsoleMethod
         .mockResolvedValueOnce({
           ok: 1,
-          data: JSON.stringify({ used: 50, limit: 100, bucket: 8000 })
+          data: JSON.stringify({ tick: 12345, cpu: { used: 50, limit: 100, bucket: 8000 } })
         })
         .mockResolvedValueOnce({
           ok: 1,
@@ -74,6 +74,7 @@ describe("Console Telemetry with Chunked Queries", () => {
 
       // Verify the result structure
       expect(result).toEqual({
+        tick: 12345,
         cpu: { used: 50, limit: 100, bucket: 8000 },
         gcl: { level: 3, progress: 15000, progressTotal: 100000 },
         rooms: [{ name: "W1N1", rcl: 5, energy: 300, energyCapacity: 550, storage: 50000 }],
@@ -85,7 +86,10 @@ describe("Console Telemetry with Chunked Queries", () => {
     it("should successfully collect telemetry with minimal data", async () => {
       // Mock minimal responses
       mockConsoleMethod
-        .mockResolvedValueOnce({ ok: 1, data: JSON.stringify({ used: 10, limit: 20, bucket: 5000 }) })
+        .mockResolvedValueOnce({
+          ok: 1,
+          data: JSON.stringify({ tick: 1000, cpu: { used: 10, limit: 20, bucket: 5000 } })
+        })
         .mockResolvedValueOnce({ ok: 1, data: JSON.stringify({ level: 1, progress: 0, progressTotal: 1000 }) })
         .mockResolvedValueOnce({ ok: 1, data: JSON.stringify([]) })
         .mockResolvedValueOnce({ ok: 1, data: JSON.stringify({ total: 0, byRole: {} }) })
@@ -94,6 +98,7 @@ describe("Console Telemetry with Chunked Queries", () => {
       const { fetchConsoleTelemetry } = await import("../../packages/utilities/scripts/fetch-console-telemetry");
       const result = await fetchConsoleTelemetry();
 
+      expect(result.tick).toBe(1000);
       expect(result.cpu).toEqual({ used: 10, limit: 20, bucket: 5000 });
       expect(result.rooms).toEqual([]);
       expect(result.creeps.total).toBe(0);
@@ -110,7 +115,10 @@ describe("Console Telemetry with Chunked Queries", () => {
       }));
 
       mockConsoleMethod
-        .mockResolvedValueOnce({ ok: 1, data: JSON.stringify({ used: 50, limit: 100, bucket: 8000 }) })
+        .mockResolvedValueOnce({
+          ok: 1,
+          data: JSON.stringify({ tick: 5000, cpu: { used: 50, limit: 100, bucket: 8000 } })
+        })
         .mockResolvedValueOnce({ ok: 1, data: JSON.stringify({ level: 3, progress: 15000, progressTotal: 100000 }) })
         .mockResolvedValueOnce({ ok: 1, data: JSON.stringify(manyRooms) })
         .mockResolvedValueOnce({ ok: 1, data: JSON.stringify({ total: 50, byRole: { harvester: 10 } }) })
@@ -119,6 +127,7 @@ describe("Console Telemetry with Chunked Queries", () => {
       const { fetchConsoleTelemetry } = await import("../../packages/utilities/scripts/fetch-console-telemetry");
       const result = await fetchConsoleTelemetry();
 
+      expect(result.tick).toBe(5000);
       expect(result.rooms).toHaveLength(10);
       expect(result.creeps.total).toBe(50);
     });
@@ -128,7 +137,10 @@ describe("Console Telemetry with Chunked Queries", () => {
     it("should retry failed queries up to 3 times", async () => {
       // First query succeeds, second fails twice then succeeds
       mockConsoleMethod
-        .mockResolvedValueOnce({ ok: 1, data: JSON.stringify({ used: 50, limit: 100, bucket: 8000 }) })
+        .mockResolvedValueOnce({
+          ok: 1,
+          data: JSON.stringify({ tick: 2000, cpu: { used: 50, limit: 100, bucket: 8000 } })
+        })
         .mockRejectedValueOnce(new Error("Network error"))
         .mockRejectedValueOnce(new Error("Network error"))
         .mockResolvedValueOnce({ ok: 1, data: JSON.stringify({ level: 3, progress: 15000, progressTotal: 100000 }) })
@@ -170,7 +182,10 @@ describe("Console Telemetry with Chunked Queries", () => {
     it("should validate expression size before sending", async () => {
       // All queries should pass validation
       mockConsoleMethod
-        .mockResolvedValueOnce({ ok: 1, data: JSON.stringify({ used: 50, limit: 100, bucket: 8000 }) })
+        .mockResolvedValueOnce({
+          ok: 1,
+          data: JSON.stringify({ tick: 3000, cpu: { used: 50, limit: 100, bucket: 8000 } })
+        })
         .mockResolvedValueOnce({ ok: 1, data: JSON.stringify({ level: 3, progress: 15000, progressTotal: 100000 }) })
         .mockResolvedValueOnce({ ok: 1, data: JSON.stringify([]) })
         .mockResolvedValueOnce({ ok: 1, data: JSON.stringify({ total: 0, byRole: {} }) })
@@ -181,6 +196,7 @@ describe("Console Telemetry with Chunked Queries", () => {
 
       // Should succeed without validation errors
       expect(result).toBeDefined();
+      expect(result.tick).toBe(3000);
       expect(mockConsoleMethod).toHaveBeenCalledTimes(5);
     });
   });

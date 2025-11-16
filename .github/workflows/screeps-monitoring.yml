@@ -57,6 +57,21 @@ jobs:
           timeout: "40"
           verbose: "true"
 
+      - name: Collect PTR stats with resilient telemetry
+        id: collect_ptr_stats
+        if: success()
+        env:
+          SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
+          SCREEPS_HOST: ${{ secrets.SCREEPS_HOST }}
+          SCREEPS_SHARD: ${{ secrets.SCREEPS_SHARD }}
+          SCREEPS_PORT: ${{ secrets.SCREEPS_PORT }}
+          SCREEPS_PROTOCOL: ${{ secrets.SCREEPS_PROTOCOL }}
+        run: |
+          npx tsx packages/utilities/scripts/collect-ptr-stats.ts || \
+            echo "::warning::PTR stats collection failed (all sources \
+            unavailable)"
+        continue-on-error: true
+
       - name: Collect bot state snapshot
         id: collect_snapshot
         if: success()
@@ -70,6 +85,14 @@ jobs:
           npx tsx packages/utilities/scripts/collect-bot-snapshot.ts || \
             echo "::warning::Snapshot collection failed (stats may not \
             be available)"
+        continue-on-error: true
+
+      - name: Validate telemetry health
+        id: telemetry_health
+        if: always()
+        run: |
+          npx tsx packages/utilities/scripts/telemetry-health-check.ts || \
+            echo "::warning::Telemetry health check indicates issues"
         continue-on-error: true
 
       - name: Generate analytics data from snapshots
@@ -137,6 +160,7 @@ jobs:
           name: screeps-monitor-report-${{ github.run_id }}
           path: |
             reports/copilot/screeps-monitor-${{ github.run_id }}.log
+            reports/copilot/ptr-stats.json
             reports/profiler/latest.json
             reports/screeps-stats/latest.json
             reports/bot-snapshots/*.json
