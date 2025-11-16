@@ -1,3 +1,25 @@
 {
-  "timestamp": "2025-11-16T21:51:26.492Z"
+  "timestamp": "2025-11-16T22:06:19.967Z",
+  "cpu": {
+    "used": 0,
+    "limit": 0,
+    "bucket": 0
+  },
+  "rooms": {
+    "count": {
+      "rcl": 0,
+      "energy": 0,
+      "energyCapacity": 0
+    },
+    "E54N39": {
+      "rcl": 3,
+      "energy": 450,
+      "energyCapacity": 800,
+      "controllerProgress": 113532,
+      "controllerProgressTotal": 135000
+    }
+  },
+  "creeps": {
+    "total": 0
+  }
 }

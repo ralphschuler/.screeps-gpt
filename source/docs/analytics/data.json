@@ -1,5 +1,5 @@
 {
-  "generated": "2025-11-16T21:51:28.235Z",
+  "generated": "2025-11-16T22:06:21.151Z",
   "period": "30 days",
   "dataPoints": [
     {
@@ -30,7 +30,13 @@
       "date": "2025-11-15"
     },
     {
-      "date": "2025-11-16"
+      "date": "2025-11-16",
+      "cpuUsed": 0,
+      "cpuBucket": 0,
+      "creepCount": 0,
+      "roomCount": 2,
+      "totalEnergy": 450,
+      "averageRcl": 1.5
     }
   ]
 }
