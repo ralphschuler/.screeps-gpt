@@ -170,12 +170,17 @@ export class TaskManager {
     const sources = room.find(FIND_SOURCES_ACTIVE);
 
     for (const source of sources) {
-      // Check if there's already a harvest task for this source
-      const existingTask = Array.from(this.tasks.values()).find(
-        t => t.status !== "COMPLETE" && t.task instanceof HarvestAction
-      );
+      // Count existing harvest tasks for this specific source
+      const existingTasks = Array.from(this.tasks.values()).filter(t => {
+        if (t.status === "COMPLETE" || !(t.task instanceof HarvestAction)) {
+          return false;
+        }
+        return t.task.getSourceId() === source.id;
+      });
 
-      if (!existingTask) {
+      // Generate up to 2 harvest tasks per source
+      const tasksNeeded = 2 - existingTasks.length;
+      for (let i = 0; i < tasksNeeded; i++) {
         const task = this.configureTaskAction(new HarvestAction(source.id));
         const request = new TaskRequest(this.getNextTaskId(), task, TaskPriority.NORMAL, Game.time + 50);
         this.tasks.set(request.id, request);
