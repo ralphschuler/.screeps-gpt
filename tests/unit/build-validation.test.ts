@@ -142,7 +142,7 @@ describe.sequential("Build Validation Enhancements", () => {
 
   it("should detect missing loop export in main.js", async () => {
     const noLoopPath = resolve(TEST_TEMP_DIR, "no-loop.js");
-    // Create a file without loop export but above size threshold
+    // Create a file without loop export but above 50KB threshold
     const content = `
       // Valid JavaScript without loop export
       var module = {};
@@ -151,7 +151,7 @@ describe.sequential("Build Validation Enhancements", () => {
         console.log("This is not the loop function");
       }
       module.exports = { someFunction };
-    `.padEnd(600, " ");
+    `.padEnd(51000, " ");
 
     await writeFile(noLoopPath, content);
 
@@ -168,7 +168,7 @@ describe.sequential("Build Validation Enhancements", () => {
       exports.loop = function() {
         console.log("tick");
       };
-    `.padEnd(600, " ");
+    `.padEnd(51000, " ");
 
     await writeFile(path, content);
     await validateFile(path, "exports-loop.js", true);
@@ -183,7 +183,7 @@ describe.sequential("Build Validation Enhancements", () => {
         console.log("tick");
       }
       export { loop };
-    `.padEnd(600, " ");
+    `.padEnd(51000, " ");
 
     await writeFile(path, content);
     await validateFile(path, "export-loop.js", true);
@@ -197,7 +197,7 @@ describe.sequential("Build Validation Enhancements", () => {
       export function loop() {
         console.log("tick");
       }
-    `.padEnd(600, " ");
+    `.padEnd(51000, " ");
 
     await writeFile(path, content);
     await validateFile(path, "export-func-loop.js", true);
@@ -219,7 +219,7 @@ describe.sequential("Build Validation Enhancements", () => {
         console.log("tick");
       };
       module.exports = main_exports;
-    `.padEnd(800, " ");
+    `.padEnd(51000, " ");
 
     await writeFile(path, content);
     await validateFile(path, "esbuild-loop.js", true);
@@ -234,10 +234,72 @@ describe.sequential("Build Validation Enhancements", () => {
         console.log("tick");
       };
       module.exports = { loop: loop };
-    `.padEnd(600, " ");
+    `.padEnd(51000, " ");
 
     await writeFile(path, content);
     await validateFile(path, "module-exports-loop.js", true);
     expect(true).toBe(true);
+  });
+
+  // Context-aware threshold tests (50KB for main.js, 500B for modules)
+  it("should reject suspiciously small main.js (< 50KB)", async () => {
+    const smallMainPath = resolve(TEST_TEMP_DIR, "small-main.js");
+    // Create 1KB main.js with loop export but below 50KB threshold
+    const content = `
+      "use strict";
+      var exports = {};
+      exports.loop = function() {
+        console.log("tick");
+      };
+    `.padEnd(1000, " ");
+
+    await writeFile(smallMainPath, content);
+
+    await expect(async () => {
+      await validateFile(smallMainPath, "small-main.js", true);
+    }).rejects.toThrow("suspiciously small");
+  });
+
+  it("should accept large main.js (> 50KB)", async () => {
+    const largeMainPath = resolve(TEST_TEMP_DIR, "large-main.js");
+    // Create 60KB main.js with loop export
+    const content = `
+      "use strict";
+      var exports = {};
+      exports.loop = function() {
+        console.log("tick");
+      };
+    `.padEnd(60000, " ");
+
+    await writeFile(largeMainPath, content);
+    await validateFile(largeMainPath, "large-main.js", true);
+    expect(true).toBe(true);
+  });
+
+  it("should accept small modules (> 500B)", async () => {
+    const smallModulePath = resolve(TEST_TEMP_DIR, "small-module.js");
+    // Create 600B module (no loop check)
+    const content = `
+      "use strict";
+      exports.someFunction = function() {
+        console.log("module function");
+      };
+    `.padEnd(600, " ");
+
+    await writeFile(smallModulePath, content);
+    await validateFile(smallModulePath, "small-module.js", false);
+    expect(true).toBe(true);
+  });
+
+  it("should reject tiny modules (< 500B)", async () => {
+    const tinyModulePath = resolve(TEST_TEMP_DIR, "tiny-module.js");
+    // Create 100B module (below 500B threshold)
+    const content = "// Tiny module\n".padEnd(100, " ");
+
+    await writeFile(tinyModulePath, content);
+
+    await expect(async () => {
+      await validateFile(tinyModulePath, "tiny-module.js", false);
+    }).rejects.toThrow("suspiciously small");
   });
 });

@@ -225,9 +225,10 @@ export async function validateFile(filePath: string, fileName: string, checkLoop
     throw new Error(`Build validation failed: ${fileName} is empty`);
   }
 
-  // Verify minimum expected size (500 bytes to catch broken builds)
-  // This is low enough to allow small type-only modules but high enough to catch truly broken builds
-  const MIN_SIZE = 500;
+  // Context-aware minimum size validation
+  // - 50KB for main.js (checkLoopExport=true): Ensures substantive bundle with kernel + runtime
+  // - 500B for modules (checkLoopExport=false): Allows small type-only modules
+  const MIN_SIZE = checkLoopExport ? 50000 : 500;
   if (stats.size < MIN_SIZE) {
     throw new Error(
       `Build validation failed: ${fileName} is suspiciously small (${stats.size} bytes, expected >${MIN_SIZE})`

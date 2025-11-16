@@ -5,6 +5,16 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Added
+
+- **Context-Aware Build Validation Thresholds**: Implemented context-aware MIN_SIZE validation to strengthen build safety
+  - Monolithic `main.js` now requires 50KB minimum (ensures kernel + runtime components present)
+  - Modular components maintain 500B minimum (preserves flexibility for type-only exports)
+  - Validation leverages existing `checkLoopExport` parameter to distinguish file types
+  - Added regression tests validating both threshold scenarios
+  - Prevents broken bundler output from deploying to production
+  - Resolves issue ralphschuler/.screeps-gpt#731 (context-aware MIN_SIZE validation)
+
 ## [0.83.23] - 2025-11-16
 
 ### Fixed
