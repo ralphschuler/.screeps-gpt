@@ -7,8 +7,7 @@ import {
   UpgradeAction,
   WithdrawAction,
   PickupAction,
-  RecycleAction,
-  LinkTransferAction
+  RecycleAction
 } from "./TaskAction";
 import { PathfindingManager } from "@runtime/pathfinding";
 
@@ -629,7 +628,7 @@ export class TaskManager {
 
     for (const creep of creepsToRecycle) {
       // Check if creep already has a recycle task
-      if (creep.memory.taskId) {
+      if (creep.memory?.taskId) {
         const existingTask = this.tasks.get(creep.memory.taskId);
         if (existingTask && existingTask.task instanceof RecycleAction) {
           continue; // Already has recycle task
