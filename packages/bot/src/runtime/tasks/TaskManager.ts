@@ -21,7 +21,7 @@ export interface TaskManagerConfig {
 /**
  * Maximum number of tasks to keep in the queue to prevent unbounded growth
  */
-const DEFAULT_MAX_TASKS = 25;
+const DEFAULT_MAX_TASKS = 100;
 
 /**
  * Maximum percentage of queue that can be occupied by a single task type
@@ -92,6 +92,28 @@ export class TaskManager {
 
     // Cleanup expired tasks
     this.cleanupExpiredTasks();
+  }
+
+  /**
+   * Get task queue statistics for monitoring and adaptive spawning
+   */
+  public getTaskStats(): { total: number; pending: number; assigned: number; complete: number } {
+    let pending = 0;
+    let assigned = 0;
+    let complete = 0;
+
+    for (const task of this.tasks.values()) {
+      if (task.status === "PENDING") pending++;
+      else if (task.status === "INPROCESS") assigned++;
+      else if (task.status === "COMPLETE") complete++;
+    }
+
+    return {
+      total: this.tasks.size,
+      pending,
+      assigned,
+      complete
+    };
   }
 
   /**
@@ -621,7 +643,13 @@ export class TaskManager {
       // Generate 1 pickup task per resource
       if (existingTasks.length === 0) {
         const task = this.configureTaskAction(new PickupAction(resource.id));
-        const priority = resource.resourceType === RESOURCE_ENERGY ? TaskPriority.NORMAL : TaskPriority.LOW;
+        // Prioritize large energy drops (>500) as HIGH priority to prevent waste
+        // Regular energy drops get NORMAL priority
+        // Other resources get LOW priority
+        let priority = TaskPriority.LOW;
+        if (resource.resourceType === RESOURCE_ENERGY) {
+          priority = resource.amount > 500 ? TaskPriority.HIGH : TaskPriority.NORMAL;
+        }
         const request = new TaskRequest(this.getNextTaskId(), task, priority, Game.time + 20);
         this.addTaskWithEviction(request);
       }
