@@ -46,7 +46,7 @@ jobs:
 
       - name: Install documentation dependencies
         working-directory: packages/docs
-        run: yarn install --frozen-lockfile
+        run: bun install --no-optional
 
       - name: Clone Hexo Cactus theme
         working-directory: packages/docs/themes
