@@ -61,7 +61,7 @@ export class AnalyticsReporter {
    */
   public queueReport(stats: unknown, metadata?: StatsReport["metadata"]): void {
     const report: StatsReport = {
-      timestamp: Date.now(),
+      timestamp: Game.time,
       stats,
       metadata
     };
@@ -152,7 +152,7 @@ export class AnalyticsReporter {
   private compressPayload(reports: StatsReport[]): { compressed: boolean; data: string } {
     // Simple compression: remove duplicated fields and use shorter keys
     const compressed = {
-      ts: Date.now(),
+      ts: Game.time,
       r: reports.map(r => ({
         t: r.timestamp,
         s: r.stats,
