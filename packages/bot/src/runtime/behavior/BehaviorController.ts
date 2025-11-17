@@ -1930,6 +1930,7 @@ function runRepairer(creep: ManagedCreep): string {
 
   // Priority 1: Roads and containers (infrastructure)
   // Roads are repaired when below 50% health to prevent decay while not over-prioritizing maintenance
+  // Containers are repaired when below 50% health (critical threshold to prevent decay)
   const infrastructureTargets = creep.room.find(FIND_STRUCTURES, {
     filter: (structure: AnyStructure) => {
       if (!("hits" in structure) || typeof structure.hits !== "number") {
@@ -1941,14 +1942,47 @@ function runRepairer(creep: ManagedCreep): string {
         return structure.hits < structure.hitsMax * 0.5;
       }
 
-      // Containers can be repaired more liberally
+      // Prioritize containers when below 50% health (Phase 1 requirement)
       if (structure.structureType === STRUCTURE_CONTAINER) {
-        return structure.hits < structure.hitsMax;
+        return structure.hits < structure.hitsMax * 0.5;
       }
 
       return false;
     }
   }) as Structure[];
+
+  // Sort infrastructure targets to prioritize source containers
+  // Source containers (near sources) are more critical than controller containers
+  if (infrastructureTargets.length > 1) {
+    const sources = creep.room.find(FIND_SOURCES) as Source[];
+    infrastructureTargets.sort((a, b) => {
+      const isAContainer = a.structureType === STRUCTURE_CONTAINER;
+      const isBContainer = b.structureType === STRUCTURE_CONTAINER;
+
+      // Both are containers - prioritize by proximity to sources
+      if (isAContainer && isBContainer) {
+        const aNearSource = sources.some(s => s.pos.inRangeTo(a.pos, 2));
+        const bNearSource = sources.some(s => s.pos.inRangeTo(b.pos, 2));
+
+        if (aNearSource && !bNearSource) return -1;
+        if (!aNearSource && bNearSource) return 1;
+
+        // Both near or both far from sources - use distance to creep
+        const aDist = creep.pos.getRangeTo(a.pos);
+        const bDist = creep.pos.getRangeTo(b.pos);
+        return aDist - bDist;
+      }
+
+      // Containers prioritized over roads
+      if (isAContainer && !isBContainer) return -1;
+      if (!isAContainer && isBContainer) return 1;
+
+      // Both are same type - use distance
+      const aDist = creep.pos.getRangeTo(a.pos);
+      const bDist = creep.pos.getRangeTo(b.pos);
+      return aDist - bDist;
+    });
+  }
 
   if (infrastructureTargets.length > 0) {
     const target = creep.pos.findClosestByPath(infrastructureTargets) ?? infrastructureTargets[0];
