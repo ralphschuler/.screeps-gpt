@@ -1968,7 +1968,9 @@ function runRepairer(creep: ManagedCreep): string {
         if (!aNearSource && bNearSource) return 1;
 
         // Both near or both far from sources - use distance to creep
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
         const aDist = creep.pos.getRangeTo(a.pos);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
         const bDist = creep.pos.getRangeTo(b.pos);
         return aDist - bDist;
       }
@@ -1978,7 +1980,9 @@ function runRepairer(creep: ManagedCreep): string {
       if (!isAContainer && isBContainer) return 1;
 
       // Both are same type - use distance
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
       const aDist = creep.pos.getRangeTo(a.pos);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
       const bDist = creep.pos.getRangeTo(b.pos);
       return aDist - bDist;
     });
