@@ -135,7 +135,7 @@ async function main(): Promise<void> {
   try {
     await ensureProfilerRunning();
     console.log("\n✓ Profiler check complete");
-  } catch (error) {
+  } catch (_error) {
     console.error("\n❌ Profiler check failed");
     process.exit(1);
   }

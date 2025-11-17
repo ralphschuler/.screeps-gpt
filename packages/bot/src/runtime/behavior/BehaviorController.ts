@@ -678,6 +678,8 @@ export class BehaviorController {
     let totalSources = 0;
     let controlledRoomCount = 0;
     let totalOperationalLinks = 0;
+    let hasAnyContainersOrStorage = false;
+    let hasTowers = false;
 
     for (const room of Object.values(game.rooms)) {
       if (!room.controller?.my) {
@@ -689,6 +691,26 @@ export class BehaviorController {
       // Find all sources in the room
       const sources = room.find(FIND_SOURCES) as Source[];
       totalSources += sources.length;
+
+      // Check for storage or containers anywhere in room (not just near sources)
+      // This ensures haulers spawn for tower refilling and storage management
+      if (room.storage) {
+        hasAnyContainersOrStorage = true;
+      }
+      const allContainers = room.find(FIND_STRUCTURES, {
+        filter: (s: Structure) => s.structureType === STRUCTURE_CONTAINER
+      });
+      if (allContainers.length > 0) {
+        hasAnyContainersOrStorage = true;
+      }
+
+      // Check for towers that need refilling
+      const towers = room.find(FIND_MY_STRUCTURES, {
+        filter: (s: Structure) => s.structureType === STRUCTURE_TOWER
+      });
+      if (towers.length > 0) {
+        hasTowers = true;
+      }
 
       // Count operational links (with energy)
       const links = room.find(FIND_MY_STRUCTURES, {
@@ -750,6 +772,15 @@ export class BehaviorController {
       } else {
         adjustedMinimums.harvester = 2;
       }
+    } else if (hasAnyContainersOrStorage || hasTowers) {
+      // No containers near sources YET, but storage/containers/towers exist
+      // Spawn at least 1 hauler for logistics (tower refilling, storage management)
+      // This handles the case where towers and storage are built before source containers
+      adjustedMinimums.hauler = Math.max(1, controlledRoomCount);
+      this.logger.log?.(
+        `[BehaviorController] Storage/containers/towers detected without source containers, ` +
+          `spawning ${adjustedMinimums.hauler} hauler(s) for logistics`
+      );
     } else {
       // No containers yet - use source-based harvester count
       const firstRoom = Object.values(game.rooms).find(r => r.controller?.my);

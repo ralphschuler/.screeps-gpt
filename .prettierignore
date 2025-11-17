@@ -12,3 +12,6 @@ packages/docs/scaffolds/
 
 # GitHub workflows need workflows:write permission to modify
 .github/workflows/
+
+# Hexo source directory contains generated content
+source/
