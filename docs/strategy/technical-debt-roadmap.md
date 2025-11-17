@@ -40,7 +40,7 @@ This document establishes a comprehensive strategy for reducing technical debt a
 
 #### 1. Stats Collection Infrastructure Fragility
 
-- **Issue**: ralphschuler/.screeps-gpt#711 - Systematic stats collection regression (6 issues in 5 days)
+- **Issue**: #711 - Systematic stats collection regression (6 issues in 5 days)
 - **Impact**: High - Breaks monitoring and strategic planning capabilities
 - **Effort**: Medium (2-3 days)
 - **Related**: #722 (Stats hardening), #724 (Monitoring resilience)
