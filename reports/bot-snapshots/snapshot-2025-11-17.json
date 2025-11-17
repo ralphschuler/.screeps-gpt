@@ -1,0 +1,51 @@
+{
+  "timestamp": "2025-11-17T06:14:19.501Z",
+  "cpu": {
+    "used": 0,
+    "limit": 0,
+    "bucket": 0
+  },
+  "rooms": {
+    "count": {
+      "rcl": 0,
+      "energy": 0,
+      "energyCapacity": 0
+    },
+    "E54N39": {
+      "rcl": 4,
+      "energy": 1050,
+      "energyCapacity": 1050,
+      "controllerProgress": 16427,
+      "controllerProgressTotal": 405000
+    }
+  },
+  "creeps": {
+    "total": 11,
+    "byRole": {
+      "upgrader": 5,
+      "harvester": 4,
+      "builder": 2
+    }
+  },
+  "memory": {
+    "used": 3144,
+    "usedPercent": 0.15
+  },
+  "structures": {
+    "spawns": 1,
+    "extensions": 15,
+    "containers": 3,
+    "towers": 1,
+    "roads": 107
+  },
+  "constructionSites": {
+    "count": 1,
+    "byType": {
+      "storage": 1
+    }
+  },
+  "spawns": {
+    "total": 1,
+    "active": 0
+  }
+}
