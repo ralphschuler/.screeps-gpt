@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.104.0] - 2025-11-17
+
 ### Fixed
 
 - **Optimized Creep Role Distribution at RCL4**: Implemented dynamic role balancing to fix hauler spawning and workforce inefficiency
