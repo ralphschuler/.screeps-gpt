@@ -1,4 +1,5 @@
 import { profile } from "@profiler";
+import { EnergyBalanceCalculator } from "./EnergyBalanceCalculator";
 
 /**
  * Body composition configuration for a specific role
@@ -31,8 +32,10 @@ export interface BodyPattern {
 @profile
 export class BodyComposer {
   private readonly patterns: Record<string, BodyPattern>;
+  private readonly energyCalculator: EnergyBalanceCalculator;
 
   public constructor() {
+    this.energyCalculator = new EnergyBalanceCalculator();
     this.patterns = {
       // Harvester: Balanced work/carry/move for gathering and delivery
       // Base: 1 WORK, 1 CARRY, 1 MOVE (200 energy)
@@ -121,24 +124,31 @@ export class BodyComposer {
    *
    * @param role - The creep role (harvester, upgrader, builder, etc.)
    * @param energyCapacity - Room's total energy capacity (room.energyCapacityAvailable)
+   * @param room - Optional room context for source-based capacity adjustment
    * @returns Optimized body part array, or empty array if insufficient energy
    */
-  public generateBody(role: string, energyCapacity: number): BodyPartConstant[] {
+  public generateBody(role: string, energyCapacity: number, room?: Room): BodyPartConstant[] {
     const pattern = this.patterns[role];
     if (!pattern) {
       // Unknown role - return minimal emergency body if possible
       return this.generateEmergencyBody(energyCapacity);
     }
 
+    // Adjust capacity based on room's energy production if room context provided
+    let adjustedCapacity = energyCapacity;
+    if (room) {
+      adjustedCapacity = this.calculateSustainableCapacity(room, energyCapacity);
+    }
+
     // Try normal body generation first
-    const normalBody = this.scaleBody(pattern, energyCapacity);
+    const normalBody = this.scaleBody(pattern, adjustedCapacity);
     if (normalBody.length > 0) {
       return normalBody;
     }
 
     // Fallback to emergency body for critical roles in low-energy situations
     if (role === "harvester" || role === "upgrader" || role === "builder") {
-      return this.generateEmergencyBody(energyCapacity);
+      return this.generateEmergencyBody(adjustedCapacity);
     }
 
     return [];
@@ -239,5 +249,65 @@ export class BodyComposer {
    */
   public getAvailableRoles(): string[] {
     return Object.keys(this.patterns);
+  }
+
+  /**
+   * Calculate sustainable energy capacity based on room's energy balance.
+   * Uses energy production/consumption analysis to determine optimal spawn budget.
+   *
+   * Strategy:
+   * - Early game (<5 creeps): Use full capacity for rapid growth
+   * - Stable operation (5+ creeps): Balance production with consumption
+   * - Optimize for performance when energy balance is positive
+   * - Limit spawning when approaching energy depletion
+   *
+   * @param room - The room context
+   * @param baseCapacity - Room's energy capacity available
+   * @returns Adjusted capacity that balances sustainability and performance
+   */
+  private calculateSustainableCapacity(room: Room, baseCapacity: number): number {
+    // Calculate room's energy balance
+    const balance = this.energyCalculator.calculate(room);
+
+    // If no sources detected, assume test/bootstrap scenario - use base capacity
+    if (balance.sourceCount === 0) {
+      return baseCapacity;
+    }
+
+    // Count creeps in room for early game detection
+    const creepCount = Game.creeps
+      ? Object.keys(Game.creeps).filter(name => {
+          const creep = Game.creeps[name];
+          return creep?.room && creep.room.name === room.name;
+        }).length
+      : 0;
+
+    // Early game strategy: Use full capacity for rapid growth
+    // This allows bootstrapping with larger, more efficient creeps
+    if (creepCount < 5) {
+      return baseCapacity;
+    }
+
+    // Stable operation: Balance between sustainability and performance
+    // When energy balance is positive, allow larger bodies for better performance
+    // When approaching depletion, limit body size to prevent energy starvation
+
+    if (balance.ratio >= 1.5) {
+      // Excellent energy surplus (production 1.5x+ consumption)
+      // Allow full capacity for maximum performance
+      return baseCapacity;
+    } else if (balance.ratio >= 1.2) {
+      // Good energy surplus (production 1.2x+ consumption)
+      // Allow 80% of capacity for good performance with safety margin
+      return Math.min(baseCapacity, balance.maxSpawnBudget * 1.2);
+    } else if (balance.ratio >= 1.0) {
+      // Neutral energy balance (production matches consumption)
+      // Use calculated sustainable budget
+      return Math.min(baseCapacity, balance.maxSpawnBudget);
+    } else {
+      // Energy deficit (consumption exceeds production)
+      // Reduce spawn budget to 80% of sustainable to recover balance
+      return Math.min(baseCapacity, balance.maxSpawnBudget * 0.8);
+    }
   }
 }

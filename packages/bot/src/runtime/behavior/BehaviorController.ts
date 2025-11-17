@@ -1008,7 +1008,8 @@ export class BehaviorController {
         isEmergency || harvesterCount === 0 ? (room?.energyAvailable ?? 300) : (room?.energyCapacityAvailable ?? 300);
 
       // Generate body based on energy (capacity in normal mode, available in emergency)
-      const body = this.bodyComposer.generateBody(role, energyToUse);
+      // Pass room context for source-aware body composition
+      const body = this.bodyComposer.generateBody(role, energyToUse, room);
 
       if (body.length === 0) {
         // Not enough energy for minimum body
