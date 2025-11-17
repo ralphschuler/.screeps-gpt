@@ -125,7 +125,7 @@ The bot needs a modular, maintainable architecture for organizing game logic acr
 
 ### Core Architecture
 
-**Kernel** (`src/runtime/bootstrap/kernel.ts`):
+**Kernel** (`packages/bot/src/runtime/bootstrap/kernel.ts`):
 
 - Central orchestrator for all managers
 - Handles execution order and error isolation
