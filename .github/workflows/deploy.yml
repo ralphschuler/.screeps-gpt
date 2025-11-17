@@ -2,6 +2,10 @@
 name: Deploy Screeps AI
 
 on:
+  workflow_run:
+    workflows: ["Post Merge Release"]
+    types:
+      - completed
   push:
     tags:
       - 'v*'
@@ -22,6 +26,12 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Only run if workflow_run succeeded, or if triggered by push/dispatch
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success')
     # Use GitHub environment for deployment protection rules
     environment:
       name: production
@@ -44,6 +54,11 @@ jobs:
             # For tag push events, extract version from tag ref
             VERSION="${{ github.ref_name }}"
             echo "::notice::Deploying version $VERSION from tag push"
+          elif [ "${{ github.event_name }}" = "workflow_run" ]; then
+            # For workflow_run events, get the latest tag
+            VERSION=$(git describe --tags --abbrev=0)
+            echo "::notice::Deploying version $VERSION from" \
+              "post-merge-release completion"
           elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             # For manual dispatch without version input, use latest tag
             VERSION=$(git describe --tags --abbrev=0)

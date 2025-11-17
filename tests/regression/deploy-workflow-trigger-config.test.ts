@@ -28,6 +28,7 @@ interface WorkflowStep {
 
 interface WorkflowJob {
   "runs-on": string;
+  if?: string;
   environment?: {
     name: string;
     url: string;
@@ -78,9 +79,15 @@ describe("Deploy workflow trigger configuration", () => {
     expect(workflow.on.release).toBeUndefined();
   });
 
-  it("should NOT have workflow_run trigger", () => {
-    // Using push.tags trigger instead of workflow_run for simpler integration
-    expect(workflow.on.workflow_run).toBeUndefined();
+  it("should have workflow_run trigger for Post Merge Release", () => {
+    // Using workflow_run trigger to ensure deploy runs after post-merge-release succeeds
+    expect(workflow.on.workflow_run).toBeDefined();
+    const workflowRun = workflow.on.workflow_run as {
+      workflows: string[];
+      types: string[];
+    };
+    expect(workflowRun.workflows).toContain("Post Merge Release");
+    expect(workflowRun.types).toContain("completed");
   });
 
   it("should extract version from tag ref for push events", () => {
@@ -94,9 +101,10 @@ describe("Deploy workflow trigger configuration", () => {
   it("should have conditional logic for different event types", () => {
     const getVersionStep = workflow.jobs.deploy.steps.find(step => step.id === "get_version");
 
-    // Should check for push vs manual dispatch event types
+    // Should check for push, workflow_run, and manual dispatch event types
     expect(getVersionStep?.run).toContain("github.event_name");
     expect(getVersionStep?.run).toContain("push");
+    expect(getVersionStep?.run).toContain("workflow_run");
     expect(getVersionStep?.run).toContain("workflow_dispatch");
   });
 
@@ -158,5 +166,16 @@ describe("Deploy workflow trigger configuration", () => {
     expect(workflow.concurrency).toBeDefined();
     expect(workflow.concurrency?.group).toContain("deploy-");
     expect(workflow.concurrency?.["cancel-in-progress"]).toBe(false);
+  });
+
+  it("should have conditional job execution based on workflow_run success", () => {
+    // Deploy job should only run if workflow_run succeeded or triggered by push/dispatch
+    expect(workflow.jobs.deploy.if).toBeDefined();
+    const condition = workflow.jobs.deploy.if as string;
+    expect(condition).toContain("workflow_run");
+    expect(condition).toContain("workflow_run.conclusion");
+    expect(condition).toContain("success");
+    expect(condition).toContain("workflow_dispatch");
+    expect(condition).toContain("push");
   });
 });
