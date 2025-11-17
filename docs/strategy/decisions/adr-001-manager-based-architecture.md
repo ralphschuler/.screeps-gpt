@@ -208,7 +208,7 @@ None required - this was the initial architecture. Future changes to task-based 
 - [Kernel Implementation](../../packages/bot/src/runtime/bootstrap/kernel.ts)
 - [Manager Examples](../../packages/bot/src/runtime/)
 - [Overmind Analysis](../research/overmind-analysis.md) - Inspiration
-- [Phase 1 Documentation](../strategy/phases/phase-1.md)
+- [Phase 1 Documentation](../phases/phase-1.md)
 - [CHANGELOG](../../../CHANGELOG.md) - Initial implementation
 
 ## Notes
