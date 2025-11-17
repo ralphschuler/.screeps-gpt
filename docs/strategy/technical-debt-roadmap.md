@@ -2,7 +2,7 @@
 
 **Status**: Active  
 **Last Updated**: 2025-11-17  
-**Issue**: #[TBD] - Technical Debt Reduction and Future-Proofing Roadmap
+**Issue**: #972 - Technical Debt Reduction and Future-Proofing Roadmap
 
 ## Executive Summary
 
