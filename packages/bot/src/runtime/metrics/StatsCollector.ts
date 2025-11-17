@@ -11,6 +11,14 @@ interface RoomStats {
    * Useful for monitoring RCL advancement in this room.
    */
   controllerProgressTotal?: number;
+  /**
+   * Total energy stored in storage and containers in this room
+   */
+  energyStored?: number;
+  /**
+   * Active construction sites in this room
+   */
+  constructionSites?: number;
 }
 
 interface StatsData {
@@ -45,6 +53,8 @@ interface StatsData {
   spawn?: {
     orders: number;
   };
+  spawns?: number;
+  activeSpawns?: number;
 }
 
 interface CreepLike {
@@ -55,6 +65,13 @@ interface CreepLike {
 
 interface StructureLike {
   structureType: string;
+  store?: {
+    energy?: number;
+  };
+}
+
+interface SpawnLike {
+  spawning: { name: string } | null;
 }
 
 interface ConstructionSiteLike {
@@ -69,6 +86,7 @@ interface GameLike {
     bucket: number;
   };
   creeps: Record<string, CreepLike>;
+  spawns?: Record<string, SpawnLike>;
   rooms: Record<
     string,
     {
@@ -224,6 +242,29 @@ export class StatsCollector {
         }
       }
 
+      // Collect spawn statistics
+      try {
+        if (game.spawns) {
+          let totalSpawns = 0;
+          let activeSpawns = 0;
+          for (const spawnName in game.spawns) {
+            const spawn = game.spawns[spawnName];
+            totalSpawns++;
+            if (spawn.spawning !== null) {
+              activeSpawns++;
+            }
+          }
+          if (totalSpawns > 0) {
+            stats.spawns = totalSpawns;
+            stats.activeSpawns = activeSpawns;
+          }
+        }
+      } catch (error) {
+        if (shouldLog) {
+          console.log(`[StatsCollector] Error collecting spawn stats: ${String(error)}`);
+        }
+      }
+
       if (shouldLog) {
         console.log(
           `[StatsCollector] Base stats: time=${stats.time}, cpu=${stats.cpu.used.toFixed(2)}/${stats.cpu.limit}, ` +
@@ -241,6 +282,9 @@ export class StatsCollector {
         if (stats.constructionSites) {
           console.log(`[StatsCollector] Construction sites: ${stats.constructionSites.count}`);
         }
+        if (stats.spawns) {
+          console.log(`[StatsCollector] Spawns: ${stats.activeSpawns}/${stats.spawns} active`);
+        }
       }
 
       // Add per-room statistics with error handling
@@ -257,6 +301,39 @@ export class StatsCollector {
             roomStats.controllerLevel = room.controller.level;
             roomStats.controllerProgress = room.controller.progress;
             roomStats.controllerProgressTotal = room.controller.progressTotal;
+          }
+
+          // Calculate energy stored in storage and containers
+          if (room.find) {
+            try {
+              const FIND_MY_STRUCTURES = 107;
+              const structures = room.find(FIND_MY_STRUCTURES) as StructureLike[];
+              let energyStored = 0;
+              let constructionSites = 0;
+
+              for (const structure of structures) {
+                if (
+                  (structure.structureType === "storage" || structure.structureType === "container") &&
+                  structure.store?.energy
+                ) {
+                  energyStored += structure.store.energy;
+                }
+              }
+
+              // Count construction sites in this room
+              const FIND_MY_CONSTRUCTION_SITES = 111;
+              const sites = room.find(FIND_MY_CONSTRUCTION_SITES) as ConstructionSiteLike[];
+              constructionSites = sites.length;
+
+              if (energyStored > 0) {
+                roomStats.energyStored = energyStored;
+              }
+              if (constructionSites > 0) {
+                roomStats.constructionSites = constructionSites;
+              }
+            } catch {
+              // Silently fail for individual room metrics
+            }
           }
 
           stats.rooms[roomName] = roomStats;

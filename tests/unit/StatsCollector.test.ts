@@ -409,4 +409,290 @@ describe("StatsCollector", () => {
     expect(memory.stats).toBeDefined();
     expect(memory.stats?.time).toBe(12352);
   });
+
+  it("should collect spawn utilization metrics", () => {
+    const collector = new StatsCollector();
+    const game = {
+      time: 12353,
+      cpu: {
+        getUsed: () => 4.5,
+        limit: 10,
+        bucket: 8700
+      },
+      creeps: {
+        harvester1: { memory: { role: "harvester" } }
+      },
+      spawns: {
+        Spawn1: { spawning: { name: "harvester2" } },
+        Spawn2: { spawning: null }
+      },
+      rooms: {
+        W1N1: {
+          energyAvailable: 300,
+          energyCapacityAvailable: 550
+        }
+      }
+    };
+
+    const snapshot: PerformanceSnapshot = {
+      tick: 12353,
+      cpuUsed: 4.5,
+      cpuLimit: 10,
+      cpuBucket: 8700,
+      creepCount: 1,
+      roomCount: 1,
+      spawnOrders: 0,
+      warnings: [],
+      execution: {
+        processedCreeps: 1,
+        spawnedCreeps: [],
+        tasksExecuted: {}
+      }
+    };
+
+    const memory = {} as Memory;
+    collector.collect(game, memory, snapshot);
+
+    expect(memory.stats?.spawns).toBeDefined();
+    expect(memory.stats?.spawns).toBe(2);
+    expect(memory.stats?.activeSpawns).toBe(1);
+  });
+
+  it("should collect energy storage per room", () => {
+    const collector = new StatsCollector();
+    const game = {
+      time: 12354,
+      cpu: {
+        getUsed: () => 5.0,
+        limit: 10,
+        bucket: 8800
+      },
+      creeps: {
+        harvester1: { memory: { role: "harvester" } }
+      },
+      rooms: {
+        W1N1: {
+          energyAvailable: 300,
+          energyCapacityAvailable: 550,
+          controller: {
+            level: 3,
+            progress: 25000,
+            progressTotal: 45000
+          },
+          find: (type: number) => {
+            if (type === 107) {
+              // FIND_MY_STRUCTURES
+              return [
+                { structureType: "storage", store: { energy: 5000 } },
+                { structureType: "container", store: { energy: 2000 } },
+                { structureType: "extension", store: { energy: 50 } }
+              ];
+            }
+            if (type === 111) {
+              // FIND_MY_CONSTRUCTION_SITES
+              return [{ structureType: "road" }, { structureType: "extension" }];
+            }
+            return [];
+          }
+        }
+      }
+    };
+
+    const snapshot: PerformanceSnapshot = {
+      tick: 12354,
+      cpuUsed: 5.0,
+      cpuLimit: 10,
+      cpuBucket: 8800,
+      creepCount: 1,
+      roomCount: 1,
+      spawnOrders: 0,
+      warnings: [],
+      execution: {
+        processedCreeps: 1,
+        spawnedCreeps: [],
+        tasksExecuted: {}
+      }
+    };
+
+    const memory = {} as Memory;
+    collector.collect(game, memory, snapshot);
+
+    const roomStats = memory.stats?.rooms?.W1N1;
+    expect(roomStats).toBeDefined();
+    if (typeof roomStats === "object") {
+      expect(roomStats.energyStored).toBe(7000); // 5000 + 2000
+      expect(roomStats.constructionSites).toBe(2);
+    }
+  });
+
+  it("should not include optional room metrics when zero", () => {
+    const collector = new StatsCollector();
+    const game = {
+      time: 12355,
+      cpu: {
+        getUsed: () => 3.5,
+        limit: 10,
+        bucket: 9000
+      },
+      creeps: {
+        harvester1: { memory: { role: "harvester" } }
+      },
+      rooms: {
+        W1N1: {
+          energyAvailable: 300,
+          energyCapacityAvailable: 550,
+          find: (type: number) => {
+            if (type === 107) {
+              // FIND_MY_STRUCTURES - no storage/containers
+              return [{ structureType: "extension", store: { energy: 50 } }];
+            }
+            if (type === 111) {
+              // FIND_MY_CONSTRUCTION_SITES - no sites
+              return [];
+            }
+            return [];
+          }
+        }
+      }
+    };
+
+    const snapshot: PerformanceSnapshot = {
+      tick: 12355,
+      cpuUsed: 3.5,
+      cpuLimit: 10,
+      cpuBucket: 9000,
+      creepCount: 1,
+      roomCount: 1,
+      spawnOrders: 0,
+      warnings: [],
+      execution: {
+        processedCreeps: 1,
+        spawnedCreeps: [],
+        tasksExecuted: {}
+      }
+    };
+
+    const memory = {} as Memory;
+    collector.collect(game, memory, snapshot);
+
+    const roomStats = memory.stats?.rooms?.W1N1;
+    expect(roomStats).toBeDefined();
+    if (typeof roomStats === "object") {
+      expect(roomStats.energyStored).toBeUndefined();
+      expect(roomStats.constructionSites).toBeUndefined();
+    }
+  });
+
+  it("should collect complete telemetry for baseline establishment", () => {
+    const collector = new StatsCollector();
+    const game = {
+      time: 12356,
+      cpu: {
+        getUsed: () => 6.5,
+        limit: 20,
+        bucket: 9500
+      },
+      creeps: {
+        harvester1: { memory: { role: "harvester" } },
+        harvester2: { memory: { role: "harvester" } },
+        upgrader1: { memory: { role: "upgrader" } },
+        builder1: { memory: { role: "builder" } }
+      },
+      spawns: {
+        Spawn1: { spawning: { name: "harvester3" } },
+        Spawn2: { spawning: null }
+      },
+      rooms: {
+        E54N39: {
+          energyAvailable: 800,
+          energyCapacityAvailable: 800,
+          controller: {
+            level: 3,
+            progress: 125731,
+            progressTotal: 135000
+          },
+          find: (type: number) => {
+            if (type === 107) {
+              return [
+                { structureType: "storage", store: { energy: 15000 } },
+                { structureType: "container", store: { energy: 2000 } },
+                { structureType: "extension", store: {} },
+                { structureType: "tower", store: { energy: 500 } },
+                { structureType: "spawn", store: {} }
+              ];
+            }
+            if (type === 111) {
+              return [{ structureType: "extension" }, { structureType: "road" }];
+            }
+            return [];
+          }
+        }
+      }
+    };
+
+    const snapshot: PerformanceSnapshot = {
+      tick: 12356,
+      cpuUsed: 6.5,
+      cpuLimit: 20,
+      cpuBucket: 9500,
+      creepCount: 4,
+      roomCount: 1,
+      spawnOrders: 0,
+      warnings: [],
+      execution: {
+        processedCreeps: 4,
+        spawnedCreeps: [],
+        tasksExecuted: {}
+      }
+    };
+
+    const memory = {} as Memory;
+    collector.collect(game, memory, snapshot);
+
+    // Validate complete baseline-ready structure
+    expect(memory.stats).toBeDefined();
+
+    // CPU metrics for baseline
+    expect(memory.stats?.cpu.used).toBe(6.5);
+    expect(memory.stats?.cpu.limit).toBe(20);
+    expect(memory.stats?.cpu.bucket).toBe(9500);
+
+    // Creep metrics by role for baseline
+    expect(memory.stats?.creeps.count).toBe(4);
+    expect(memory.stats?.creeps.byRole).toEqual({
+      harvester: 2,
+      upgrader: 1,
+      builder: 1
+    });
+
+    // Spawn utilization for baseline
+    expect(memory.stats?.spawns).toBe(2);
+    expect(memory.stats?.activeSpawns).toBe(1);
+
+    // Structure counts for baseline
+    expect(memory.stats?.structures).toBeDefined();
+    expect(memory.stats?.structures?.spawns).toBe(1);
+    expect(memory.stats?.structures?.extensions).toBe(1);
+    expect(memory.stats?.structures?.containers).toBe(1);
+    expect(memory.stats?.structures?.towers).toBe(1);
+
+    // Construction sites for baseline
+    expect(memory.stats?.constructionSites).toEqual({
+      count: 2,
+      byType: { extension: 1, road: 1 }
+    });
+
+    // Room-specific metrics for baseline
+    const roomStats = memory.stats?.rooms?.E54N39;
+    expect(roomStats).toBeDefined();
+    if (typeof roomStats === "object") {
+      expect(roomStats.energyAvailable).toBe(800);
+      expect(roomStats.energyCapacityAvailable).toBe(800);
+      expect(roomStats.controllerLevel).toBe(3);
+      expect(roomStats.controllerProgress).toBe(125731);
+      expect(roomStats.controllerProgressTotal).toBe(135000);
+      expect(roomStats.energyStored).toBe(17000); // 15000 + 2000
+      expect(roomStats.constructionSites).toBe(2);
+    }
+  });
 });
