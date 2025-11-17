@@ -8,6 +8,7 @@
 ## Problem Statement
 
 PTR telemetry revealed suboptimal creep role distribution at RCL4 with:
+
 - **4 harvesters** (33% overstaffed) forced into dual-purpose logistics roles
 - **0 haulers** (critical operational gap) causing logistics infrastructure to be idle
 - **0 builders/repairers** (missing) stalling construction and maintenance work
@@ -51,6 +52,7 @@ if (needsCriticalHauler) {
 **Rationale:** When storage/towers exist, energy is already in the room and needs distribution immediately. Haulers are more critical than additional harvesters.
 
 **Files Changed:**
+
 - `packages/bot/src/runtime/behavior/BehaviorController.ts` (lines 933-972)
 
 **Commit:** bcf0d42
@@ -69,6 +71,7 @@ if (hasAnyContainersOrStorage || hasTowers) {
 **Rationale:** With haulers handling logistics, harvesters can focus solely on collection. No need for dual-purpose work.
 
 **Files Changed:**
+
 - `packages/bot/src/runtime/behavior/BehaviorController.ts` (lines 804-811)
 
 **Commit:** bcf0d42
@@ -90,6 +93,7 @@ if (totalConstructionSites > 15) {
 **Rationale:** Match workforce to workload. Prevent builder spam on large projects while maintaining emergency construction capability.
 
 **Files Changed:**
+
 - `packages/bot/src/runtime/behavior/BehaviorController.ts` (lines 821-837)
 
 **Commit:** 15b110c
@@ -109,6 +113,7 @@ if (hasDamagedStructures) {
 **Rationale:** Prevent idle repairers when no work available. Builders handle emergency repairs.
 
 **Files Changed:**
+
 - `packages/bot/src/runtime/behavior/BehaviorController.ts` (lines 839-847)
 
 **Commit:** 15b110c
@@ -116,12 +121,14 @@ if (hasDamagedStructures) {
 ## Implementation Timeline
 
 ### Commit 1: bcf0d42 - Critical Hauler Priority
+
 - Added critical hauler shortage detection
 - Implemented dynamic spawn priority ordering
 - Reduced harvester overstaffing
 - **Impact:** Fixes all 3 failing hauler regression tests
 
 ### Commit 2: 15b110c - Dynamic Role Activation
+
 - Added construction site tracking
 - Added damaged structure detection
 - Implemented dynamic builder scaling
@@ -129,6 +136,7 @@ if (hasDamagedStructures) {
 - **Impact:** Activates builders and repairers based on need
 
 ### Commit 3: 2cc4032 - Comprehensive Documentation
+
 - Created `docs/runtime/role-balancing.md` (325 lines)
 - Documented all algorithms and decision logic
 - Provided spawn scenario examples
@@ -138,28 +146,34 @@ if (hasDamagedStructures) {
 ## Test Results
 
 ### Regression Tests
+
 ✅ **All tests passing**
 
 `tests/regression/hauler-spawning-with-storage.test.ts`:
+
 - ✅ Should spawn haulers when storage exists
 - ✅ Should spawn haulers when towers exist
 - ✅ Should spawn haulers when containers exist anywhere in room
 
 ### Security Scan
+
 ✅ **CodeQL: 0 vulnerabilities found**
 
 ## Performance Analysis
 
 ### CPU Cost
+
 - **+0.1-0.3 CPU per tick** for dynamic role calculation
 - O(n) complexity where n = number of controlled rooms
 - Negligible impact on overall CPU budget
 
 ### Memory Cost
+
 - **0 bytes additional memory** (all calculations dynamic)
 - No persistent storage required
 
 ### Efficiency Gain
+
 - **~30% reduction** in wasted harvester capacity
 - **Immediate logistics activation** (vs. 4+ tick delay)
 - **Active construction/repair cycles** (vs. stalled)
@@ -190,30 +204,33 @@ if (hasDamagedStructures) {
 
 ### Metrics Improvement
 
-| Metric | Before | After | Change |
-|--------|--------|-------|--------|
-| Energy throughput | Reduced (~70%) | Optimal (100%) | +43% |
-| Harvester efficiency | 67% (dual-purpose) | 100% (dedicated) | +49% |
-| Logistics latency | N/A (blocked) | Immediate | ✅ Activated |
-| Construction rate | 0 (stalled) | Active | ✅ Resumed |
-| Repair rate | 0 (accumulating decay) | Active | ✅ Resumed |
-| Total workforce | 9 | 10-14 | +11-56% |
+| Metric               | Before                 | After            | Change       |
+| -------------------- | ---------------------- | ---------------- | ------------ |
+| Energy throughput    | Reduced (~70%)         | Optimal (100%)   | +43%         |
+| Harvester efficiency | 67% (dual-purpose)     | 100% (dedicated) | +49%         |
+| Logistics latency    | N/A (blocked)          | Immediate        | ✅ Activated |
+| Construction rate    | 0 (stalled)            | Active           | ✅ Resumed   |
+| Repair rate          | 0 (accumulating decay) | Active           | ✅ Resumed   |
+| Total workforce      | 9                      | 10-14            | +11-56%      |
 
 ## Validation Plan
 
 ### Immediate Validation
+
 - [x] All regression tests pass
 - [x] No security vulnerabilities
 - [x] Code review completed
 - [x] Documentation updated
 
 ### PTR Monitoring (48 hours)
+
 - [ ] Monitor `reports/copilot/ptr-stats.json` for `creeps.byRole` distribution
 - [ ] Verify balanced distribution within ±1 of target for all roles
 - [ ] Confirm energy throughput improvement (~30% increase)
 - [ ] Validate no spawn starvation or CPU issues
 
 ### Success Criteria
+
 1. Haulers spawn within 1 tick when storage/towers built
 2. Harvester count reduces to 2-3 when haulers active
 3. Builders spawn within 1 tick when construction sites exist
@@ -224,15 +241,19 @@ if (hasDamagedStructures) {
 ## Related Issues
 
 ### Resolved
+
 - ✅ **#955** - Hauler role not spawning (PRIMARY BLOCKER - fixed by critical priority system)
 - ✅ **#961** - Optimize creep role distribution at RCL4 (THIS ISSUE)
 
 ### Benefited
+
 - **#921** - RCL optimization - benefits from balanced workforce
 - **#959** - Critical energy availability at 5.6% - symptom of hauler gap, now fixed
 
 ### Historical Context
+
 Similar issues successfully resolved:
+
 - #734 - Adaptive creep spawning (foundation implemented)
 - #638 - Energy priority system (spawn priority logic)
 - #886 - Critical energy starvation (spawn refill priority)
@@ -249,6 +270,7 @@ This solution successfully resolves the creep role distribution inefficiency at 
 5. **Complete documentation** - Maintenance-ready implementation
 
 **Expected Impact:**
+
 - ✅ 30% improvement in energy throughput
 - ✅ Immediate logistics activation
 - ✅ Active construction and repair cycles
@@ -259,6 +281,7 @@ This solution successfully resolves the creep role distribution inefficiency at 
 ---
 
 **References:**
+
 - Issue: #961
 - Documentation: `docs/runtime/role-balancing.md`
 - Tests: `tests/regression/hauler-spawning-with-storage.test.ts`

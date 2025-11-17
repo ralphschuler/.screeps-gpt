@@ -7,6 +7,7 @@ This document describes the dynamic role balancing system implemented in Behavio
 The role balancing system automatically adjusts creep role minimums and spawn priorities based on room infrastructure, ensuring optimal workforce distribution at each RCL (Room Controller Level).
 
 **Key Features:**
+
 - Dynamic role minimum calculation based on room state
 - Adaptive spawn priority ordering for critical roles
 - Automatic workforce scaling as infrastructure develops
@@ -15,11 +16,13 @@ The role balancing system automatically adjusts creep role minimums and spawn pr
 ## Problem Statement
 
 Issue #961 identified suboptimal creep distribution at RCL4:
+
 - **4 harvesters** (33% overstaffed) - doing both harvest and logistics
 - **0 haulers** (critical gap) - logistics infrastructure idle
 - **0 builders/repairers** - construction and maintenance stalled
 
 This inefficiency occurred because:
+
 1. Static role minimums didn't adapt to room infrastructure
 2. Spawn priority didn't account for critical infrastructure needs
 3. Harvesters forced into dual-purpose roles reduced throughput
@@ -35,6 +38,7 @@ private calculateDynamicRoleMinimums(game: GameContext): Partial<Record<RoleName
 ```
 
 **Analyzed Factors:**
+
 - Energy sources and container placement
 - Storage/tower existence and capacity
 - Construction site queue size
@@ -43,6 +47,7 @@ private calculateDynamicRoleMinimums(game: GameContext): Partial<Record<RoleName
 - Energy surplus indicators
 
 **Adjusted Roles:**
+
 - Harvesters (2-4 based on sources and logistics infrastructure)
 - Haulers (0-3 based on containers/storage/towers)
 - Builders (1-3 based on construction queue)
@@ -62,6 +67,7 @@ const criticalOrder = ["hauler", "harvester", "upgrader", "builder", "stationary
 ```
 
 **Critical Hauler Detection:**
+
 ```typescript
 const needsCriticalHauler = haulerCount === 0 && haulerMinimum > 0;
 ```
@@ -73,33 +79,39 @@ When storage/towers exist but haulers = 0, haulers spawn FIRST to activate logis
 ### Hauler Spawning Logic
 
 **Scenario 1: Containers Near Sources**
+
 ```typescript
 if (totalSourcesWithContainers > 0 && controlledRoomCount > 0) {
   adjustedMinimums.hauler = Math.max(totalSources, controlledRoomCount);
 }
 ```
+
 - Standard container-based economy
 - 1+ hauler per source for energy transport
 - Reduced with link network (RCL 5+)
 
 **Scenario 2: Storage/Towers Without Source Containers**
+
 ```typescript
 else if (hasAnyContainersOrStorage || hasTowers) {
   adjustedMinimums.hauler = Math.max(1, controlledRoomCount);
   adjustedMinimums.harvester = Math.max(2, optimalHarvesters - 1);
 }
 ```
+
 - Early-game logistics infrastructure
 - 1+ hauler for tower refilling and storage management
 - Reduced harvester count (no dual-purpose work needed)
 
 **Scenario 3: No Logistics Infrastructure**
+
 ```typescript
 else {
   adjustedMinimums.hauler = 0;
   adjustedMinimums.harvester = optimalHarvesters;
 }
 ```
+
 - Basic energy economy
 - Harvesters handle all energy tasks
 - No haulers needed
@@ -107,6 +119,7 @@ else {
 ### Builder Activation
 
 **Dynamic Scaling:**
+
 ```typescript
 if (totalConstructionSites > 0) {
   if (totalConstructionSites > 15) {
@@ -122,6 +135,7 @@ if (totalConstructionSites > 0) {
 ```
 
 **Rationale:**
+
 - Scale builders with construction queue size
 - Maintain minimum of 2 when no construction (for emergency repairs)
 - Prevent builder spam on large projects
@@ -129,6 +143,7 @@ if (totalConstructionSites > 0) {
 ### Repairer Activation
 
 **Dynamic Activation:**
+
 ```typescript
 if (hasDamagedStructures) {
   adjustedMinimums.repairer = Math.max(1, controlledRoomCount);
@@ -138,6 +153,7 @@ if (hasDamagedStructures) {
 ```
 
 **Rationale:**
+
 - Only spawn repairers when structures need maintenance
 - Builders handle emergency repairs when no repairers active
 - Prevents idle repairers when no work available
@@ -145,6 +161,7 @@ if (hasDamagedStructures) {
 ### Harvester Optimization
 
 **Single-Source Rooms:**
+
 ```typescript
 if (sourceCount === 1) {
   return rcl >= 3 ? 3 : 2;
@@ -152,11 +169,13 @@ if (sourceCount === 1) {
 ```
 
 **Multi-Source Rooms:**
+
 ```typescript
 return sourceCount * (rcl >= 3 ? 2 : 1);
 ```
 
 **With Haulers Available:**
+
 ```typescript
 adjustedMinimums.harvester = Math.max(2, optimalHarvesters - 1);
 ```
@@ -165,18 +184,19 @@ adjustedMinimums.harvester = Math.max(2, optimalHarvesters - 1);
 
 ### RCL 4 with Storage/Towers (Target State)
 
-| Role              | Count | Rationale                                |
-| ----------------- | ----- | ---------------------------------------- |
-| Harvesters        | 2-3   | Energy collection (reduced from 4)       |
-| Haulers           | 2-3   | Energy distribution (activated from 0)   |
-| Upgraders         | 4-5   | Controller progress (energy surplus)     |
-| Builders          | 1-2   | Construction work (queue-based)          |
-| Repairers         | 0-1   | Structure maintenance (damage-based)     |
-| **Total Creeps**  | 10-14 | Optimal workforce for RCL4               |
+| Role             | Count | Rationale                              |
+| ---------------- | ----- | -------------------------------------- |
+| Harvesters       | 2-3   | Energy collection (reduced from 4)     |
+| Haulers          | 2-3   | Energy distribution (activated from 0) |
+| Upgraders        | 4-5   | Controller progress (energy surplus)   |
+| Builders         | 1-2   | Construction work (queue-based)        |
+| Repairers        | 0-1   | Structure maintenance (damage-based)   |
+| **Total Creeps** | 10-14 | Optimal workforce for RCL4             |
 
 ### Comparison to Previous State
 
 **Before Optimization (Tick 75067453):**
+
 - Harvesters: 4 (overstaffed, doing dual-purpose work)
 - Haulers: 0 (logistics blocked)
 - Upgraders: 5 (correct)
@@ -185,6 +205,7 @@ adjustedMinimums.harvester = Math.max(2, optimalHarvesters - 1);
 - Total: 9 creeps (underutilized, inefficient)
 
 **After Optimization:**
+
 - Harvesters: 2-3 (optimal, dedicated to collection)
 - Haulers: 2-3 (logistics active)
 - Upgraders: 4-5 (correct)
@@ -197,12 +218,14 @@ adjustedMinimums.harvester = Math.max(2, optimalHarvesters - 1);
 ### Example 1: Room with Storage but Some Creeps
 
 **State:**
+
 - Storage exists with 1000 energy
 - Harvesters: 1 (some energy collection capability)
 - Haulers: 0 (logistics not operational)
 - Energy available = 400
 
 **Decision:**
+
 ```
 isEmergency = false (totalCreeps > 0)
 needsCriticalHauler = true (haulerCount=0, haulerMinimum=1, !isEmergency)
@@ -216,11 +239,13 @@ spawnOrder = ["hauler", "harvester", "upgrader", ...]
 ### Example 2: Emergency Recovery (Empty Room with Storage)
 
 **State:**
+
 - Storage exists with 1000 energy
 - All creeps = 0 (EMERGENCY)
 - Energy available = 400
 
 **Decision:**
+
 ```
 isEmergency = true (totalCreeps = 0)
 needsCriticalHauler = false (isEmergency overrides)
@@ -234,12 +259,14 @@ spawnOrder = ["harvester", "upgrader", "builder", ...]
 ### Example 3: Normal Operation
 
 **State:**
+
 - Harvesters: 2
 - Haulers: 2
 - Upgraders: 3
 - Builders: 1
 
 **Decision:**
+
 ```
 needsCriticalHauler = false (haulerCount > 0)
 spawnOrder = ["harvester", "upgrader", "builder", ...]
@@ -252,12 +279,14 @@ spawnOrder = ["harvester", "upgrader", "builder", ...]
 ### Example 4: Hauler Death During Operation
 
 **State:**
+
 - Storage exists
 - Harvesters: 3
 - Haulers: 0 (just died)
 - Upgraders: 5
 
 **Decision:**
+
 ```
 needsCriticalHauler = true (haulerCount=0, haulerMinimum=1)
 spawnOrder = ["hauler", "harvester", "upgrader", ...]
@@ -272,21 +301,25 @@ spawnOrder = ["hauler", "harvester", "upgrader", ...]
 The system is validated by regression tests in `tests/regression/hauler-spawning-with-storage.test.ts`:
 
 ### Test 1: Storage Without Source Containers
+
 - **Setup:** Storage exists, no containers near sources
 - **Expected:** Hauler spawns first
 - **Validates:** Critical hauler priority activation
 
 ### Test 2: Towers Without Source Containers
+
 - **Setup:** Towers exist, no containers near sources
 - **Expected:** Hauler spawns first
 - **Validates:** Tower refilling logistics activation
 
 ### Test 3: Containers Anywhere in Room
+
 - **Setup:** Containers exist (not near sources)
 - **Expected:** Hauler spawns first
 - **Validates:** General logistics infrastructure detection
 
 ### Test 4: No Logistics Infrastructure
+
 - **Setup:** No storage, towers, or containers
 - **Expected:** NO hauler spawns
 - **Validates:** Hauler suppression in basic economy
@@ -294,15 +327,18 @@ The system is validated by regression tests in `tests/regression/hauler-spawning
 ## Performance Impact
 
 **CPU Cost:** Minimal
+
 - `calculateDynamicRoleMinimums()` runs once per tick
 - O(n) where n = number of rooms
 - Typical cost: 0.1-0.3 CPU per tick for 1-3 rooms
 
 **Memory Cost:** Zero
+
 - No persistent memory storage
 - Calculated dynamically each tick
 
 **Efficiency Gain:**
+
 - ~30% reduction in wasted harvester capacity
 - Immediate logistics activation (vs. delayed by 4+ ticks)
 - Faster construction/repair cycle (active builders/repairers)

@@ -116,3 +116,4 @@ IMPLEMENTATION*.md
 *_FIX.md
 validate-*.sh
 packages/docs/public/
+/reports/monitoring/
