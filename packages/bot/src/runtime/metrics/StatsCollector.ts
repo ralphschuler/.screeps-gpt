@@ -53,10 +53,8 @@ interface StatsData {
   spawn?: {
     orders: number;
   };
-  spawns?: {
-    total: number;
-    active: number;
-  };
+  spawns?: number;
+  activeSpawns?: number;
 }
 
 interface CreepLike {
@@ -257,10 +255,8 @@ export class StatsCollector {
             }
           }
           if (totalSpawns > 0) {
-            stats.spawns = {
-              total: totalSpawns,
-              active: activeSpawns
-            };
+            stats.spawns = totalSpawns;
+            stats.activeSpawns = activeSpawns;
           }
         }
       } catch (error) {
@@ -287,7 +283,7 @@ export class StatsCollector {
           console.log(`[StatsCollector] Construction sites: ${stats.constructionSites.count}`);
         }
         if (stats.spawns) {
-          console.log(`[StatsCollector] Spawns: ${stats.spawns.active}/${stats.spawns.total} active`);
+          console.log(`[StatsCollector] Spawns: ${stats.activeSpawns}/${stats.spawns} active`);
         }
       }
 
