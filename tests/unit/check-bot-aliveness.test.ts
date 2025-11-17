@@ -19,17 +19,25 @@ vi.mock("node:fs", () => ({
 }));
 
 const originalEnv = process.env;
+const originalFetch = global.fetch;
 
 describe("check-bot-aliveness defensive parsing", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    mockConsoleMethod.mockReset(); // Reset mock completely
+    vi.resetModules(); // Reset module cache to ensure fresh imports
     process.env = { ...originalEnv };
     process.env.SCREEPS_TOKEN = "test-token";
     process.env.SCREEPS_SHARD = "shard3";
+    // Mock fetch to return 401 by default (Memory.stats unavailable, will use console fallback)
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 401
+    });
   });
 
   afterEach(() => {
     process.env = originalEnv;
+    global.fetch = originalFetch;
   });
 
   it('should handle "undefined" string response from console', async () => {
@@ -237,5 +245,118 @@ describe("check-bot-aliveness defensive parsing", () => {
 
     // Verify the console was called with custom shard "shard1"
     expect(mockConsoleMethod).toHaveBeenCalledWith(expect.any(String), "shard1");
+  });
+
+  it("should detect bot is active via Memory.stats when console returns empty (regression for false positive)", async () => {
+    // Mock: Memory.stats API returns valid data showing bot is active
+    global.fetch = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        data: {
+          creeps: {
+            creep1: { role: "harvester" },
+            creep2: { role: "harvester" },
+            creep3: { role: "harvester" },
+            creep4: { role: "harvester" },
+            creep5: { role: "builder" },
+            creep6: { role: "builder" },
+            creep7: { role: "upgrader" },
+            creep8: { role: "upgrader" },
+            creep9: { role: "upgrader" },
+            creep10: { role: "upgrader" },
+            creep11: { role: "upgrader" }
+          },
+          rooms: {
+            E54N39: { rcl: 4 }
+          }
+        }
+      })
+    });
+
+    // Console would return empty (the false positive scenario)
+    // But we should never get to console because Memory.stats shows bot is active
+    mockConsoleMethod.mockResolvedValueOnce({ ok: 1, data: "undefined" });
+
+    const { checkBotAliveness } = await import("../../packages/utilities/scripts/check-bot-aliveness");
+
+    const result = await checkBotAliveness();
+
+    // Should correctly identify bot as active based on Memory.stats
+    expect(result.aliveness).toBe("active");
+    expect(result.source).toBe("memory_stats");
+    expect(result.error).toBeUndefined();
+
+    // Console should NOT have been called because Memory.stats was authoritative
+    expect(mockConsoleMethod).not.toHaveBeenCalled();
+  });
+
+  it("should fall back to console when Memory.stats API fails", async () => {
+    // Mock: Memory.stats API fails (404 or network error)
+    global.fetch = vi.fn().mockResolvedValueOnce({
+      ok: false,
+      status: 404
+    });
+
+    // Console returns valid data - use mockResolvedValue instead of Once
+    // because the mock needs to persist through the async call
+    mockConsoleMethod.mockResolvedValue({
+      ok: 1,
+      data: JSON.stringify({ hasSpawns: true, spawnCount: 2, rooms: 1 })
+    });
+
+    const { checkBotAliveness } = await import("../../packages/utilities/scripts/check-bot-aliveness");
+
+    const result = await checkBotAliveness();
+
+    // Should use console fallback
+    expect(result.aliveness).toBe("active");
+    expect(result.source).toBe("console");
+
+    // Console should have been called as fallback
+    expect(mockConsoleMethod).toHaveBeenCalled();
+  });
+
+  it("should handle Memory.stats showing no creeps but rooms exist", async () => {
+    // Mock: Memory.stats shows rooms but no creeps (respawn scenario)
+    global.fetch = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        data: {
+          creeps: {},
+          rooms: {
+            E54N39: { rcl: 4 }
+          }
+        }
+      })
+    });
+
+    const { checkBotAliveness } = await import("../../packages/utilities/scripts/check-bot-aliveness");
+
+    const result = await checkBotAliveness();
+
+    expect(result.aliveness).toBe("respawn_needed");
+    expect(result.source).toBe("memory_stats");
+    expect(result.status).toBe("rooms_no_creeps");
+  });
+
+  it("should handle Memory.stats showing no presence", async () => {
+    // Mock: Memory.stats shows no creeps and no rooms
+    global.fetch = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        data: {
+          creeps: {},
+          rooms: {}
+        }
+      })
+    });
+
+    const { checkBotAliveness } = await import("../../packages/utilities/scripts/check-bot-aliveness");
+
+    const result = await checkBotAliveness();
+
+    expect(result.aliveness).toBe("spawn_placement_needed");
+    expect(result.source).toBe("memory_stats");
+    expect(result.status).toBe("no_presence");
   });
 });
