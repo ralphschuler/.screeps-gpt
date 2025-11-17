@@ -36,12 +36,25 @@ Documented patterns, insights, and lessons learned from implementation:
 
 Architectural Decision Records (ADRs) documenting significant design choices:
 
-- [ADR Template](decisions/README.md) - Template for documenting decisions
-- Individual ADRs for major architectural choices
+- [ADR Template and Guidelines](decisions/README.md) - Template for documenting decisions
+- [ADR-001: Manager-Based Architecture](decisions/adr-001-manager-based-architecture.md) - Foundation architecture pattern
+- [ADR-002: Role-Based to Task-Based Migration](decisions/adr-002-role-to-task-migration.md) - Phase 2 transition strategy
+- [ADR-003: Stats Collection Resilience](decisions/adr-003-stats-collection-resilience.md) - Critical infrastructure hardening
 
-## Strategic Roadmap
+## Strategic Planning Documents
 
-See [roadmap.md](roadmap.md) for current phase status, success metrics, and upcoming milestones.
+### Current State and Progress
+
+- **[Strategic Roadmap](roadmap.md)** - Current phase status, success metrics, and upcoming milestones
+- **[Technical Debt Roadmap](technical-debt-roadmap.md)** - Comprehensive debt reduction and future-proofing strategy (2025-11-17)
+
+The Technical Debt Roadmap provides a systematic approach to reducing technical debt, improving code quality, and preparing for long-term scalability. It includes:
+
+- Prioritized technical debt inventory (critical, high, medium, low)
+- Architecture evaluation and migration strategies
+- Code quality improvements and testing expansion
+- Infrastructure modernization plans
+- Phased implementation roadmap (12 weeks)
 
 ## Usage for Autonomous Agents
 
@@ -73,7 +86,16 @@ Strategic documentation should be updated:
 
 ## Related Documentation
 
+### Operational Documentation
+
+- [Operational Runbooks](../operations/runbooks.md) - Emergency procedures, deployment, troubleshooting (2025-11-17)
+- [Testing Strategy](../runtime/testing-strategy.md) - Comprehensive testing approach and guidelines (2025-11-17)
+- [Monitoring Documentation](../operations/) - Health checks, alerting, and telemetry
+
+### Repository Documentation
+
 - [TASKS.md](../../TASKS.md) - Tactical work items aligned to phases
 - [CHANGELOG.md](../../CHANGELOG.md) - Release history and implementation details
 - [AGENTS.md](../../AGENTS.md) - Agent guidelines and operational rules
 - [docs/automation/overview.md](../automation/overview.md) - Workflow specifications
+- [docs/research/](../research/) - Analysis of external patterns (Overmind, creep-tasks, etc.)

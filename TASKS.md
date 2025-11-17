@@ -8,6 +8,36 @@
 - [ ] Set up PTR monitoring for Phase 1 metrics (energy surplus, controller downgrade, spawn utilization)
 - [ ] Configure evaluation pipeline to track roadmap progression milestones
 
+### Technical Debt Reduction (2025-11-17)
+
+**Documentation**: [Technical Debt Roadmap](docs/strategy/technical-debt-roadmap.md)
+
+**Critical Priority (Weeks 1-2)**:
+
+- [ ] Fix quality gate workflow reliability (timing issues, guard summary aggregation)
+- [ ] Add BehaviorController unit tests (#694) - 15-20 tests
+- [ ] Add RespawnManager unit tests (#694) - 10-15 tests
+- [ ] Complete stats collection hardening (#722, #724) - redundant validation pathways
+- [ ] Document emergency procedures runbook (#696) - completed initial version
+
+**High Priority (Weeks 3-6)**:
+
+- [ ] Complete Phase 2 task framework implementation (#723, #653, #715)
+- [ ] Implement unsafe type assertion fixes (#690) - use Zod for runtime validation
+- [ ] Add kernel integration tests (#634) - full-tick mockup tests
+- [ ] Create operational runbooks (#802) - completed initial version
+- [ ] Establish performance baselines (#820) - metrics and thresholds
+- [ ] Write ADRs for key architectural patterns - completed 3 initial ADRs
+
+**Medium Priority (Weeks 7-12)**:
+
+- [ ] Implement CPU bucket-aware scheduler (#793) - profiler-based with priority deferral
+- [ ] Add RoomManager abstraction - multi-room preparation
+- [ ] Implement path caching system - Overmind pattern with TTL
+- [ ] Fix Date.now() non-determinism (#693) - use Game.time wrapper
+- [ ] Complete workflow modernization - label migration, dependency optimization
+- [ ] Multi-room architecture preparation - Phase 4 planning
+
 ### Phase 1: Foundation (HIGH Priority)
 
 - [x] Complete Phase 1 bootstrapping and RCL 1-2 foundation _(2025-11-06)_

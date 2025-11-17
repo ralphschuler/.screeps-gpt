@@ -164,7 +164,20 @@ As ADRs are created, maintain this index for quick reference:
 
 ### Active Decisions
 
-_(No ADRs created yet - this section will be populated as architectural decisions are documented)_
+- [ADR-001: Manager-Based Architecture](adr-001-manager-based-architecture.md) - Accepted (2024-11-06)
+  - **Status**: Active, proven in production
+  - **Summary**: Modular manager classes orchestrated by central Kernel for separation of concerns
+  - **Impact**: Foundation for all phases, supports autonomous development
+
+- [ADR-002: Role-Based to Task-Based Architecture Migration](adr-002-role-to-task-migration.md) - Accepted, In Progress (2024-11-06, updated 2025-11-17)
+  - **Status**: Phase 2 - 60% complete
+  - **Summary**: Incremental migration from fixed roles to flexible task system via hybrid coexistence
+  - **Impact**: Enables multi-room coordination, improves creep utilization efficiency
+
+- [ADR-003: Stats Collection Resilience and Architecture](adr-003-stats-collection-resilience.md) - Accepted (2025-11-15)
+  - **Status**: Active, validated after #711 resolution
+  - **Summary**: Defensive initialization with redundant validation for critical stats infrastructure
+  - **Impact**: Prevents monitoring blackouts, enables strategic planning and autonomous feedback
 
 ### Deprecated Decisions
 
