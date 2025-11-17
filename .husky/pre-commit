@@ -1,4 +1,4 @@
 npx lint-staged
 npm run test:unit
-# npm run test:regression  # Temporarily disabled - pre-existing failures from PR #966
-# npm run test:coverage    # Temporarily disabled to speed up commit
+npm run test:regression
+npm run test:coverage
