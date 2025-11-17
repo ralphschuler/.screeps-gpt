@@ -46,4 +46,4 @@ runs:
         SCREEPS_PATH: ${{ inputs.screeps-path }}
       run: |
         cd ${{ github.action_path }}/../../..
-        bun run tsx scripts/screeps-autospawn.ts
+        bun run tsx packages/utilities/scripts/screeps-autospawn.ts

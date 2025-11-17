@@ -184,7 +184,7 @@ Comprehensive error handling at each step:
 export SCREEPS_TOKEN="your-test-token"
 
 # Run the script
-bun run tsx scripts/screeps-autospawn.ts
+bun run tsx packages/utilities/scripts/screeps-autospawn.ts
 ```
 
 ### Linting
