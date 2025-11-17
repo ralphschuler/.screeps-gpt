@@ -1,7 +1,8 @@
 import Hexo from "hexo";
 import { resolve } from "node:path";
-import { cp, rm } from "node:fs/promises";
+import { cp, rm, access, mkdir } from "node:fs/promises";
 import { createRequire } from "node:module";
+import { execSync } from "node:child_process";
 
 declare global {
   // The Hexo plugin system expects a global `hexo` reference during initialization.
@@ -10,8 +11,41 @@ declare global {
 
 const require = createRequire(import.meta.url);
 
+async function ensureCactusTheme(): Promise<void> {
+  const themePath = resolve("packages/docs/themes/cactus");
+  const themeGitPath = resolve("packages/docs/themes/cactus/.git");
+
+  try {
+    await access(themeGitPath);
+    console.log("✓ Cactus theme already exists");
+  } catch {
+    console.log("Cloning Hexo Cactus theme...");
+
+    // Ensure themes directory exists
+    const themesDir = resolve("packages/docs/themes");
+    await mkdir(themesDir, { recursive: true });
+
+    // Remove any existing cactus directory (without .git)
+    try {
+      await rm(themePath, { recursive: true, force: true });
+    } catch {
+      // Directory doesn't exist, that's fine
+    }
+
+    // Clone the theme
+    execSync("git clone https://github.com/probberechts/hexo-theme-cactus.git cactus", {
+      cwd: themesDir,
+      stdio: "inherit"
+    });
+    console.log("✓ Cactus theme cloned successfully");
+  }
+}
+
 async function buildHexoSite(): Promise<void> {
   console.log("Building Hexo documentation site...\n");
+
+  // Ensure cactus theme is available
+  await ensureCactusTheme();
 
   const hexo = new Hexo(resolve("packages/docs"), {
     silent: false,
@@ -20,7 +54,7 @@ async function buildHexoSite(): Promise<void> {
 
   try {
     // Initialize Hexo
-    console.log("Initializing Hexo...");
+    console.log("\nInitializing Hexo...");
     await hexo.init();
 
     // Load plugins and configuration
