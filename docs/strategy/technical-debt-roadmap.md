@@ -126,7 +126,7 @@ This document establishes a comprehensive strategy for reducing technical debt a
 
 #### 10. Operational Documentation
 
-- **Issue**: ralphschuler/.screeps-gpt#802 - Create operational runbooks and ADRs
+- **Issue**: #802 - Create operational runbooks and ADRs
 - **Impact**: Medium - Improves maintainability and onboarding
 - **Effort**: Medium (3-5 days)
 - **Items**:
