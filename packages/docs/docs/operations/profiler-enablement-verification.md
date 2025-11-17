@@ -56,11 +56,11 @@ After deployment, the profiler should auto-start on first tick:
 
 ```javascript
 // In Screeps console, check profiler status
-Profiler.status()
+Profiler.status();
 // Expected: "Profiler is running"
 
 // Check when it started
-Memory.profiler.start
+Memory.profiler.start;
 // Expected: tick number (e.g., 12345)
 ```
 
@@ -70,15 +70,15 @@ Wait 50-100 ticks, then check if data is being collected:
 
 ```javascript
 // Check data structure
-Object.keys(Memory.profiler.data).length
+Object.keys(Memory.profiler.data).length;
 // Expected: > 0 (number of profiled functions)
 
 // View total profiled ticks
-Memory.profiler.total
+Memory.profiler.total;
 // Expected: number of ticks since start
 
 // Get sample function data
-Memory.profiler.data["BehaviorController:execute"]
+Memory.profiler.data["BehaviorController:execute"];
 // Expected: { calls: N, time: X.XX }
 ```
 
@@ -136,6 +136,7 @@ npx tsx packages/utilities/scripts/check-profiler-health.ts
 **Cause**: Auto-start didn't work or profiler was manually stopped
 
 **Solution**:
+
 1. Check deployment logs for "[Profiler] Auto-started profiler data collection"
 2. Wait for next monitoring cycle (runs every 30 min)
 3. Or manually start: `Profiler.start()` in console
@@ -145,6 +146,7 @@ npx tsx packages/utilities/scripts/check-profiler-health.ts
 **Cause**: Code built with `PROFILER_ENABLED=false`
 
 **Solution**:
+
 1. Check deploy.yml workflow env:
    ```yaml
    PROFILER_ENABLED: ${{ vars.PROFILER_ENABLED || 'true' }}
@@ -160,6 +162,7 @@ npx tsx packages/utilities/scripts/check-profiler-health.ts
 **Cause**: Not enough ticks have passed or no profiled functions executed
 
 **Solution**:
+
 1. Check `Memory.profiler.start` is defined (profiler running)
 2. Wait 100+ ticks for meaningful data
 3. Verify profiled decorators are on executed functions
@@ -170,6 +173,7 @@ npx tsx packages/utilities/scripts/check-profiler-health.ts
 **Cause**: Monitoring workflow not running on schedule
 
 **Solution**:
+
 1. Check GitHub Actions workflow runs
 2. Verify workflow is not disabled
 3. Check for API rate limits or token expiry
@@ -180,6 +184,7 @@ npx tsx packages/utilities/scripts/check-profiler-health.ts
 **Cause**: Invalid `SCREEPS_TOKEN` or network issues
 
 **Solution**:
+
 1. Verify `SCREEPS_TOKEN` secret is set correctly
 2. Check token has not expired
 3. Verify network connectivity to Screeps server

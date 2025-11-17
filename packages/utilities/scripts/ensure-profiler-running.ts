@@ -10,12 +10,12 @@ interface ConsoleResponse {
 /**
  * Ensures the profiler is running via console command.
  * This script acts as a backup to the auto-start feature in main.ts.
- * 
+ *
  * Steps:
  * 1. Check if profiler is initialized (Memory.profiler exists)
  * 2. Check if profiler is already running (Memory.profiler.start is defined)
  * 3. If not running, execute Profiler.start() via console
- * 
+ *
  * This script is idempotent - safe to run multiple times.
  */
 
