@@ -75,7 +75,7 @@ describe("AnalyticsReporter", () => {
     it("should track oldest report timestamp", () => {
       const reporter = new AnalyticsReporter(config);
 
-      const firstTimestamp = (global as any).Game.time;
+      const firstTimestamp = (global as unknown as { Game: Game }).Game.time;
       reporter.queueReport({ tick: 1000 });
 
       const summary = reporter.getSummary();
@@ -86,7 +86,7 @@ describe("AnalyticsReporter", () => {
       const reporter = new AnalyticsReporter(config);
 
       // Set Game.time to a specific value
-      (global as any).Game.time = 12345;
+      (global as unknown as { Game: Game }).Game.time = 12345;
 
       reporter.queueReport({ tick: 1000 });
 

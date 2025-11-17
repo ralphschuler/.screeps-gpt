@@ -21,22 +21,22 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
  */
 describe("Regression: Memory.stats Defensive Initialization (#863)", () => {
   // Store original global state to restore after each test
-  let originalGame: any;
-  let originalMemory: any;
-  let originalProfilerEnabled: any;
+  let originalGame: Game | undefined;
+  let originalMemory: Memory | undefined;
+  let originalProfilerEnabled: boolean | undefined;
 
   beforeEach(() => {
     // Save original global state
-    originalGame = (global as any).Game;
-    originalMemory = (global as any).Memory;
-    originalProfilerEnabled = (global as any).__PROFILER_ENABLED__;
+    originalGame = (global as unknown as { Game: Game }).Game;
+    originalMemory = (global as unknown as { Memory: Memory }).Memory;
+    originalProfilerEnabled = (global as unknown as { __PROFILER_ENABLED__: boolean }).__PROFILER_ENABLED__;
   });
 
   afterEach(() => {
     // Restore original global state to prevent test pollution
-    (global as any).Game = originalGame;
-    (global as any).Memory = originalMemory;
-    (global as any).__PROFILER_ENABLED__ = originalProfilerEnabled;
+    (global as unknown as { Game: Game }).Game = originalGame;
+    (global as unknown as { Memory: Memory }).Memory = originalMemory;
+    (global as unknown as { __PROFILER_ENABLED__: boolean }).__PROFILER_ENABLED__ = originalProfilerEnabled;
   });
 
   it("should initialize Memory.stats structure in loop function", async () => {
@@ -47,7 +47,7 @@ describe("Regression: Memory.stats Defensive Initialization (#863)", () => {
     const mockMemory = {} as Memory;
 
     // Mock Game object
-    (global as any).Game = {
+    (global as unknown as { Game: Game }).Game = {
       time: 12345,
       cpu: {
         getUsed: () => 5.0,
@@ -60,10 +60,10 @@ describe("Regression: Memory.stats Defensive Initialization (#863)", () => {
     };
 
     // Mock Memory globally
-    (global as any).Memory = mockMemory;
+    (global as unknown as { Memory: Memory }).Memory = mockMemory;
 
     // Mock __PROFILER_ENABLED__ as false to skip profiler initialization
-    (global as any).__PROFILER_ENABLED__ = false;
+    (global as unknown as { __PROFILER_ENABLED__: boolean }).__PROFILER_ENABLED__ = false;
 
     // Execute loop - this should defensively initialize Memory.stats
     mainModule.loop();
@@ -97,7 +97,7 @@ describe("Regression: Memory.stats Defensive Initialization (#863)", () => {
     } as Memory;
 
     // Mock Game object
-    (global as any).Game = {
+    (global as unknown as { Game: Game }).Game = {
       time: 12345,
       cpu: {
         getUsed: () => 5.0,
@@ -110,10 +110,10 @@ describe("Regression: Memory.stats Defensive Initialization (#863)", () => {
     };
 
     // Mock Memory globally
-    (global as any).Memory = mockMemory;
+    (global as unknown as { Memory: Memory }).Memory = mockMemory;
 
     // Mock __PROFILER_ENABLED__ as false
-    (global as any).__PROFILER_ENABLED__ = false;
+    (global as unknown as { __PROFILER_ENABLED__: boolean }).__PROFILER_ENABLED__ = false;
 
     // Execute loop - defensive init should skip since stats already exists (??= operator)
     // However, StatsCollector will replace it with fresh data during kernel.run()
@@ -134,7 +134,7 @@ describe("Regression: Memory.stats Defensive Initialization (#863)", () => {
     const mainModule = await import("../../packages/bot/src/main");
 
     // Mock Game object
-    (global as any).Game = {
+    (global as unknown as { Game: Game }).Game = {
       time: 12345,
       cpu: {
         getUsed: () => 5.0,
@@ -147,17 +147,17 @@ describe("Regression: Memory.stats Defensive Initialization (#863)", () => {
     };
 
     // Mock __PROFILER_ENABLED__ as false
-    (global as any).__PROFILER_ENABLED__ = false;
+    (global as unknown as { __PROFILER_ENABLED__: boolean }).__PROFILER_ENABLED__ = false;
 
     // First execution - Memory.stats will be initialized
     const mockMemory1 = {} as Memory;
-    (global as any).Memory = mockMemory1;
+    (global as unknown as { Memory: Memory }).Memory = mockMemory1;
     mainModule.loop();
     expect(mockMemory1.stats).toBeDefined();
 
     // Simulate Memory reset (like Screeps server might do between script loads)
     const mockMemory2 = {} as Memory;
-    (global as any).Memory = mockMemory2;
+    (global as unknown as { Memory: Memory }).Memory = mockMemory2;
 
     // Second execution - Memory.stats should be re-initialized
     mainModule.loop();
@@ -176,7 +176,7 @@ describe("Regression: Memory.stats Defensive Initialization (#863)", () => {
     const mockMemory = {} as Memory;
 
     // Mock Game object
-    (global as any).Game = {
+    (global as unknown as { Game: Game }).Game = {
       time: 12345,
       cpu: {
         getUsed: () => 5.0,
@@ -188,10 +188,10 @@ describe("Regression: Memory.stats Defensive Initialization (#863)", () => {
       rooms: {}
     };
 
-    (global as any).Memory = mockMemory;
+    (global as unknown as { Memory: Memory }).Memory = mockMemory;
 
     // Enable profiler to test both defensive initializations
-    (global as any).__PROFILER_ENABLED__ = true;
+    (global as unknown as { __PROFILER_ENABLED__: boolean }).__PROFILER_ENABLED__ = true;
 
     // Execute loop
     mainModule.loop();

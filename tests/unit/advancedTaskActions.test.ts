@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-deprecated */
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   TowerAttackAction,
@@ -45,7 +46,9 @@ describe("Advanced Task Actions", () => {
         pos: { x: 15, y: 15 }
       } as Creep;
 
-      (Game.getObjectById as any).mockReturnValueOnce(mockTower).mockReturnValueOnce(mockTarget);
+      (Game.getObjectById as unknown as ReturnType<typeof vi.fn>)
+        .mockReturnValueOnce(mockTower)
+        .mockReturnValueOnce(mockTarget);
 
       const action = new TowerAttackAction(mockTower.id, mockTarget.id);
       const result = action.action(mockCreep);
@@ -69,7 +72,9 @@ describe("Advanced Task Actions", () => {
         pos: { x: 15, y: 15 }
       } as Creep;
 
-      (Game.getObjectById as any).mockReturnValueOnce(mockTower).mockReturnValueOnce(mockTarget);
+      (Game.getObjectById as unknown as ReturnType<typeof vi.fn>)
+        .mockReturnValueOnce(mockTower)
+        .mockReturnValueOnce(mockTarget);
 
       const action = new TowerAttackAction(mockTower.id, mockTarget.id);
       const result = action.action(mockCreep);
@@ -93,7 +98,7 @@ describe("Advanced Task Actions", () => {
         hitsMax: 100
       } as Creep;
 
-      (Game.getObjectById as any)
+      (Game.getObjectById as unknown as ReturnType<typeof vi.fn>)
         .mockReturnValueOnce(mockTower)
         .mockReturnValueOnce(mockTarget)
         .mockReturnValueOnce(mockTarget); // updatedTarget check
@@ -119,7 +124,9 @@ describe("Advanced Task Actions", () => {
         hitsMax: 100
       } as Creep;
 
-      (Game.getObjectById as any).mockReturnValueOnce(mockTower).mockReturnValueOnce(mockTarget);
+      (Game.getObjectById as unknown as ReturnType<typeof vi.fn>)
+        .mockReturnValueOnce(mockTower)
+        .mockReturnValueOnce(mockTarget);
 
       const action = new TowerHealAction(mockTower.id, mockTarget.id);
       const result = action.action(mockCreep);
@@ -143,7 +150,7 @@ describe("Advanced Task Actions", () => {
         hitsMax: 1000
       } as Structure;
 
-      (Game.getObjectById as any)
+      (Game.getObjectById as unknown as ReturnType<typeof vi.fn>)
         .mockReturnValueOnce(mockTower)
         .mockReturnValueOnce(mockStructure)
         .mockReturnValueOnce(mockStructure); // updatedStructure check
@@ -164,8 +171,8 @@ describe("Advanced Task Actions", () => {
         boostCreep: vi.fn().mockReturnValue(OK)
       } as unknown as StructureLab;
 
-      (Game.getObjectById as any).mockReturnValue(mockLab);
-      (mockCreep.pos.getRangeTo as any).mockReturnValue(1);
+      (Game.getObjectById as unknown as ReturnType<typeof vi.fn>).mockReturnValue(mockLab);
+      (mockCreep.pos.getRangeTo as unknown as ReturnType<typeof vi.fn>).mockReturnValue(1);
 
       const action = new BoostCreepAction(mockLab.id);
       const result = action.action(mockCreep);
@@ -181,8 +188,8 @@ describe("Advanced Task Actions", () => {
         boostCreep: vi.fn().mockReturnValue(ERR_NOT_IN_RANGE)
       } as unknown as StructureLab;
 
-      (Game.getObjectById as any).mockReturnValue(mockLab);
-      (mockCreep.pos.getRangeTo as any).mockReturnValue(5);
+      (Game.getObjectById as unknown as ReturnType<typeof vi.fn>).mockReturnValue(mockLab);
+      (mockCreep.pos.getRangeTo as unknown as ReturnType<typeof vi.fn>).mockReturnValue(5);
 
       const action = new BoostCreepAction(mockLab.id);
       const result = action.action(mockCreep);
@@ -208,7 +215,7 @@ describe("Advanced Task Actions", () => {
         id: "lab3" as Id<StructureLab>
       } as StructureLab;
 
-      (Game.getObjectById as any)
+      (Game.getObjectById as unknown as ReturnType<typeof vi.fn>)
         .mockReturnValueOnce(mockLab)
         .mockReturnValueOnce(mockLab1)
         .mockReturnValueOnce(mockLab2);
@@ -235,7 +242,7 @@ describe("Advanced Task Actions", () => {
         id: "lab3" as Id<StructureLab>
       } as StructureLab;
 
-      (Game.getObjectById as any)
+      (Game.getObjectById as unknown as ReturnType<typeof vi.fn>)
         .mockReturnValueOnce(mockLab)
         .mockReturnValueOnce(mockLab1)
         .mockReturnValueOnce(mockLab2);
@@ -266,7 +273,9 @@ describe("Advanced Task Actions", () => {
         }
       } as unknown as StructureLink;
 
-      (Game.getObjectById as any).mockReturnValueOnce(mockSourceLink).mockReturnValueOnce(mockTargetLink);
+      (Game.getObjectById as unknown as ReturnType<typeof vi.fn>)
+        .mockReturnValueOnce(mockSourceLink)
+        .mockReturnValueOnce(mockTargetLink);
 
       const action = new LinkTransferAction(mockSourceLink.id, mockTargetLink.id);
       const result = action.action(mockCreep);
@@ -292,7 +301,9 @@ describe("Advanced Task Actions", () => {
         }
       } as unknown as StructureLink;
 
-      (Game.getObjectById as any).mockReturnValueOnce(mockSourceLink).mockReturnValueOnce(mockTargetLink);
+      (Game.getObjectById as unknown as ReturnType<typeof vi.fn>)
+        .mockReturnValueOnce(mockSourceLink)
+        .mockReturnValueOnce(mockTargetLink);
 
       const action = new LinkTransferAction(mockSourceLink.id, mockTargetLink.id);
       const result = action.action(mockCreep);
@@ -308,8 +319,8 @@ describe("Advanced Task Actions", () => {
         pos: { x: 25, y: 25 }
       } as StructureController;
 
-      (Game.getObjectById as any).mockReturnValue(mockController);
-      (mockCreep.pos.getRangeTo as any).mockReturnValue(1);
+      (Game.getObjectById as unknown as ReturnType<typeof vi.fn>).mockReturnValue(mockController);
+      (mockCreep.pos.getRangeTo as unknown as ReturnType<typeof vi.fn>).mockReturnValue(1);
       mockCreep.generateSafeMode = vi.fn().mockReturnValue(OK);
 
       const action = new GenerateSafeModeAction(mockController.id);
@@ -325,8 +336,8 @@ describe("Advanced Task Actions", () => {
         pos: { x: 25, y: 25 }
       } as StructureController;
 
-      (Game.getObjectById as any).mockReturnValue(mockController);
-      (mockCreep.pos.getRangeTo as any).mockReturnValue(5);
+      (Game.getObjectById as unknown as ReturnType<typeof vi.fn>).mockReturnValue(mockController);
+      (mockCreep.pos.getRangeTo as unknown as ReturnType<typeof vi.fn>).mockReturnValue(5);
       mockCreep.generateSafeMode = vi.fn().mockReturnValue(ERR_NOT_IN_RANGE);
 
       const action = new GenerateSafeModeAction(mockController.id);

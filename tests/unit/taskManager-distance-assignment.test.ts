@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-deprecated */
 import { describe, it, expect, beforeEach, vi, beforeAll } from "vitest";
 
 // Initialize Game global before any imports that might use it

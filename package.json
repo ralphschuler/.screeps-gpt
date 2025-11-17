@@ -54,6 +54,7 @@
     "test:performance": "vitest run --dir tests/performance",
     "test:coverage": "vitest run --coverage",
     "validate:docs-links": "tsx packages/utilities/scripts/validate-docs-links.ts",
+    "docs:generate-blog-posts": "tsx packages/utilities/scripts/generate-missing-blog-posts.ts",
     "deploy": "tsx packages/utilities/scripts/deploy.ts",
     "deploy:no-profiler": "PROFILER_ENABLED=false tsx packages/utilities/scripts/deploy.ts",
     "version:bump": "tsx packages/utilities/scripts/bump-version.ts",

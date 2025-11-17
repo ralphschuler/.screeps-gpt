@@ -80,6 +80,7 @@ For architectural inspiration and large-scale automation patterns, explore the o
 - Add a regression test that reproduces the bug *before* applying the fix; reference that test in both the documentation and `CHANGELOG.md`.
 - Update the `[Unreleased]` section of `CHANGELOG.md` with every pull request and run `bun run versions:update` to refresh the generated release index under `docs/changelog/`.
 - Regenerate the static documentation site locally with `bun run build:docs-site` when editing docs so you can preview what GitHub Pages will publish.
+- Generate blog posts for new releases automatically (via workflow) or manually with `bun run docs:generate-blog-posts` for bulk generation of missing posts.
 
 ## Maintenance Tips
 
