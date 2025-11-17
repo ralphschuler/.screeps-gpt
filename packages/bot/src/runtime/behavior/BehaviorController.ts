@@ -937,13 +937,15 @@ export class BehaviorController {
 
     // Priority-based spawn order: adjust dynamically based on critical needs
     // When haulers are critically needed (storage/towers exist but 0 haulers),
-    // prioritize them to prevent energy logistics starvation
+    // prioritize them FIRST to activate logistics infrastructure immediately.
+    // This is critical because storage/towers indicate energy already exists in the room
+    // and needs to be distributed to spawns/extensions/towers for operations.
     let roleOrder: RoleName[];
     if (needsCriticalHauler) {
-      // Hauler priority mode: spawn haulers before other support roles
+      // Hauler emergency mode: spawn hauler first to activate logistics
       roleOrder = [
+        "hauler", // CRITICAL: logistics infrastructure exists but not operational
         "harvester",
-        "hauler", // Critical: needed for logistics
         "upgrader",
         "builder",
         "stationaryHarvester",
