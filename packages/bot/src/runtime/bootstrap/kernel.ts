@@ -319,6 +319,11 @@ export class Kernel {
             `[Kernel] Phase 1 road planning completed: ${result.created} roads planned in ${roadPlanningStatus.roomName}`
           );
         }
+        if (result.created === 0 || result.failed > 0) {
+          this.logger.log?.(
+            `[Kernel] Phase 1 road planning: ${result.created} roads created, ${result.failed} failed in ${roadPlanningStatus.roomName}`
+          );
+        }
         this.bootstrapManager.markRoadsPlanned(memory, roadPlanningStatus.roomName);
       }
     }
