@@ -5,9 +5,9 @@
  * configuration to generate blog posts after post-merge-release completes.
  *
  * Issue Context:
- * The blog generation lifecycle follows: post-merge-release → tag creation → blog generation
- * The workflow should be triggered by both workflow_run (post-merge-release completion)
- * and tag push events (v* pattern) for backward compatibility.
+ * The post-merge-release workflow creates a tag and triggers blog generation via workflow_run.
+ * Blog generation and tag-triggered deployment now happen in parallel after post-merge-release completes,
+ * with workflow_run (post-merge-release completion) and tag push events (v* pattern) both triggering the workflow for compatibility.
  *
  * Related Issue: Trigger deploy and blog workflows after post-merge-release completion
  */
