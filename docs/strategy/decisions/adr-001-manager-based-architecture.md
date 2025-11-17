@@ -167,7 +167,7 @@ export class ExampleManager {
 
 Managers should minimize dependencies on each other. When needed:
 
-- Use shared contracts (`src/shared/contracts.ts`)
+- Use shared contracts (`packages/bot/src/shared/contracts.ts`)
 - Access game state directly (Game, Memory)
 - Communicate via Memory structures
 - Avoid direct manager-to-manager calls
