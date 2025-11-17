@@ -570,7 +570,8 @@ export class BehaviorController {
     room: Room | undefined,
     spawnCost: number,
     role: string,
-    harvesterCount: number
+    harvesterCount: number,
+    isCriticalSpawn: boolean = false
   ): boolean {
     if (!room) {
       // For test mocks without room property, allow spawning
@@ -593,6 +594,13 @@ export class BehaviorController {
     const isEmergencySpawn = role === "harvester" && harvesterCount < 2;
     if (isEmergencySpawn) {
       // In emergency mode, only check if we have enough energy for the spawn
+      return energyAvailable >= spawnCost;
+    }
+
+    // Critical Spawn Mode: Bypass reserve for critical infrastructure roles
+    // When logistics infrastructure exists but haulers are missing, treat as critical
+    if (isCriticalSpawn) {
+      // In critical mode, only check if we have enough energy for the spawn
       return energyAvailable >= spawnCost;
     }
 
@@ -1015,7 +1023,9 @@ export class BehaviorController {
 
       // Check if we can afford the creep while maintaining energy reserves (20% buffer)
       // Emergency mode bypasses reserve for harvesters when critically low
-      if (!this.canAffordCreepWithReserve(spawn.room as Room | undefined, spawnCost, role, harvesterCount)) {
+      // Critical mode bypasses reserve for haulers when logistics infrastructure exists but is not operational
+      const isCriticalSpawn = needsCriticalHauler && role === "hauler";
+      if (!this.canAffordCreepWithReserve(spawn.room as Room | undefined, spawnCost, role, harvesterCount, isCriticalSpawn)) {
         // Skip spawning to maintain emergency reserves
         continue;
       }
