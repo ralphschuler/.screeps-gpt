@@ -24,7 +24,7 @@ runs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: "16"
+        node-version: "20"
     - name: Send push notification
       shell: bash
       env:
@@ -34,5 +34,12 @@ runs:
         PUSH_LINK: ${{ inputs.link }}
         PUSH_PRIORITY: ${{ inputs.priority }}
       run: |
-        cd ${{ github.action_path }}/../../..
+        REPO_ROOT=${{ github.action_path }}/../../..
+        cd "$REPO_ROOT"
+        if [ ! -f "packages/utilities/scripts/send-push-notification.ts" ]; then
+          echo "Error: Script not found at packages/utilities/scripts/send-push-notification.ts"
+          echo "Current directory: $(pwd)"
+          echo "Contents: $(ls -la)"
+          exit 1
+        fi
         npx tsx packages/utilities/scripts/send-push-notification.ts
