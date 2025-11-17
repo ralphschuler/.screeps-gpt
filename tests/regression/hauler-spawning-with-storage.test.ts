@@ -56,7 +56,8 @@ describe("Hauler Spawning with Storage/Towers", () => {
       pos: { x: 24, y: 24, roomName: "W1N1" } as RoomPosition,
       store: {
         getUsedCapacity: vi.fn().mockReturnValue(1000),
-        getFreeCapacity: vi.fn().mockReturnValue(49000)
+        getFreeCapacity: vi.fn().mockReturnValue(49000),
+        getCapacity: vi.fn().mockReturnValue(50000)
       }
     } as unknown as StructureStorage;
 
@@ -80,7 +81,7 @@ describe("Hauler Spawning with Storage/Towers", () => {
         progressTotal: 1000
       } as StructureController,
       storage: mockStorage,
-      find: vi.fn((findConstant: FindConstant, options?: unknown) => {
+      find: vi.fn((findConstant: FindConstant, _options?: unknown) => {
         if (findConstant === FIND_SOURCES) {
           return [mockSource];
         }
