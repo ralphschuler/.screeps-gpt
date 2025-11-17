@@ -208,7 +208,7 @@ Memory.stats = new Proxy(
 
 ### Defensive Pattern
 
-**1. Kernel Initialization** (`src/runtime/bootstrap/kernel.ts`):
+**1. Kernel Initialization** (`packages/bot/src/runtime/bootstrap/kernel.ts`):
 
 ```typescript
 export function loop(): void {
