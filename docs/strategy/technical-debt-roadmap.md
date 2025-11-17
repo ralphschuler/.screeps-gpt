@@ -238,11 +238,11 @@ This document establishes a comprehensive strategy for reducing technical debt a
 
 **Critical Components** (Target: >90% coverage):
 
-- Kernel orchestration (`src/runtime/bootstrap/kernel.ts`)
-- BehaviorController (`src/runtime/behavior/BehaviorController.ts`)
-- RespawnManager (`src/runtime/respawn/RespawnManager.ts`)
-- StatsCollector (`src/runtime/metrics/StatsCollector.ts`)
-- TaskManager (`src/runtime/tasks/TaskManager.ts`)
+- Kernel orchestration (`packages/bot/src/runtime/bootstrap/kernel.ts`)
+- BehaviorController (`packages/bot/src/runtime/behavior/BehaviorController.ts`)
+- RespawnManager (`packages/bot/src/runtime/respawn/RespawnManager.ts`)
+- StatsCollector (`packages/bot/src/runtime/metrics/StatsCollector.ts`)
+- TaskManager (`packages/bot/src/runtime/tasks/TaskManager.ts`)
 
 **Current Status**: Good coverage overall (1020 tests), gaps in critical components
 
