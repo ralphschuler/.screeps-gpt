@@ -1,0 +1,14 @@
+{
+  "fetchedAt": "2025-11-17T00:34:39.996Z",
+  "shard": "shard3",
+  "occupiedRooms": [],
+  "adjacentRooms": [],
+  "summary": {
+    "totalOccupied": 0,
+    "totalAdjacent": 0,
+    "hostileAdjacent": 0,
+    "neutralAdjacent": 0,
+    "friendlyAdjacent": 0,
+    "noviceZones": 0
+  }
+}
