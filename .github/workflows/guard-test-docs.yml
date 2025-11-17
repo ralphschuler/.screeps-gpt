@@ -40,8 +40,6 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: "20"
-          cache: "npm"
-          cache-dependency-path: packages/docs/package-lock.json
 
       - name: Install main dependencies
         run: bun install --no-optional
