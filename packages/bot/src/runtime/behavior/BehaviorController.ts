@@ -680,6 +680,8 @@ export class BehaviorController {
     let totalOperationalLinks = 0;
     let hasAnyContainersOrStorage = false;
     let hasTowers = false;
+    let totalConstructionSites = 0;
+    let hasDamagedStructures = false;
 
     for (const room of Object.values(game.rooms)) {
       if (!room.controller?.my) {
@@ -691,6 +693,23 @@ export class BehaviorController {
       // Find all sources in the room
       const sources = room.find(FIND_SOURCES) as Source[];
       totalSources += sources.length;
+
+      // Count construction sites
+      const constructionSites = room.find(FIND_CONSTRUCTION_SITES);
+      totalConstructionSites += constructionSites.length;
+
+      // Check for damaged structures (excluding walls/ramparts which have separate logic)
+      const damagedStructures = room.find(FIND_STRUCTURES, {
+        filter: (s: Structure) => {
+          if (!("hits" in s) || typeof s.hits !== "number") return false;
+          // Skip walls and ramparts - they have separate wall upgrade manager logic
+          if (s.structureType === STRUCTURE_WALL || s.structureType === STRUCTURE_RAMPART) return false;
+          return s.hits < s.hitsMax;
+        }
+      });
+      if (damagedStructures.length > 0) {
+        hasDamagedStructures = true;
+      }
 
       // Check for storage or containers anywhere in room (not just near sources)
       // This ensures haulers spawn for tower refilling and storage management
@@ -797,6 +816,34 @@ export class BehaviorController {
         const optimalHarvesters = this.calculateOptimalHarvesterCount(firstRoom);
         adjustedMinimums.harvester = optimalHarvesters;
       }
+    }
+
+    // Dynamic builder activation based on construction sites
+    // Spawn 1-2 builders when construction work is needed
+    if (totalConstructionSites > 0) {
+      // Scale builders with construction queue size
+      // 1-5 sites: 1 builder, 6-15 sites: 2 builders, 16+ sites: 3 builders
+      if (totalConstructionSites > 15) {
+        adjustedMinimums.builder = 3;
+      } else if (totalConstructionSites > 5) {
+        adjustedMinimums.builder = 2;
+      } else {
+        adjustedMinimums.builder = 1;
+      }
+    } else {
+      // No construction sites: maintain minimum builder count (from default minimum = 2)
+      // This ensures builders are available for repairs and emergency construction
+      adjustedMinimums.builder = ROLE_DEFINITIONS["builder"].minimum;
+    }
+
+    // Dynamic repairer activation based on damaged structures
+    // Spawn 1 repairer per controlled room when structures need maintenance
+    if (hasDamagedStructures) {
+      adjustedMinimums.repairer = Math.max(1, controlledRoomCount);
+    } else {
+      // No damaged structures: no repairers needed (default minimum = 0)
+      // Builders can handle emergency repairs
+      adjustedMinimums.repairer = 0;
     }
 
     // Dynamic upgrader scaling based on energy surplus and RCL
