@@ -60,7 +60,7 @@ This document establishes a comprehensive strategy for reducing technical debt a
 
 #### 3. Missing Critical Component Tests
 
-- **Issue**: ralphschuler/.screeps-gpt#694 - BehaviorController and RespawnManager lack unit tests
+- **Issue**: #694 - BehaviorController and RespawnManager lack unit tests
 - **Impact**: Medium - Reduces confidence in changes to critical systems
 - **Effort**: Medium (3-4 days)
 - **Components**: BehaviorController, RespawnManager
