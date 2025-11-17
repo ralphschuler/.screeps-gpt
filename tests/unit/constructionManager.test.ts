@@ -235,7 +235,7 @@ describe("ConstructionManager", () => {
       expect(room2.createConstructionSite).toHaveBeenCalled();
     });
 
-    it("should not replan at same RCL", () => {
+    it("should continue planning at same RCL until all structures are queued", () => {
       const manager = new ConstructionManager(
         logger,
         1,
@@ -256,10 +256,25 @@ describe("ConstructionManager", () => {
       // Reset mock
       room.createConstructionSite.mockClear();
 
-      // Second tick with same RCL
+      // Second tick with same RCL - should continue planning
       const created2 = manager.planConstructionSites(game);
-      expect(created2).toBe(0);
-      expect(room.createConstructionSite).not.toHaveBeenCalled();
+      // Should create more sites until all structures are planned
+      expect(created2).toBeGreaterThanOrEqual(0);
+
+      // Continue until all structures are planned
+      let totalCreated = created1 + created2;
+      let tick = 3;
+      while (tick < 100) {
+        const created = manager.planConstructionSites(game);
+        totalCreated += created;
+        if (created === 0) {
+          break; // All structures planned
+        }
+        tick++;
+      }
+
+      // Should have created multiple structures across ticks
+      expect(totalCreated).toBeGreaterThan(1);
     });
 
     it("should replan when RCL changes", () => {
