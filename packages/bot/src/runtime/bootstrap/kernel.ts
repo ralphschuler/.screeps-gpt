@@ -15,6 +15,7 @@ import { RespawnManager } from "@runtime/respawn/RespawnManager";
 import { ConstructionManager } from "@runtime/planning/ConstructionManager";
 import { RoomVisualManager } from "@runtime/visuals/RoomVisualManager";
 import { InfrastructureManager, type InfrastructureMemory } from "@runtime/infrastructure/InfrastructureManager";
+import { LinkManager } from "@runtime/infrastructure/LinkManager";
 import { BootstrapPhaseManager } from "./BootstrapPhaseManager";
 import type { GameContext } from "@runtime/types/GameContext";
 import { profile } from "@profiler";
@@ -34,6 +35,7 @@ export interface KernelConfig {
   constructionManager?: ConstructionManager;
   visualManager?: RoomVisualManager;
   infrastructureManager?: InfrastructureManager;
+  linkManager?: LinkManager;
   bootstrapManager?: BootstrapPhaseManager;
   repositorySignalProvider?: () => RepositorySignal | undefined;
   logger?: Pick<Console, "log" | "warn">;
@@ -64,6 +66,7 @@ export class Kernel {
   private readonly constructionManager: ConstructionManager;
   private readonly visualManager: RoomVisualManager;
   private readonly infrastructureManager: InfrastructureManager;
+  private readonly linkManager: LinkManager;
   private readonly bootstrapManager: BootstrapPhaseManager;
   private readonly repositorySignalProvider?: () => RepositorySignal | undefined;
   private readonly logger: Pick<Console, "log" | "warn">;
@@ -99,6 +102,11 @@ export class Kernel {
       new InfrastructureManager({
         logger: this.logger,
         memory: infrastructureMemory
+      });
+    this.linkManager =
+      config.linkManager ??
+      new LinkManager({
+        logger: this.logger
       });
     this.bootstrapManager = config.bootstrapManager ?? new BootstrapPhaseManager({}, this.logger);
     this.enableGarbageCollection = config.enableGarbageCollection ?? true;
@@ -274,8 +282,42 @@ export class Kernel {
       this.bootstrapManager.completeBootstrap(game, memory, bootstrapStatus.reason);
     }
 
+    // Detect RCL phase transitions (including RCL4 for Phase 2 activation)
+    const phaseTransitions = this.bootstrapManager.detectRCLPhaseTransitions(game, memory);
+    if (phaseTransitions.length > 0) {
+      for (const transition of phaseTransitions) {
+        this.logger.log?.(
+          `[Kernel] Phase transition detected in ${transition.roomName}: ` +
+            `${transition.previousPhase ?? "none"} → ${transition.newPhase} (RCL ${transition.rclLevel})`
+        );
+
+        // Check storage status for Phase 2 rooms
+        if (transition.newPhase === "phase2") {
+          const room = game.rooms[transition.roomName];
+          if (room) {
+            this.bootstrapManager.checkStorageStatus(room, memory);
+          }
+        }
+      }
+    }
+
     // Run infrastructure management (roads, traffic)
     this.infrastructureManager.run(game);
+
+    // Run link network energy transfers (RCL 5+)
+    let totalLinkTransfers = 0;
+    let totalEnergyMoved = 0;
+    for (const roomName in game.rooms) {
+      const room = game.rooms[roomName];
+      if (room.controller?.my && room.controller.level >= 5) {
+        const linkResult = this.linkManager.run(room);
+        totalLinkTransfers += linkResult.transfers;
+        totalEnergyMoved += linkResult.energyMoved;
+      }
+    }
+    if (totalLinkTransfers > 0) {
+      this.logger.log?.(`[Kernel] Link network: ${totalLinkTransfers} transfers, ${totalEnergyMoved} energy moved`);
+    }
 
     // CPU guard after infrastructure management
     if (game.cpu.getUsed() > game.cpu.limit * this.cpuEmergencyThreshold) {
