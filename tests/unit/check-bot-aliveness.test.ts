@@ -24,7 +24,6 @@ const originalFetch = global.fetch;
 describe("check-bot-aliveness defensive parsing", () => {
   beforeEach(() => {
     mockConsoleMethod.mockReset(); // Reset mock completely
-    vi.resetModules(); // Reset module cache to ensure fresh imports
     process.env = { ...originalEnv };
     process.env.SCREEPS_TOKEN = "test-token";
     process.env.SCREEPS_SHARD = "shard3";
