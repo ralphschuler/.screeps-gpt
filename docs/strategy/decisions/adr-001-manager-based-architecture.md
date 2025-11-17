@@ -144,12 +144,12 @@ export class ExampleManager {
 
 **Manager Organization**:
 
-- `src/runtime/behavior/` - Creep role and spawn management
-- `src/runtime/defense/` - Tower and defense logic
-- `src/runtime/energy/` - Link and storage management
-- `src/runtime/infrastructure/` - Construction and planning
-- `src/runtime/tasks/` - Task queue and assignment
-- `src/runtime/scouting/` - Room exploration and mapping
+- `packages/bot/src/runtime/behavior/` - Creep role and spawn management
+- `packages/bot/src/runtime/defense/` - Tower and defense logic
+- `packages/bot/src/runtime/energy/` - Link and storage management
+- `packages/bot/src/runtime/infrastructure/` - Construction and planning
+- `packages/bot/src/runtime/tasks/` - Task queue and assignment
+- `packages/bot/src/runtime/scouting/` - Room exploration and mapping
 
 ### Execution Flow
 
