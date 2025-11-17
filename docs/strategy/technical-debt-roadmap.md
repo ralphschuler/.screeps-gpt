@@ -88,7 +88,7 @@ This document establishes a comprehensive strategy for reducing technical debt a
 
 #### 6. Unsafe Type Assertions
 
-- **Issue**: ralphschuler/.screeps-gpt#690 - Replace unsafe type assertions with runtime validation
+- **Issue**: #690 - Replace unsafe type assertions with runtime validation
 - **Impact**: Medium - Potential runtime errors from invalid assumptions
 - **Effort**: Medium (4-5 days)
 - **Remediation**: Use Zod for runtime type validation, add defensive checks
