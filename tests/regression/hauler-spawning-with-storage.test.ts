@@ -101,8 +101,13 @@ describe("Hauler Spawning with Storage/Towers", () => {
     // that haulers spawn when storage exists (non-emergency scenario)
     const mockHarvester = {
       name: "harvester-999",
-      memory: { role: "harvester" }
-    } as Creep;
+      memory: { role: "harvester" },
+      store: {
+        getFreeCapacity: vi.fn().mockReturnValue(50),
+        getUsedCapacity: vi.fn().mockReturnValue(0),
+        getCapacity: vi.fn().mockReturnValue(50)
+      }
+    } as unknown as Creep;
 
     const game: GameContext = {
       time: 1000,
@@ -190,8 +195,13 @@ describe("Hauler Spawning with Storage/Towers", () => {
     // Create mock harvester to avoid emergency mode (0 creeps)
     const mockHarvester = {
       name: "harvester-999",
-      memory: { role: "harvester" }
-    } as Creep;
+      memory: { role: "harvester" },
+      store: {
+        getFreeCapacity: vi.fn().mockReturnValue(50),
+        getUsedCapacity: vi.fn().mockReturnValue(0),
+        getCapacity: vi.fn().mockReturnValue(50)
+      }
+    } as unknown as Creep;
 
     const game: GameContext = {
       time: 1000,
@@ -277,8 +287,13 @@ describe("Hauler Spawning with Storage/Towers", () => {
     // Create mock harvester to avoid emergency mode (0 creeps)
     const mockHarvester = {
       name: "harvester-999",
-      memory: { role: "harvester" }
-    } as Creep;
+      memory: { role: "harvester" },
+      store: {
+        getFreeCapacity: vi.fn().mockReturnValue(50),
+        getUsedCapacity: vi.fn().mockReturnValue(0),
+        getCapacity: vi.fn().mockReturnValue(50)
+      }
+    } as unknown as Creep;
 
     const game: GameContext = {
       time: 1000,
