@@ -13,11 +13,7 @@ beforeEach(() => {
   };
 });
 
-function createTestRoom(
-  towerEnergy: number,
-  spawnEnergy: number,
-  extensionEnergy: number
-): RoomLike {
+function createTestRoom(towerEnergy: number, spawnEnergy: number, extensionEnergy: number): RoomLike {
   const tower: StructureTower = {
     id: "tower-1" as Id<StructureTower>,
     structureType: STRUCTURE_TOWER,

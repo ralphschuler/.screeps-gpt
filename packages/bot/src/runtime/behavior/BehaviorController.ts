@@ -670,9 +670,6 @@ export class BehaviorController {
   private calculateDynamicRoleMinimums(game: GameContext): Partial<Record<RoleName, number>> {
     const adjustedMinimums: Partial<Record<RoleName, number>> = {};
 
-    // Calculate total creeps for task-based demand
-    const totalCreeps = Object.keys(game.creeps).length;
-
     // Count sources with adjacent containers across all controlled rooms
     let totalSourcesWithContainers = 0;
     let totalSources = 0;
