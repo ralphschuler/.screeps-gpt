@@ -8,7 +8,7 @@
  * Expected Behavior: ConstructionManager should continue planning construction
  * sites on subsequent ticks until all planned structures are built or queued.
  *
- * Related Issue: ralphschuler/.screeps-gpt#<issue_number>
+ * Related Issue: ralphschuler/.screeps-gpt#924
  * Phase: Phase 1 Infrastructure Completion
  */
 
