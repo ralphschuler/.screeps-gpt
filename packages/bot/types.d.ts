@@ -75,6 +75,21 @@ declare global {
      * @see src/runtime/infrastructure/InfrastructureManager.ts
      */
     infrastructure?: InfrastructureMemory;
+    /**
+     * Room-level progression phases tracking for RCL-based infrastructure activation.
+     * Tracks which phase each room is in based on controller level.
+     * @see src/runtime/bootstrap/BootstrapPhaseManager.ts
+     */
+    rooms?: Record<
+      string,
+      {
+        phase?: "phase1" | "phase2" | "phase3" | "phase4" | "phase5";
+        rclLevelDetected?: number;
+        phaseActivatedAt?: number;
+        storageBuilt?: boolean;
+        linkNetworkActive?: boolean;
+      }
+    >;
     stats?: {
       time: number;
       lastTimeoutTick?: number;

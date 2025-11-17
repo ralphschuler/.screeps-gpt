@@ -662,6 +662,9 @@ export class BehaviorController {
    * - Repairers: 1 per room (maintain infrastructure)
    * - Regular harvesters: scaled based on source count and RCL
    *
+   * When links are operational (RCL 5+), hauler count is reduced as links
+   * handle energy transport more efficiently.
+   *
    * When using task system: Also increases harvester count based on pending task queue.
    *
    * @param game - The game context
@@ -670,10 +673,11 @@ export class BehaviorController {
   private calculateDynamicRoleMinimums(game: GameContext): Partial<Record<RoleName, number>> {
     const adjustedMinimums: Partial<Record<RoleName, number>> = {};
 
-    // Count sources with adjacent containers across all controlled rooms
+    // Count sources with adjacent containers and detect link network
     let totalSourcesWithContainers = 0;
     let totalSources = 0;
     let controlledRoomCount = 0;
+    let totalOperationalLinks = 0;
 
     for (const room of Object.values(game.rooms)) {
       if (!room.controller?.my) {
@@ -685,6 +689,12 @@ export class BehaviorController {
       // Find all sources in the room
       const sources = room.find(FIND_SOURCES) as Source[];
       totalSources += sources.length;
+
+      // Count operational links (with energy)
+      const links = room.find(FIND_MY_STRUCTURES, {
+        filter: (s: Structure) => s.structureType === STRUCTURE_LINK
+      }) as StructureLink[];
+      totalOperationalLinks += links.length;
 
       for (const source of sources) {
         // Check for containers adjacent to this source
@@ -710,8 +720,22 @@ export class BehaviorController {
       // Spawn 1 stationary harvester per source with container
       adjustedMinimums.stationaryHarvester = totalSourcesWithContainers;
 
-      // Spawn haulers based on total sources (at least 1 per source)
-      adjustedMinimums.hauler = Math.max(totalSources, controlledRoomCount);
+      // Calculate hauler count based on link network status
+      // When links are operational (2+ links = source + controller/storage),
+      // reduce hauler count significantly as links handle energy transport
+      let haulerCount: number;
+      if (totalOperationalLinks >= 2) {
+        // Link network active: minimal haulers for minerals and non-link routes
+        haulerCount = Math.max(1, Math.ceil(totalSources / 2));
+        this.logger.log?.(
+          `[BehaviorController] Link network detected (${totalOperationalLinks} links), ` +
+            `reducing haulers to ${haulerCount} (from ${Math.max(totalSources, controlledRoomCount)})`
+        );
+      } else {
+        // No link network: standard hauler allocation (1+ per source)
+        haulerCount = Math.max(totalSources, controlledRoomCount);
+      }
+      adjustedMinimums.hauler = haulerCount;
 
       // Spawn 1 repairer per controlled room
       adjustedMinimums.repairer = controlledRoomCount;
