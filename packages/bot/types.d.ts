@@ -23,6 +23,36 @@ declare global {
       respawnRequested: boolean;
     };
     /**
+     * Empire-wide coordination memory for multi-room management.
+     * @see src/runtime/empire/EmpireManager.ts
+     */
+    empire?: {
+      lastUpdate: number;
+      cpuBudgets: Record<string, number>;
+      threats: Array<{
+        room: string;
+        hostileCount: number;
+        severity: number;
+      }>;
+      transferHistory: Array<{
+        tick: number;
+        from: string;
+        to: string;
+        resource: ResourceConstant;
+        amount: number;
+      }>;
+      scoutReports?: Record<string, unknown>;
+    };
+    /**
+     * Scout memory for room reconnaissance.
+     * @see src/runtime/scouting/ScoutManager.ts
+     */
+    scout?: {
+      rooms: Record<string, unknown>;
+      lastUpdate: number;
+      activeScouts: Record<string, string>;
+    };
+    /**
      * Bootstrap phase tracking for first-room resource optimization.
      * Tracks whether the room is in bootstrap mode and when it was initiated.
      * @see src/runtime/bootstrap/BootstrapPhaseManager.ts
