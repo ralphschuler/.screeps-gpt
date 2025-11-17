@@ -85,11 +85,69 @@ Creates daily snapshots with complete game state:
 
 - Timestamp & tick
 - CPU (used, limit, bucket)
+- Memory (used bytes, % of 2MB limit)
+- Structures (spawns, extensions, containers, towers, roads)
+- Construction sites (count, breakdown by type)
 - Rooms (RCL, energy, controller progress)
-- Creeps (total, by role)
+- Creeps (total, by role: harvester, upgrader, builder, hauler, repairer)
 - Spawns (total, active)
 
 **Output**: `reports/bot-snapshots/snapshot-YYYY-MM-DD.json`
+
+**Enhanced Fields (v0.91.0+):**
+
+```json
+{
+  "timestamp": "2025-11-17T01:30:00.000Z",
+  "tick": 12345678,
+  "cpu": {
+    "used": 45.5,
+    "limit": 100,
+    "bucket": 9500
+  },
+  "memory": {
+    "used": 524288,
+    "usedPercent": 25.0
+  },
+  "structures": {
+    "spawns": 1,
+    "extensions": 10,
+    "containers": 3,
+    "towers": 2,
+    "roads": 45
+  },
+  "constructionSites": {
+    "count": 5,
+    "byType": {
+      "extension": 3,
+      "road": 2
+    }
+  },
+  "rooms": {
+    "E54N39": {
+      "rcl": 3,
+      "energy": 450,
+      "energyCapacity": 800,
+      "controllerProgress": 113532,
+      "controllerProgressTotal": 135000
+    }
+  },
+  "creeps": {
+    "total": 15,
+    "byRole": {
+      "harvester": 5,
+      "upgrader": 4,
+      "builder": 3,
+      "hauler": 2,
+      "repairer": 1
+    }
+  },
+  "spawns": {
+    "total": 1,
+    "active": 1
+  }
+}
+```
 
 ### 5. Telemetry Health Check
 
