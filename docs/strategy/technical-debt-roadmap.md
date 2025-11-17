@@ -118,7 +118,7 @@ This document establishes a comprehensive strategy for reducing technical debt a
 
 #### 9. Date.now() Non-Determinism
 
-- **Issue**: ralphschuler/.screeps-gpt#693 - Use Game.time instead of Date.now() for determinism
+- **Issue**: #693 - Use Game.time instead of Date.now() for determinism
 - **Impact**: Low - Affects test reproducibility and replays
 - **Effort**: Low (1-2 days)
 - **Remediation**: Create time utility wrapper, replace Date.now() calls
