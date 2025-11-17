@@ -49,7 +49,7 @@ function parseChangelog(): Release[] {
     matches.push({
       version: match[1],
       date: match[2],
-      index: match.index,
+      index: match.index
     });
   }
 
@@ -65,7 +65,7 @@ function parseChangelog(): Release[] {
     releases.push({
       version: current.version,
       date: current.date,
-      content,
+      content
     });
   }
 
@@ -135,11 +135,11 @@ function generateBlogPost(release: Release): BlogPost {
     performance: ["performance", "optimization", "cpu", "memory"],
     monitoring: ["monitoring", "metrics", "alerts"],
     deployment: ["deployment", "deploy", "release"],
-    security: ["security", "vulnerability", "audit"],
+    security: ["security", "vulnerability", "audit"]
   };
 
   for (const [tag, keywords] of Object.entries(tagKeywords)) {
-    if (keywords.some((keyword) => contentLower.includes(keyword))) {
+    if (keywords.some(keyword => contentLower.includes(keyword))) {
       tags.push(tag);
     }
   }
@@ -167,17 +167,14 @@ function generateBlogPost(release: Release): BlogPost {
     date: `${date}T00:00:00.000Z`,
     categories,
     tags,
-    content: blogContent,
+    content: blogContent
   };
 }
 
 /**
  * Generate the main content of the blog post
  */
-function generateBlogContent(
-  release: Release,
-  sections: { [key: string]: string[] },
-): string {
+function generateBlogContent(release: Release, sections: { [key: string]: string[] }): string {
   const { version } = release;
   let content = "";
 
@@ -247,11 +244,11 @@ function writeBlogPost(version: string, blogPost: BlogPost): void {
     `title: "${blogPost.title}"`,
     `date: ${blogPost.date}`,
     "categories:",
-    ...blogPost.categories.map((cat) => `  - ${cat}`),
+    ...blogPost.categories.map(cat => `  - ${cat}`),
     "tags:",
-    ...blogPost.tags.map((tag) => `  - ${tag}`),
+    ...blogPost.tags.map(tag => `  - ${tag}`),
     "---",
-    "",
+    ""
   ].join("\n");
 
   const fullContent = frontMatter + blogPost.content;
@@ -276,7 +273,7 @@ function main() {
   const existing = getExistingBlogPosts();
   console.log(`📊 Found ${existing.size} existing blog posts`);
 
-  const missing = releases.filter((r) => !existing.has(r.version));
+  const missing = releases.filter(r => !existing.has(r.version));
   console.log(`📊 Missing ${missing.length} blog posts`);
 
   if (missing.length === 0) {

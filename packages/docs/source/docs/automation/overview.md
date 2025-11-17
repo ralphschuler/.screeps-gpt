@@ -587,13 +587,14 @@ This architecture allows guards to fail fast individually while the summary prov
   - Extracting the changelog section for the specified version
   - Using Copilot to generate a detailed blog post with design rationale and implementation context
   - Creating proper front matter (title, date, categories, tags) based on release content
-  - Writing blog post to `source/_posts/release-{version-slug}.md`
+  - Writing blog post to `packages/docs/source/_posts/release-{version-slug}.md`
   - Including technical deep-dives that explain WHY decisions were made, not just WHAT changed
   - Referencing specific files, functions, and modules with architectural context
   - Connecting features to broader project goals (autonomous development, workflow automation)
 - Integration: Works seamlessly with the release process - `post-merge-release.yml` creates version tags which automatically trigger blog post generation.
 - Output: Blog posts are committed directly to the repository, triggering `docs-pages.yml` to rebuild and deploy the documentation site.
 - Manual Execution: Use workflow_dispatch with version parameter (e.g., "0.12.0") to generate blog posts for existing releases.
+- Bulk Generation: Use `bun run docs:generate-blog-posts` script to generate blog posts for all missing releases at once.
 - Validation: Checks if blog post already exists before generation to avoid duplicates.
 - Content Style: Technical but accessible, targeting developers interested in Screeps automation and AI-driven development.
 - Target Length: 800-1500 words depending on release complexity.
