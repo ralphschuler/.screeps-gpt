@@ -1878,14 +1878,20 @@ function runRepairer(creep: ManagedCreep): string {
   comm?.say(creep, "repair");
 
   // Priority 1: Roads and containers (infrastructure)
+  // Roads are repaired when below 50% health to prevent decay while not over-prioritizing maintenance
   const infrastructureTargets = creep.room.find(FIND_STRUCTURES, {
     filter: (structure: AnyStructure) => {
       if (!("hits" in structure) || typeof structure.hits !== "number") {
         return false;
       }
 
-      // Prioritize roads and containers
-      if (structure.structureType === STRUCTURE_ROAD || structure.structureType === STRUCTURE_CONTAINER) {
+      // Prioritize roads when below 50% health
+      if (structure.structureType === STRUCTURE_ROAD) {
+        return structure.hits < structure.hitsMax * 0.5;
+      }
+
+      // Containers can be repaired more liberally
+      if (structure.structureType === STRUCTURE_CONTAINER) {
         return structure.hits < structure.hitsMax;
       }
 

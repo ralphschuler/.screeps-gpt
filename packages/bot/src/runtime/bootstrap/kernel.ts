@@ -301,6 +301,28 @@ export class Kernel {
       }
     }
 
+    // Check if road planning is needed for Phase 1 completion
+    const roadPlanningStatus = this.bootstrapManager.checkRoadPlanningNeeded(game, memory);
+    if (roadPlanningStatus.shouldPlan && roadPlanningStatus.roomName) {
+      this.logger.log?.(
+        `[Kernel] Road planning triggered for ${roadPlanningStatus.roomName}: ${roadPlanningStatus.reason}`
+      );
+
+      // Trigger immediate road planning for the room (bypass interval check)
+      const room = game.rooms[roadPlanningStatus.roomName];
+      if (room) {
+        const roadPlanner = this.infrastructureManager.getRoadPlanner();
+        const result = roadPlanner.autoPlaceRoadsPhase1(room, game);
+
+        if (result.created > 0) {
+          this.logger.log?.(
+            `[Kernel] Phase 1 road planning completed: ${result.created} roads planned in ${roadPlanningStatus.roomName}`
+          );
+          this.bootstrapManager.markRoadsPlanned(memory, roadPlanningStatus.roomName);
+        }
+      }
+    }
+
     // Run infrastructure management (roads, traffic)
     this.infrastructureManager.run(game);
 
