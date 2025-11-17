@@ -75,6 +75,10 @@ jobs:
       - name: Build and deploy
         id: deploy
         env:
+          # PROFILER_ENABLED: Controls profiler integration
+          # Valid values: 'true' or 'false'
+          # Defaults to 'true' if not set.
+          # Invalid values trigger a warning and default to 'true'.
           PROFILER_ENABLED: ${{ vars.PROFILER_ENABLED || 'true' }}
           SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
           SCREEPS_HOST: ${{ vars.SCREEPS_HOST }}
