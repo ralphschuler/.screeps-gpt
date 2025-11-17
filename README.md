@@ -265,12 +265,15 @@ We welcome contributions! Here's how to get started:
 The repository uses 14 GitHub Actions workflows orchestrating the agent swarm:
 
 - **Quality Guards** (`guard-*.yml`) - Linting, formatting, testing, coverage on every PR
-- **Post-Merge Release** - Semantic versioning and automated releases
-- **Deploy** - Automatic deployment to Screeps on version tags with post-deployment spawn status checking
+- **Post-Merge Release** - Semantic versioning and automated releases (triggers deployment and blog generation)
+- **Deploy** - Automatic deployment to Screeps triggered by post-merge-release completion, with post-deployment spawn status checking
+- **Blog Generation** - Automated changelog-to-blog conversion triggered by post-merge-release completion
 - **Copilot Agents** - Issue triage, Todo automation, code review, CI autofix
 - **PTR Monitor** - Continuous bot performance monitoring
 - **Spec-Kit** - Specification-driven development workflow
 - **Stale Issue Management** - Automated cleanup of inactive issues (60-day inactivity threshold)
+
+**Workflow Dependencies:** The post-merge-release workflow triggers both deploy and blog generation workflows automatically upon successful completion, ensuring coordinated release execution.
 
 **[Complete Workflow Documentation →](docs/automation/overview.md)**
 

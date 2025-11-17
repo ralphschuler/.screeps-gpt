@@ -2,6 +2,10 @@
 name: Changelog to Blog Automation
 
 on:
+  workflow_run:
+    workflows: ["Post Merge Release"]
+    types:
+      - completed
   push:
     tags:
       - "v*"
@@ -25,11 +29,18 @@ jobs:
   generate-blog-post:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    # Only run if workflow_run succeeded, or if triggered by push/dispatch
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          fetch-tags: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract version from tag
@@ -38,6 +49,10 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             VERSION="${{ github.event.inputs.version }}"
+          elif [ "${{ github.event_name }}" = "workflow_run" ]; then
+            # For workflow_run events, get the latest tag and remove 'v' prefix
+            VERSION=$(git describe --tags --abbrev=0 | sed 's/^v//')
+            echo "📦 Processing version from post-merge-release: $VERSION"
           else
             # Extract version from tag (remove 'v' prefix)
             VERSION="${GITHUB_REF#refs/tags/v}"

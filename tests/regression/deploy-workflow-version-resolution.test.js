@@ -5,7 +5,8 @@ import { join } from "path";
 
 describe("Deploy Workflow Version Resolution - Modernized CI/CD", () => {
   it("should use tag push version resolution logic", () => {
-    // The modernized deploy workflow uses tag push version resolution:
+    // The modernized deploy workflow uses multiple trigger mechanisms:
+    // - workflow_run events: triggered by post-merge-release completion
     // - push events (tags): extract from github.ref_name
     // - workflow_dispatch events: use inputs.version or git describe fallback
     // - No release event handling (doesn't work with GITHUB_TOKEN)
@@ -20,11 +21,11 @@ describe("Deploy Workflow Version Resolution - Modernized CI/CD", () => {
     // Should not have release event handling (doesn't work with GITHUB_TOKEN)
     expect(workflowContent).not.toContain("github.event.release.tag_name");
 
-    // Should not have the old workflow_run logic
-    expect(workflowContent).not.toContain("workflow_run");
+    // Should have workflow_run logic for post-merge-release coordination
+    expect(workflowContent).toContain("workflow_run");
   });
 
-  it("should trigger on tag push events", () => {
+  it("should trigger on tag push events and workflow_run", () => {
     const workflowContent = readFileSync(join(process.cwd(), ".github/workflows/deploy.yml"), "utf-8");
 
     // Verify trigger mechanism (push tags v*)
@@ -36,8 +37,9 @@ describe("Deploy Workflow Version Resolution - Modernized CI/CD", () => {
     // Should NOT have release trigger (doesn't work with GITHUB_TOKEN)
     expect(workflowContent).not.toContain("release:");
 
-    // Should NOT have workflow_run trigger
-    expect(workflowContent).not.toContain("workflow_run:");
+    // Should have workflow_run trigger for post-merge-release coordination
+    expect(workflowContent).toContain("workflow_run:");
+    expect(workflowContent).toContain("Post Merge Release");
   });
 
   it("should use GitHub production environment", () => {

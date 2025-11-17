@@ -174,17 +174,25 @@ The configuration files in `.github/mcp/` define MCP server commands and environ
 **Key Workflows:**
 
 1. **Quality Guards** (guard-\*.yml) - Focused PR validation workflows (lint, format, YAML lint, version check, build, unit tests, e2e tests, regression tests, coverage)
-2. **post-merge-release.yml** - Auto-versioning and tagging on merge to main
-3. **deploy.yml** - Screeps deployment on version tags
-4. **copilot-review.yml** - Scheduled repository audits
-5. **copilot-issue-triage.yml** - Automatic issue reformulation
-6. **copilot-todo-pr.yml** - Automated Todo issue resolution
-7. **copilot-email-triage.yml** - Email-to-issue conversion
-8. **copilot-ci-autofix.yml** - Automated CI failure resolution
-9. **screeps-monitoring.yml** - Comprehensive monitoring combining strategic analysis with PTR telemetry (uses `scripts/fetch-screeps-stats.mjs`)
-10. **dependabot-automerge.yml** - Auto-merge non-major updates
-11. **label-sync.yml** - Repository label synchronization
-12. **docs-pages.yml** - GitHub Pages documentation site
+2. **post-merge-release.yml** - Auto-versioning and tagging on merge to main (triggers deploy and blog workflows on completion)
+3. **deploy.yml** - Screeps deployment triggered by post-merge-release completion or version tags
+4. **copilot-changelog-to-blog.yml** - Blog post generation triggered by post-merge-release completion or version tags
+5. **copilot-review.yml** - Scheduled repository audits
+6. **copilot-issue-triage.yml** - Automatic issue reformulation
+7. **copilot-todo-pr.yml** - Automated Todo issue resolution
+8. **copilot-email-triage.yml** - Email-to-issue conversion
+9. **copilot-ci-autofix.yml** - Automated CI failure resolution
+10. **screeps-monitoring.yml** - Comprehensive monitoring combining strategic analysis with PTR telemetry (uses `scripts/fetch-screeps-stats.mjs`)
+11. **dependabot-automerge.yml** - Auto-merge non-major updates
+12. **label-sync.yml** - Repository label synchronization
+13. **docs-pages.yml** - GitHub Pages documentation site
+
+**Workflow Dependencies:**
+
+- **post-merge-release.yml** → **deploy.yml** (via workflow_run trigger)
+- **post-merge-release.yml** → **copilot-changelog-to-blog.yml** (via workflow_run trigger)
+- Deploy and blog workflows only execute when post-merge-release completes successfully
+- Tag push events (v\*) are maintained as backup triggers for manual deployments
 
 ### 6. Testing Artifacts
 
