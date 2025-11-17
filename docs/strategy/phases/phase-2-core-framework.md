@@ -1,12 +1,14 @@
 # Phase 2: Core Framework
 
-**Status**: In Progress (60% Complete)
-**RCL Target**: 3-4
-**Timeline**: Started 2024-11-06, Target Completion: 2025-01-15
+**Status**: Active (70% Complete) - Automatic activation at RCL 4
+**RCL Target**: 4-5
+**Timeline**: Started 2024-11-06, RCL4 Activation: 2025-11-17, Target Completion: 2025-01-15
 
 ## Overview
 
 Phase 2 builds the core framework for efficient resource management and task execution. This phase introduces sophisticated task queuing, spawn optimization, storage management, and energy distribution systems that enable the bot to scale beyond basic survival into efficient economy management.
+
+**Automatic Activation**: Phase 2 automatically activates when a room achieves RCL 4, enabling storage placement and preparing for link network activation at RCL 5.
 
 ## Objectives
 
@@ -85,24 +87,28 @@ Implemented 2024-11-06
 
 #### Link Network Optimization (100%)
 
-Implemented 2024-11-07
+Implemented 2024-11-07, Integrated 2025-11-17
 
 - ✅ LinkManager with role-based classification
 - ✅ Link roles: source, storage, controller, upgrade
 - ✅ Automated energy transfers from source → consumer links
 - ✅ Priority system favoring controller links
+- ✅ Kernel integration for RCL 5+ automatic execution
+- ✅ Dynamic hauler reduction when links operational
 
 **Key Capabilities**:
 
 - Automatic link role detection based on proximity to sources/controller/storage
 - Energy transfer planning to minimize hauler traffic
 - Priority-based consumer selection (controller > storage)
+- Hauler count automatically reduced by 50% when link network active (2+ links)
 
 **Lessons Learned**:
 
 - Link classification simplifies transfer logic dramatically
 - Source links filling, controller links emptying is simple but effective heuristic
 - Link network provides massive CPU savings by reducing hauler pathfinding
+- Dynamic hauler reduction prevents over-allocation while maintaining logistics reliability
 
 #### Tower Automation (100%)
 
@@ -124,6 +130,38 @@ Implemented 2024-11-06
 - Simple priority system (attack > heal > repair) handles most scenarios
 - Energy threshold prevents tower from draining room energy on repairs
 - Multiple towers automatically coordinate through shared targeting
+
+#### RCL4 Phase Transition System (100%)
+
+Implemented 2025-11-17
+
+- ✅ Automatic phase detection based on controller level
+- ✅ Room-level phase tracking in Memory
+- ✅ Storage status monitoring (>10k energy threshold)
+- ✅ Phase transition logging for monitoring
+- ✅ Multi-room phase management
+
+**Key Capabilities**:
+
+- Detects RCL level changes each tick across all controlled rooms
+- Automatically transitions rooms to Phase 2 when RCL 4 achieved
+- Tracks storage operational status for Phase 2 readiness validation
+- Supports multiple rooms at different phases simultaneously
+- Phase history preserved in Memory for analysis
+
+**RCL-to-Phase Mapping**:
+
+- **Phase 1** (Foundation): RCL 1-3 - Basic harvesting and upgrading
+- **Phase 2** (Core Framework): RCL 4-5 - Storage and link networks
+- **Phase 4** (Empire Coordination): RCL 6-7 - Advanced structures
+- **Phase 5** (Multi-room Global): RCL 8 - Maximum optimization
+
+**Lessons Learned**:
+
+- Automatic phase detection eliminates manual activation burden
+- Phase transition logging critical for monitoring bot progression
+- Storage threshold (>10k energy) ensures stable Phase 2 activation
+- Room-level tracking enables independent progression in multi-room scenarios
 
 ### In Progress Features
 

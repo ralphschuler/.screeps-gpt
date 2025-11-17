@@ -45,9 +45,10 @@ This document tracks the current state of bot development, phase completion stat
 - [ ] Dynamic role population based on room state
 - [ ] CPU usage optimization (<5 CPU/tick target)
 
-## Phase 2 Preview: Core Framework
+## Phase 2: Core Framework (Active)
 
-**Status**: Foundation in place, active development
+**Status**: Automatic activation at RCL 4, active development (70% complete)
+**Activation**: 2025-11-17 - RCL 4 transition system implemented
 
 ### Phase 2 Key Objectives
 
@@ -67,6 +68,10 @@ This document tracks the current state of bot development, phase completion stat
 - ✅ Spawn queue system with priority-based spawning
 - ✅ Link network optimization (LinkManager)
 - ✅ Tower automation (TowerManager)
+- ✅ **RCL 4 phase transition detection and activation**
+- ✅ **Link network integration in kernel (RCL 5+)**
+- ✅ **Dynamic hauler reduction with operational links**
+- ✅ **Storage status monitoring (>10k energy threshold)**
 
 ### Phase 2 Remaining Items
 
@@ -75,6 +80,25 @@ This document tracks the current state of bot development, phase completion stat
 - [ ] Memory segments for persistent data
 - [ ] Path caching with TTL
 - [ ] RoomManager abstraction with registry
+
+### Phase 2 Recent Updates (2025-11-17)
+
+**RCL 4 Transition System**:
+
+- Automatic phase detection based on controller level
+- Room-level phase tracking in Memory
+- Storage placement ready via existing BasePlanner (RCL 4)
+- Link network activation at RCL 5 with automatic energy routing
+- Hauler count reduced by 50% when link network operational
+- Expected CPU savings: 1.5-2.5 CPU/tick
+- Expected energy efficiency: +30-40% throughput
+
+**Test Coverage**:
+
+- 13 new regression tests for RCL 3→4 transitions
+- Phase detection validation
+- Storage status tracking tests
+- Multi-room phase management tests
 
 ## Strategic Priorities
 
