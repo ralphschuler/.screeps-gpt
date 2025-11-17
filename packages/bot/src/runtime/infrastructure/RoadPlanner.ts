@@ -39,8 +39,15 @@ export class RoadPlanner {
 
   /**
    * Plan roads between two positions in a room
+   * @param minPathLength - Minimum path length to warrant road construction (default: 0 for backwards compatibility)
    */
-  public planRoadsBetween(room: RoomLike, from: RoomPosition, to: RoomPosition, _game: GameContext): RoadPlan[] {
+  public planRoadsBetween(
+    room: RoomLike,
+    from: RoomPosition,
+    to: RoomPosition,
+    _game: GameContext,
+    minPathLength: number = 0
+  ): RoadPlan[] {
     const plans: RoadPlan[] = [];
 
     // Use pathfinding to get the optimal path
@@ -49,6 +56,11 @@ export class RoadPlanner {
       ignoreDestructibleStructures: true,
       maxOps: 2000
     });
+
+    // Only create roads if path is long enough to warrant them
+    if (path.length < minPathLength) {
+      return plans;
+    }
 
     // Convert path to road plans
     for (const step of path) {
@@ -63,8 +75,9 @@ export class RoadPlanner {
 
   /**
    * Plan roads from sources to spawn
+   * @param minPathLength - Minimum path length to warrant road construction (default: 0)
    */
-  public planSourceRoads(room: RoomLike, game: GameContext): RoadPlan[] {
+  public planSourceRoads(room: RoomLike, game: GameContext, minPathLength: number = 0): RoadPlan[] {
     const plans: RoadPlan[] = [];
 
     const spawns = room.find(FIND_MY_SPAWNS) as StructureSpawn[];
@@ -76,7 +89,7 @@ export class RoadPlanner {
     const sources = room.find(FIND_SOURCES) as Source[];
 
     for (const source of sources) {
-      const sourcePlans = this.planRoadsBetween(room, source.pos, spawn.pos, game);
+      const sourcePlans = this.planRoadsBetween(room, source.pos, spawn.pos, game, minPathLength);
       plans.push(...sourcePlans);
     }
 
@@ -85,8 +98,9 @@ export class RoadPlanner {
 
   /**
    * Plan roads from sources to controller
+   * @param minPathLength - Minimum path length to warrant road construction (default: 0)
    */
-  public planControllerRoads(room: RoomLike, game: GameContext): RoadPlan[] {
+  public planControllerRoads(room: RoomLike, game: GameContext, minPathLength: number = 0): RoadPlan[] {
     const plans: RoadPlan[] = [];
 
     if (!room.controller) {
@@ -96,7 +110,7 @@ export class RoadPlanner {
     const sources = room.find(FIND_SOURCES) as Source[];
 
     for (const source of sources) {
-      const sourcePlans = this.planRoadsBetween(room, source.pos, room.controller.pos, game);
+      const sourcePlans = this.planRoadsBetween(room, source.pos, room.controller.pos, game, minPathLength);
       plans.push(...sourcePlans);
     }
 
@@ -162,13 +176,20 @@ export class RoadPlanner {
 
   /**
    * Automatically plan and create roads for a room
+   * @param options - Optional configuration for road planning
+   * @param options.minPathLength - Minimum path length to warrant road construction (default: 0)
    */
-  public autoPlaceRoads(room: RoomLike, game: GameContext): { created: number; failed: number } {
+  public autoPlaceRoads(
+    room: RoomLike,
+    game: GameContext,
+    options: { minPathLength?: number } = {}
+  ): { created: number; failed: number } {
     const terrain = room.getTerrain();
+    const minPathLength = options.minPathLength ?? 0;
 
     // Combine all road plans
-    const sourcePlans = this.planSourceRoads(room, game);
-    const controllerPlans = this.planControllerRoads(room, game);
+    const sourcePlans = this.planSourceRoads(room, game, minPathLength);
+    const controllerPlans = this.planControllerRoads(room, game, minPathLength);
 
     // Deduplicate plans (same position)
     const uniquePlans = new Map<string, RoadPlan>();
@@ -180,6 +201,20 @@ export class RoadPlanner {
     const plans = Array.from(uniquePlans.values());
 
     return this.createRoadSites(room, plans, terrain);
+  }
+
+  /**
+   * Automatically plan and create roads for Phase 1 completion.
+   * Uses cost/benefit gating to prevent excessive road construction:
+   * - Only builds roads for paths longer than 5 tiles
+   * - Prioritizes source → spawn and source → controller routes
+   *
+   * @param room - The room to plan roads for
+   * @param game - The game context
+   * @returns Result with counts of created and failed road sites
+   */
+  public autoPlaceRoadsPhase1(room: RoomLike, game: GameContext): { created: number; failed: number } {
+    return this.autoPlaceRoads(room, game, { minPathLength: 5 });
   }
 
   /**

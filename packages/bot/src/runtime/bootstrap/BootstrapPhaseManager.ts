@@ -24,6 +24,12 @@ export interface RCLPhaseTransition {
   reason: string;
 }
 
+export interface RoadPlanningStatus {
+  shouldPlan: boolean;
+  roomName?: string;
+  reason?: string;
+}
+
 /**
  * Manages bootstrap phase detection and completion for first-room resource optimization.
  * Bootstrap phase prioritizes harvester spawning to quickly establish energy infrastructure.
@@ -288,5 +294,99 @@ export class BootstrapPhaseManager {
     }
 
     return false;
+  }
+
+  /**
+   * Check if roads should be planned for Phase 1 completion.
+   * Triggers road planning when:
+   * - RCL 2 is reached (basic extensions available)
+   * - Containers are placed near sources (harvesting infrastructure ready)
+   * - Roads haven't been planned yet for this room
+   *
+   * @param game - The game context
+   * @param memory - The memory object
+   * @returns Road planning status indicating if planning should occur
+   */
+  public checkRoadPlanningNeeded(game: GameContext, memory: Memory): RoadPlanningStatus {
+    // Initialize road planning memory if not present
+    if (!memory.rooms) {
+      memory.rooms = {};
+    }
+
+    for (const roomName in game.rooms) {
+      const room = game.rooms[roomName];
+      if (!room.controller?.my) {
+        continue;
+      }
+
+      const controller = room.controller;
+      const rclLevel = controller.level ?? 0;
+
+      // Only plan roads at RCL 2+ (when extensions become available)
+      if (rclLevel < 2) {
+        continue;
+      }
+
+      // Initialize room memory if needed
+      memory.rooms[roomName] ??= {};
+      const roomMemory = memory.rooms[roomName];
+      if (!roomMemory) {
+        continue;
+      }
+
+      // Check if roads have already been planned for this room
+      if (roomMemory.roadsPlanned === true) {
+        continue;
+      }
+
+      // Check if containers exist near sources (prerequisite for road planning)
+      const sources = room.find(FIND_SOURCES) as Source[];
+      let hasContainersNearSources = false;
+
+      for (const source of sources) {
+        const sourcePos = source.pos as RoomPosition | undefined;
+        if (!sourcePos || typeof sourcePos.findInRange !== "function") {
+          continue;
+        }
+
+        const nearbyStructures = sourcePos.findInRange(FIND_STRUCTURES, 2, {
+          filter: (s: Structure) => s.structureType === STRUCTURE_CONTAINER
+        }) as Structure[];
+
+        if (nearbyStructures.length > 0) {
+          hasContainersNearSources = true;
+          break;
+        }
+      }
+
+      // Trigger road planning if prerequisites are met
+      if (hasContainersNearSources) {
+        return {
+          shouldPlan: true,
+          roomName,
+          reason: `RCL ${rclLevel} reached with container infrastructure`
+        };
+      }
+    }
+
+    return { shouldPlan: false };
+  }
+
+  /**
+   * Mark roads as planned for a room to prevent redundant planning.
+   *
+   * @param memory - The memory object
+   * @param roomName - The room to mark as planned
+   */
+  public markRoadsPlanned(memory: Memory, roomName: string): void {
+    if (!memory.rooms) {
+      memory.rooms = {};
+    }
+    memory.rooms[roomName] ??= {};
+    const roomMemory = memory.rooms[roomName];
+    if (roomMemory) {
+      roomMemory.roadsPlanned = true;
+      this.logger.log?.(`[Bootstrap] Marked roads as planned for room ${roomName}`);
+    }
   }
 }
