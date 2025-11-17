@@ -122,7 +122,12 @@ export class EmpireManager {
     // Allocate CPU budget
     const cpuBudget = this.allocateCPU(rooms, game);
     const empireMemory = memory.empire as EmpireMemory;
-    empireMemory.cpuBudgets = Object.fromEntries(cpuBudget);
+    // Convert Map to plain object for ES2018 compatibility
+    const cpuBudgets: Record<string, number> = {};
+    for (const [roomName, budget] of cpuBudget) {
+      cpuBudgets[roomName] = budget;
+    }
+    empireMemory.cpuBudgets = cpuBudgets;
 
     // Coordinate defense
     this.coordinateEmpireDefense(rooms, game);
