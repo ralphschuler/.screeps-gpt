@@ -106,7 +106,8 @@ describe("Hauler Spawning with Storage/Towers", () => {
         getFreeCapacity: vi.fn().mockReturnValue(50),
         getUsedCapacity: vi.fn().mockReturnValue(0),
         getCapacity: vi.fn().mockReturnValue(50)
-      }
+      },
+      room: mockRoom
     } as unknown as Creep;
 
     const game: GameContext = {
@@ -200,7 +201,8 @@ describe("Hauler Spawning with Storage/Towers", () => {
         getFreeCapacity: vi.fn().mockReturnValue(50),
         getUsedCapacity: vi.fn().mockReturnValue(0),
         getCapacity: vi.fn().mockReturnValue(50)
-      }
+      },
+      room: mockRoom
     } as unknown as Creep;
 
     const game: GameContext = {
@@ -292,7 +294,8 @@ describe("Hauler Spawning with Storage/Towers", () => {
         getFreeCapacity: vi.fn().mockReturnValue(50),
         getUsedCapacity: vi.fn().mockReturnValue(0),
         getCapacity: vi.fn().mockReturnValue(50)
-      }
+      },
+      room: mockRoom
     } as unknown as Creep;
 
     const game: GameContext = {
