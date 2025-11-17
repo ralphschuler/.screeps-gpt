@@ -88,11 +88,7 @@ describe("Hauler Spawning with Storage/Towers", () => {
           return [];
         }
         if (findConstant === FIND_STRUCTURES) {
-          if (options && typeof options === "object" && "filter" in options) {
-            const filter = (options as { filter: (s: Structure) => boolean }).filter;
-            // No containers in room
-            return [];
-          }
+          // No containers in room
           return [];
         }
         return [];
@@ -174,11 +170,7 @@ describe("Hauler Spawning with Storage/Towers", () => {
           return [mockTower];
         }
         if (findConstant === FIND_STRUCTURES) {
-          if (options && typeof options === "object" && "filter" in options) {
-            const filter = (options as { filter: (s: Structure) => boolean }).filter;
-            // No containers in room
-            return [];
-          }
+          // No containers in room
           return [];
         }
         return [];
@@ -337,7 +329,7 @@ describe("Hauler Spawning with Storage/Towers", () => {
     } as unknown as GameContext;
 
     // Execute behavior controller - should NOT spawn haulers (no logistics infrastructure)
-    const result = behaviorController.execute(game, memory, {});
+    behaviorController.execute(game, memory, {});
 
     // Check that NO hauler was spawned
     const spawnCalls = (mockSpawn.spawnCreep as ReturnType<typeof vi.fn>).mock.calls;
