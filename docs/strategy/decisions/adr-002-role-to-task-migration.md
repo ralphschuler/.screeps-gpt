@@ -291,7 +291,7 @@ interface Task {
 - [Issue #653](https://github.com/ralphschuler/.screeps-gpt/issues/653) - Capability-based Assignment
 - [Issue #715](https://github.com/ralphschuler/.screeps-gpt/issues/715) - Phase 1 Completion
 - [Overmind Analysis](../research/overmind-analysis.md) - Task patterns
-- [Phase 2 Documentation](../strategy/phases/phase-2.md)
+- [Phase 2 Documentation](../phases/phase-2.md)
 
 ## Notes
 
