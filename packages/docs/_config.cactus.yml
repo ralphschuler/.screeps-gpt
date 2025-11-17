@@ -6,7 +6,7 @@ nav:
   Home: /
   Getting Started: /docs/getting-started.html
   Documentation: /docs/
-  Analytics: /docs/analytics.html
+  Analytics: /docs/analytics/
   Automation: /docs/automation/
   Operations: /docs/operations/
   Runtime: /docs/runtime/
