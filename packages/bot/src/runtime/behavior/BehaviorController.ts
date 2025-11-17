@@ -18,7 +18,8 @@ type RoleName =
   | "repairer"
   | "attacker"
   | "healer"
-  | "dismantler";
+  | "dismantler"
+  | "claimer";
 
 interface BaseCreepMemory extends CreepMemory {
   role: RoleName;
@@ -47,6 +48,7 @@ const REPAIRER_VERSION = 1;
 const ATTACKER_VERSION = 1;
 const HEALER_VERSION = 1;
 const DISMANTLER_VERSION = 1;
+const CLAIMER_VERSION = 1;
 
 const HARVEST_TASK = "harvest" as const;
 const DELIVER_TASK = "deliver" as const;
@@ -66,6 +68,7 @@ const REPAIRER_REPAIR_TASK = "repair" as const;
 const ATTACKER_ATTACK_TASK = "attack" as const;
 const HEALER_HEAL_TASK = "heal" as const;
 const DISMANTLER_DISMANTLE_TASK = "dismantle" as const;
+const CLAIMER_CLAIM_TASK = "claim" as const;
 
 type HarvesterTask = typeof HARVEST_TASK | typeof DELIVER_TASK | typeof UPGRADE_TASK;
 type UpgraderTask = typeof RECHARGE_TASK | typeof UPGRADE_TASK;
@@ -77,6 +80,7 @@ type RepairerTask = typeof REPAIRER_GATHER_TASK | typeof REPAIRER_REPAIR_TASK;
 type AttackerTask = typeof ATTACKER_ATTACK_TASK;
 type HealerTask = typeof HEALER_HEAL_TASK;
 type DismantlerTask = typeof DISMANTLER_DISMANTLE_TASK;
+type ClaimerTask = typeof CLAIMER_CLAIM_TASK;
 
 interface HarvesterMemory extends BaseCreepMemory {
   task: HarvesterTask;
@@ -127,6 +131,12 @@ interface DismantlerMemory extends BaseCreepMemory {
   task: DismantlerTask;
   targetRoom?: string;
   squadId?: string;
+}
+
+interface ClaimerMemory extends BaseCreepMemory {
+  task: ClaimerTask;
+  targetRoom: string;
+  homeRoom: string;
 }
 
 /**
@@ -265,6 +275,19 @@ const ROLE_DEFINITIONS: Record<RoleName, RoleDefinition> = {
         version: DISMANTLER_VERSION
       }) satisfies DismantlerMemory,
     run: (creep: ManagedCreep) => runDismantler(creep)
+  },
+  claimer: {
+    minimum: 0,
+    body: [CLAIM, MOVE],
+    memory: () =>
+      ({
+        role: "claimer",
+        task: CLAIMER_CLAIM_TASK,
+        version: CLAIMER_VERSION,
+        targetRoom: "",
+        homeRoom: ""
+      }) satisfies ClaimerMemory,
+    run: (creep: ManagedCreep) => runClaimer(creep)
   }
 };
 
@@ -967,7 +990,8 @@ export class BehaviorController {
         "remoteMiner",
         "attacker",
         "healer",
-        "dismantler"
+        "dismantler",
+        "claimer"
       ];
     } else {
       // Normal priority mode
@@ -981,7 +1005,8 @@ export class BehaviorController {
         "remoteMiner",
         "attacker",
         "healer",
-        "dismantler"
+        "dismantler",
+        "claimer"
       ];
     }
 
@@ -2439,4 +2464,56 @@ function runDismantler(creep: ManagedCreep): string {
 
   // No targets found - hold position
   return DISMANTLER_DISMANTLE_TASK;
+}
+
+/**
+ * Run claimer role behavior.
+ * Claimers travel to a target room and claim the controller.
+ *
+ * @param creep - The claimer creep to run behavior for.
+ * @returns The current claimer task as a string.
+ */
+function runClaimer(creep: ManagedCreep): string {
+  const memory = creep.memory as ClaimerMemory;
+  const targetRoom = memory.targetRoom;
+  const comm = getComm();
+
+  if (!targetRoom) {
+    comm?.say(creep, "❌");
+    return CLAIMER_CLAIM_TASK;
+  }
+
+  // If not in target room, move there
+  if (creep.room.name !== targetRoom) {
+    comm?.say(creep, "🚀");
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+    const exit = creep.room.findExitTo(targetRoom);
+    if (exit !== ERR_NO_PATH && exit !== ERR_INVALID_ARGS) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+      const exitPos = creep.pos.findClosestByRange(exit);
+      if (exitPos) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        creep.moveTo(exitPos, { reusePath: 50 });
+      }
+    }
+    return CLAIMER_CLAIM_TASK;
+  }
+
+  // In target room - claim controller
+  const controller = creep.room.controller;
+  if (!controller) {
+    comm?.say(creep, "❌");
+    return CLAIMER_CLAIM_TASK;
+  }
+
+  comm?.say(creep, "🏴");
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+  const result = creep.claimController(controller);
+  if (result === ERR_NOT_IN_RANGE) {
+    creep.moveTo(controller, { reusePath: 30 });
+  } else if (result === OK) {
+    comm?.say(creep, "✅");
+  }
+
+  return CLAIMER_CLAIM_TASK;
 }

@@ -141,6 +141,47 @@ export class SystemEvaluator {
       });
     }
 
+    // Phase 4: Multi-room management evaluation
+    if (memory?.empire && snapshot.roomCount > 1) {
+      const empireMemory = memory.empire as {
+        cpuBudgets: Record<string, number>;
+        threats: Array<{ room: string; hostileCount: number; severity: number }>;
+      };
+
+      // Check CPU per room
+      const cpuBudgets = empireMemory.cpuBudgets;
+      if (cpuBudgets && Object.keys(cpuBudgets).length > 0) {
+        const avgCpu = Object.values(cpuBudgets).reduce((a, b) => a + b, 0) / Object.keys(cpuBudgets).length;
+
+        if (avgCpu > 10) {
+          findings.push({
+            severity: "warning",
+            title: "CPU per room exceeds target",
+            detail: `Average: ${avgCpu.toFixed(1)} CPU/tick per room. Target: <10.`,
+            recommendation: "Optimize room processing or reduce empire size."
+          });
+        }
+      }
+
+      // Check for unstable rooms
+      const rooms = memory.rooms;
+      if (rooms) {
+        const stableRooms = Object.entries(rooms).filter(
+          ([, data]) => data.rclLevelDetected && data.rclLevelDetected >= 3
+        ).length;
+        const totalRooms = snapshot.roomCount;
+
+        if (stableRooms < totalRooms * 0.75 && totalRooms > 1) {
+          findings.push({
+            severity: "warning",
+            title: "Too many unstable rooms",
+            detail: `${stableRooms}/${totalRooms} rooms at RCL 3+.`,
+            recommendation: "Focus on stabilizing existing rooms before expansion."
+          });
+        }
+      }
+    }
+
     const summary =
       findings.length === 0
         ? "System stable: no anomalies detected."

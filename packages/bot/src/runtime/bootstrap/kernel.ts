@@ -17,6 +17,7 @@ import { RoomVisualManager } from "@runtime/visuals/RoomVisualManager";
 import { InfrastructureManager, type InfrastructureMemory } from "@runtime/infrastructure/InfrastructureManager";
 import { LinkManager } from "@runtime/infrastructure/LinkManager";
 import { BootstrapPhaseManager } from "./BootstrapPhaseManager";
+import { EmpireManager } from "@runtime/empire";
 import type { GameContext } from "@runtime/types/GameContext";
 import { profile } from "@profiler";
 
@@ -37,6 +38,7 @@ export interface KernelConfig {
   infrastructureManager?: InfrastructureManager;
   linkManager?: LinkManager;
   bootstrapManager?: BootstrapPhaseManager;
+  empireManager?: EmpireManager;
   repositorySignalProvider?: () => RepositorySignal | undefined;
   logger?: Pick<Console, "log" | "warn">;
   cpuEmergencyThreshold?: number;
@@ -68,6 +70,7 @@ export class Kernel {
   private readonly infrastructureManager: InfrastructureManager;
   private readonly linkManager: LinkManager;
   private readonly bootstrapManager: BootstrapPhaseManager;
+  private readonly empireManager: EmpireManager;
   private readonly repositorySignalProvider?: () => RepositorySignal | undefined;
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly cpuEmergencyThreshold: number;
@@ -109,6 +112,7 @@ export class Kernel {
         logger: this.logger
       });
     this.bootstrapManager = config.bootstrapManager ?? new BootstrapPhaseManager({}, this.logger);
+    this.empireManager = config.empireManager ?? new EmpireManager({ logger: this.logger });
     this.enableGarbageCollection = config.enableGarbageCollection ?? true;
     this.garbageCollectionInterval = config.garbageCollectionInterval ?? 10;
     this.enableSelfHealing = config.enableSelfHealing ?? true;
@@ -351,6 +355,9 @@ export class Kernel {
       this.evaluator.evaluateAndStore(memory, snapshot, repository, memoryUtilization);
       return;
     }
+
+    // Run empire manager for multi-room coordination (Phase 4)
+    this.empireManager.run(game, memory);
 
     // Get bootstrap role minimums from manager if bootstrap is active
     const bootstrapMinimums = this.bootstrapManager.getBootstrapRoleMinimums(bootstrapStatus.isActive);
