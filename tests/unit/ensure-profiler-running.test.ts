@@ -1,5 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import type { ScreepsAPI } from "screeps-api";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 
 /**
  * Unit tests for ensure-profiler-running script
