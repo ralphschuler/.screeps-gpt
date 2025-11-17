@@ -228,7 +228,7 @@ export function loop(): void {
 }
 ```
 
-**2. StatsCollector Validation** (`src/runtime/metrics/StatsCollector.ts`):
+**2. StatsCollector Validation** (`packages/bot/src/runtime/metrics/StatsCollector.ts`):
 
 ```typescript
 export class StatsCollector {
