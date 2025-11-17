@@ -35,6 +35,7 @@ declare global {
     creepCounter?: number;
     experimentalFeatures?: {
       taskSystem?: boolean;
+      roomVisuals?: boolean;
     };
     creepCommunication?: {
       verbosity?: CommunicationVerbosity;
