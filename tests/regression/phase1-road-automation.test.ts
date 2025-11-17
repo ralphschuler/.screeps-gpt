@@ -2,7 +2,7 @@
  * Regression test for Phase 1 road network automation.
  * Validates automated road planning triggers at RCL 2 when containers are present.
  *
- * Issue #XXX: Phase 1 completion blocked by lack of automated road planning
+ * Issue #903: Phase 1 completion blocked by lack of automated road planning
  * Root cause: Road planning not integrated into bootstrap phase progression
  * Solution: BootstrapPhaseManager now triggers road planning at RCL 2 with containers
  *
