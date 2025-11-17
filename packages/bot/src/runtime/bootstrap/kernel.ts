@@ -318,8 +318,8 @@ export class Kernel {
           this.logger.log?.(
             `[Kernel] Phase 1 road planning completed: ${result.created} roads planned in ${roadPlanningStatus.roomName}`
           );
-          this.bootstrapManager.markRoadsPlanned(memory, roadPlanningStatus.roomName);
         }
+        this.bootstrapManager.markRoadsPlanned(memory, roadPlanningStatus.roomName);
       }
     }
 
