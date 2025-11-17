@@ -138,7 +138,7 @@ This document establishes a comprehensive strategy for reducing technical debt a
 
 #### 11. Performance Baseline Establishment
 
-- **Issue**: ralphschuler/.screeps-gpt#820 - Establish performance baselines for regression detection
+- **Issue**: #820 - Establish performance baselines for regression detection
 - **Impact**: Medium - Enables proactive performance monitoring
 - **Effort**: Low (2-3 days)
 - **Remediation**: Define baseline metrics, configure thresholds, integrate with monitoring
