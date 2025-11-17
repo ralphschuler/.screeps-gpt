@@ -121,17 +121,6 @@ export class Kernel {
       });
     this.repositorySignalProvider = config.repositorySignalProvider;
     this.cpuEmergencyThreshold = config.cpuEmergencyThreshold ?? 0.9;
-
-    // Initialize Memory.stats if it doesn't exist
-    if (typeof Memory !== "undefined" && !Memory.stats) {
-      this.logger.log?.("[Kernel] Initializing Memory.stats structure");
-      Memory.stats = {
-        time: 0,
-        cpu: { used: 0, limit: 0, bucket: 0 },
-        creeps: { count: 0 },
-        rooms: { count: 0 }
-      };
-    }
   }
 
   /**
