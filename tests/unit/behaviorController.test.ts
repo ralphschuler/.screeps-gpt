@@ -1431,4 +1431,237 @@ describe("BehaviorController", () => {
       expect(roleExecuted).toBe(false);
     });
   });
+
+  describe("dynamic upgrader scaling", () => {
+    it("should not scale upgraders when energy is low", () => {
+      const logs: string[] = [];
+      const controller = new BehaviorController(
+        {},
+        {
+          log: (msg: string) => logs.push(msg),
+          warn: vi.fn()
+        }
+      );
+
+      const myController = {
+        my: true,
+        level: 4,
+        progress: 3057,
+        progressTotal: 405000
+      };
+
+      const dummyRoom: RoomLike = {
+        name: "E54N39",
+        controller: myController,
+        energyAvailable: 200,
+        energyCapacityAvailable: 950,
+        storage: null,
+        find: vi.fn().mockReturnValue([])
+      };
+
+      const spawn = {
+        name: "Spawn1",
+        spawning: null,
+        spawnCreep: vi.fn().mockReturnValue(OK),
+        store: { getFreeCapacity: () => 300, getUsedCapacity: () => 0 },
+        room: dummyRoom,
+        pos: { x: 25, y: 25 }
+      };
+
+      const game = {
+        time: 75049394,
+        cpu: { getUsed: () => 0, limit: 50, bucket: 10000 },
+        creeps: {},
+        spawns: { Spawn1: spawn },
+        rooms: { E54N39: dummyRoom }
+      } as unknown as GameContext;
+
+      const memory = {} as Memory;
+      const roleCounts = { harvester: 4, upgrader: 3, builder: 2 }; // At minimum
+
+      controller.execute(game, memory, roleCounts);
+
+      // Should NOT log scaling since energy is low (200/950 = 21%)
+      const scalingLog = logs.find(log => log.includes("Scaling upgraders"));
+      expect(scalingLog).toBeUndefined();
+    });
+
+    it("should scale to 4 upgraders at RCL4 with medium energy surplus", () => {
+      const logs: string[] = [];
+      const controller = new BehaviorController(
+        {},
+        {
+          log: (msg: string) => logs.push(msg),
+          warn: vi.fn()
+        }
+      );
+
+      const storageStructure = {
+        structureType: STRUCTURE_STORAGE,
+        store: {
+          getUsedCapacity: () => 40000, // 40% of 100k capacity
+          getCapacity: () => 100000
+        }
+      };
+
+      const myController = {
+        my: true,
+        level: 4,
+        progress: 3057,
+        progressTotal: 405000
+      };
+
+      const dummyRoom: RoomLike = {
+        name: "E54N39",
+        controller: myController,
+        energyAvailable: 750, // 78.9% of capacity
+        energyCapacityAvailable: 950,
+        storage: storageStructure,
+        find: vi.fn().mockReturnValue([])
+      };
+
+      const spawn = {
+        name: "Spawn1",
+        spawning: null,
+        spawnCreep: vi.fn().mockReturnValue(OK),
+        store: { getFreeCapacity: () => 300, getUsedCapacity: () => 0 },
+        room: dummyRoom,
+        pos: { x: 25, y: 25 }
+      };
+
+      const game = {
+        time: 75049394,
+        cpu: { getUsed: () => 0, limit: 50, bucket: 10000 },
+        creeps: {},
+        spawns: { Spawn1: spawn },
+        rooms: { E54N39: dummyRoom }
+      } as unknown as GameContext;
+
+      const memory = {} as Memory;
+      const roleCounts = { harvester: 4, upgrader: 3, builder: 2 }; // At minimum
+
+      controller.execute(game, memory, roleCounts);
+
+      // Should log scaling to 4 upgraders due to medium energy surplus
+      const scalingLog = logs.find(log => log.includes("Scaling upgraders to 4"));
+      expect(scalingLog).toBeDefined();
+      expect(scalingLog).toContain("RCL 4");
+    });
+
+    it("should scale to 5 upgraders at RCL4 with high energy surplus", () => {
+      const logs: string[] = [];
+      const controller = new BehaviorController(
+        {},
+        {
+          log: (msg: string) => logs.push(msg),
+          warn: vi.fn()
+        }
+      );
+
+      const storageStructure = {
+        structureType: STRUCTURE_STORAGE,
+        store: {
+          getUsedCapacity: () => 60000, // 60% of 100k capacity
+          getCapacity: () => 100000
+        }
+      };
+
+      const myController = {
+        my: true,
+        level: 4,
+        progress: 3057,
+        progressTotal: 405000
+      };
+
+      const dummyRoom: RoomLike = {
+        name: "E54N39",
+        controller: myController,
+        energyAvailable: 950, // 100% of capacity
+        energyCapacityAvailable: 950,
+        storage: storageStructure,
+        find: vi.fn().mockReturnValue([])
+      };
+
+      const spawn = {
+        name: "Spawn1",
+        spawning: null,
+        spawnCreep: vi.fn().mockReturnValue(OK),
+        store: { getFreeCapacity: () => 300, getUsedCapacity: () => 0 },
+        room: dummyRoom,
+        pos: { x: 25, y: 25 }
+      };
+
+      const game = {
+        time: 75049394,
+        cpu: { getUsed: () => 0, limit: 50, bucket: 10000 },
+        creeps: {},
+        spawns: { Spawn1: spawn },
+        rooms: { E54N39: dummyRoom }
+      } as unknown as GameContext;
+
+      const memory = {} as Memory;
+      const roleCounts = { harvester: 4, upgrader: 3, builder: 2 }; // At minimum
+
+      controller.execute(game, memory, roleCounts);
+
+      // Should log scaling to 5 upgraders due to high energy surplus
+      const scalingLog = logs.find(log => log.includes("Scaling upgraders to 5"));
+      expect(scalingLog).toBeDefined();
+      expect(scalingLog).toContain("RCL 4");
+    });
+
+    it("should scale to 4 upgraders at RCL3 with high energy to accelerate to RCL4", () => {
+      const logs: string[] = [];
+      const controller = new BehaviorController(
+        {},
+        {
+          log: (msg: string) => logs.push(msg),
+          warn: vi.fn()
+        }
+      );
+
+      const myController = {
+        my: true,
+        level: 3, // RCL3 trying to reach RCL4
+        progress: 15000,
+        progressTotal: 135000
+      };
+
+      const dummyRoom: RoomLike = {
+        name: "E54N39",
+        controller: myController,
+        energyAvailable: 800, // 84% of capacity
+        energyCapacityAvailable: 950,
+        storage: null,
+        find: vi.fn().mockReturnValue([])
+      };
+
+      const spawn = {
+        name: "Spawn1",
+        spawning: null,
+        spawnCreep: vi.fn().mockReturnValue(OK),
+        store: { getFreeCapacity: () => 300, getUsedCapacity: () => 0 },
+        room: dummyRoom,
+        pos: { x: 25, y: 25 }
+      };
+
+      const game = {
+        time: 75049394,
+        cpu: { getUsed: () => 0, limit: 50, bucket: 10000 },
+        creeps: {},
+        spawns: { Spawn1: spawn },
+        rooms: { E54N39: dummyRoom }
+      } as unknown as GameContext;
+
+      const memory = {} as Memory;
+      const roleCounts = { harvester: 4, upgrader: 3, builder: 2 };
+
+      controller.execute(game, memory, roleCounts);
+
+      // Should log scaling to 4 upgraders at RCL3 with high energy
+      const scalingLog = logs.find(log => log.includes("Scaling upgraders to 4"));
+      expect(scalingLog).toBeDefined();
+      expect(scalingLog).toContain("RCL 3");
+    });
+  });
 });

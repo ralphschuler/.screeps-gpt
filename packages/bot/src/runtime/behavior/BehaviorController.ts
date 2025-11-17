@@ -759,6 +759,57 @@ export class BehaviorController {
       }
     }
 
+    // Dynamic upgrader scaling based on energy surplus and RCL
+    // Scale upgraders to 4-5 when energy is abundant to accelerate RCL progression
+    for (const room of Object.values(game.rooms)) {
+      if (!room.controller?.my) {
+        continue;
+      }
+
+      const rcl = room.controller.level;
+      const storage = room.storage as StructureStorage | undefined;
+      const hasStorage = storage && storage.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
+
+      // Calculate energy surplus indicators
+      const energyAvailable = (room as { energyAvailable?: number }).energyAvailable ?? 0;
+      const energyCapacity = (room as { energyCapacityAvailable?: number }).energyCapacityAvailable ?? 300;
+      const energyRatio = energyCapacity > 0 ? energyAvailable / energyCapacity : 0;
+
+      // Storage energy percentage (if storage exists)
+      const storageEnergy = hasStorage && storage ? storage.store.getUsedCapacity(RESOURCE_ENERGY) : 0;
+      const storageCapacity = hasStorage && storage ? storage.store.getCapacity(RESOURCE_ENERGY) : 1;
+      const storageRatio = storageEnergy / storageCapacity;
+
+      // Determine upgrader count based on energy surplus
+      let upgraderCount = ROLE_DEFINITIONS["upgrader"].minimum; // Default: 3
+
+      // RCL 4+ with energy surplus: increase upgraders for faster progression
+      if (rcl >= 4) {
+        // High energy surplus: 5 upgraders (storage >50% or consistently full extensions)
+        if ((hasStorage && storageRatio > 0.5) || energyRatio > 0.9) {
+          upgraderCount = 5;
+        }
+        // Medium energy surplus: 4 upgraders (storage >30% or extensions >75%)
+        else if ((hasStorage && storageRatio > 0.3) || energyRatio > 0.75) {
+          upgraderCount = 4;
+        }
+        // Default: keep minimum of 3 upgraders
+      }
+      // RCL 3 with good energy: 4 upgraders to accelerate to RCL4
+      else if (rcl === 3 && energyRatio > 0.8) {
+        upgraderCount = 4;
+      }
+
+      // Only adjust if we calculated a higher count (never reduce below minimum)
+      if (upgraderCount > ROLE_DEFINITIONS["upgrader"].minimum) {
+        adjustedMinimums.upgrader = upgraderCount;
+        this.logger.log?.(
+          `[BehaviorController] Scaling upgraders to ${upgraderCount} ` +
+            `(RCL ${rcl}, energy: ${energyRatio.toFixed(2)}, storage: ${storageRatio.toFixed(2)})`
+        );
+      }
+    }
+
     return adjustedMinimums;
   }
 
