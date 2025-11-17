@@ -1,8 +1,8 @@
 # Solution Summary: Optimize Creep Role Distribution at RCL4
 
-**Issue:** #961  
-**Status:** ✅ COMPLETE  
-**Author:** GitHub Copilot  
+**Issue:** #961
+**Status:** ✅ COMPLETE
+**Author:** GitHub Copilot
 **Date:** 2025-11-17
 
 ## Problem Statement
