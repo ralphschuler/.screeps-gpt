@@ -21,10 +21,30 @@ describe("Container Harvesting Workflow", () => {
   let memory: Memory;
   let game: GameContext;
 
+  /**
+   * Helper function to create a mock room.find implementation with filter support.
+   * Reduces duplication across test cases.
+   */
+  const createMockRoomFind = (structures: Structure[], sources: Source[] = []) => {
+    return vi.fn((findConstant: FindConstant, options?: unknown) => {
+      if (findConstant === FIND_STRUCTURES) {
+        if (options && typeof options === "object" && "filter" in options) {
+          const filter = (options as { filter: (s: AnyStructure) => boolean }).filter;
+          return structures.filter(filter);
+        }
+        return structures;
+      }
+      if (findConstant === FIND_SOURCES) {
+        return sources;
+      }
+      return [];
+    });
+  };
+
   beforeEach(() => {
     behaviorController = new BehaviorController(
       {
-        useTaskSystem: false, // Use legacy role-based system for predictable testing
+        useTaskSystem: false, // Disable task system: this regression test targets legacy role-based behavior for Phase 1 container harvesting. Enabling the task system would alter test coverage and invalidate the regression scenario.
         cpuSafetyMargin: 0.85,
         maxCpuPerCreep: 1.5
       },
@@ -165,12 +185,6 @@ describe("Container Harvesting Workflow", () => {
       // Should spawn stationary harvesters (one per source with container)
       expect(mockSpawn.spawnCreep).toHaveBeenCalled();
 
-      // Check spawned creeps
-      const spawnCalls = (mockSpawn.spawnCreep as ReturnType<typeof vi.fn>).mock.calls;
-      const stationaryHarvesterSpawns = spawnCalls.filter(
-        call => call[2]?.memory?.role === "stationaryHarvester"
-      );
-
       // Should eventually spawn 2 stationary harvesters (one per container)
       expect(result.spawnedCreeps.length).toBeGreaterThan(0);
     });
@@ -244,7 +258,7 @@ describe("Container Harvesting Workflow", () => {
       const haulerSpawns = spawnCalls.filter(call => call[2]?.memory?.role === "hauler");
 
       // Haulers should be spawned when containers are present
-      expect(mockSpawn.spawnCreep).toHaveBeenCalled();
+      expect(haulerSpawns.length).toBeGreaterThan(0);
     });
   });
 
@@ -393,17 +407,7 @@ describe("Container Harvesting Workflow", () => {
         withdraw: vi.fn().mockReturnValue(OK),
         room: {
           name: "W1N1",
-          find: vi.fn((findConstant: FindConstant, options?: unknown) => {
-            if (findConstant === FIND_STRUCTURES) {
-              if (options && typeof options === "object" && "filter" in options) {
-                const structures = [mockContainer];
-                const filter = (options as { filter: (s: AnyStructure) => boolean }).filter;
-                return structures.filter(filter);
-              }
-              return [mockContainer];
-            }
-            return [];
-          })
+          find: createMockRoomFind([mockContainer])
         } as Room
       } as Creep;
 
@@ -501,20 +505,7 @@ describe("Container Harvesting Workflow", () => {
         moveTo: vi.fn().mockReturnValue(OK),
         room: {
           name: "W1N1",
-          find: vi.fn((findConstant: FindConstant, options?: unknown) => {
-            if (findConstant === FIND_STRUCTURES) {
-              if (options && typeof options === "object" && "filter" in options) {
-                const structures = [mockSourceContainer, mockControllerContainer];
-                const filter = (options as { filter: (s: AnyStructure) => boolean }).filter;
-                return structures.filter(filter);
-              }
-              return [mockSourceContainer, mockControllerContainer];
-            }
-            if (findConstant === FIND_SOURCES) {
-              return [mockSource];
-            }
-            return [];
-          })
+          find: createMockRoomFind([mockSourceContainer, mockControllerContainer], [mockSource])
         } as Room
       } as Creep;
 

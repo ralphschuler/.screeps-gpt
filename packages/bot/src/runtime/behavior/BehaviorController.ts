@@ -1953,8 +1953,8 @@ function runRepairer(creep: ManagedCreep): string {
 
   // Sort infrastructure targets to prioritize source containers
   // Source containers (near sources) are more critical than controller containers
+  const sources = creep.room.find(FIND_SOURCES) as Source[];
   if (infrastructureTargets.length > 1) {
-    const sources = creep.room.find(FIND_SOURCES) as Source[];
     infrastructureTargets.sort((a, b) => {
       const isAContainer = a.structureType === STRUCTURE_CONTAINER;
       const isBContainer = b.structureType === STRUCTURE_CONTAINER;
