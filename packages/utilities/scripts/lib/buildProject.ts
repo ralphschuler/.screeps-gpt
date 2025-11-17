@@ -1,7 +1,8 @@
-import { mkdir, readdir, rm, readFile, writeFile, stat, access } from "node:fs/promises";
+import { mkdir, readdir, readFile, writeFile, stat, access } from "node:fs/promises";
 import { constants } from "node:fs";
 import { resolve, join } from "node:path";
 import { build, context as createContext, type BuildOptions } from "esbuild";
+import { rimraf } from "rimraf";
 
 const outDir = resolve("dist");
 const srcDir = resolve("packages/bot/src");
@@ -63,7 +64,7 @@ async function prepare() {
     // Lock file doesn't exist, which is fine
   }
 
-  await rm(outDir, { recursive: true, force: true });
+  await rimraf(outDir);
   await mkdir(outDir, { recursive: true });
 
   // Restore lock file if it existed
