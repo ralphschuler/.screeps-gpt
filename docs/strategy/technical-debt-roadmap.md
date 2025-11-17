@@ -71,7 +71,7 @@ This document establishes a comprehensive strategy for reducing technical debt a
 
 #### 4. Kernel Integration Tests
 
-- **Issue**: ralphschuler/.screeps-gpt#634 - Full-tick kernel integration tests needed
+- **Issue**: #634 - Full-tick kernel integration tests needed
 - **Impact**: Medium - Limited end-to-end validation of kernel orchestration
 - **Effort**: High (5-7 days)
 - **Remediation**: Add mockup-based integration tests for full tick cycles
