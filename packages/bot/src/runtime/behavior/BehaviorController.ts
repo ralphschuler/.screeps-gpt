@@ -701,7 +701,8 @@ export class BehaviorController {
       // Check for damaged structures (excluding walls/ramparts which have separate logic)
       const damagedStructures = room.find(FIND_STRUCTURES, {
         filter: (s: Structure) => {
-          if (!("hits" in s) || typeof s.hits !== "number") return false;
+          if (!("hits" in s && "hitsMax" in s) || typeof s.hits !== "number" || typeof s.hitsMax !== "number")
+            return false;
           // Skip walls and ramparts - they have separate wall upgrade manager logic
           if (s.structureType === STRUCTURE_WALL || s.structureType === STRUCTURE_RAMPART) return false;
           return s.hits < s.hitsMax;
@@ -819,31 +820,35 @@ export class BehaviorController {
     }
 
     // Dynamic builder activation based on construction sites
-    // Spawn 1-2 builders when construction work is needed
-    if (totalConstructionSites > 0) {
-      // Scale builders with construction queue size
-      // 1-5 sites: 1 builder, 6-15 sites: 2 builders, 16+ sites: 3 builders
-      if (totalConstructionSites > 15) {
-        adjustedMinimums.builder = 3;
-      } else if (totalConstructionSites > 5) {
-        adjustedMinimums.builder = 2;
+    // Only adjust if not already set by container-based economy logic
+    if (adjustedMinimums.builder === undefined) {
+      if (totalConstructionSites > 0) {
+        // Scale builders with construction queue size
+        // 1-5 sites: 1 builder, 6-15 sites: 2 builders, 16+ sites: 3 builders
+        if (totalConstructionSites > 15) {
+          adjustedMinimums.builder = 3;
+        } else if (totalConstructionSites > 5) {
+          adjustedMinimums.builder = 2;
+        } else {
+          adjustedMinimums.builder = 1;
+        }
       } else {
-        adjustedMinimums.builder = 1;
+        // No construction sites: maintain minimum builder count from role definition (currently 2)
+        // This ensures builders are available for repairs and emergency construction
+        adjustedMinimums.builder = ROLE_DEFINITIONS["builder"].minimum;
       }
-    } else {
-      // No construction sites: maintain minimum builder count (from default minimum = 2)
-      // This ensures builders are available for repairs and emergency construction
-      adjustedMinimums.builder = ROLE_DEFINITIONS["builder"].minimum;
     }
 
     // Dynamic repairer activation based on damaged structures
-    // Spawn 1 repairer per controlled room when structures need maintenance
-    if (hasDamagedStructures) {
-      adjustedMinimums.repairer = Math.max(1, controlledRoomCount);
-    } else {
-      // No damaged structures: no repairers needed (default minimum = 0)
-      // Builders can handle emergency repairs
-      adjustedMinimums.repairer = 0;
+    // Only adjust if not already set by container-based economy logic
+    if (adjustedMinimums.repairer === undefined) {
+      if (hasDamagedStructures) {
+        adjustedMinimums.repairer = Math.max(1, controlledRoomCount);
+      } else {
+        // No damaged structures: maintain minimum repairer count from role definition (currently 0)
+        // Builders can handle emergency repairs
+        adjustedMinimums.repairer = ROLE_DEFINITIONS["repairer"].minimum;
+      }
     }
 
     // Dynamic upgrader scaling based on energy surplus and RCL
@@ -931,9 +936,10 @@ export class BehaviorController {
     const isEmergency = totalCreeps === 0;
 
     // Detect critical hauler shortage: logistics infrastructure exists but no haulers
+    // Do NOT prioritize haulers in emergency mode (0 total creeps) - harvesters must spawn first
     const haulerCount = roleCounts["hauler"] ?? 0;
     const haulerMinimum = adjustedMinimums["hauler"] ?? 0;
-    const needsCriticalHauler = haulerCount === 0 && haulerMinimum > 0;
+    const needsCriticalHauler = haulerCount === 0 && haulerMinimum > 0 && !isEmergency;
 
     // Priority-based spawn order: adjust dynamically based on critical needs
     // When haulers are critically needed (storage/towers exist but 0 haulers),

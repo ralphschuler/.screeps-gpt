@@ -194,24 +194,44 @@ adjustedMinimums.harvester = Math.max(2, optimalHarvesters - 1);
 
 ## Spawn Priority Examples
 
-### Example 1: Empty Room with Storage
+### Example 1: Room with Storage but Some Creeps
 
 **State:**
 - Storage exists with 1000 energy
-- All role counts = 0
+- Harvesters: 1 (some energy collection capability)
+- Haulers: 0 (logistics not operational)
 - Energy available = 400
 
 **Decision:**
 ```
-needsCriticalHauler = true (haulerCount=0, haulerMinimum=1)
+isEmergency = false (totalCreeps > 0)
+needsCriticalHauler = true (haulerCount=0, haulerMinimum=1, !isEmergency)
 spawnOrder = ["hauler", "harvester", "upgrader", ...]
 ```
 
 **First Spawn:** Hauler (activate logistics to distribute existing energy)
 
-**Rationale:** Storage has energy that needs distribution. Hauler is more critical than harvester because energy already exists.
+**Rationale:** With at least one harvester collecting energy and storage having reserves, activating haulers is more critical for distribution. Emergency mode is NOT active because creeps exist.
 
-### Example 2: Normal Operation
+### Example 2: Emergency Recovery (Empty Room with Storage)
+
+**State:**
+- Storage exists with 1000 energy
+- All creeps = 0 (EMERGENCY)
+- Energy available = 400
+
+**Decision:**
+```
+isEmergency = true (totalCreeps = 0)
+needsCriticalHauler = false (isEmergency overrides)
+spawnOrder = ["harvester", "upgrader", "builder", ...]
+```
+
+**First Spawn:** Harvester (emergency recovery mode)
+
+**Rationale:** In a true emergency (0 creeps), harvesters MUST spawn first to establish energy collection. Even though storage has energy, without harvesters, the room cannot sustain operations. Emergency mode takes priority over all other considerations.
+
+### Example 3: Normal Operation
 
 **State:**
 - Harvesters: 2
@@ -229,7 +249,7 @@ spawnOrder = ["harvester", "upgrader", "builder", ...]
 
 **Rationale:** Normal priority order applies. No critical infrastructure gaps.
 
-### Example 3: Hauler Death During Operation
+### Example 4: Hauler Death During Operation
 
 **State:**
 - Storage exists
