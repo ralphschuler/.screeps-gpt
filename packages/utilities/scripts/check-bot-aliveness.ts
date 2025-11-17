@@ -68,9 +68,16 @@ async function checkBotAliveness(): Promise<{
     // Defensive parsing: handle undefined/empty responses when bot has no game presence
     let data;
     try {
-      if (response.data === "undefined" || response.data === "" || response.data === "null") {
+      // FIX: Check for undefined/null response.data first
+      if (
+        response.data === undefined ||
+        response.data === null ||
+        response.data === "undefined" ||
+        response.data === "" ||
+        response.data === "null"
+      ) {
         console.log("⚠️  Console returned undefined/empty response, treating as no spawns");
-        console.log(`   Raw response: "${response.data}"`);
+        console.log(`   Raw response: "${response.data || "<undefined>"}"`);
         return {
           aliveness: "spawn_placement_needed",
           status: "empty",
@@ -83,7 +90,11 @@ async function checkBotAliveness(): Promise<{
       // Validate parsed structure
       if (typeof data !== "object" || data === null) {
         console.log("⚠️  Console returned non-object response, treating as no spawns");
-        console.log(`   Raw response: "${response.data.substring(0, 200)}"`);
+        // FIX: Add null-safe access before substring()
+        const safeResponse = response.data || "<no response data>";
+        console.log(
+          `   Raw response: "${typeof safeResponse === "string" ? safeResponse.substring(0, 200) : String(safeResponse)}"`
+        );
         return {
           aliveness: "spawn_placement_needed",
           status: "invalid",
@@ -92,7 +103,11 @@ async function checkBotAliveness(): Promise<{
       }
     } catch (parseError) {
       console.error("❌ JSON parse failed:", parseError);
-      console.error(`   Raw response (first 200 chars): "${response.data.substring(0, 200)}"`);
+      // FIX: Add null-safe access before substring()
+      const safeResponse = response.data || "<no response data>";
+      console.error(
+        `   Raw response (first 200 chars): "${typeof safeResponse === "string" ? safeResponse.substring(0, 200) : String(safeResponse)}"`
+      );
       return {
         aliveness: "unknown",
         error: `JSON parse error: ${parseError instanceof Error ? parseError.message : String(parseError)}`

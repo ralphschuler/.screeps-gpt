@@ -71,6 +71,32 @@ describe("check-bot-aliveness defensive parsing", () => {
     expect(result.error).toContain("Console returned empty response");
   });
 
+  it("should handle undefined response.data (regression test for issue)", async () => {
+    // Mock: console returns undefined response.data (the bug scenario)
+    mockConsoleMethod.mockResolvedValueOnce({ ok: 1, data: undefined });
+
+    const { checkBotAliveness } = await import("../../packages/utilities/scripts/check-bot-aliveness");
+
+    const result = await checkBotAliveness();
+
+    expect(result.aliveness).toBe("spawn_placement_needed");
+    expect(result.status).toBe("empty");
+    expect(result.error).toContain("Console returned empty response");
+  });
+
+  it("should handle null response.data", async () => {
+    // Mock: console returns null response.data
+    mockConsoleMethod.mockResolvedValueOnce({ ok: 1, data: null });
+
+    const { checkBotAliveness } = await import("../../packages/utilities/scripts/check-bot-aliveness");
+
+    const result = await checkBotAliveness();
+
+    expect(result.aliveness).toBe("spawn_placement_needed");
+    expect(result.status).toBe("empty");
+    expect(result.error).toContain("Console returned empty response");
+  });
+
   it("should handle malformed JSON from console", async () => {
     // Mock: console returns malformed JSON
     mockConsoleMethod.mockResolvedValueOnce({ ok: 1, data: "{invalid json}" });
