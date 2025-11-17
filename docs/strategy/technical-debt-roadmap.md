@@ -96,7 +96,7 @@ This document establishes a comprehensive strategy for reducing technical debt a
 
 #### 7. CPU Bucket-Aware Scheduling
 
-- **Issue**: ralphschuler/.screeps-gpt#793 - Implement CPU bucket-aware task scheduler
+- **Issue**: #793 - Implement CPU bucket-aware task scheduler
 - **Impact**: High - Prevents CPU timeout failures
 - **Effort**: High (1-2 weeks)
 - **Related**: #600 (Profiler integration), #820 (Performance baselines)
