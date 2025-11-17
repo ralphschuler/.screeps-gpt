@@ -138,6 +138,21 @@ export class StatsCollector {
       this.lastLogTick = game.time;
     }
 
+    // Defensive initialization: ensure Memory.stats exists before collection
+    // StatsCollector owns the Memory.stats lifecycle and must guarantee its presence
+    // This prevents telemetry blackout if Memory is reset between ticks
+    if (!memory.stats) {
+      memory.stats = {
+        time: game.time,
+        cpu: { used: 0, limit: 0, bucket: 0 },
+        creeps: { count: 0 },
+        rooms: { count: 0 }
+      };
+      if (shouldLog) {
+        console.log(`[StatsCollector] Initialized Memory.stats structure`);
+      }
+    }
+
     try {
       const stats: StatsData = {
         time: game.time,

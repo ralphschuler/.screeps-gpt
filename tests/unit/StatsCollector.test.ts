@@ -583,6 +583,130 @@ describe("StatsCollector", () => {
     }
   });
 
+  it("should initialize Memory.stats defensively when undefined", () => {
+    const collector = new StatsCollector({ enableDiagnostics: false });
+    const game = {
+      time: 12357,
+      cpu: {
+        getUsed: () => 5.5,
+        limit: 10,
+        bucket: 8500
+      },
+      creeps: {
+        harvester1: { memory: { role: "harvester" } }
+      },
+      rooms: {
+        W1N1: {
+          energyAvailable: 300,
+          energyCapacityAvailable: 550
+        }
+      }
+    };
+
+    const snapshot: PerformanceSnapshot = {
+      tick: 12357,
+      cpuUsed: 5.5,
+      cpuLimit: 10,
+      cpuBucket: 8500,
+      creepCount: 1,
+      roomCount: 1,
+      spawnOrders: 0,
+      warnings: [],
+      execution: {
+        processedCreeps: 1,
+        spawnedCreeps: [],
+        tasksExecuted: {}
+      }
+    };
+
+    // Memory.stats is undefined - should be initialized defensively
+    const memory = {} as Memory;
+    expect(memory.stats).toBeUndefined();
+
+    collector.collect(game, memory, snapshot);
+
+    // Verify defensive initialization created the structure
+    expect(memory.stats).toBeDefined();
+    expect(memory.stats?.time).toBe(12357);
+    expect(memory.stats?.cpu.used).toBe(5.5);
+    expect(memory.stats?.creeps.count).toBe(1);
+  });
+
+  it("should populate Memory.stats with real data, not zeros (regression test for issue #684)", () => {
+    const collector = new StatsCollector({ enableDiagnostics: false });
+    const game = {
+      time: 12358,
+      cpu: {
+        getUsed: () => 6.5,
+        limit: 20,
+        bucket: 9500
+      },
+      creeps: {
+        harvester1: { memory: { role: "harvester" } },
+        upgrader1: { memory: { role: "upgrader" } }
+      },
+      rooms: {
+        E54N39: {
+          energyAvailable: 800,
+          energyCapacityAvailable: 1050,
+          controller: {
+            level: 4,
+            progress: 17981,
+            progressTotal: 405000
+          }
+        }
+      }
+    };
+
+    const snapshot: PerformanceSnapshot = {
+      tick: 12358,
+      cpuUsed: 6.5,
+      cpuLimit: 20,
+      cpuBucket: 9500,
+      creepCount: 2,
+      roomCount: 1,
+      spawnOrders: 0,
+      warnings: [],
+      execution: {
+        processedCreeps: 2,
+        spawnedCreeps: [],
+        tasksExecuted: {}
+      }
+    };
+
+    const memory = {} as Memory;
+    collector.collect(game, memory, snapshot);
+
+    // REGRESSION TEST: Verify stats are NOT zeros (issue #684 root cause)
+    expect(memory.stats).toBeDefined();
+    expect(memory.stats?.time).toBe(12358);
+    expect(memory.stats?.time).not.toBe(0); // Should be real game time, not zero
+
+    expect(memory.stats?.cpu.used).toBe(6.5);
+    expect(memory.stats?.cpu.used).not.toBe(0); // Should be real CPU usage, not zero
+
+    expect(memory.stats?.cpu.limit).toBe(20);
+    expect(memory.stats?.cpu.limit).not.toBe(0); // Should be real CPU limit, not zero
+
+    expect(memory.stats?.cpu.bucket).toBe(9500);
+    expect(memory.stats?.cpu.bucket).not.toBe(0); // Should be real bucket value, not zero
+
+    expect(memory.stats?.creeps.count).toBe(2);
+    expect(memory.stats?.creeps.count).not.toBe(0); // Should be real creep count, not zero
+
+    expect(memory.stats?.rooms.count).toBe(1);
+    expect(memory.stats?.rooms.count).not.toBe(0); // Should be real room count, not zero
+
+    // Verify room-specific data is collected
+    const roomStats = memory.stats?.rooms?.E54N39;
+    expect(roomStats).toBeDefined();
+    if (typeof roomStats === "object") {
+      expect(roomStats.energyAvailable).toBe(800);
+      expect(roomStats.energyCapacityAvailable).toBe(1050);
+      expect(roomStats.controllerLevel).toBe(4);
+    }
+  });
+
   it("should collect complete telemetry for baseline establishment", () => {
     const collector = new StatsCollector();
     const game = {
