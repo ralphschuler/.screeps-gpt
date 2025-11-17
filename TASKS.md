@@ -22,7 +22,12 @@
   - Unit tests added for memory bootstrapping, pixel generation, and logging
   - Regression test added for extension placement at RCL 1-2
 - [ ] Implement enhanced spawn priority system with energy threshold checks
-- [ ] Add container-based harvesting for improved efficiency
+- [x] Add container-based harvesting for improved efficiency _(2025-11-17)_
+  - Stationary harvester role implemented with 5 WORK parts
+  - Hauler role implemented with CARRY-heavy body composition
+  - Dynamic role spawning based on container detection
+  - Container repair logic with 50% health threshold
+  - Source containers prioritized over controller containers
 - [ ] Automate road network planning (source → spawn, source → controller)
 - [ ] Implement dynamic role population based on room state
 - [ ] Optimize CPU usage for early game (<5 CPU/tick target)
