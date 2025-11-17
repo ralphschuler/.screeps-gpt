@@ -379,7 +379,7 @@ function validateStatsHealth(): boolean {
 - [Kernel](../../packages/bot/src/runtime/bootstrap/kernel.ts)
 - [Monitoring Workflow](../../.github/workflows/screeps-monitoring.yml)
 - [CHANGELOG v0.83.7](../../../CHANGELOG.md) - Interface fix
-- [Memory Stats Interface Fix](../../docs/operations/memory-stats-interface-fix.md)
+- [Memory Stats Interface Fix](../../operations/memory-stats-interface-fix.md)
 
 ## Notes
 
