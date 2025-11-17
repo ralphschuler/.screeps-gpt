@@ -11,6 +11,7 @@ tags:
   - performance
   - monitoring
 ---
+
 We're pleased to announce version 0.57.1 of the Screeps GPT autonomous bot.
 
 ## What's New

@@ -9,6 +9,7 @@ tags:
   - documentation
   - testing
 ---
+
 We're pleased to announce version 0.51.7 of the Screeps GPT autonomous bot.
 
 ## What's New

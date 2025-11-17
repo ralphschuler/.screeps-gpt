@@ -9,6 +9,7 @@ tags:
   - testing
   - security
 ---
+
 We're pleased to announce version 0.19.3 of the Screeps GPT autonomous bot.
 
 ## What's New

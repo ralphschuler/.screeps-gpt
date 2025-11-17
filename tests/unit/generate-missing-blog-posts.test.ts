@@ -150,8 +150,7 @@ describe("Blog post generation", () => {
         return versionSlug.replace(/-/g, ".");
       });
 
-      // Check coverage (some versions like 0.8.0, 0.11.3, 0.12.0 already existed)
-      const existingPosts = ["0.8.0", "0.11.3", "0.12.0"];
+      // Check coverage - all changelog versions should have blog posts
       const expectedCoverage = changelogVersions.length;
       const actualCoverage = blogVersions.length;
 

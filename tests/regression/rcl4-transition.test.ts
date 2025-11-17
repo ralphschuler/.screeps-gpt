@@ -38,7 +38,7 @@ describe("RCL4 Transition Detection", () => {
         name: "E54N39",
         controller: { my: true, level: 1 },
         find: () => []
-      } as any;
+      } as unknown as Room;
 
       const transitions = bootstrapManager.detectRCLPhaseTransitions(mockGame, mockMemory);
 
@@ -53,7 +53,7 @@ describe("RCL4 Transition Detection", () => {
         name: "E54N39",
         controller: { my: true, level: 3 },
         find: () => []
-      } as any;
+      } as unknown as Room;
 
       const transitions = bootstrapManager.detectRCLPhaseTransitions(mockGame, mockMemory);
 
@@ -68,7 +68,7 @@ describe("RCL4 Transition Detection", () => {
         name: "E54N39",
         controller: { my: true, level: 4 },
         find: () => []
-      } as any;
+      } as unknown as Room;
 
       const transitions = bootstrapManager.detectRCLPhaseTransitions(mockGame, mockMemory);
 
@@ -86,7 +86,7 @@ describe("RCL4 Transition Detection", () => {
         name: "E54N39",
         controller: { my: true, level: 5 },
         find: () => []
-      } as any;
+      } as unknown as Room;
 
       const transitions = bootstrapManager.detectRCLPhaseTransitions(mockGame, mockMemory);
 
@@ -100,7 +100,7 @@ describe("RCL4 Transition Detection", () => {
         name: "E54N39",
         controller: { my: true, level: 6 },
         find: () => []
-      } as any;
+      } as unknown as Room;
 
       const transitions = bootstrapManager.detectRCLPhaseTransitions(mockGame, mockMemory);
 
@@ -114,7 +114,7 @@ describe("RCL4 Transition Detection", () => {
         name: "E54N39",
         controller: { my: true, level: 8 },
         find: () => []
-      } as any;
+      } as unknown as Room;
 
       const transitions = bootstrapManager.detectRCLPhaseTransitions(mockGame, mockMemory);
 
@@ -131,7 +131,7 @@ describe("RCL4 Transition Detection", () => {
         name: "E54N39",
         controller: { my: true, level: 3 },
         find: () => []
-      } as any;
+      } as unknown as Room;
 
       let transitions = bootstrapManager.detectRCLPhaseTransitions(mockGame, mockMemory);
       expect(transitions[0].newPhase).toBe("phase1");
@@ -154,7 +154,7 @@ describe("RCL4 Transition Detection", () => {
         name: "E54N39",
         controller: { my: true, level: 4 },
         find: () => []
-      } as any;
+      } as unknown as Room;
 
       bootstrapManager.detectRCLPhaseTransitions(mockGame, mockMemory);
 
@@ -170,13 +170,13 @@ describe("RCL4 Transition Detection", () => {
         name: "E54N39",
         controller: { my: true, level: 4 },
         find: () => []
-      } as any;
+      } as unknown as Room;
 
       mockGame.rooms["E55N39"] = {
         name: "E55N39",
         controller: { my: true, level: 3 },
         find: () => []
-      } as any;
+      } as unknown as Room;
 
       const transitions = bootstrapManager.detectRCLPhaseTransitions(mockGame, mockMemory);
 
@@ -205,7 +205,7 @@ describe("RCL4 Transition Detection", () => {
           }
         },
         find: () => []
-      } as any;
+      } as unknown as Room;
 
       const result = bootstrapManager.checkStorageStatus(mockRoom, mockMemory);
 
@@ -231,7 +231,7 @@ describe("RCL4 Transition Detection", () => {
           }
         },
         find: () => []
-      } as any;
+      } as unknown as Room;
 
       const result = bootstrapManager.checkStorageStatus(mockRoom, mockMemory);
 
@@ -251,7 +251,7 @@ describe("RCL4 Transition Detection", () => {
         name: "E54N39",
         storage: null,
         find: () => []
-      } as any;
+      } as unknown as Room;
 
       const result = bootstrapManager.checkStorageStatus(mockRoom, mockMemory);
 
@@ -267,7 +267,7 @@ describe("RCL4 Transition Detection", () => {
         energyAvailable: 300,
         energyCapacityAvailable: 300,
         find: () => []
-      } as any;
+      } as unknown as Room;
 
       mockMemory.bootstrap = {
         isActive: true,

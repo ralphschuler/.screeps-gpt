@@ -172,7 +172,7 @@ describe("Analytics and metrics collection regression", () => {
       // Queue maintains insertion order
       const summary = reporter.getSummary();
       expect(summary.queuedReports).toBe(50);
-      expect(summary.oldestReport).toBeLessThanOrEqual((global as any).Game.time);
+      expect(summary.oldestReport).toBeLessThanOrEqual((global as unknown as { Game: Game }).Game.time);
     });
   });
 

@@ -10,6 +10,7 @@ tags:
   - testing
   - deployment
 ---
+
 We're pleased to announce version 0.7.19 of the Screeps GPT autonomous bot.
 
 ## What's New

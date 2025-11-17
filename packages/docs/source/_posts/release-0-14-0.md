@@ -12,6 +12,7 @@ tags:
   - monitoring
   - deployment
 ---
+
 We're pleased to announce version 0.14.0 of the Screeps GPT autonomous bot.
 
 ## What's New

@@ -11,6 +11,7 @@ tags:
   - testing
   - deployment
 ---
+
 We're pleased to announce version 0.29.3 of the Screeps GPT autonomous bot.
 
 ## What's New

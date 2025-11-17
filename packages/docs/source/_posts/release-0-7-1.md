@@ -16,6 +16,7 @@ tags:
   - deployment
   - security
 ---
+
 We're pleased to announce version 0.7.1 of the Screeps GPT autonomous bot.
 
 ## What's New
@@ -89,8 +90,6 @@ We're pleased to announce version 0.7.1 of the Screeps GPT autonomous bot.
 - **Fixed deployment failure with empty environment variables** - Changed deploy script to use `||` instead of `??` operator so empty string secrets default to proper Screeps API values (resolves workflow run 18702433741)
 
 ### Removed
-
-
 
 ---
 

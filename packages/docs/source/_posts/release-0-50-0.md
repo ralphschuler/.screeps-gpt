@@ -7,6 +7,7 @@ categories:
 tags:
   - release
 ---
+
 We're pleased to announce version 0.50.0 of the Screeps GPT autonomous bot.
 
 ## What's New
