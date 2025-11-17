@@ -75,11 +75,24 @@ describe("AnalyticsReporter", () => {
     it("should track oldest report timestamp", () => {
       const reporter = new AnalyticsReporter(config);
 
-      const firstTimestamp = Date.now();
+      const firstTimestamp = (global as any).Game.time;
       reporter.queueReport({ tick: 1000 });
 
       const summary = reporter.getSummary();
       expect(summary.oldestReport).toBeGreaterThanOrEqual(firstTimestamp);
+    });
+
+    it("should use Game.time instead of Date.now() for deterministic timestamps", () => {
+      const reporter = new AnalyticsReporter(config);
+
+      // Set Game.time to a specific value
+      (global as any).Game.time = 12345;
+
+      reporter.queueReport({ tick: 1000 });
+
+      const summary = reporter.getSummary();
+      // Timestamp should match Game.time, not Date.now()
+      expect(summary.oldestReport).toBe(12345);
     });
 
     it("should return null for oldest report when queue is empty", () => {
