@@ -781,6 +781,15 @@ export class BehaviorController {
         `[BehaviorController] Storage/containers/towers detected without source containers, ` +
           `spawning ${adjustedMinimums.hauler} hauler(s) for logistics`
       );
+
+      // Reduce harvester count when haulers are handling logistics
+      // Harvesters no longer need to do double duty (harvest + deliver)
+      const firstRoom = Object.values(game.rooms).find(r => r.controller?.my);
+      if (firstRoom) {
+        const optimalHarvesters = this.calculateOptimalHarvesterCount(firstRoom);
+        // With haulers available, reduce harvester count by 1-2 to prevent overstaffing
+        adjustedMinimums.harvester = Math.max(2, optimalHarvesters - 1);
+      }
     } else {
       // No containers yet - use source-based harvester count
       const firstRoom = Object.values(game.rooms).find(r => r.controller?.my);
@@ -874,19 +883,44 @@ export class BehaviorController {
     const totalCreeps = Object.keys(game.creeps).length;
     const isEmergency = totalCreeps === 0;
 
-    // Priority-based spawn order: harvesters first to prevent starvation
-    const roleOrder: RoleName[] = [
-      "harvester",
-      "upgrader",
-      "builder",
-      "stationaryHarvester",
-      "hauler",
-      "repairer",
-      "remoteMiner",
-      "attacker",
-      "healer",
-      "dismantler"
-    ];
+    // Detect critical hauler shortage: logistics infrastructure exists but no haulers
+    const haulerCount = roleCounts["hauler"] ?? 0;
+    const haulerMinimum = adjustedMinimums["hauler"] ?? 0;
+    const needsCriticalHauler = haulerCount === 0 && haulerMinimum > 0;
+
+    // Priority-based spawn order: adjust dynamically based on critical needs
+    // When haulers are critically needed (storage/towers exist but 0 haulers),
+    // prioritize them to prevent energy logistics starvation
+    let roleOrder: RoleName[];
+    if (needsCriticalHauler) {
+      // Hauler priority mode: spawn haulers before other support roles
+      roleOrder = [
+        "harvester",
+        "hauler", // Critical: needed for logistics
+        "upgrader",
+        "builder",
+        "stationaryHarvester",
+        "repairer",
+        "remoteMiner",
+        "attacker",
+        "healer",
+        "dismantler"
+      ];
+    } else {
+      // Normal priority mode
+      roleOrder = [
+        "harvester",
+        "upgrader",
+        "builder",
+        "stationaryHarvester",
+        "hauler",
+        "repairer",
+        "remoteMiner",
+        "attacker",
+        "healer",
+        "dismantler"
+      ];
+    }
 
     for (const role of roleOrder) {
       const definition = ROLE_DEFINITIONS[role];
