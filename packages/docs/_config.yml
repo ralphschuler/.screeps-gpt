@@ -117,7 +117,7 @@ deploy:
 # Search
 search:
   path: search.xml
-  field: post
+  field: all # Search posts AND pages
   content: true
 
 # Feed (hexo-generator-feed)

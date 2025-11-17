@@ -1,0 +1,86 @@
+# Cactus Theme Configuration
+# This file overrides the default theme configuration
+
+# Configure the navigation menu
+nav:
+  Home: /
+  Getting Started: /docs/getting-started.html
+  Documentation: /docs/
+  Analytics: /docs/analytics/
+  Automation: /docs/automation/
+  Operations: /docs/operations/
+  Runtime: /docs/runtime/
+  Security: /docs/security/
+  Changelog: /docs/changelog/
+  Blog: /archives/
+
+# Social links
+social_links:
+  - icon: github
+    label: GitHub Repository
+    link: https://github.com/ralphschuler/.screeps-gpt
+
+# Set the page direction
+direction: ltr
+
+# Customize the overview with the most recent blog posts on the index page
+posts_overview:
+  show_all_posts: false
+  post_count: 5
+  sort_updated: false
+
+# Customize the archive view
+archive:
+  sort_updated: false
+
+# Customize the article view
+post:
+  show_updated: true
+
+# Customize the copyright years
+copyright:
+  start_year: 2024
+  end_year:
+
+# Customize the 404 page
+error_404:
+  enabled: true
+  title: "404 Page Not Found"
+  description: "The page you are looking for might have been removed, had its name changed, or is temporarily unavailable."
+
+# Logo configuration
+logo:
+  enabled: true
+  width: 50
+  height: 50
+  url: /images/logo.png
+  gravatar: false
+
+# Favicon configuration
+favicon:
+  desktop:
+    url: /images/favicon.ico
+    gravatar: false
+  android:
+    url: /images/favicon-192x192.png
+    gravatar: false
+  apple:
+    url: /images/apple-touch-icon.png
+    gravatar: false
+
+# Gravatar settings
+gravatar:
+  email: ""
+
+# Color scheme
+colorscheme: white
+
+# RSS link
+rss: /atom.xml
+
+# Open graph settings
+open_graph:
+  fb_app_id:
+  fb_admins:
+  twitter_id:
+  google_plus:
