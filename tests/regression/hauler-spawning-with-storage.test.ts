@@ -122,9 +122,16 @@ describe("Hauler Spawning with Storage/Towers", () => {
       rooms: { W1N1: mockRoom }
     } as unknown as GameContext;
 
+    // Calculate roleCounts from game.creeps (simulating what MemoryManager does)
+    const roleCounts: Record<string, number> = {};
+    for (const creep of Object.values(game.creeps)) {
+      const role = creep.memory.role as string;
+      roleCounts[role] = (roleCounts[role] ?? 0) + 1;
+    }
+
     // Execute behavior controller - should spawn haulers due to storage
     // With 1 harvester existing, not in emergency mode, so hauler spawns first
-    const result = behaviorController.execute(game, memory, { harvester: 1 });
+    const result = behaviorController.execute(game, memory, roleCounts);
 
     // Verify spawn was called (should spawn at least one hauler)
     expect(mockSpawn.spawnCreep).toHaveBeenCalled();
@@ -217,9 +224,16 @@ describe("Hauler Spawning with Storage/Towers", () => {
       rooms: { W1N1: mockRoom }
     } as unknown as GameContext;
 
+    // Calculate roleCounts from game.creeps (simulating what MemoryManager does)
+    const roleCounts: Record<string, number> = {};
+    for (const creep of Object.values(game.creeps)) {
+      const role = creep.memory.role as string;
+      roleCounts[role] = (roleCounts[role] ?? 0) + 1;
+    }
+
     // Execute behavior controller - should spawn haulers due to towers
     // With 1 harvester existing, not in emergency mode, so hauler spawns first
-    const result = behaviorController.execute(game, memory, { harvester: 1 });
+    const result = behaviorController.execute(game, memory, roleCounts);
 
     // Verify spawn was called
     expect(mockSpawn.spawnCreep).toHaveBeenCalled();
@@ -310,9 +324,16 @@ describe("Hauler Spawning with Storage/Towers", () => {
       rooms: { W1N1: mockRoom }
     } as unknown as GameContext;
 
+    // Calculate roleCounts from game.creeps (simulating what MemoryManager does)
+    const roleCounts: Record<string, number> = {};
+    for (const creep of Object.values(game.creeps)) {
+      const role = creep.memory.role as string;
+      roleCounts[role] = (roleCounts[role] ?? 0) + 1;
+    }
+
     // Execute behavior controller - should spawn haulers due to container
     // With 1 harvester existing, not in emergency mode, so hauler spawns first
-    const result = behaviorController.execute(game, memory, { harvester: 1 });
+    const result = behaviorController.execute(game, memory, roleCounts);
 
     // Verify spawn was called
     expect(mockSpawn.spawnCreep).toHaveBeenCalled();
