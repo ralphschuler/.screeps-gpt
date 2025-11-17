@@ -139,7 +139,7 @@ async function checkBotAliveness(): Promise<{
   aliveness: "active" | "respawn_needed" | "spawn_placement_needed" | "unknown";
   status?: string;
   error?: string;
-  source?: "memory_stats" | "console" | "cross_validated";
+  source?: "memory_stats" | "console";
 }> {
   const token = process.env.SCREEPS_TOKEN;
   if (!token) {
