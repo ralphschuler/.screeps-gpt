@@ -7,6 +7,33 @@ const outDir = resolve("dist");
 const srcDir = resolve("packages/bot/src");
 
 /**
+ * Validate and resolve PROFILER_ENABLED environment variable
+ * Warns if an invalid value is provided and defaults to true
+ * @returns true if profiler should be enabled, false otherwise
+ * @internal Exported for testing purposes
+ */
+export function validateProfilerEnabled(): boolean {
+  const value = process.env.PROFILER_ENABLED;
+
+  // Undefined means not set - use default (enabled)
+  if (value === undefined) {
+    return true;
+  }
+
+  // Valid explicit values
+  if (value === "true") {
+    return true;
+  }
+  if (value === "false") {
+    return false;
+  }
+
+  // Invalid value - warn and default to enabled
+  console.warn(`Warning: Invalid PROFILER_ENABLED value '${value}', expected 'true' or 'false'. Defaulting to true.`);
+  return true;
+}
+
+/**
  * Common runtime defines for all build configurations
  * Replaces Node.js environment variables with literals at build time
  *
@@ -15,11 +42,12 @@ const srcDir = resolve("packages/bot/src");
  * not JSON.stringify(true) which would create the string "true".
  *
  * Default values:
+ * - PROFILER_ENABLED: "true" (enabled by default, accepts "true" or "false")
  * - TASK_SYSTEM_ENABLED: "true" (enabled by default as of v0.32.0)
  * - ROOM_VISUALS_ENABLED: "false" (disabled by default for performance)
  */
 const RUNTIME_DEFINES = {
-  __PROFILER_ENABLED__: process.env.PROFILER_ENABLED === "false" ? "false" : "true",
+  __PROFILER_ENABLED__: validateProfilerEnabled() ? "true" : "false",
   "process.env.TASK_SYSTEM_ENABLED": JSON.stringify(process.env.TASK_SYSTEM_ENABLED ?? "true"),
   "process.env.ROOM_VISUALS_ENABLED": JSON.stringify(process.env.ROOM_VISUALS_ENABLED ?? "false")
 } as const;
