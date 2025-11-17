@@ -570,7 +570,8 @@ export class BehaviorController {
     room: Room | undefined,
     spawnCost: number,
     role: string,
-    harvesterCount: number
+    harvesterCount: number,
+    isCriticalSpawn: boolean = false
   ): boolean {
     if (!room) {
       // For test mocks without room property, allow spawning
@@ -593,6 +594,13 @@ export class BehaviorController {
     const isEmergencySpawn = role === "harvester" && harvesterCount < 2;
     if (isEmergencySpawn) {
       // In emergency mode, only check if we have enough energy for the spawn
+      return energyAvailable >= spawnCost;
+    }
+
+    // Critical Spawn Mode: Bypass reserve for critical infrastructure roles
+    // When logistics infrastructure exists but haulers are missing, treat as critical
+    if (isCriticalSpawn) {
+      // In critical mode, only check if we have enough energy for the spawn
       return energyAvailable >= spawnCost;
     }
 
@@ -680,6 +688,8 @@ export class BehaviorController {
     let totalOperationalLinks = 0;
     let hasAnyContainersOrStorage = false;
     let hasTowers = false;
+    let totalConstructionSites = 0;
+    let hasDamagedStructures = false;
 
     for (const room of Object.values(game.rooms)) {
       if (!room.controller?.my) {
@@ -691,6 +701,24 @@ export class BehaviorController {
       // Find all sources in the room
       const sources = room.find(FIND_SOURCES) as Source[];
       totalSources += sources.length;
+
+      // Count construction sites
+      const constructionSites = room.find(FIND_CONSTRUCTION_SITES);
+      totalConstructionSites += constructionSites.length;
+
+      // Check for damaged structures (excluding walls/ramparts which have separate logic)
+      const damagedStructures = room.find(FIND_STRUCTURES, {
+        filter: (s: Structure) => {
+          if (!("hits" in s && "hitsMax" in s) || typeof s.hits !== "number" || typeof s.hitsMax !== "number")
+            return false;
+          // Skip walls and ramparts - they have separate wall upgrade manager logic
+          if (s.structureType === STRUCTURE_WALL || s.structureType === STRUCTURE_RAMPART) return false;
+          return s.hits < s.hitsMax;
+        }
+      });
+      if (damagedStructures.length > 0) {
+        hasDamagedStructures = true;
+      }
 
       // Check for storage or containers anywhere in room (not just near sources)
       // This ensures haulers spawn for tower refilling and storage management
@@ -781,12 +809,53 @@ export class BehaviorController {
         `[BehaviorController] Storage/containers/towers detected without source containers, ` +
           `spawning ${adjustedMinimums.hauler} hauler(s) for logistics`
       );
+
+      // Reduce harvester count when haulers are handling logistics
+      // Harvesters no longer need to do double duty (harvest + deliver)
+      const firstRoom = Object.values(game.rooms).find(r => r.controller?.my);
+      if (firstRoom) {
+        const optimalHarvesters = this.calculateOptimalHarvesterCount(firstRoom);
+        // With haulers available, reduce harvester count by 1-2 to prevent overstaffing
+        adjustedMinimums.harvester = Math.max(2, optimalHarvesters - 1);
+      }
     } else {
       // No containers yet - use source-based harvester count
       const firstRoom = Object.values(game.rooms).find(r => r.controller?.my);
       if (firstRoom) {
         const optimalHarvesters = this.calculateOptimalHarvesterCount(firstRoom);
         adjustedMinimums.harvester = optimalHarvesters;
+      }
+    }
+
+    // Dynamic builder activation based on construction sites
+    // Only adjust if not already set by container-based economy logic
+    if (adjustedMinimums.builder === undefined) {
+      if (totalConstructionSites > 0) {
+        // Scale builders with construction queue size
+        // 1-5 sites: 1 builder, 6-15 sites: 2 builders, 16+ sites: 3 builders
+        if (totalConstructionSites > 15) {
+          adjustedMinimums.builder = 3;
+        } else if (totalConstructionSites > 5) {
+          adjustedMinimums.builder = 2;
+        } else {
+          adjustedMinimums.builder = 1;
+        }
+      } else {
+        // No construction sites: maintain minimum builder count from role definition (currently 2)
+        // This ensures builders are available for repairs and emergency construction
+        adjustedMinimums.builder = ROLE_DEFINITIONS["builder"].minimum;
+      }
+    }
+
+    // Dynamic repairer activation based on damaged structures
+    // Only adjust if not already set by container-based economy logic
+    if (adjustedMinimums.repairer === undefined) {
+      if (hasDamagedStructures) {
+        adjustedMinimums.repairer = Math.max(1, controlledRoomCount);
+      } else {
+        // No damaged structures: maintain minimum repairer count from role definition (currently 0)
+        // Builders can handle emergency repairs
+        adjustedMinimums.repairer = ROLE_DEFINITIONS["repairer"].minimum;
       }
     }
 
@@ -874,19 +943,47 @@ export class BehaviorController {
     const totalCreeps = Object.keys(game.creeps).length;
     const isEmergency = totalCreeps === 0;
 
-    // Priority-based spawn order: harvesters first to prevent starvation
-    const roleOrder: RoleName[] = [
-      "harvester",
-      "upgrader",
-      "builder",
-      "stationaryHarvester",
-      "hauler",
-      "repairer",
-      "remoteMiner",
-      "attacker",
-      "healer",
-      "dismantler"
-    ];
+    // Detect critical hauler shortage: logistics infrastructure exists but no haulers
+    // Do NOT prioritize haulers in emergency mode (0 total creeps) - harvesters must spawn first
+    const haulerCount = roleCounts["hauler"] ?? 0;
+    const haulerMinimum = adjustedMinimums["hauler"] ?? 0;
+    const needsCriticalHauler = haulerCount === 0 && haulerMinimum > 0 && !isEmergency;
+
+    // Priority-based spawn order: adjust dynamically based on critical needs
+    // When haulers are critically needed (storage/towers exist but 0 haulers),
+    // prioritize them FIRST to activate logistics infrastructure immediately.
+    // This is critical because storage/towers indicate energy already exists in the room
+    // and needs to be distributed to spawns/extensions/towers for operations.
+    let roleOrder: RoleName[];
+    if (needsCriticalHauler) {
+      // Hauler emergency mode: spawn hauler first to activate logistics
+      roleOrder = [
+        "hauler", // CRITICAL: logistics infrastructure exists but not operational
+        "harvester",
+        "upgrader",
+        "builder",
+        "stationaryHarvester",
+        "repairer",
+        "remoteMiner",
+        "attacker",
+        "healer",
+        "dismantler"
+      ];
+    } else {
+      // Normal priority mode
+      roleOrder = [
+        "harvester",
+        "upgrader",
+        "builder",
+        "stationaryHarvester",
+        "hauler",
+        "repairer",
+        "remoteMiner",
+        "attacker",
+        "healer",
+        "dismantler"
+      ];
+    }
 
     for (const role of roleOrder) {
       const definition = ROLE_DEFINITIONS[role];
@@ -926,7 +1023,9 @@ export class BehaviorController {
 
       // Check if we can afford the creep while maintaining energy reserves (20% buffer)
       // Emergency mode bypasses reserve for harvesters when critically low
-      if (!this.canAffordCreepWithReserve(spawn.room as Room | undefined, spawnCost, role, harvesterCount)) {
+      // Critical mode bypasses reserve for haulers when logistics infrastructure exists but is not operational
+      const isCriticalSpawn = needsCriticalHauler && role === "hauler";
+      if (!this.canAffordCreepWithReserve(spawn.room as Room | undefined, spawnCost, role, harvesterCount, isCriticalSpawn)) {
         // Skip spawning to maintain emergency reserves
         continue;
       }
