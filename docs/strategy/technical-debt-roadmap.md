@@ -79,7 +79,7 @@ This document establishes a comprehensive strategy for reducing technical debt a
 
 #### 5. Task System Architecture Evolution
 
-- **Issue**: ralphschuler/.screeps-gpt#723 - Phase 2 task framework implementation
+- **Issue**: #723 - Phase 2 task framework implementation
 - **Impact**: High - Foundation for future scalability
 - **Effort**: High (2-3 weeks)
 - **Related**: #653 (Capability-based assignment), #715 (Phase 1 completion)
