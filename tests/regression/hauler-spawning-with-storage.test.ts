@@ -96,6 +96,14 @@ describe("Hauler Spawning with Storage/Towers", () => {
       })
     };
 
+    // Create mock harvester to avoid emergency mode (0 creeps)
+    // Emergency mode would spawn harvesters first, but this test validates
+    // that haulers spawn when storage exists (non-emergency scenario)
+    const mockHarvester = {
+      name: "harvester-999",
+      memory: { role: "harvester" }
+    } as Creep;
+
     const game: GameContext = {
       time: 1000,
       cpu: {
@@ -103,13 +111,14 @@ describe("Hauler Spawning with Storage/Towers", () => {
         limit: 100,
         bucket: 10000
       },
-      creeps: {},
+      creeps: { "harvester-999": mockHarvester },
       spawns: { Spawn1: mockSpawn },
       rooms: { W1N1: mockRoom }
     } as unknown as GameContext;
 
     // Execute behavior controller - should spawn haulers due to storage
-    const result = behaviorController.execute(game, memory, {});
+    // With 1 harvester existing, not in emergency mode, so hauler spawns first
+    const result = behaviorController.execute(game, memory, { harvester: 1 });
 
     // Verify spawn was called (should spawn at least one hauler)
     expect(mockSpawn.spawnCreep).toHaveBeenCalled();
@@ -178,6 +187,12 @@ describe("Hauler Spawning with Storage/Towers", () => {
       })
     };
 
+    // Create mock harvester to avoid emergency mode (0 creeps)
+    const mockHarvester = {
+      name: "harvester-999",
+      memory: { role: "harvester" }
+    } as Creep;
+
     const game: GameContext = {
       time: 1000,
       cpu: {
@@ -185,13 +200,14 @@ describe("Hauler Spawning with Storage/Towers", () => {
         limit: 100,
         bucket: 10000
       },
-      creeps: {},
+      creeps: { "harvester-999": mockHarvester },
       spawns: { Spawn1: mockSpawn },
       rooms: { W1N1: mockRoom }
     } as unknown as GameContext;
 
     // Execute behavior controller - should spawn haulers due to towers
-    const result = behaviorController.execute(game, memory, {});
+    // With 1 harvester existing, not in emergency mode, so hauler spawns first
+    const result = behaviorController.execute(game, memory, { harvester: 1 });
 
     // Verify spawn was called
     expect(mockSpawn.spawnCreep).toHaveBeenCalled();
@@ -258,6 +274,12 @@ describe("Hauler Spawning with Storage/Towers", () => {
       })
     };
 
+    // Create mock harvester to avoid emergency mode (0 creeps)
+    const mockHarvester = {
+      name: "harvester-999",
+      memory: { role: "harvester" }
+    } as Creep;
+
     const game: GameContext = {
       time: 1000,
       cpu: {
@@ -265,13 +287,14 @@ describe("Hauler Spawning with Storage/Towers", () => {
         limit: 100,
         bucket: 10000
       },
-      creeps: {},
+      creeps: { "harvester-999": mockHarvester },
       spawns: { Spawn1: mockSpawn },
       rooms: { W1N1: mockRoom }
     } as unknown as GameContext;
 
     // Execute behavior controller - should spawn haulers due to container
-    const result = behaviorController.execute(game, memory, {});
+    // With 1 harvester existing, not in emergency mode, so hauler spawns first
+    const result = behaviorController.execute(game, memory, { harvester: 1 });
 
     // Verify spawn was called
     expect(mockSpawn.spawnCreep).toHaveBeenCalled();
