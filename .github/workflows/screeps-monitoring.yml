@@ -103,6 +103,19 @@ jobs:
             echo "::warning::Analytics generation failed (no snapshots yet)"
         continue-on-error: true
 
+      - name: Ensure profiler is running
+        if: always()
+        env:
+          SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
+          SCREEPS_HOST: ${{ secrets.SCREEPS_HOST }}
+          SCREEPS_SHARD: ${{ secrets.SCREEPS_SHARD }}
+          SCREEPS_PORT: ${{ secrets.SCREEPS_PORT }}
+          SCREEPS_PROTOCOL: ${{ secrets.SCREEPS_PROTOCOL }}
+        run: |
+          npx tsx packages/utilities/scripts/ensure-profiler-running.ts || \
+            echo "::warning::Failed to ensure profiler is running"
+        continue-on-error: true
+
       - name: Fetch profiler data from console
         if: always()
         env:

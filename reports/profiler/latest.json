@@ -1,0 +1,7 @@
+{
+  "fetchedAt": "2025-11-17T14:40:00.000Z",
+  "source": "placeholder",
+  "isEnabled": false,
+  "hasData": false,
+  "error": "Profiler data not yet collected - awaiting first monitoring cycle after deployment"
+}
