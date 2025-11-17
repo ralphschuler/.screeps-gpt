@@ -22,6 +22,21 @@ interface StatsData {
   };
   creeps: {
     count: number;
+    byRole?: Record<string, number>;
+  };
+  memory?: {
+    used: number;
+  };
+  structures?: {
+    spawns?: number;
+    extensions?: number;
+    containers?: number;
+    towers?: number;
+    roads?: number;
+  };
+  constructionSites?: {
+    count: number;
+    byType?: Record<string, number>;
   };
   rooms: {
     count: number;
@@ -32,6 +47,20 @@ interface StatsData {
   };
 }
 
+interface CreepLike {
+  memory: {
+    role?: string;
+  };
+}
+
+interface StructureLike {
+  structureType: string;
+}
+
+interface ConstructionSiteLike {
+  structureType: string;
+}
+
 interface GameLike {
   time: number;
   cpu: {
@@ -39,7 +68,7 @@ interface GameLike {
     limit: number;
     bucket: number;
   };
-  creeps: Record<string, unknown>;
+  creeps: Record<string, CreepLike>;
   rooms: Record<
     string,
     {
@@ -50,6 +79,7 @@ interface GameLike {
         progress: number;
         progressTotal: number;
       };
+      find?: (type: number) => StructureLike[] | ConstructionSiteLike[];
     }
   >;
 }
@@ -106,11 +136,111 @@ export class StatsCollector {
         }
       };
 
+      // Collect creeps by role
+      try {
+        const creepsByRole: Record<string, number> = {};
+        for (const creepName in game.creeps) {
+          const creep = game.creeps[creepName];
+          const role = creep.memory?.role ?? "unknown";
+          creepsByRole[role] = (creepsByRole[role] ?? 0) + 1;
+        }
+        if (Object.keys(creepsByRole).length > 0) {
+          stats.creeps.byRole = creepsByRole;
+        }
+      } catch (error) {
+        if (shouldLog) {
+          console.log(`[StatsCollector] Error collecting creeps by role: ${String(error)}`);
+        }
+      }
+
+      // Collect memory usage (RawMemory available in actual game, not in tests)
+      try {
+        if (typeof RawMemory !== "undefined" && RawMemory.get) {
+          const memoryString = RawMemory.get();
+          stats.memory = {
+            used: memoryString.length
+          };
+        }
+      } catch (error) {
+        if (shouldLog) {
+          console.log(`[StatsCollector] Error collecting memory usage: ${String(error)}`);
+        }
+      }
+
+      // Collect structure counts across all rooms
+      try {
+        const structures: Record<string, number> = {};
+        for (const roomName in game.rooms) {
+          const room = game.rooms[roomName];
+          if (room.find) {
+            const FIND_MY_STRUCTURES = 107; // FIND_MY_STRUCTURES constant
+            const roomStructures = room.find(FIND_MY_STRUCTURES) as StructureLike[];
+            for (const structure of roomStructures) {
+              const type = structure.structureType;
+              structures[type] = (structures[type] ?? 0) + 1;
+            }
+          }
+        }
+        if (Object.keys(structures).length > 0) {
+          stats.structures = {
+            spawns: structures.spawn ?? undefined,
+            extensions: structures.extension ?? undefined,
+            containers: structures.container ?? undefined,
+            towers: structures.tower ?? undefined,
+            roads: structures.road ?? undefined
+          };
+        }
+      } catch (error) {
+        if (shouldLog) {
+          console.log(`[StatsCollector] Error collecting structure counts: ${String(error)}`);
+        }
+      }
+
+      // Collect construction sites
+      try {
+        const constructionSitesByType: Record<string, number> = {};
+        let totalSites = 0;
+        for (const roomName in game.rooms) {
+          const room = game.rooms[roomName];
+          if (room.find) {
+            const FIND_MY_CONSTRUCTION_SITES = 111; // FIND_MY_CONSTRUCTION_SITES constant
+            const sites = room.find(FIND_MY_CONSTRUCTION_SITES) as ConstructionSiteLike[];
+            totalSites += sites.length;
+            for (const site of sites) {
+              const type = site.structureType;
+              constructionSitesByType[type] = (constructionSitesByType[type] ?? 0) + 1;
+            }
+          }
+        }
+        if (totalSites > 0) {
+          stats.constructionSites = {
+            count: totalSites,
+            byType: Object.keys(constructionSitesByType).length > 0 ? constructionSitesByType : undefined
+          };
+        }
+      } catch (error) {
+        if (shouldLog) {
+          console.log(`[StatsCollector] Error collecting construction sites: ${String(error)}`);
+        }
+      }
+
       if (shouldLog) {
         console.log(
           `[StatsCollector] Base stats: time=${stats.time}, cpu=${stats.cpu.used.toFixed(2)}/${stats.cpu.limit}, ` +
             `bucket=${stats.cpu.bucket}, creeps=${stats.creeps.count}, rooms=${stats.rooms.count}`
         );
+        if (stats.creeps.byRole) {
+          console.log(`[StatsCollector] Creeps by role: ${JSON.stringify(stats.creeps.byRole)}`);
+        }
+        if (stats.memory) {
+          console.log(`[StatsCollector] Memory used: ${stats.memory.used} bytes`);
+        }
+        if (stats.structures) {
+          console.log(`[StatsCollector] Structures: ${JSON.stringify(stats.structures)}`);
+        }
+        if (stats.constructionSites) {
+          console.log(`[StatsCollector] Construction sites: ${stats.constructionSites.count}`);
+        }
       }
 
       // Add per-room statistics with error handling

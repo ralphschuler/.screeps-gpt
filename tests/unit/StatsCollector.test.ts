@@ -13,9 +13,9 @@ describe("StatsCollector", () => {
         bucket: 8500
       },
       creeps: {
-        harvester1: {},
-        harvester2: {},
-        upgrader1: {}
+        harvester1: { memory: { role: "harvester" } },
+        harvester2: { memory: { role: "harvester" } },
+        upgrader1: { memory: { role: "upgrader" } }
       },
       rooms: {
         W1N1: {
@@ -57,7 +57,11 @@ describe("StatsCollector", () => {
       bucket: 8500
     });
     expect(memory.stats?.creeps).toEqual({
-      count: 3
+      count: 3,
+      byRole: {
+        harvester: 2,
+        upgrader: 1
+      }
     });
     expect(memory.stats?.rooms?.count).toBe(1);
   });

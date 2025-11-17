@@ -10,6 +10,21 @@ export interface BotSnapshot {
     limit: number;
     bucket: number;
   };
+  memory?: {
+    used: number;
+    usedPercent?: number;
+  };
+  structures?: {
+    spawns?: number;
+    extensions?: number;
+    containers?: number;
+    towers?: number;
+    roads?: number;
+  };
+  constructionSites?: {
+    count: number;
+    byType?: Record<string, number>;
+  };
   rooms?: Record<
     string,
     {

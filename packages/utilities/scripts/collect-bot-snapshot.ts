@@ -164,9 +164,49 @@ async function collectBotSnapshot(): Promise<void> {
 
         // Extract creep data
         if (latestStats.creeps !== undefined) {
+          const creepsData = latestStats.creeps as { count?: number; byRole?: Record<string, number> };
           snapshot.creeps = {
-            total: Number(latestStats.creeps) || 0,
-            byRole: latestStats.creepsByRole as Record<string, number> | undefined
+            total: Number(creepsData.count || latestStats.creeps) || 0,
+            byRole: creepsData.byRole
+          };
+        }
+
+        // Extract memory usage
+        if (latestStats.memory !== undefined) {
+          const memoryData = latestStats.memory as { used?: number };
+          if (memoryData.used !== undefined) {
+            const used = Number(memoryData.used) || 0;
+            snapshot.memory = {
+              used,
+              usedPercent: used > 0 ? Number(((used / (2048 * 1024)) * 100).toFixed(2)) : 0
+            };
+          }
+        }
+
+        // Extract structure counts
+        if (latestStats.structures !== undefined) {
+          const structuresData = latestStats.structures as {
+            spawns?: number;
+            extensions?: number;
+            containers?: number;
+            towers?: number;
+            roads?: number;
+          };
+          snapshot.structures = {
+            spawns: structuresData.spawns,
+            extensions: structuresData.extensions,
+            containers: structuresData.containers,
+            towers: structuresData.towers,
+            roads: structuresData.roads
+          };
+        }
+
+        // Extract construction sites
+        if (latestStats.constructionSites !== undefined) {
+          const sitesData = latestStats.constructionSites as { count?: number; byType?: Record<string, number> };
+          snapshot.constructionSites = {
+            count: Number(sitesData.count) || 0,
+            byType: sitesData.byType
           };
         }
 
