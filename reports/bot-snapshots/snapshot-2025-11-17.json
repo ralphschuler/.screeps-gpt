@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-11-17T16:12:30.635Z",
+  "timestamp": "2025-11-17T18:13:46.643Z",
   "cpu": {
     "used": 0,
     "limit": 0,
@@ -13,22 +13,22 @@
     },
     "E54N39": {
       "rcl": 4,
-      "energy": 500,
+      "energy": 700,
       "energyCapacity": 1300,
-      "controllerProgress": 74395,
+      "controllerProgress": 88920,
       "controllerProgressTotal": 405000
     }
   },
   "creeps": {
-    "total": 8,
+    "total": 6,
     "byRole": {
-      "upgrader": 5,
-      "harvester": 3
+      "harvester": 3,
+      "upgrader": 3
     }
   },
   "memory": {
-    "used": 2432,
-    "usedPercent": 0.12
+    "used": 2038,
+    "usedPercent": 0.1
   },
   "structures": {
     "spawns": 1,
