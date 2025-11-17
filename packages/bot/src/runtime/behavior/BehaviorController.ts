@@ -1025,7 +1025,15 @@ export class BehaviorController {
       // Emergency mode bypasses reserve for harvesters when critically low
       // Critical mode bypasses reserve for haulers when logistics infrastructure exists but is not operational
       const isCriticalSpawn = needsCriticalHauler && role === "hauler";
-      if (!this.canAffordCreepWithReserve(spawn.room as Room | undefined, spawnCost, role, harvesterCount, isCriticalSpawn)) {
+      if (
+        !this.canAffordCreepWithReserve(
+          spawn.room as Room | undefined,
+          spawnCost,
+          role,
+          harvesterCount,
+          isCriticalSpawn
+        )
+      ) {
         // Skip spawning to maintain emergency reserves
         continue;
       }
