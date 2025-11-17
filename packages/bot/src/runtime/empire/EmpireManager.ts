@@ -340,7 +340,7 @@ export class EmpireManager {
     const scouts = this.scoutManager.getAllRooms(memory);
 
     const candidates = scouts.filter(report => {
-      return !report.owned && report.sourceCount >= 2 && report.controllerLevel === 0 && !report.hasHostiles;
+      return !report.owned && report.sourceCount >= 2 && (report.controllerLevel ?? 0) === 0 && !report.hasHostiles;
     });
 
     if (candidates.length === 0) return null;
@@ -412,5 +412,12 @@ export class EmpireManager {
       gcl: gcl.level,
       gclProgress: gcl.progress
     };
+  }
+
+  /**
+   * Get colony manager for testing purposes
+   */
+  public getColonyManager(): ColonyManager {
+    return this.colonyManager;
   }
 }

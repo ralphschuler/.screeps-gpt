@@ -142,7 +142,8 @@ describe("EmpireManager", () => {
       manager.run(mockGame as GameContext, memory);
 
       // Should not attempt expansion when rooms = GCL
-      expect(true).toBe(true); // No expansion initiated
+      const expansionQueue = manager.getColonyManager().getExpansionQueue();
+      expect(expansionQueue.length).toBe(0);
     });
 
     it("should not expand when CPU bucket is low", () => {
@@ -164,7 +165,8 @@ describe("EmpireManager", () => {
       manager.run(mockGame as GameContext, memory);
 
       // Should not attempt expansion with low CPU bucket
-      expect(true).toBe(true);
+      const expansionQueue = manager.getColonyManager().getExpansionQueue();
+      expect(expansionQueue.length).toBe(0);
     });
 
     it("should not expand when rooms are unstable", () => {
@@ -181,7 +183,8 @@ describe("EmpireManager", () => {
       manager.run(mockGame as GameContext, memory);
 
       // Should not expand with unstable rooms
-      expect(true).toBe(true);
+      const expansionQueue = manager.getColonyManager().getExpansionQueue();
+      expect(expansionQueue.length).toBe(0);
     });
   });
 
