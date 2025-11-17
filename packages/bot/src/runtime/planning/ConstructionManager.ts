@@ -123,8 +123,13 @@ export class ConstructionManager {
       }
     }
 
-    // Update state if we successfully processed the room
-    if (missing.length === 0 || sitesCreated > 0) {
+    // Only mark RCL as planned when all structures are built or queued
+    // This ensures we continue planning across multiple ticks when maxSitesPerTick limits us
+    if (missing.length === 0) {
+      state.lastPlannedRCL = currentRCL;
+    } else if (sitesCreated === 0 && missing.length > 0) {
+      // If we couldn't create any sites but structures are missing,
+      // still mark as planned to avoid infinite retries (e.g., all missing sites on walls)
       state.lastPlannedRCL = currentRCL;
     }
 
