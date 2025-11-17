@@ -9,17 +9,128 @@ interface ConsoleResponse {
   error?: string;
 }
 
+interface MemoryStatsData {
+  creeps?: Record<string, unknown>;
+  rooms?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
 /**
- * Check bot aliveness using the documented console API
+ * Check Memory.stats via API to determine bot aliveness
+ * This is the authoritative source - if Memory.stats shows creeps/rooms, bot is definitely active
+ */
+async function checkMemoryStats(
+  hostname: string,
+  protocol: string,
+  port: number,
+  path: string,
+  shard: string,
+  token: string
+): Promise<{
+  aliveness: "active" | "respawn_needed" | "spawn_placement_needed" | "unknown";
+  status?: string;
+  error?: string;
+  source: "memory_stats";
+} | null> {
+  try {
+    console.log("📊 Checking Memory.stats via API...");
+
+    const baseHost = `${protocol}://${hostname}${port !== 443 && port !== 80 ? `:${port}` : ""}`;
+    const basePath = `${baseHost}${path.replace(/\/$/, "")}/api`;
+    const endpoint = `${basePath}/user/memory?path=stats&shard=${shard}`;
+
+    const response = await fetch(endpoint, {
+      headers: {
+        "X-Token": token,
+        "Content-Type": "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      console.log(`  ⚠ Memory.stats API returned ${response.status}, will use console fallback`);
+      return null;
+    }
+
+    const responseData = await response.json();
+
+    // Handle gzipped data (prefixed with "gz:")
+    let stats: MemoryStatsData;
+    if (responseData.data && typeof responseData.data === "string" && responseData.data.startsWith("gz:")) {
+      // Decompress gzipped data
+      const zlib = await import("node:zlib");
+      const { promisify } = await import("node:util");
+      const gunzip = promisify(zlib.gunzip);
+
+      const compressed = Buffer.from(responseData.data.slice(3), "base64");
+      const decompressed = await gunzip(compressed);
+      stats = JSON.parse(decompressed.toString());
+    } else {
+      // Non-gzipped response
+      stats = responseData.data || responseData;
+    }
+
+    if (!stats || typeof stats !== "object") {
+      console.log("  ⚠ Memory.stats is empty or invalid, will use console fallback");
+      return null;
+    }
+
+    // Analyze Memory.stats to determine aliveness
+    const creepCount = stats.creeps ? Object.keys(stats.creeps).length : 0;
+    const roomCount = stats.rooms ? Object.keys(stats.rooms).length : 0;
+
+    console.log(`  📊 Memory.stats: ${creepCount} creeps, ${roomCount} rooms`);
+
+    // If we have creeps, bot is definitely active (authoritative!)
+    if (creepCount > 0) {
+      console.log("  ✅ Bot is ACTIVE (Memory.stats shows active creeps)");
+      return {
+        aliveness: "active",
+        status: "active_with_creeps",
+        source: "memory_stats"
+      };
+    }
+
+    // If we have rooms but no creeps, might need respawn
+    if (roomCount > 0 && creepCount === 0) {
+      console.log("  ⚠ Bot has rooms but no creeps (may need respawn)");
+      return {
+        aliveness: "respawn_needed",
+        status: "rooms_no_creeps",
+        source: "memory_stats"
+      };
+    }
+
+    // If no creeps and no rooms, spawn placement needed
+    if (roomCount === 0 && creepCount === 0) {
+      console.log("  ⚠ Bot has no rooms or creeps (spawn placement needed)");
+      return {
+        aliveness: "spawn_placement_needed",
+        status: "no_presence",
+        source: "memory_stats"
+      };
+    }
+
+    // Unknown state
+    console.log("  ❓ Unable to determine bot state from Memory.stats");
+    return null;
+  } catch (error) {
+    console.log("  ⚠ Failed to check Memory.stats:", error instanceof Error ? error.message : String(error));
+    return null;
+  }
+}
+
+/**
+ * Check bot aliveness using Memory.stats as primary source with console API fallback
  *
- * This provides a definitive answer about whether the bot is active in the game,
- * independent of Memory.stats availability.
+ * Strategy:
+ * 1. First check Memory.stats (authoritative source) - if bot has creeps/rooms, it's active
+ * 2. Fall back to console API if Memory.stats unavailable
+ * 3. Cross-validate to detect false positives (console empty but Memory.stats shows activity)
  *
- * Uses POST /api/user/console which is officially documented at:
- * https://docs.screeps.com/auth-tokens.html
+ * This fixes false positives where console returns empty response but bot is actually active.
  *
  * Returns:
- * - "active": Bot has spawns and is executing
+ * - "active": Bot has spawns/creeps and is executing
  * - "respawn_needed": Bot lost all spawns
  * - "spawn_placement_needed": Bot respawned but spawn not placed
  * - "unknown": API call failed or returned unexpected status
@@ -28,6 +139,7 @@ async function checkBotAliveness(): Promise<{
   aliveness: "active" | "respawn_needed" | "spawn_placement_needed" | "unknown";
   status?: string;
   error?: string;
+  source?: "memory_stats" | "console";
 }> {
   const token = process.env.SCREEPS_TOKEN;
   if (!token) {
@@ -46,6 +158,15 @@ async function checkBotAliveness(): Promise<{
   try {
     console.log(`🔍 Checking bot aliveness on ${hostname}:${port}${path} (${shard})...`);
 
+    // Phase 1: Check Memory.stats (authoritative source)
+    const memoryStatsResult = await checkMemoryStats(hostname, protocol, port, path, shard, token);
+    if (memoryStatsResult) {
+      console.log("✓ Using Memory.stats as authoritative source");
+      return memoryStatsResult;
+    }
+
+    // Phase 2: Fall back to console API
+    console.log("ℹ Memory.stats unavailable, falling back to console API");
     const api = new ScreepsAPI({ token, hostname, protocol, port, path });
 
     // Check if we have spawns using the documented console API
@@ -81,7 +202,8 @@ async function checkBotAliveness(): Promise<{
         return {
           aliveness: "spawn_placement_needed",
           status: "empty",
-          error: "Console returned empty response - bot may have no game presence"
+          error: "Console returned empty response - bot may have no game presence",
+          source: "console"
         };
       }
 
@@ -98,7 +220,8 @@ async function checkBotAliveness(): Promise<{
         return {
           aliveness: "spawn_placement_needed",
           status: "invalid",
-          error: "Console returned invalid response structure"
+          error: "Console returned invalid response structure",
+          source: "console"
         };
       }
     } catch (parseError) {
@@ -119,16 +242,16 @@ async function checkBotAliveness(): Promise<{
     // Determine aliveness based on spawn count
     if (data.hasSpawns && data.spawnCount > 0) {
       console.log("✅ Bot is ACTIVE and executing in game");
-      return { aliveness: "active", status: "normal" };
+      return { aliveness: "active", status: "normal", source: "console" };
     } else if (data.rooms > 0 && data.spawnCount === 0) {
       console.log("⚠️ Bot has rooms but no spawns - respawn may be needed");
-      return { aliveness: "respawn_needed", status: "lost" };
+      return { aliveness: "respawn_needed", status: "lost", source: "console" };
     } else if (data.rooms === 0 && data.spawnCount === 0) {
       console.log("⚠️ Bot has no rooms or spawns - respawn placement needed");
-      return { aliveness: "spawn_placement_needed", status: "empty" };
+      return { aliveness: "spawn_placement_needed", status: "empty", source: "console" };
     } else {
       console.log(`❓ Unknown bot status: spawns=${data.spawnCount}, rooms=${data.rooms}`);
-      return { aliveness: "unknown", status: "unknown" };
+      return { aliveness: "unknown", status: "unknown", source: "console" };
     }
   } catch (error) {
     console.error("❌ Failed to check bot aliveness:");
@@ -166,6 +289,7 @@ async function main(): Promise<void> {
     aliveness: result.aliveness,
     status: result.status || null,
     error: result.error || null,
+    source: result.source || null,
     interpretation: {
       active: result.aliveness === "active" ? "Bot is executing game logic and has active spawns" : null,
       respawn_needed:
@@ -186,6 +310,7 @@ async function main(): Promise<void> {
   console.log("\n=== Bot Aliveness Summary ===");
   console.log(`Aliveness: ${result.aliveness}`);
   console.log(`Status: ${result.status || "N/A"}`);
+  console.log(`Source: ${result.source || "N/A"}`);
 
   if (result.error) {
     console.log(`Error: ${result.error}`);
