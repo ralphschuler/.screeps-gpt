@@ -104,7 +104,7 @@ export class TaskManager {
 
     for (const task of this.tasks.values()) {
       if (task.status === "PENDING") pending++;
-      else if (task.status === "ASSIGNED") assigned++;
+      else if (task.status === "INPROCESS") assigned++;
       else if (task.status === "COMPLETE") complete++;
     }
 
