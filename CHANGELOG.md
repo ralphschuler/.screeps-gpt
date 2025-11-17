@@ -5,6 +5,21 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Added
+
+- **Profiler Data Collection Enablement**: Added console backup mechanism to ensure profiler is always running
+  - Created `ensure-profiler-running.ts` script that idempotently checks and starts profiler via console
+  - Updated monitoring workflow with "Ensure profiler is running" step before data fetch
+  - Adds resilience to existing auto-start feature (dual mechanism: auto-start on first tick + console backup every 30 min)
+  - Created initial placeholder `reports/profiler/latest.json` to prevent health check failures
+  - Added comprehensive unit tests for ensure-profiler-running script
+  - Created profiler enablement verification documentation in `docs/operations/profiler-enablement-verification.md`
+  - Enables function-level CPU profiling for proactive optimization and bottleneck analysis
+  - Resolves issue ralphschuler/.screeps-gpt#856 (profiler data collection enablement)
+  - Supports ralphschuler/.screeps-gpt#854 (profiler integration implementation)
+  - Enables ralphschuler/.screeps-gpt#793 (CPU bucket-aware scheduler with profiler data)
+  - Enables ralphschuler/.screeps-gpt#820 (performance baseline establishment)
+
 ## [0.89.5] - 2025-11-16
 
 ### Added
