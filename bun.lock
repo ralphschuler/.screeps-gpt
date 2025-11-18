@@ -1,6 +1,5 @@
 {
   "lockfileVersion": 1,
-  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "screeps-gpt",
@@ -117,6 +116,15 @@
         "screeps-api": "^1.16.1",
         "zod": "^4.1.12",
       },
+      "devDependencies": {
+        "@types/node": "^24.9.1",
+        "typescript": "^5.4.3",
+        "vitest": "^4.0.1",
+      },
+    },
+    "packages/screeps-xstate": {
+      "name": "@ralphschuler/screeps-xstate",
+      "version": "0.1.0",
       "devDependencies": {
         "@types/node": "^24.9.1",
         "typescript": "^5.4.3",
@@ -367,6 +375,8 @@
     "@ralphschuler/screeps-gpt-utilities": ["@ralphschuler/screeps-gpt-utilities@workspace:packages/utilities"],
 
     "@ralphschuler/screeps-mcp": ["@ralphschuler/screeps-mcp@workspace:packages/screeps-mcp"],
+
+    "@ralphschuler/screeps-xstate": ["@ralphschuler/screeps-xstate@workspace:packages/screeps-xstate"],
 
     "@rollup/rollup-android-arm-eabi": ["@rollup/rollup-android-arm-eabi@4.52.5", "", { "os": "android", "cpu": "arm" }, "sha512-8c1vW4ocv3UOMp9K+gToY5zL2XiiVw3k7f1ksf4yO1FlDFQ1C2u72iACFnSOceJFsWskc2WZNqeRhFRPzv+wtQ=="],
 
