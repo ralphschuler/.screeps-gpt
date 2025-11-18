@@ -101,10 +101,12 @@ Phase 3+ (Advanced Economy)
 
 **Exit Conditions** (Bootstrap Completion):
 
-1. **Energy Threshold**: `energyCapacityAvailable >= 300` (minimum 5 extensions at 50 each)
-2. **Extension Count**: At least 2 extensions constructed
-3. **Controller Level**: RCL 2 reached
+Bootstrap completes when **either** of the following criteria is met (**OR** logic):
 
+1. **Controller Level**: RCL 2 or higher (`controller.level >= 2`)
+2. **Harvester/Energy Threshold**: At least 4 harvesters **AND** `energyAvailable >= 300`
+
+> **Note:** The number of extensions is not checked directly; reaching 300 energy capacity is typically achieved by constructing extensions, but the code only checks the energy value.
 **Role Minimums** (post-bootstrap):
 
 - Harvesters: 4 (balanced energy gathering)
