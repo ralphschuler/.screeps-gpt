@@ -254,7 +254,8 @@ describe("Spawn Queue Deadlock Prevention (Issue #575)", () => {
 
       const mockRoom = {
         name: "W1N1",
-        energyAvailable: 100 // Not enough for WORK (100) + CARRY (50) + MOVE (50)
+        energyAvailable: 100, // Not enough for WORK (100) + CARRY (50) + MOVE (50)
+        find: () => [] // Return empty array for any find operations
       } as Room;
 
       const mockSpawn: SpawnLike = {

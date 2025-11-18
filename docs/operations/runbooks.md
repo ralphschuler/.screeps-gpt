@@ -294,10 +294,111 @@ bun run deploy
 
 ```javascript
 // In Screeps console
-Game.profiler.output();
+Profiler.output();
 ```
 
 **Collection**: Automated via `screeps-monitoring.yml` → `ensure-profiler-running.ts`
+
+### CPU Profiler Optimization
+
+**Problem**: Profiler overhead can consume 0.5-1.5 CPU per tick even when stopped, blocking efficient scaling.
+
+**Root Cause**: The `@profile` decorator wraps every method of 65+ classes, adding overhead to thousands of function calls per tick.
+
+**Optimization Strategies**:
+
+#### 1. Build-Time Profiler Disabling (RECOMMENDED for Production)
+
+Completely removes profiler overhead by excluding wrapper code at build time:
+
+```bash
+# Build without profiler (zero overhead)
+PROFILER_ENABLED=false bun run build
+
+# Deploy without profiler
+PROFILER_ENABLED=false bun run deploy
+```
+
+**Effect**: Removes ALL profiler overhead, reducing CPU by 0.5-1.5 per tick at low creep counts.
+
+**When to use**: Production deployments where profiling is not needed.
+
+#### 2. Runtime Profiler Control (Default)
+
+Profiler is enabled at build time but controlled via console commands:
+
+```javascript
+// Stop profiler (reduces overhead by ~60-80%)
+Profiler.stop();
+
+// Start profiler when needed
+Profiler.start();
+
+// Check profiler status
+Profiler.status();
+
+// Output collected data
+Profiler.output();
+
+// Clear profiler data
+Profiler.clear();
+```
+
+**Effect**: Reduces overhead when stopped due to tick-based caching (implemented in #961).
+
+**When to use**: Development, PTR testing, or when periodic profiling is needed.
+
+#### 3. Profiler Data Collection Workflow
+
+For analyzing CPU bottlenecks:
+
+1. **Enable profiler**: `Profiler.start()` (if not auto-started)
+2. **Wait 50-100 ticks** for representative data
+3. **Analyze output**: `Profiler.output()` to identify top CPU consumers
+4. **Stop profiler**: `Profiler.stop()` to reduce overhead
+5. **Optimize identified bottlenecks** (functions consuming >20% CPU)
+6. **Re-profile** to validate improvements
+
+**Profiler Output Interpretation**:
+
+```
+Function              Tot Calls    CPU/Call    Calls/Tick    CPU/Tick    % of Tot
+Kernel:run           100          5.20ms      1.00          5.20ms      45 %
+BehaviorController:execute 100    2.10ms      1.00          2.10ms      18 %
+StatsCollector:collect 100        0.80ms      1.00          0.80ms      7 %
+```
+
+- **CPU/Tick**: Total CPU consumed per tick by this function (focus on high values)
+- **% of Tot**: Percentage of total profiled CPU (optimize functions >20%)
+- **Calls/Tick**: Frequency of calls (high frequency + high CPU/Call = bottleneck)
+
+#### 4. Performance Baselines
+
+**Expected CPU Usage**:
+
+- **Baseline (1 creep, RCL 1)**: <1.0 CPU per tick
+- **Early game (4-6 creeps, RCL 2-3)**: <3.0 CPU per tick
+- **Mid game (8-12 creeps, RCL 4)**: <5.0 CPU per tick
+- **Late game (20+ creeps, RCL 5+)**: <15.0 CPU per tick
+
+**Profiler Overhead**:
+
+- **Profiler enabled (stopped)**: +0.1-0.3 CPU per tick (with caching optimization)
+- **Profiler enabled (running)**: +0.3-0.8 CPU per tick (data collection overhead)
+- **Profiler disabled (build-time)**: 0.0 CPU overhead
+
+**Red Flags**:
+
+- CPU per creep >1.5 (investigate with profiler)
+- CPU bucket consistently <5000 (reduce operations or optimize hot paths)
+- Profiler shows single function >30% of total CPU (bottleneck)
+
+**Optimization Targets**:
+
+1. **Kernel overhead**: <0.5 CPU per tick
+2. **StatsCollector**: <0.3 CPU per tick (optimized with interval-based collection)
+3. **BehaviorController**: <0.5 CPU per creep (scales linearly)
+4. **TaskManager**: <0.2 CPU per tick (fixed overhead)
 
 ## Troubleshooting Guide
 

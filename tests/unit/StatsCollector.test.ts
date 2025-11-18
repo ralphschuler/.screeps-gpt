@@ -413,7 +413,7 @@ describe("StatsCollector", () => {
   it("should collect spawn utilization metrics", () => {
     const collector = new StatsCollector();
     const game = {
-      time: 12353,
+      time: 12350, // Divisible by 10 to trigger detailed stats collection
       cpu: {
         getUsed: () => 4.5,
         limit: 10,
@@ -435,7 +435,7 @@ describe("StatsCollector", () => {
     };
 
     const snapshot: PerformanceSnapshot = {
-      tick: 12353,
+      tick: 12350,
       cpuUsed: 4.5,
       cpuLimit: 10,
       cpuBucket: 8700,
@@ -461,7 +461,7 @@ describe("StatsCollector", () => {
   it("should collect energy storage per room", () => {
     const collector = new StatsCollector();
     const game = {
-      time: 12354,
+      time: 12350, // Divisible by 10 to trigger detailed stats collection
       cpu: {
         getUsed: () => 5.0,
         limit: 10,
@@ -499,7 +499,7 @@ describe("StatsCollector", () => {
     };
 
     const snapshot: PerformanceSnapshot = {
-      tick: 12354,
+      tick: 12350,
       cpuUsed: 5.0,
       cpuLimit: 10,
       cpuBucket: 8800,
@@ -710,7 +710,7 @@ describe("StatsCollector", () => {
   it("should collect complete telemetry for baseline establishment", () => {
     const collector = new StatsCollector();
     const game = {
-      time: 12356,
+      time: 12350, // Divisible by 10 to trigger detailed stats collection
       cpu: {
         getUsed: () => 6.5,
         limit: 20,
@@ -755,7 +755,7 @@ describe("StatsCollector", () => {
     };
 
     const snapshot: PerformanceSnapshot = {
-      tick: 12356,
+      tick: 12350,
       cpuUsed: 6.5,
       cpuLimit: 20,
       cpuBucket: 9500,
