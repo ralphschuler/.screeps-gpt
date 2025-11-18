@@ -5,6 +5,39 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 
+/**
+ * Performance Optimization: Cache profiler enabled state per tick
+ * Avoids repeated Memory.profiler.start lookups on hot paths (thousands per tick)
+ * Cleared automatically when profiler state changes via start/stop/clear
+ */
+let profilerEnabledCache: { tick: number; enabled: boolean } | null = null;
+
+/**
+ * Fast profiler state check with tick-based caching
+ * Reduces Memory access overhead from thousands to ~1-2 per tick
+ */
+function isEnabledFast(): boolean {
+  const currentTick = Game.time;
+  
+  // Cache hit - return cached value
+  if (profilerEnabledCache && profilerEnabledCache.tick === currentTick) {
+    return profilerEnabledCache.enabled;
+  }
+  
+  // Cache miss - check Memory and update cache
+  const enabled = Memory.profiler?.start !== undefined;
+  profilerEnabledCache = { tick: currentTick, enabled };
+  return enabled;
+}
+
+/**
+ * Clear profiler state cache when state changes
+ * Called by start(), stop(), clear() to invalidate cache
+ */
+function clearEnabledCache(): void {
+  profilerEnabledCache = null;
+}
+
 export function init(): Profiler {
   const defaults: ProfilerMemory = {
     data: {},
@@ -26,6 +59,8 @@ export function init(): Profiler {
       if (running) {
         Memory.profiler.start = Game.time;
       }
+      // Clear cache when profiler state changes
+      clearEnabledCache();
       return "Profiler Memory cleared";
     },
 
@@ -36,6 +71,8 @@ export function init(): Profiler {
 
     start() {
       Memory.profiler.start = Game.time;
+      // Clear cache when profiler state changes
+      clearEnabledCache();
       return "Profiler started";
     },
 
@@ -53,6 +90,8 @@ export function init(): Profiler {
       const timeRunning = Game.time - Memory.profiler.start!;
       Memory.profiler.total += timeRunning;
       delete Memory.profiler.start;
+      // Clear cache when profiler state changes
+      clearEnabledCache();
       return "Profiler stopped";
     },
 
@@ -102,7 +141,9 @@ function wrapFunction(obj: object, key: PropertyKey, className?: string): void {
   ///////////
 
   Reflect.set(obj, key, function (this: any, ...args: any[]) {
-    if (isEnabled()) {
+    // OPTIMIZATION: Use cached profiler state to avoid repeated Memory lookups
+    // isEnabledFast() caches result per tick, reducing overhead from thousands to 1-2 Memory accesses
+    if (isEnabledFast()) {
       const start = Game.cpu.getUsed();
       const result = originalFunction.apply(this, args);
       const end = Game.cpu.getUsed();

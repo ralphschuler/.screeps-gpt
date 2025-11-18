@@ -120,6 +120,11 @@ export class StatsCollector {
   private diagnosticLoggingEnabled: boolean;
   private lastLogTick: number = 0;
   private readonly LOG_INTERVAL: number = 100; // Log every 100 ticks to avoid spam
+  
+  // OPTIMIZATION: Cache expensive stats collection to reduce CPU overhead
+  // Detailed structure/construction stats are collected every N ticks instead of every tick
+  // Critical stats (CPU, creeps, energy) are still collected every tick
+  private readonly DETAILED_STATS_INTERVAL: number = 10; // Collect detailed stats every 10 ticks
 
   public constructor(options: { enableDiagnostics?: boolean } = {}) {
     this.diagnosticLoggingEnabled = options.enableDiagnostics ?? true;
@@ -200,60 +205,67 @@ export class StatsCollector {
         }
       }
 
-      // Collect structure counts across all rooms
-      try {
-        const structures: Record<string, number> = {};
-        for (const roomName in game.rooms) {
-          const room = game.rooms[roomName];
-          if (room.find) {
-            const FIND_MY_STRUCTURES = 107; // FIND_MY_STRUCTURES constant
-            const roomStructures = room.find(FIND_MY_STRUCTURES) as StructureLike[];
-            for (const structure of roomStructures) {
-              const type = structure.structureType;
-              structures[type] = (structures[type] ?? 0) + 1;
+      // OPTIMIZATION: Collect structure counts only every DETAILED_STATS_INTERVAL ticks
+      // Structures don't change frequently, so caching reduces CPU overhead significantly
+      // This optimization trades off real-time accuracy for CPU efficiency
+      const shouldCollectDetailedStats = game.time % this.DETAILED_STATS_INTERVAL === 0;
+      
+      if (shouldCollectDetailedStats) {
+        // Collect structure counts across all rooms
+        try {
+          const structures: Record<string, number> = {};
+          for (const roomName in game.rooms) {
+            const room = game.rooms[roomName];
+            if (room.find) {
+              const FIND_MY_STRUCTURES = 107; // FIND_MY_STRUCTURES constant
+              const roomStructures = room.find(FIND_MY_STRUCTURES) as StructureLike[];
+              for (const structure of roomStructures) {
+                const type = structure.structureType;
+                structures[type] = (structures[type] ?? 0) + 1;
+              }
             }
           }
+          if (Object.keys(structures).length > 0) {
+            stats.structures = {
+              spawns: structures.spawn ?? undefined,
+              extensions: structures.extension ?? undefined,
+              containers: structures.container ?? undefined,
+              towers: structures.tower ?? undefined,
+              roads: structures.road ?? undefined
+            };
+          }
+        } catch (error) {
+          if (shouldLog) {
+            console.log(`[StatsCollector] Error collecting structure counts: ${String(error)}`);
+          }
         }
-        if (Object.keys(structures).length > 0) {
-          stats.structures = {
-            spawns: structures.spawn ?? undefined,
-            extensions: structures.extension ?? undefined,
-            containers: structures.container ?? undefined,
-            towers: structures.tower ?? undefined,
-            roads: structures.road ?? undefined
-          };
-        }
-      } catch (error) {
-        if (shouldLog) {
-          console.log(`[StatsCollector] Error collecting structure counts: ${String(error)}`);
-        }
-      }
 
-      // Collect construction sites
-      try {
-        const constructionSitesByType: Record<string, number> = {};
-        let totalSites = 0;
-        for (const roomName in game.rooms) {
-          const room = game.rooms[roomName];
-          if (room.find) {
-            const FIND_MY_CONSTRUCTION_SITES = 111; // FIND_MY_CONSTRUCTION_SITES constant
-            const sites = room.find(FIND_MY_CONSTRUCTION_SITES) as ConstructionSiteLike[];
-            totalSites += sites.length;
-            for (const site of sites) {
-              const type = site.structureType;
-              constructionSitesByType[type] = (constructionSitesByType[type] ?? 0) + 1;
+        // Collect construction sites
+        try {
+          const constructionSitesByType: Record<string, number> = {};
+          let totalSites = 0;
+          for (const roomName in game.rooms) {
+            const room = game.rooms[roomName];
+            if (room.find) {
+              const FIND_MY_CONSTRUCTION_SITES = 111; // FIND_MY_CONSTRUCTION_SITES constant
+              const sites = room.find(FIND_MY_CONSTRUCTION_SITES) as ConstructionSiteLike[];
+              totalSites += sites.length;
+              for (const site of sites) {
+                const type = site.structureType;
+                constructionSitesByType[type] = (constructionSitesByType[type] ?? 0) + 1;
+              }
             }
           }
-        }
-        if (totalSites > 0) {
-          stats.constructionSites = {
-            count: totalSites,
-            byType: Object.keys(constructionSitesByType).length > 0 ? constructionSitesByType : undefined
-          };
-        }
-      } catch (error) {
-        if (shouldLog) {
-          console.log(`[StatsCollector] Error collecting construction sites: ${String(error)}`);
+          if (totalSites > 0) {
+            stats.constructionSites = {
+              count: totalSites,
+              byType: Object.keys(constructionSitesByType).length > 0 ? constructionSitesByType : undefined
+            };
+          }
+        } catch (error) {
+          if (shouldLog) {
+            console.log(`[StatsCollector] Error collecting construction sites: ${String(error)}`);
+          }
         }
       }
 
@@ -318,8 +330,9 @@ export class StatsCollector {
             roomStats.controllerProgressTotal = room.controller.progressTotal;
           }
 
-          // Calculate energy stored in storage and containers
-          if (room.find) {
+          // OPTIMIZATION: Calculate energy stored and construction sites only on detailed stats interval
+          // These metrics don't change frequently and are expensive to compute
+          if (shouldCollectDetailedStats && room.find) {
             try {
               const FIND_MY_STRUCTURES = 107;
               const structures = room.find(FIND_MY_STRUCTURES) as StructureLike[];
