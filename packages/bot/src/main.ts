@@ -18,9 +18,7 @@ const taskSystemEnabled =
 
 const kernel = createKernel({
   repositorySignalProvider: () => {
-    const systemReport = Memory.systemReport;
-    if (!systemReport) return undefined;
-    return systemReport.report.repository;
+    return Memory.systemReport?.report?.repository;
   },
   behavior: new BehaviorController({
     useTaskSystem: taskSystemEnabled,
