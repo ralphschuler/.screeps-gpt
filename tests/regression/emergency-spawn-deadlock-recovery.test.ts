@@ -395,4 +395,37 @@ describe("Regression: Emergency Spawn Deadlock Recovery", () => {
     expect(summary.spawnedCreeps.length).toBeGreaterThan(0);
     expect(mockSpawn.spawnCreep).toHaveBeenCalled();
   });
+
+  it("should mark emergency creeps with emergency flag", () => {
+    const controller = new BehaviorController({}, logger);
+
+    // Set sufficient energy for spawn
+    mockRoom.energyAvailable = 200;
+    mockRoom.energyCapacityAvailable = 1300;
+    mockSpawn.store.getUsedCapacity = vi.fn().mockReturnValue(200);
+
+    const game: GameContext = {
+      time: 75093347,
+      cpu: {
+        getUsed: vi.fn().mockReturnValue(5),
+        limit: 20,
+        bucket: 1000
+      },
+      creeps: {}, // Emergency mode: 0 creeps
+      spawns: { Spawn1: mockSpawn },
+      rooms: { E54N39: mockRoom }
+    };
+
+    const memory = { creepCounter: 0 } as Memory;
+    const roleCounts: Record<string, number> = {};
+
+    // Execute behavior controller
+    controller.execute(game, memory, roleCounts);
+
+    // Verify emergency flag was set in creep memory
+    const spawnCall = (mockSpawn.spawnCreep as ReturnType<typeof vi.fn>).mock.calls[0];
+    const creepMemory = spawnCall[2]?.memory as { emergency?: boolean };
+    
+    expect(creepMemory.emergency).toBe(true);
+  });
 });

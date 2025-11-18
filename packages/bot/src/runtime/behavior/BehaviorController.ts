@@ -1091,7 +1091,14 @@ export class BehaviorController {
 
       const name = `${role}-${game.time}-${memory.creepCounter}`;
       memory.creepCounter += 1;
-      const result = spawn.spawnCreep(body, name, { memory: definition.memory() });
+      
+      // Mark emergency creeps with flag for priority spawn refilling
+      const creepMemory = definition.memory();
+      if (isEmergency || harvesterCount === 0) {
+        (creepMemory as BaseCreepMemory & { emergency?: boolean }).emergency = true;
+      }
+      
+      const result = spawn.spawnCreep(body, name, { memory: creepMemory });
       if (result === OK) {
         spawned.push(name);
         roleCounts[role] = current + 1;
@@ -1290,8 +1297,38 @@ function ensureHarvesterTask(memory: HarvesterMemory, creep: CreepLike): Harvest
 
 function runHarvester(creep: ManagedCreep): string {
   const memory = creep.memory as HarvesterMemory;
-  const task = ensureHarvesterTask(memory, creep);
   const comm = getComm();
+  
+  // CRITICAL: Check if spawn needs immediate refilling BEFORE any other task
+  // This ensures emergency recovery and prevents spawn starvation
+  const hasEnergy = creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
+  if (hasEnergy) {
+    const spawnsNeedingEnergy = creep.room.find(FIND_MY_STRUCTURES, {
+      filter: (structure: AnyStructure) => {
+        if (structure.structureType !== STRUCTURE_SPAWN) return false;
+        const spawn = structure as StructureSpawn;
+        const capacity = spawn.store.getCapacity(RESOURCE_ENERGY);
+        const current = spawn.store.getUsedCapacity(RESOURCE_ENERGY);
+        // Spawn is critical if below 50% capacity or below 150 energy (minimum spawn threshold)
+        return current < Math.max(150, capacity * 0.5);
+      }
+    }) as StructureSpawn[];
+    
+    if (spawnsNeedingEnergy.length > 0) {
+      // FORCE delivery to spawn - override any other task
+      memory.task = DELIVER_TASK;
+      comm?.say(creep, "🚨spawn");
+      
+      const spawn = creep.pos.findClosestByPath(spawnsNeedingEnergy) ?? spawnsNeedingEnergy[0];
+      const result = creep.transfer(spawn, RESOURCE_ENERGY);
+      if (result === ERR_NOT_IN_RANGE) {
+        creep.moveTo(spawn, { range: 1, reusePath: 10, visualizePathStyle: { stroke: "#ff0000" } });
+      }
+      return DELIVER_TASK;
+    }
+  }
+  
+  const task = ensureHarvesterTask(memory, creep);
 
   if (task === HARVEST_TASK) {
     // Communicate status change when transitioning to full
@@ -1385,9 +1422,34 @@ function ensureUpgraderTask(memory: UpgraderMemory, creep: CreepLike): UpgraderT
 
 function runUpgrader(creep: ManagedCreep): string {
   const memory = creep.memory as UpgraderMemory;
-  const task = ensureUpgraderTask(memory, creep);
   const comm = getComm();
   const energyMgr = getEnergyManager();
+  
+  // CRITICAL: Check if spawn needs immediate refilling BEFORE any other task
+  const hasEnergy = creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
+  if (hasEnergy) {
+    const spawnsNeedingEnergy = creep.room.find(FIND_MY_STRUCTURES, {
+      filter: (structure: AnyStructure) => {
+        if (structure.structureType !== STRUCTURE_SPAWN) return false;
+        const spawn = structure as StructureSpawn;
+        const capacity = spawn.store.getCapacity(RESOURCE_ENERGY);
+        const current = spawn.store.getUsedCapacity(RESOURCE_ENERGY);
+        return current < Math.max(150, capacity * 0.5);
+      }
+    }) as StructureSpawn[];
+    
+    if (spawnsNeedingEnergy.length > 0) {
+      comm?.say(creep, "🚨spawn");
+      const spawn = creep.pos.findClosestByPath(spawnsNeedingEnergy) ?? spawnsNeedingEnergy[0];
+      const result = creep.transfer(spawn, RESOURCE_ENERGY);
+      if (result === ERR_NOT_IN_RANGE) {
+        creep.moveTo(spawn, { range: 1, reusePath: 10, visualizePathStyle: { stroke: "#ff0000" } });
+      }
+      return UPGRADE_TASK; // Return current task to avoid state confusion
+    }
+  }
+  
+  const task = ensureUpgraderTask(memory, creep);
 
   if (task === RECHARGE_TASK) {
     comm?.say(creep, "gather");
@@ -1460,9 +1522,34 @@ function ensureBuilderTask(memory: BuilderMemory, creep: CreepLike): BuilderTask
 
 function runBuilder(creep: ManagedCreep): string {
   const memory = creep.memory as BuilderMemory;
-  const task = ensureBuilderTask(memory, creep);
   const comm = getComm();
   const energyMgr = getEnergyManager();
+  
+  // CRITICAL: Check if spawn needs immediate refilling BEFORE any other task
+  const hasEnergy = creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
+  if (hasEnergy) {
+    const spawnsNeedingEnergy = creep.room.find(FIND_MY_STRUCTURES, {
+      filter: (structure: AnyStructure) => {
+        if (structure.structureType !== STRUCTURE_SPAWN) return false;
+        const spawn = structure as StructureSpawn;
+        const capacity = spawn.store.getCapacity(RESOURCE_ENERGY);
+        const current = spawn.store.getUsedCapacity(RESOURCE_ENERGY);
+        return current < Math.max(150, capacity * 0.5);
+      }
+    }) as StructureSpawn[];
+    
+    if (spawnsNeedingEnergy.length > 0) {
+      comm?.say(creep, "🚨spawn");
+      const spawn = creep.pos.findClosestByPath(spawnsNeedingEnergy) ?? spawnsNeedingEnergy[0];
+      const result = creep.transfer(spawn, RESOURCE_ENERGY);
+      if (result === ERR_NOT_IN_RANGE) {
+        creep.moveTo(spawn, { range: 1, reusePath: 10, visualizePathStyle: { stroke: "#ff0000" } });
+      }
+      return BUILDER_BUILD_TASK; // Return current task to avoid state confusion
+    }
+  }
+  
+  const task = ensureBuilderTask(memory, creep);
 
   if (task === BUILDER_GATHER_TASK) {
     comm?.say(creep, "gather");
