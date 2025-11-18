@@ -128,6 +128,30 @@ For each performance metric:
 
 ### Establishing Baselines
 
+#### Automatic Establishment (Recommended)
+
+The monitoring workflow (`screeps-monitoring.yml`) automatically checks baseline readiness and establishes baselines when sufficient data exists:
+
+1. **Every 30 minutes**: Monitoring workflow collects bot snapshots
+2. **Readiness Check**: After each snapshot, checks if 48+ valid data points exist
+3. **Auto-Establish**: When ready, automatically runs baseline establishment
+4. **Auto-Commit**: Commits `baselines.json` to repository
+
+**Status Check:**
+
+```bash
+npx tsx packages/utilities/scripts/check-baseline-readiness.ts
+```
+
+**Requirements for Automatic Establishment:**
+
+- Minimum 48 snapshots (24 hours at 30min intervals)
+- Snapshots must contain valid performance data (CPU, rooms, or creeps)
+- Collection period must span at least 24 hours
+- Recommended: 96+ snapshots (48 hours) for highest confidence
+
+#### Manual Establishment
+
 **Script:** `packages/utilities/scripts/establish-baselines.ts`
 
 ```bash
@@ -136,7 +160,7 @@ npx tsx packages/utilities/scripts/establish-baselines.ts
 
 **Prerequisites:**
 
-- Stats collection must be operational (issue #684)
+- Stats collection must be operational
 - Minimum 24 hours of bot snapshot data in `reports/bot-snapshots/`
 - Normal operation state (not during respawn or major disruption)
 
@@ -180,29 +204,48 @@ npx tsx packages/utilities/scripts/establish-baselines.ts
 
 ### Using Baselines in Monitoring
 
-The monitoring workflow (`.github/workflows/screeps-monitoring.yml`) references baselines for:
+#### Autonomous Strategic Monitoring
 
-1. **Anomaly Detection**: Compare current metrics against baseline thresholds
-2. **Performance Reports**: Show deviations from expected values
-3. **Trend Analysis**: Track long-term performance changes
-4. **Alert Generation**: Trigger notifications when thresholds exceeded
+The Copilot monitoring agent (`.github/copilot/prompts/screeps-monitor`) uses baselines for intelligent anomaly detection:
 
-**Example Anomaly Check:**
+**Data-Driven Detection (when baselines available):**
 
-```typescript
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+- **Critical Alerts**: Metrics exceed μ ± 3σ thresholds
+  - CPU usage > `baselines.cpu.used.criticalThreshold`
+  - CPU bucket < `baselines.cpu.bucket.criticalThreshold`
+  - Creep population < `baselines.creeps.total.criticalThreshold`
 
-// Load baselines
-const baselines = JSON.parse(readFileSync(resolve("reports/monitoring/baselines.json"), "utf-8"));
+- **Warning Alerts**: Metrics exceed μ ± 2σ thresholds
+  - CPU usage > `baselines.cpu.used.warningThreshold` (sustained)
+  - Energy income < `baselines.energy.incomePerRoom.warningThreshold`
+  - Creep population < `baselines.creeps.total.warningThreshold`
+  - RCL progress < `baselines.rooms.rclProgressRate.warningThreshold`
 
-// Check current CPU usage
-const currentCpuUsed = Memory.stats.cpu.used;
-if (currentCpuUsed > baselines.cpu.used.criticalThreshold) {
-  console.log("🚨 CRITICAL: CPU usage exceeds baseline threshold!");
-} else if (currentCpuUsed > baselines.cpu.used.warningThreshold) {
-  console.log("⚠ WARNING: CPU usage above normal baseline");
-}
+**Fallback Detection (when baselines unavailable):**
+
+- Uses generic heuristic thresholds
+- CPU >95%, Energy <20%, etc.
+- Issues note that thresholds are estimates until baselines established
+
+**Workflow Integration:**
+
+1. Monitoring agent checks `reports/monitoring/baselines.json`
+2. Reads `metadata.confidenceLevel` to determine readiness
+3. If `"high"` or `"low"`: Uses baseline-driven thresholds
+4. If `"none"`: Falls back to heuristic thresholds
+5. Issues include baseline status and recommend establishment
+
+**Example Detection in Issue:**
+
+```markdown
+**Alert**: CPU usage critical
+
+Current: 25.3 CPU/tick
+Baseline: μ=15.2, σ=2.1
+Warning threshold: 19.4 (μ+2σ)
+Critical threshold: 21.5 (μ+3σ)
+
+Status: **EXCEEDS CRITICAL THRESHOLD by 18%**
 ```
 
 ## Baseline Recalibration
