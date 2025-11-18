@@ -107,7 +107,7 @@ Bootstrap completes when **either** of the following criteria is met (**OR** log
 2. **Harvester/Energy Threshold**: At least 4 harvesters **AND** `energyAvailable >= 300`
 
 > **Note:** The number of extensions is not checked directly; reaching 300 energy capacity is typically achieved by constructing extensions, but the code only checks the energy value.
-**Role Minimums** (post-bootstrap):
+> **Role Minimums** (post-bootstrap):
 
 - Harvesters: 4 (balanced energy gathering)
 - Upgraders: 2 (consistent controller progress)
@@ -167,14 +167,15 @@ Memory.rooms[roomName].storageBuilt = true;
 ### Advanced Economy Phases (Phases 4 & 5)
 
 **Phase Structure (per BootstrapPhaseManager.ts):**
+
 - **Phase 1**: RCL 1-3
 - **Phase 2**: RCL 4-5
 - **Phase 4**: RCL 6-7
 - **Phase 5**: RCL 8
 
 > **Note:** There is no Phase 3 in the current implementation. The code intentionally skips from Phase 2 to Phase 4. Phase 3 may be reserved for future use or for legacy compatibility.
-**Duration**: Indefinite  
-**Objective**: Multi-room expansion, empire coordination, global optimization
+> **Duration**: Indefinite  
+> **Objective**: Multi-room expansion, empire coordination, global optimization
 
 These phases are beyond bootstrap scope but tracked by the same `detectRCLPhaseTransitions()` method.
 
