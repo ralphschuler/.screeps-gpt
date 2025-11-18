@@ -5,6 +5,19 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Added
+
+- **Emergency Spawn Deadlock Diagnostics**: Enhanced emergency spawn logic with detailed diagnostic logging
+  - Added diagnostic message when emergency spawn cannot proceed due to insufficient energy (< 150 energy minimum)
+  - Detects energy stuck in containers that cannot be transported without creeps
+  - Logs energy availability, stored energy, and minimum threshold requirements
+  - Enhanced emergency spawn success logs with energy percentage metrics
+  - Added comprehensive regression test suite for emergency deadlock scenarios
+  - Helps identify and track recovery from spawn deadlock situations (0 creeps + low energy)
+  - Resolves issue ralphschuler/.screeps-gpt#1002 (emergency spawn bootstrap implementation)
+  - Parent issue: ralphschuler/.screeps-gpt#998 (zero creep population investigation)
+  - Related: #959 (missing hauler role), #954 (storage automation), #688, #691 (energy validation)
+
 ## [0.104.0] - 2025-11-17
 
 ### Fixed
