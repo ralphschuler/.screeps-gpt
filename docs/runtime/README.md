@@ -8,9 +8,9 @@ This directory contains operational documentation for the .screeps-gpt runtime s
 
 - **[Bootstrap Phases](bootstrap-phases.md)** - Complete guide to the bootstrap phase system that manages early-game RCL progression (Phase 0→1→2). Covers phase definitions, transition criteria, monitoring, troubleshooting, and manual intervention procedures.
 
-- **[Memory Management](memory-management.md)** - Memory structure, initialization, cleanup strategies, and best practices for managing persistent game state.
+- **Memory Management** (Coming soon) - Memory structure, initialization, cleanup strategies, and best practices for managing persistent game state.
 
-- **[Role Balancing](role-balancing.md)** - Dynamic role population adjustment, spawn priority system, and how roles adapt to room conditions.
+- **Role Balancing** (Coming soon) - Dynamic role population adjustment, spawn priority system, and how roles adapt to room conditions.
 
 ### Task System
 
