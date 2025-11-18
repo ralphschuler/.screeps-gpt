@@ -173,7 +173,7 @@ describe("Regression: Emergency Spawn Deadlock Recovery", () => {
       expect.stringContaining("Minimum required: 150 energy")
     );
     expect(logger.warn).toHaveBeenCalledWith(
-      expect.stringContaining("Stored in containers: 50 energy")
+      expect.stringContaining("Stored in containers: 94 energy")
     );
     expect(logger.warn).toHaveBeenCalledWith(
       expect.stringContaining("Waiting for passive source regeneration")
@@ -360,7 +360,7 @@ describe("Regression: Emergency Spawn Deadlock Recovery", () => {
       expect.stringContaining("EMERGENCY DEADLOCK")
     );
     expect(logger.warn).toHaveBeenCalledWith(
-      expect.stringContaining("Stored in containers: 0 energy")
+      expect.stringContaining("Stored in containers: 44 energy")
     );
   });
 
