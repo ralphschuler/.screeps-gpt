@@ -13,7 +13,7 @@ import { resolve } from "node:path";
  * - 0: Ready to establish baselines (48+ valid snapshots)
  * - 1: Not ready (insufficient data or error)
  */
-async function checkBaselineReadiness(): Promise<void> {
+function checkBaselineReadiness(): void {
   console.log("Checking baseline readiness...\n");
 
   const snapshotsDir = resolve("reports", "bot-snapshots");
@@ -53,7 +53,7 @@ async function checkBaselineReadiness(): Promise<void> {
   let files: string[] = [];
   try {
     files = readdirSync(snapshotsDir)
-      .filter(f => f.endsWith(".json") && !f.endsWith(".gitkeep"))
+      .filter(f => f.endsWith(".json"))
       .sort();
   } catch (error) {
     console.error("❌ Failed to read snapshots directory:", error);
@@ -119,11 +119,10 @@ async function checkBaselineReadiness(): Promise<void> {
     console.log("✓ Sufficient data available for baseline establishment");
     console.log(`  Valid snapshots: ${validSnapshots}/${MINIMUM_SNAPSHOTS} minimum`);
 
-    if (validSnapshots >= RECOMMENDED_SNAPSHOTS) {
-      console.log(`  Confidence level: HIGH (${validSnapshots} data points)`);
-    } else {
-      console.log(`  Confidence level: MODERATE (${validSnapshots} data points)`);
-      console.log(`  Recommended: ${RECOMMENDED_SNAPSHOTS}+ snapshots for highest confidence`);
+    // Note: establish-baselines.ts only generates "high" (>=48) or "low" (<48) confidence levels
+    console.log(`  Confidence level: HIGH (${validSnapshots} data points)`);
+    if (validSnapshots < RECOMMENDED_SNAPSHOTS) {
+      console.log(`  Note: ${RECOMMENDED_SNAPSHOTS}+ snapshots recommended for highest statistical confidence`);
     }
 
     console.log("\nStatus: READY to establish baselines");

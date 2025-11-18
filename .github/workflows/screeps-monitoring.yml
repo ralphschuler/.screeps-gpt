@@ -107,9 +107,19 @@ jobs:
         id: check_baseline_readiness
         if: success() && steps.collect_snapshot.outcome == 'success'
         run: |
-          npx tsx packages/utilities/scripts/check-baseline-readiness.ts && \
-            echo "baseline_ready=true" >> $GITHUB_OUTPUT || \
-            echo "baseline_ready=false" >> $GITHUB_OUTPUT
+          SCRIPT="packages/utilities/scripts/check-baseline-readiness.ts"
+          if npx tsx $SCRIPT; then
+            echo "baseline_ready=true" >> $GITHUB_OUTPUT
+          else
+            EXIT_CODE=$?
+            if [ $EXIT_CODE -eq 1 ]; then
+              echo "baseline_ready=false" >> $GITHUB_OUTPUT
+            else
+              echo "::error::Baseline readiness check failed \
+                with exit code $EXIT_CODE"
+              exit $EXIT_CODE
+            fi
+          fi
         continue-on-error: true
 
       - name: Establish performance baselines

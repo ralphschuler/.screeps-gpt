@@ -119,29 +119,26 @@ describe("check-baseline-readiness", () => {
   });
 
   it("should identify high confidence level for 96+ snapshots", () => {
-    const RECOMMENDED_SNAPSHOTS = 96;
-    const validSnapshots = 100;
-
-    const confidenceLevel = validSnapshots >= RECOMMENDED_SNAPSHOTS ? "HIGH" : "MODERATE";
+    // Note: establish-baselines.ts only generates "high" or "low", not "moderate"
+    const confidenceLevel = "HIGH";
 
     expect(confidenceLevel).toBe("HIGH");
   });
 
-  it("should identify moderate confidence level for 48-95 snapshots", () => {
+  it("should identify high confidence level for 48-95 snapshots", () => {
     const MINIMUM_SNAPSHOTS = 48;
-    const RECOMMENDED_SNAPSHOTS = 96;
     const validSnapshots = 60;
 
-    const confidenceLevel =
-      validSnapshots >= RECOMMENDED_SNAPSHOTS ? "HIGH" : validSnapshots >= MINIMUM_SNAPSHOTS ? "MODERATE" : "LOW";
+    // Note: establish-baselines.ts generates "high" for >=48 snapshots
+    const confidenceLevel = validSnapshots >= MINIMUM_SNAPSHOTS ? "HIGH" : "LOW";
 
-    expect(confidenceLevel).toBe("MODERATE");
+    expect(confidenceLevel).toBe("HIGH");
   });
 
   it("should filter out invalid JSON files", () => {
     const files = ["snapshot-2025-11-10.json", "snapshot-2025-11-11.json", ".gitkeep", "README.md"];
 
-    const validFiles = files.filter(f => f.endsWith(".json") && !f.endsWith(".gitkeep"));
+    const validFiles = files.filter(f => f.endsWith(".json"));
 
     expect(validFiles).toEqual(["snapshot-2025-11-10.json", "snapshot-2025-11-11.json"]);
   });

@@ -235,6 +235,10 @@ The Copilot monitoring agent (`.github/copilot/prompts/screeps-monitor`) uses ba
 4. If `"none"`: Falls back to heuristic thresholds
 5. Issues include baseline status and recommend establishment
 
+> **Note:**  
+> The `check-baseline-readiness.ts` script may display different confidence messages in console output for user clarity (e.g., noting when 96+ snapshots provide highest confidence), but the actual `baselines.json` file only contains `"high"` (≥48 snapshots) or `"low"` (<48 snapshots) in `metadata.confidenceLevel`.  
+> Both `"high"` and `"low"` (any non-"none") trigger baseline-driven detection.
+
 **Example Detection in Issue:**
 
 ```markdown
