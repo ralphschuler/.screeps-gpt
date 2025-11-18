@@ -87,7 +87,9 @@ export class Kernel {
     this.utilizationMonitor = config.utilizationMonitor ?? new MemoryUtilizationMonitor({}, this.logger);
     this.selfHealer = config.selfHealer ?? new MemorySelfHealer({}, this.logger);
     this.tracker = config.tracker ?? new PerformanceTracker({}, this.logger);
-    this.statsCollector = config.statsCollector ?? new StatsCollector();
+    // StatsCollector diagnostic logging disabled by default for production performance
+    // Enable via Memory.experimentalFeatures.statsDebug or constructor option for debugging
+    this.statsCollector = config.statsCollector ?? new StatsCollector({ enableDiagnostics: false });
     this.pixelGenerator = config.pixelGenerator ?? new PixelGenerator({}, this.logger);
     this.behavior = config.behavior ?? new BehaviorController({}, this.logger);
     this.evaluator = config.evaluator ?? new SystemEvaluator({}, this.logger);

@@ -127,7 +127,10 @@ export class StatsCollector {
   private readonly DETAILED_STATS_INTERVAL: number = 10; // Collect detailed stats every 10 ticks
 
   public constructor(options: { enableDiagnostics?: boolean } = {}) {
-    this.diagnosticLoggingEnabled = options.enableDiagnostics ?? true;
+    // OPTIMIZATION: Disable diagnostic logging by default for production
+    // Can be enabled via Memory flag or constructor option for debugging
+    // Reduces CPU overhead from console.log calls (especially with large JSON.stringify)
+    this.diagnosticLoggingEnabled = options.enableDiagnostics ?? false;
   }
 
   /**
@@ -136,7 +139,13 @@ export class StatsCollector {
    */
   public collect(game: GameLike, memory: Memory, snapshot: PerformanceSnapshot): void {
     const startCpu = game.cpu.getUsed();
-    const shouldLog = this.diagnosticLoggingEnabled && game.time - this.lastLogTick >= this.LOG_INTERVAL;
+    
+    // OPTIMIZATION: Allow runtime override via Memory flag for debugging
+    // Set Memory.experimentalFeatures.statsDebug = true to enable diagnostic logging
+    const diagnosticsEnabled = this.diagnosticLoggingEnabled || 
+      (typeof memory.experimentalFeatures?.statsDebug === "boolean" && memory.experimentalFeatures.statsDebug);
+    
+    const shouldLog = diagnosticsEnabled && game.time - this.lastLogTick >= this.LOG_INTERVAL;
 
     if (shouldLog) {
       console.log(`[StatsCollector] Starting stats collection for tick ${game.time}`);
