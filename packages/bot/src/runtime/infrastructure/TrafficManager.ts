@@ -225,7 +225,15 @@ export class TrafficManager {
 
   /**
    * Move a creep with priority-based collision avoidance
-   * TODO: Implement path caching to avoid recomputing paths every tick
+   *
+   * Path caching optimization is tracked in TASKS.md:
+   * - Line 36: "Implement path caching system - Overmind pattern with TTL"
+   * - Line 90: "Implement path caching with TTL management"
+   * - Line 233-236: "Path Caching System (Phase 2-3)" with detailed implementation plan
+   *
+   * This optimization would cache computed paths with TTL invalidation to reduce CPU usage
+   * by avoiding PathFinder.search() calls every tick. Expected savings: 0.2-0.5 CPU/tick.
+   * Current implementation recalculates paths each tick for simplicity and correctness.
    */
   private moveWithPriority(
     creep: Creep,
