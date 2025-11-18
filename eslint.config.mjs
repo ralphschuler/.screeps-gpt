@@ -29,7 +29,8 @@ export default [
       "scripts/**",
       "docs/**",
       "source/**",
-      "themes/**"
+      "themes/**",
+      "**/examples/**"
     ]
   },
 
