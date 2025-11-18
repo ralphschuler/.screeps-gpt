@@ -1,0 +1,32 @@
+{
+  "name": "@ralphschuler/screeps-xstate",
+  "version": "0.1.0",
+  "description": "Lightweight finite state machine implementation for Screeps runtime",
+  "license": "MIT",
+  "author": "OpenAI Automations",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "keywords": [
+    "screeps",
+    "state-machine",
+    "fsm",
+    "finite-state-machine",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ralphschuler/.screeps-gpt.git",
+    "directory": "packages/screeps-xstate"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.1",
+    "typescript": "^5.4.3",
+    "vitest": "^4.0.1"
+  }
+}
