@@ -359,7 +359,111 @@ When aliveness check fails, monitoring workflow should:
 3. Report lifecycle state as "unknown" but continue monitoring
 4. Alert if both aliveness check and Memory.stats fail
 
-### Issue 6: High Fallback Rate
+### Issue 6: Missing Screeps Stats Directory
+
+**Symptoms**:
+
+- `reports/ptr-stats/` directory exists but remains empty
+- No timestamped PTR stats files being created
+- Bot snapshots contain only timestamps (minimal data)
+- `check-ptr-alerts.ts` silently skips without errors
+- Cannot establish baselines due to insufficient data
+
+**Root Causes**:
+
+1. `reports/screeps-stats/` directory missing from repository
+2. Collection scripts fail to create output directory structure
+3. Cascade failure: no stats → no snapshots → no baselines
+
+**Diagnosis**:
+
+```bash
+# Check if screeps-stats directory exists
+ls -la reports/screeps-stats/ 2>/dev/null || echo "Directory missing!"
+
+# Check if latest.json exists
+test -f reports/screeps-stats/latest.json && echo "Exists" || echo "Missing"
+
+# Check ptr-stats directory content
+ls -la reports/ptr-stats/
+# Should contain timestamped files like: ptr-stats-2025-11-18T16-30-00-000Z.json
+```
+
+**Resolution Steps**:
+
+1. **Verify Directory Structure**:
+
+   ```bash
+   # Create missing directory
+   mkdir -p reports/screeps-stats
+   
+   # Add .gitkeep to track directory
+   touch reports/screeps-stats/.gitkeep
+   ```
+
+2. **Add Bootstrap File**:
+
+   ```bash
+   # Create placeholder latest.json
+   cat > reports/screeps-stats/latest.json << 'EOF'
+   {
+     "status": "awaiting_first_collection",
+     "timestamp": "1970-01-01T00:00:00.000Z",
+     "source": "none",
+     "payload": {
+       "stats": {}
+     }
+   }
+   EOF
+   ```
+
+3. **Verify Data Flow**:
+
+   ```bash
+   # Test resilient telemetry collection
+   npx tsx packages/utilities/scripts/fetch-resilient-telemetry.ts
+   
+   # Verify latest.json was updated
+   cat reports/screeps-stats/latest.json | jq '.timestamp'
+   
+   # Verify PTR alerts creates timestamped files
+   npx tsx packages/utilities/scripts/check-ptr-alerts.ts
+   
+   # Check ptr-stats directory now has files
+   ls -la reports/ptr-stats/
+   ```
+
+4. **Commit Changes**:
+
+   ```bash
+   git add reports/screeps-stats/.gitkeep
+   git add reports/screeps-stats/latest.json
+   git commit -m "feat: add missing screeps-stats directory for PTR collection"
+   git push
+   ```
+
+**Data Flow Architecture**:
+
+```
+fetch-screeps-stats.mjs / fetch-console-telemetry.ts
+  ↓ writes to
+reports/screeps-stats/latest.json (primary data source)
+  ↓ read by
+collect-ptr-stats.ts → reports/copilot/ptr-stats.json (ephemeral)
+collect-bot-snapshot.ts → reports/bot-snapshots/snapshot-{date}.json (tracked)
+check-ptr-alerts.ts → reports/ptr-stats/ptr-stats-{timestamp}.json (tracked)
+  ↓ consumed by
+establish-baselines.ts → reports/monitoring/baselines.json
+```
+
+**Expected Behavior After Fix**:
+
+- Workflow creates `reports/screeps-stats/latest.json` every 30 minutes
+- `check-ptr-alerts.ts` saves timestamped copies to `reports/ptr-stats/`
+- Bot snapshots contain full game state (CPU, rooms, creeps, etc.)
+- After 24-48 hours, sufficient data exists to establish baselines
+
+### Issue 7: High Fallback Rate
 
 **Symptoms**:
 
@@ -379,6 +483,19 @@ When aliveness check fails, monitoring workflow should:
 # Check fallback pattern
 for file in reports/copilot/ptr-stats-*.json; do
   echo "$file: $(cat $file | jq '.metadata.source')";
+done
+
+# Check Memory.stats in runtime
+# (requires game console access)
+# Game console: JSON.stringify(Memory.stats)
+```
+
+**Diagnosis**:
+
+```bash
+# Check fallback pattern
+for file in reports/ptr-stats/ptr-stats-*.json 2>/dev/null; do
+  echo "$file: $(cat $file | jq -r '.metadata.source // .source // "unknown"')";
 done
 
 # Check Memory.stats in runtime
