@@ -162,9 +162,15 @@ Memory.rooms[roomName].storageBuilt = true;
 - Upgraders draw from storage
 - Builders prioritize storage construction
 
-### Phase 3+: Advanced Economy
+### Advanced Economy Phases (Phases 4 & 5)
 
-**RCL**: 6+ (Phase 3), 7+ (Phase 4), 8+ (Phase 5)  
+**Phase Structure (per BootstrapPhaseManager.ts):**
+- **Phase 1**: RCL 1-3
+- **Phase 2**: RCL 4-5
+- **Phase 4**: RCL 6-7
+- **Phase 5**: RCL 8
+
+> **Note:** There is no Phase 3 in the current implementation. The code intentionally skips from Phase 2 to Phase 4. Phase 3 may be reserved for future use or for legacy compatibility.
 **Duration**: Indefinite  
 **Objective**: Multi-room expansion, empire coordination, global optimization
 
