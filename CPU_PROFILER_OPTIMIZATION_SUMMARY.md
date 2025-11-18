@@ -1,8 +1,8 @@
 # CPU Profiler Optimization Summary
 
-**Issue:** #961 - optimize CPU profiler overhead - 3.77 CPU for 1 creep suggests profiling bottleneck  
-**Branch:** `copilot/optimize-cpu-profiler-overhead`  
-**Status:** ✅ Implementation Complete - Ready for PTR Validation  
+**Issue:** #961 - optimize CPU profiler overhead - 3.77 CPU for 1 creep suggests profiling bottleneck
+**Branch:** `copilot/optimize-cpu-profiler-overhead`
+**Status:** ✅ Implementation Complete - Ready for PTR Validation
 **Date:** 2025-11-18
 
 ---
@@ -51,11 +51,11 @@ let profilerEnabledCache: { tick: number; enabled: boolean } | null = null;
 
 function isEnabledFast(): boolean {
   const currentTick = Game.time;
-  
+
   if (profilerEnabledCache && profilerEnabledCache.tick === currentTick) {
     return profilerEnabledCache.enabled; // Cache hit
   }
-  
+
   const enabled = Memory.profiler?.start !== undefined;
   profilerEnabledCache = { tick: currentTick, enabled };
   return enabled;

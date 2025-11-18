@@ -18,12 +18,12 @@ let profilerEnabledCache: { tick: number; enabled: boolean } | null = null;
  */
 function isEnabledFast(): boolean {
   const currentTick = Game.time;
-  
+
   // Cache hit - return cached value
   if (profilerEnabledCache && profilerEnabledCache.tick === currentTick) {
     return profilerEnabledCache.enabled;
   }
-  
+
   // Cache miss - check Memory and update cache
   const enabled = Memory.profiler?.start !== undefined;
   profilerEnabledCache = { tick: currentTick, enabled };

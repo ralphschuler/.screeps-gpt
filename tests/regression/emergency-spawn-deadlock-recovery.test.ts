@@ -4,12 +4,12 @@ import type { GameContext } from "@runtime/types/GameContext";
 
 /**
  * Regression test for issue: Emergency spawn bootstrap for energy deadlock recovery
- * 
+ *
  * Scenario: Room at 3.38% energy (44/1300) with 0 creeps creates spawn deadlock
  * - Cannot spawn basic harvester (requires 200 energy minimum)
  * - Energy stuck in containers (50 energy) cannot be transported without creeps
  * - Bot must wait for passive source regeneration to reach spawn threshold
- * 
+ *
  * Issue: ralphschuler/.screeps-gpt#1002 (Emergency spawn bootstrap)
  * Parent: ralphschuler/.screeps-gpt#998 (Zero creep population)
  * Related: #959 (Missing hauler role), #954 (Storage automation), #688, #691
@@ -224,7 +224,7 @@ describe("Regression: Emergency Spawn Deadlock Recovery", () => {
     expect(mockSpawn.spawnCreep).toHaveBeenCalled();
     const spawnCall = (mockSpawn.spawnCreep as ReturnType<typeof vi.fn>).mock.calls[0];
     const bodyParts = spawnCall[0] as BodyPartConstant[];
-    
+
     // Emergency body should be [WORK, MOVE] or [WORK, CARRY, MOVE]
     expect(bodyParts).toBeDefined();
     expect(bodyParts.length).toBeGreaterThanOrEqual(2);
@@ -262,7 +262,7 @@ describe("Regression: Emergency Spawn Deadlock Recovery", () => {
     // Verify spawn was called with full minimal harvester body [WORK, CARRY, MOVE]
     const spawnCall = (mockSpawn.spawnCreep as ReturnType<typeof vi.fn>).mock.calls[0];
     const bodyParts = spawnCall[0] as BodyPartConstant[];
-    
+
     expect(bodyParts).toEqual([WORK, CARRY, MOVE]);
   });
 
@@ -276,7 +276,7 @@ describe("Regression: Emergency Spawn Deadlock Recovery", () => {
     // Simulate multiple ticks of spawning
     let spawnCounter = 0;
     const maxTicks = 10;
-    
+
     for (let tick = 0; tick < maxTicks; tick++) {
       const game: GameContext = {
         time: 75093347 + tick * 10,
@@ -425,7 +425,7 @@ describe("Regression: Emergency Spawn Deadlock Recovery", () => {
     // Verify emergency flag was set in creep memory
     const spawnCall = (mockSpawn.spawnCreep as ReturnType<typeof vi.fn>).mock.calls[0];
     const creepMemory = spawnCall[2]?.memory as { emergency?: boolean };
-    
+
     expect(creepMemory.emergency).toBe(true);
   });
 });

@@ -131,12 +131,12 @@ export class StatsCollector {
   private diagnosticLoggingEnabled: boolean;
   private lastLogTick: number = 0;
   private readonly LOG_INTERVAL: number = 100; // Log every 100 ticks to avoid spam
-  
+
   // OPTIMIZATION: Cache expensive stats collection to reduce CPU overhead
   // Detailed structure/construction stats are collected every N ticks instead of every tick
   // Critical stats (CPU, creeps, energy) are still collected every tick
   private readonly DETAILED_STATS_INTERVAL: number = 10; // Collect detailed stats every 10 ticks
-  
+
   // Cache for detailed stats to maintain data consistency between collection intervals
   // These are reused on non-interval ticks to ensure Memory.stats always has complete data
   private cachedStructures?: StatsData["structures"];
@@ -157,12 +157,13 @@ export class StatsCollector {
    */
   public collect(game: GameLike, memory: Memory, snapshot: PerformanceSnapshot): void {
     const startCpu = game.cpu.getUsed();
-    
+
     // OPTIMIZATION: Allow runtime override via Memory flag for debugging
     // Set Memory.experimentalFeatures.statsDebug = true to enable diagnostic logging
-    const diagnosticsEnabled = this.diagnosticLoggingEnabled || 
+    const diagnosticsEnabled =
+      this.diagnosticLoggingEnabled ||
       (typeof memory.experimentalFeatures?.statsDebug === "boolean" && memory.experimentalFeatures.statsDebug);
-    
+
     const shouldLog = diagnosticsEnabled && game.time - this.lastLogTick >= this.LOG_INTERVAL;
 
     if (shouldLog) {
@@ -237,7 +238,7 @@ export class StatsCollector {
       // On non-interval ticks: reuse cached values to maintain data consistency
       // This reduces CPU overhead while ensuring Memory.stats always has complete data
       const shouldCollectDetailedStats = game.time % this.DETAILED_STATS_INTERVAL === 0;
-      
+
       if (shouldCollectDetailedStats) {
         // Collect structure counts across all rooms
         try {
