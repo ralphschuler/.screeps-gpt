@@ -67,6 +67,7 @@ Phase 1 establishes the foundational infrastructure for autonomous bot operation
 - ✅ Bootstrap completion detection (energy threshold + extension count)
 - ✅ Memory persistence for bootstrap state
 - ✅ 37 unit tests validating bootstrap behavior
+- ✅ User-facing documentation in [Bootstrap Phases Guide](../../runtime/bootstrap-phases.md)
 
 #### Container-Based Economy (80%)
 
@@ -260,6 +261,7 @@ Phase 2 (Core Framework) depends on Phase 1 completion:
 
 ## Related Documentation
 
+- [Bootstrap Phases Guide](../../runtime/bootstrap-phases.md) - **Operational guide for bootstrap system**
 - [Strategic Roadmap](../roadmap.md) - Overall phase progression
 - [Phase 2: Core Framework](phase-2-core-framework.md) - Next phase objectives
 - [TASKS.md](../../../TASKS.md) - Detailed task breakdown for Phase 1

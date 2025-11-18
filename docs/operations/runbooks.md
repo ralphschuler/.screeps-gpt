@@ -2,7 +2,7 @@
 
 **Purpose**: Quick-reference guides for common operational tasks and emergency procedures.  
 **Audience**: Developers, operators, and autonomous agents managing the .screeps-gpt bot.  
-**Last Updated**: 2025-11-17
+**Last Updated**: 2025-11-18
 
 ## Table of Contents
 
@@ -10,8 +10,9 @@
 2. [Deployment Procedures](#deployment-procedures)
 3. [Monitoring and Alerts](#monitoring-and-alerts)
 4. [Troubleshooting Guide](#troubleshooting-guide)
-5. [Performance Investigation](#performance-investigation)
-6. [Data Recovery](#data-recovery)
+5. [Bootstrap Phase Troubleshooting](#bootstrap-phase-troubleshooting)
+6. [Performance Investigation](#performance-investigation)
+7. [Data Recovery](#data-recovery)
 
 ## Emergency Procedures
 
@@ -412,6 +413,146 @@ Memory.rooms["W1N1"].tasks.push({
 });
 ```
 
+## Bootstrap Phase Troubleshooting
+
+The bootstrap phase system manages critical early-game transitions. For comprehensive documentation, see [Bootstrap Phases Guide](../runtime/bootstrap-phases.md).
+
+### Quick Diagnostics
+
+**Check Bootstrap Status**:
+
+```javascript
+// Is bootstrap active?
+Memory.bootstrap?.isActive;
+
+// How long has bootstrap been running?
+Game.time - Memory.bootstrap?.startedAt;
+
+// What phase is the room in?
+Memory.rooms["W1N1"]?.phase;
+```
+
+### Common Bootstrap Issues
+
+#### Bootstrap Stuck at RCL 1
+
+**Symptoms**: Bootstrap active for >1000 ticks, RCL not progressing
+
+**Quick Checks**:
+
+```javascript
+const room = Game.rooms["W1N1"];
+console.log(`Energy: ${room.energyCapacityAvailable}/300`);
+console.log(
+  `Extensions: ${
+    room.find(FIND_MY_STRUCTURES, {
+      filter: s => s.structureType === STRUCTURE_EXTENSION
+    }).length
+  }/2`
+);
+console.log(`Harvesters: ${_.filter(Game.creeps, c => c.memory.role === "harvester").length}/6`);
+```
+
+**Solutions**:
+
+1. Verify harvesters are spawning (should reach 6 during bootstrap)
+2. Check extension construction sites exist
+3. Ensure upgrader is actively upgrading controller
+4. If stuck, force bootstrap completion: `Memory.bootstrap.isActive = false; Memory.bootstrap.completedAt = Game.time;`
+
+#### Too Few Creeps During Bootstrap
+
+**Symptoms**: Only 1-2 harvesters spawned, energy gathering insufficient
+
+**Root Cause**: Bootstrap role minimums not being applied to spawn queue
+
+**Solution**:
+
+```javascript
+// Emergency harvester spawn
+const spawn = Game.spawns["Spawn1"];
+spawn.spawnCreep([WORK, CARRY, MOVE], `harvester_${Game.time}`, { memory: { role: "harvester" } });
+```
+
+#### Phase 2 Transition but No Storage
+
+**Symptoms**: RCL 4+ reached, storage built, but `storageBuilt` flag false
+
+**Requirement**: Storage must have >10k energy to be marked operational
+
+**Solution**:
+
+```javascript
+// Check storage energy
+const storage = Game.rooms["W1N1"].storage;
+console.log(`Storage: ${storage?.store.getUsedCapacity(RESOURCE_ENERGY) ?? 0}/10000`);
+
+// Force storage detection if threshold met
+if (storage && storage.store.getUsedCapacity(RESOURCE_ENERGY) > 10000) {
+  Memory.rooms["W1N1"].storageBuilt = true;
+}
+```
+
+#### Roads Not Planning at RCL 2
+
+**Symptoms**: RCL 2 reached, containers built, no road construction sites
+
+**Prerequisites**:
+
+- RCL 2+
+- Containers within range 2 of sources
+- `roadsPlanned` flag false
+
+**Solution**:
+
+```javascript
+// Reset road planning flag to retrigger
+Memory.rooms["W1N1"].roadsPlanned = false;
+// Road planning will trigger on next kernel cycle
+```
+
+### Manual Bootstrap Override
+
+**Force Bootstrap Completion** (when prerequisites met):
+
+```javascript
+Memory.bootstrap.isActive = false;
+Memory.bootstrap.completedAt = Game.time;
+console.log("Bootstrap manually completed");
+```
+
+**Reset Bootstrap** (start from beginning):
+
+```javascript
+delete Memory.bootstrap;
+console.log("Bootstrap reset - will reinitialize next tick");
+```
+
+**Force Phase Transition**:
+
+```javascript
+const roomName = "W1N1";
+Memory.rooms[roomName].phase = "phase2";
+Memory.rooms[roomName].rclLevelDetected = Game.rooms[roomName].controller.level;
+Memory.rooms[roomName].phaseActivatedAt = Game.time;
+```
+
+### Bootstrap Performance Targets
+
+- **Bootstrap Duration**: <1000 ticks (Phase 0 → Bootstrap Complete)
+- **RCL 1→2 Progression**: <800 ticks
+- **Creep Count by Tick 300**: 6 harvesters, 1 upgrader
+- **Energy Rate**: +10 energy/tick average
+
+If targets not met, investigate:
+
+1. Harvester spawn priority
+2. Source accessibility (pathing issues)
+3. Extension construction timing
+4. CPU bucket depletion
+
+For detailed troubleshooting procedures, see [Bootstrap Phases Guide](../runtime/bootstrap-phases.md#troubleshooting).
+
 ## Performance Investigation
 
 ### When to Investigate
@@ -533,6 +674,7 @@ Memory.rooms["W1N1"].tasks.push({
 
 ## Related Documentation
 
+- [Bootstrap Phases Guide](../runtime/bootstrap-phases.md) - Comprehensive bootstrap phase documentation
 - [Technical Debt Roadmap](../strategy/technical-debt-roadmap.md)
 - [Troubleshooting Telemetry](troubleshooting-telemetry.md)
 - [Monitoring Baselines](monitoring-baselines.md)

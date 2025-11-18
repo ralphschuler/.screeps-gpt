@@ -24,6 +24,7 @@ A TypeScript-based Screeps bot with autonomous creep management, resource optimi
 **Key Components:**
 
 - Behavior controllers for creep roles (harvesters, upgraders, builders, miners)
+- Bootstrap phase system for optimal early-game RCL progression ([docs](docs/runtime/bootstrap-phases.md))
 - Memory management and state persistence
 - Performance monitoring and CPU optimization
 - Health evaluation and improvement recommendation system
