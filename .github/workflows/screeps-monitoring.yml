@@ -103,6 +103,35 @@ jobs:
             echo "::warning::Analytics generation failed (no snapshots yet)"
         continue-on-error: true
 
+      - name: Check baseline readiness
+        id: check_baseline_readiness
+        if: success() && steps.collect_snapshot.outcome == 'success'
+        run: |
+          SCRIPT="packages/utilities/scripts/check-baseline-readiness.ts"
+          if npx tsx $SCRIPT; then
+            echo "baseline_ready=true" >> $GITHUB_OUTPUT
+          else
+            EXIT_CODE=$?
+            if [ $EXIT_CODE -eq 1 ]; then
+              echo "baseline_ready=false" >> $GITHUB_OUTPUT
+            else
+              echo "::error::Baseline readiness check failed \
+                with exit code $EXIT_CODE"
+              exit $EXIT_CODE
+            fi
+          fi
+        continue-on-error: true
+
+      - name: Establish performance baselines
+        id: establish_baselines
+        if: >-
+          success() &&
+          steps.check_baseline_readiness.outputs.baseline_ready == 'true'
+        run: |
+          npx tsx packages/utilities/scripts/establish-baselines.ts
+          echo "::notice::Performance baselines established successfully"
+        continue-on-error: true
+
       - name: Ensure profiler is running
         if: always()
         env:
@@ -179,6 +208,7 @@ jobs:
             reports/bot-snapshots/*.json
             reports/monitoring/health.json
             reports/monitoring/health-check-latest.json
+            reports/monitoring/baselines.json
             source/docs/analytics/data.json
           retention-days: 30
 
@@ -203,6 +233,11 @@ jobs:
           # Add health monitoring state
           if [ -f "reports/monitoring/health.json" ]; then
             git add reports/monitoring/health.json
+          fi
+
+          # Add performance baselines when established
+          if [ -f "reports/monitoring/baselines.json" ]; then
+            git add reports/monitoring/baselines.json
           fi
 
           # Commit when there are changes
