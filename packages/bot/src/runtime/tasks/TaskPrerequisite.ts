@@ -137,9 +137,11 @@ export class SpawnHasEnergy extends TaskPrerequisite {
   }
 
   public toMeet(_creep: Creep): TaskAction[] {
-    // TODO: Generate energy gathering tasks to fill spawn and extensions
-    // For now, return empty - higher level logic should handle this
-    // Future implementation should create harvest/transfer tasks
+    // Energy gathering task generation is tracked in TASKS.md under "Phase 2: Core Framework"
+    // This requires implementing a task assignment algorithm that can create harvest/transfer
+    // subtasks to fill spawn and extensions when prerequisite is not met.
+    // Related: TASKS.md line 78 "Create task assignment algorithm (closest idle creep, capability matching)"
+    // For now, return empty - higher level logic should handle energy distribution
     return [];
   }
 }

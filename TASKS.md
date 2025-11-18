@@ -76,6 +76,7 @@
   - 17 regression tests covering all spawn scenarios
   - Documentation in docs/runtime/operations/spawn-management.md
 - [ ] Create task assignment algorithm (closest idle creep, capability matching)
+  - Includes generating energy gathering subtasks for spawn/extension filling (TaskPrerequisite.ts:140)
 - [ ] Implement storage manager for resource distribution
 - [x] Add link network optimization for energy highways _(2025-11-07)_
   - LinkManager with role-based classification (source, storage, controller, upgrade)
