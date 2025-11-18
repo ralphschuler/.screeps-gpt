@@ -5,6 +5,24 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Added
+
+- **Emergency Spawn Bootstrap with Priority Refilling**: Enhanced emergency spawn logic with spawn refilling priority for all creeps
+  - **CRITICAL**: All creeps (harvesters, upgraders, builders) now prioritize spawn refilling above all other tasks when spawn energy drops below 50% capacity or below 150 energy (minimum spawn threshold)
+  - Emergency creeps marked with `emergency: true` flag in memory for tracking and special handling
+  - Added diagnostic message when emergency spawn cannot proceed due to insufficient energy (< 150 energy minimum)
+  - Detects energy stuck in containers that cannot be transported without creeps
+  - Logs energy availability, stored energy, and minimum threshold requirements
+  - Enhanced emergency spawn success logs with energy percentage metrics
+  - Visual indicators: 🚨spawn emoji and red pathfinding when creeps are in emergency spawn refill mode
+  - Prevents spawn starvation by ensuring spawn always has minimum energy for continuous creep production
+  - Universal application ensures both emergency recovery and normal operation maintain spawn energy reserves
+  - Added comprehensive regression test suite (8 tests) for emergency deadlock scenarios
+  - Helps identify and track recovery from spawn deadlock situations (0 creeps + low energy)
+  - Resolves issue ralphschuler/.screeps-gpt#1002 (emergency spawn bootstrap implementation)
+  - Parent issue: ralphschuler/.screeps-gpt#998 (zero creep population investigation)
+  - Related: #959 (missing hauler role), #954 (storage automation), #688, #691 (energy validation)
+
 ## [0.104.0] - 2025-11-17
 
 ### Fixed
