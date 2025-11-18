@@ -228,7 +228,7 @@ export class TrafficManager {
    *
    * Path caching optimization is tracked in TASKS.md:
    * - Line 36: "Implement path caching system - Overmind pattern with TTL"
-   * - Line 89: "Implement path caching with TTL management"
+   * - Line 90: "Implement path caching with TTL management"
    * - Line 233-236: "Path Caching System (Phase 2-3)" with detailed implementation plan
    *
    * This optimization would cache computed paths with TTL invalidation to reduce CPU usage
