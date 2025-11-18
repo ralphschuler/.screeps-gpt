@@ -1038,6 +1038,31 @@ export class BehaviorController {
 
       if (body.length === 0) {
         // Not enough energy for minimum body
+        // In emergency mode, log detailed diagnostics to help identify deadlock recovery status
+        if (isEmergency && role === "harvester" && room) {
+          const energyAvailable = room.energyAvailable ?? 0;
+          const energyCapacity = room.energyCapacityAvailable ?? 0;
+          
+          // Check for energy stuck in containers/storage that cannot be transported
+          const containersWithEnergy = room.find(FIND_STRUCTURES, {
+            filter: (s: AnyStructure) => 
+              (s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_STORAGE) &&
+              (s as AnyStoreStructure).store.getUsedCapacity(RESOURCE_ENERGY) > 0
+          }) as AnyStoreStructure[];
+          
+          const totalStoredEnergy = containersWithEnergy.reduce(
+            (sum, structure) => sum + structure.store.getUsedCapacity(RESOURCE_ENERGY),
+            0
+          );
+          
+          this.logger.warn?.(
+            `[BehaviorController] ⚠️ EMERGENCY DEADLOCK: Cannot spawn harvester - ` +
+            `Energy: ${energyAvailable}/${energyCapacity} (${((energyAvailable / Math.max(energyCapacity, 1)) * 100).toFixed(1)}%) - ` +
+            `Minimum required: 150 energy (WORK+MOVE) - ` +
+            `Stored in containers: ${totalStoredEnergy} energy (inaccessible without creeps) - ` +
+            `Waiting for passive source regeneration to reach spawn threshold`
+          );
+        }
         continue;
       }
 
@@ -1073,9 +1098,14 @@ export class BehaviorController {
 
         // Log emergency spawn recovery
         if (isEmergency || harvesterCount === 0) {
+          const energyAvailable = room?.energyAvailable ?? 0;
+          const energyCapacity = room?.energyCapacityAvailable ?? 0;
+          const energyPercent = energyCapacity > 0 ? ((energyAvailable / energyCapacity) * 100).toFixed(1) : '0.0';
+          
           this.logger.log?.(
             `[BehaviorController] ⚠️ EMERGENCY SPAWN: ${name} with ${body.length} parts (${spawnCost} energy) - ` +
-              `Recovering from total creep loss (${totalCreeps} creeps, ${harvesterCount} harvesters)`
+              `Recovering from total creep loss (${totalCreeps} creeps, ${harvesterCount} harvesters) - ` +
+              `Energy: ${energyAvailable}/${energyCapacity} (${energyPercent}%)`
           );
           // Display emergency visual feedback
           if (room && typeof room.visual?.text === "function") {
@@ -1088,9 +1118,14 @@ export class BehaviorController {
             }
           }
         } else if (role === "harvester" && harvesterCount < 2) {
+          const energyAvailable = room?.energyAvailable ?? 0;
+          const energyCapacity = room?.energyCapacityAvailable ?? 0;
+          const energyPercent = energyCapacity > 0 ? ((energyAvailable / energyCapacity) * 100).toFixed(1) : '0.0';
+          
           this.logger.log?.(
             `[BehaviorController] EMERGENCY SPAWN: ${name} with ${body.length} parts (${spawnCost} energy) - ` +
-              `Recovering from starvation (${harvesterCount} harvesters)`
+              `Recovering from starvation (${harvesterCount} harvesters) - ` +
+              `Energy: ${energyAvailable}/${energyCapacity} (${energyPercent}%)`
           );
         } else {
           this.logger.log?.(`[BehaviorController] Spawned ${name} with ${body.length} parts (${spawnCost} energy)`);
