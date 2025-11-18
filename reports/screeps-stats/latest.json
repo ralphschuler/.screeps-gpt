@@ -6,6 +6,7 @@
     "stats": {}
   },
   "_note": "This is a placeholder file. The monitoring workflow will populate this with real data from Screeps API or console telemetry.",
-  "_purpose": "Ensures collection scripts have a valid JSON structure to read even before first successful data fetch"
+  "_purpose": "Ensures collection scripts have a valid JSON structure to read even before first successful data fetch",
+  "_version": "1.0.0"
 }
 
