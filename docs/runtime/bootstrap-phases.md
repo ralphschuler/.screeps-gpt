@@ -649,8 +649,8 @@ if (Memory.rooms[roomName].phase === "phase2" && !Memory.rooms[roomName].storage
 **Operational Guides**:
 
 - [Operational Runbooks](../operations/runbooks.md) - Emergency procedures
-- [Memory Management](memory-management.md) - Memory structure and cleanup
-- [Role Balancing](role-balancing.md) - Dynamic role adjustment
+- Memory Management (Coming soon) - Memory structure and cleanup
+- Role Balancing (Coming soon) - Dynamic role adjustment
 
 **System Architecture**:
 
