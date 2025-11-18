@@ -130,7 +130,7 @@ describe("Profiler CPU Overhead Regression", () => {
     // 3. Measure average CPU per tick
     // 4. Assert CPU < target threshold
     
-    Object.entries(cpuTargets).forEach(([phase, target]) => {
+    Object.entries(cpuTargets).forEach(([_phase, target]) => {
       expect(target.maxCpu).toBeGreaterThan(0); // Thresholds defined
       expect(target.creeps).toBeGreaterThan(0); // Test scenarios defined
     });

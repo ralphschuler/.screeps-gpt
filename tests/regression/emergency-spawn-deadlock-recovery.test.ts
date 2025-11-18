@@ -353,7 +353,7 @@ describe("Regression: Emergency Spawn Deadlock Recovery", () => {
     const roleCounts: Record<string, number> = {};
 
     // Execute behavior controller
-    const summary = controller.execute(game, memory, roleCounts);
+    controller.execute(game, memory, roleCounts);
 
     // Should still log emergency deadlock but without container energy info
     expect(logger.warn).toHaveBeenCalledWith(

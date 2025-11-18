@@ -1045,9 +1045,12 @@ export class BehaviorController {
           
           // Check for energy stuck in containers/storage that cannot be transported
           const containersWithEnergy = room.find(FIND_STRUCTURES, {
-            filter: (s: AnyStructure) => 
-              (s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_STORAGE) &&
-              (s as AnyStoreStructure).store.getUsedCapacity(RESOURCE_ENERGY) > 0
+            filter: (s: AnyStructure) => {
+              if (s.structureType !== STRUCTURE_CONTAINER && s.structureType !== STRUCTURE_STORAGE) {
+                return false;
+              }
+              return s.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
+            }
           }) as AnyStoreStructure[];
           
           const totalStoredEnergy = containersWithEnergy.reduce(
@@ -1306,9 +1309,9 @@ function runHarvester(creep: ManagedCreep): string {
     const spawnsNeedingEnergy = creep.room.find(FIND_MY_STRUCTURES, {
       filter: (structure: AnyStructure) => {
         if (structure.structureType !== STRUCTURE_SPAWN) return false;
-        const spawn = structure as StructureSpawn;
-        const capacity = spawn.store.getCapacity(RESOURCE_ENERGY);
-        const current = spawn.store.getUsedCapacity(RESOURCE_ENERGY);
+        // TypeScript knows structure is StructureSpawn after the type check
+        const capacity = structure.store.getCapacity(RESOURCE_ENERGY);
+        const current = structure.store.getUsedCapacity(RESOURCE_ENERGY);
         // Spawn is critical if below 50% capacity or below 150 energy (minimum spawn threshold)
         return current < Math.max(150, capacity * 0.5);
       }
@@ -1431,9 +1434,9 @@ function runUpgrader(creep: ManagedCreep): string {
     const spawnsNeedingEnergy = creep.room.find(FIND_MY_STRUCTURES, {
       filter: (structure: AnyStructure) => {
         if (structure.structureType !== STRUCTURE_SPAWN) return false;
-        const spawn = structure as StructureSpawn;
-        const capacity = spawn.store.getCapacity(RESOURCE_ENERGY);
-        const current = spawn.store.getUsedCapacity(RESOURCE_ENERGY);
+        // TypeScript knows structure is StructureSpawn after the type check
+        const capacity = structure.store.getCapacity(RESOURCE_ENERGY);
+        const current = structure.store.getUsedCapacity(RESOURCE_ENERGY);
         return current < Math.max(150, capacity * 0.5);
       }
     }) as StructureSpawn[];
@@ -1531,9 +1534,9 @@ function runBuilder(creep: ManagedCreep): string {
     const spawnsNeedingEnergy = creep.room.find(FIND_MY_STRUCTURES, {
       filter: (structure: AnyStructure) => {
         if (structure.structureType !== STRUCTURE_SPAWN) return false;
-        const spawn = structure as StructureSpawn;
-        const capacity = spawn.store.getCapacity(RESOURCE_ENERGY);
-        const current = spawn.store.getUsedCapacity(RESOURCE_ENERGY);
+        // TypeScript knows structure is StructureSpawn after the type check
+        const capacity = structure.store.getCapacity(RESOURCE_ENERGY);
+        const current = structure.store.getUsedCapacity(RESOURCE_ENERGY);
         return current < Math.max(150, capacity * 0.5);
       }
     }) as StructureSpawn[];
