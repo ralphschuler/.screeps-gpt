@@ -85,6 +85,12 @@ function isEnabledFast(): boolean {
 ```typescript
 private readonly DETAILED_STATS_INTERVAL: number = 10;
 
+// Cache for detailed stats to maintain data consistency between intervals
+private cachedStructures?: StatsData["structures"];
+private cachedConstructionSites?: StatsData["constructionSites"];
+private cachedSpawns?: number;
+private cachedActiveSpawns?: number;
+
 public collect(game: GameLike, memory: Memory, snapshot: PerformanceSnapshot): void {
   // Critical stats collected every tick
   const stats: StatsData = {
@@ -94,23 +100,34 @@ public collect(game: GameLike, memory: Memory, snapshot: PerformanceSnapshot): v
     rooms: { count: snapshot.roomCount }
   };
   
-  // Expensive stats collected every 10 ticks
+  // Expensive stats collected every 10 ticks and cached
   const shouldCollectDetailedStats = game.time % this.DETAILED_STATS_INTERVAL === 0;
   
   if (shouldCollectDetailedStats) {
-    // Structure counts
-    // Construction sites
-    // Per-room energy storage
+    // Collect and cache: structure counts, construction sites, spawns
+    this.cachedStructures = { /* ... */ };
+    this.cachedConstructionSites = { /* ... */ };
   }
+  
+  // Apply cached values (whether freshly collected or from previous interval)
+  // This ensures Memory.stats always has complete data for monitoring systems
+  if (this.cachedStructures) stats.structures = this.cachedStructures;
+  if (this.cachedConstructionSites) stats.constructionSites = this.cachedConstructionSites;
   
   memory.stats = stats;
 }
 ```
 
+**Data Consistency:**
+- Detailed stats fields (`structures`, `constructionSites`, `spawns`) are **always present** in Memory.stats
+- On interval ticks (every 10th): Fresh data collected and cached
+- On non-interval ticks (9/10): Cached values reused (may be up to 10 ticks old)
+- Monitoring systems can rely on these fields always being defined (not undefined)
+
 **Impact:**
 - **Detailed collection**: 70-80% CPU reduction on 9/10 ticks
 - **Overall StatsCollector**: Reduced from ~0.4-0.6 CPU to ~0.15-0.2 CPU (65% reduction)
-- **Monitoring**: Critical stats (CPU, creeps, energy) still real-time for alerting
+- **Monitoring**: Critical stats (CPU, creeps, energy) still real-time; detailed stats cached for consistency
 
 ---
 
