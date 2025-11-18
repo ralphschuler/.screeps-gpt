@@ -45,29 +45,29 @@ async function executeScript(scriptPath: string): Promise<{ exitCode: number; st
  * Fetch telemetry with resilient fallback strategy
  *
  * Strategy:
- * 0. Start profiler data collection for CPU analysis
+ * 0. Fetch profiler data for CPU analysis (parallel, non-blocking)
  * 1. Try Stats API first (primary source, historical data)
  * 2. If Stats API fails, fall back to console telemetry (redundant source, real-time data)
  * 3. If both fail, create comprehensive failure snapshot
  */
 async function fetchResilientTelemetry(): Promise<TelemetryResult> {
   console.log("=== Resilient Telemetry Collection ===");
-  console.log("Strategy: Profiler Start → Stats API → Console Fallback → Failure Snapshot\n");
+  console.log("Strategy: Profiler Fetch → Stats API → Console Fallback → Failure Snapshot\n");
 
-  // Phase 0: Start profiler for CPU analysis (non-blocking)
-  console.log("Phase 0: Starting profiler data collection...");
+  // Phase 0: Fetch profiler data for CPU analysis (non-blocking)
+  console.log("Phase 0: Fetching profiler data for CPU analysis...");
   try {
-    const profilerResult = await executeScript("packages/utilities/scripts/fetch-profiler-data.ts");
+    const profilerResult = await executeScript("packages/utilities/scripts/fetch-profiler-console.ts");
 
     if (profilerResult.exitCode === 0) {
-      console.log("✓ Profiler start command successful");
+      console.log("✓ Profiler data fetch successful");
       console.log(profilerResult.stdout);
     } else {
-      console.log("⚠ Profiler start command failed (may already be running)");
+      console.log("⚠ Profiler data fetch failed (may not be initialized yet)");
       console.log(profilerResult.stderr);
     }
   } catch (error) {
-    console.log("⚠ Profiler start failed with exception (non-critical):", error);
+    console.log("⚠ Profiler data fetch failed with exception (non-critical):", error);
   }
 
   console.log();
