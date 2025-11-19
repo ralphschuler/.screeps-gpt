@@ -24,6 +24,13 @@
     "url": "git+https://github.com/ralphschuler/.screeps-gpt.git",
     "directory": "packages/screeps-xstate"
   },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
   "devDependencies": {
     "@types/node": "^24.9.1",
     "typescript": "^5.4.3",

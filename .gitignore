@@ -122,3 +122,12 @@ IMPLEMENTATION*.md
 validate-*.sh
 packages/docs/public/
 /reports/monitoring/
+# TypeScript declaration files generated in source directories
+packages/*/vitest.config.d.ts
+packages/*/tests/**/*.d.ts
+packages/*/tests/**/*.js
+packages/*/tests/**/*.js.map
+packages/*/tests/**/*.d.ts.map
+packages/*/vitest.config.js
+packages/*/vitest.config.js.map
+packages/*/vitest.config.d.ts.map

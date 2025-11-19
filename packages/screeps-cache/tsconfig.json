@@ -13,6 +13,6 @@
     "types": ["node", "vitest/globals"],
     "experimentalDecorators": true
   },
-  "include": ["src/**/*", "vitest.config.ts"],
-  "exclude": ["node_modules", "dist", "tests"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "tests", "vitest.config.ts"]
 }
