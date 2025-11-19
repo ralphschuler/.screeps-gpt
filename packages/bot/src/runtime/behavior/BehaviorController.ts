@@ -2426,8 +2426,8 @@ function runAttacker(creep: ManagedCreep): string {
   }
 
   // Priority 2: Attack hostile spawns
-  const hostileSpawns = creep.room.find(FIND_HOSTILE_STRUCTURES, {
-    filter: (s: Structure) => s.structureType === STRUCTURE_SPAWN
+  const hostileSpawns = creep.room.find(FIND_STRUCTURES, {
+    filter: (s: Structure) => !s.my && s.owner && s.structureType === STRUCTURE_SPAWN
   }) as StructureSpawn[];
   if (hostileSpawns.length > 0) {
     const target: StructureSpawn | null = creep.pos.findClosestByPath(hostileSpawns);
@@ -2441,8 +2441,8 @@ function runAttacker(creep: ManagedCreep): string {
   }
 
   // Priority 3: Attack hostile towers
-  const hostileTowers = creep.room.find(FIND_HOSTILE_STRUCTURES, {
-    filter: (s: Structure) => s.structureType === STRUCTURE_TOWER
+  const hostileTowers = creep.room.find(FIND_STRUCTURES, {
+    filter: (s: Structure) => !s.my && s.owner && s.structureType === STRUCTURE_TOWER
   }) as StructureTower[];
   if (hostileTowers.length > 0) {
     const target: StructureTower | null = creep.pos.findClosestByPath(hostileTowers);
@@ -2456,7 +2456,9 @@ function runAttacker(creep: ManagedCreep): string {
   }
 
   // Priority 4: Attack any hostile structure
-  const hostileStructures = creep.room.find(FIND_HOSTILE_STRUCTURES) as Structure[];
+  const hostileStructures = creep.room.find(FIND_STRUCTURES, {
+    filter: (s: Structure) => !s.my && s.owner
+  }) as Structure[];
   if (hostileStructures.length > 0) {
     const target: Structure | null = creep.pos.findClosestByPath(hostileStructures);
     const actualTarget: Structure = target ?? hostileStructures[0];
@@ -2576,8 +2578,8 @@ function runDismantler(creep: ManagedCreep): string {
   comm?.say(creep, "🔨");
 
   // Priority 1: Dismantle ramparts (create breach points)
-  const ramparts = creep.room.find(FIND_HOSTILE_STRUCTURES, {
-    filter: (s: Structure) => s.structureType === STRUCTURE_RAMPART
+  const ramparts = creep.room.find(FIND_STRUCTURES, {
+    filter: (s: Structure) => !s.my && s.owner && s.structureType === STRUCTURE_RAMPART
   }) as StructureRampart[];
   if (ramparts.length > 0) {
     const target: StructureRampart | null = creep.pos.findClosestByPath(ramparts);
@@ -2606,8 +2608,8 @@ function runDismantler(creep: ManagedCreep): string {
   }
 
   // Priority 3: Dismantle towers
-  const towers = creep.room.find(FIND_HOSTILE_STRUCTURES, {
-    filter: (s: Structure) => s.structureType === STRUCTURE_TOWER
+  const towers = creep.room.find(FIND_STRUCTURES, {
+    filter: (s: Structure) => !s.my && s.owner && s.structureType === STRUCTURE_TOWER
   }) as StructureTower[];
   if (towers.length > 0) {
     const target: StructureTower | null = creep.pos.findClosestByPath(towers);
@@ -2621,7 +2623,9 @@ function runDismantler(creep: ManagedCreep): string {
   }
 
   // Priority 4: Dismantle any hostile structure
-  const hostileStructures = creep.room.find(FIND_HOSTILE_STRUCTURES) as Structure[];
+  const hostileStructures = creep.room.find(FIND_STRUCTURES, {
+    filter: (s: Structure) => !s.my && s.owner
+  }) as Structure[];
   if (hostileStructures.length > 0) {
     const target: Structure | null = creep.pos.findClosestByPath(hostileStructures);
     const actualTarget: Structure = target ?? hostileStructures[0];
