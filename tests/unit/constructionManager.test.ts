@@ -75,6 +75,7 @@ describe("ConstructionManager", () => {
       const manager = new ConstructionManager(
         logger,
         1,
+        1,
         FIND_MY_SPAWNS,
         FIND_STRUCTURES,
         FIND_MY_CONSTRUCTION_SITES,
@@ -94,6 +95,7 @@ describe("ConstructionManager", () => {
     it("should create construction sites for owned rooms", () => {
       const manager = new ConstructionManager(
         logger,
+        1,
         1,
         FIND_MY_SPAWNS,
         FIND_STRUCTURES,
@@ -116,6 +118,7 @@ describe("ConstructionManager", () => {
       const manager = new ConstructionManager(
         logger,
         maxSites,
+        1,
         FIND_MY_SPAWNS,
         FIND_STRUCTURES,
         FIND_MY_CONSTRUCTION_SITES,
@@ -134,6 +137,7 @@ describe("ConstructionManager", () => {
     it("should log when construction site is created", () => {
       const manager = new ConstructionManager(
         logger,
+        1,
         1,
         FIND_MY_SPAWNS,
         FIND_STRUCTURES,
@@ -157,6 +161,7 @@ describe("ConstructionManager", () => {
       const manager = new ConstructionManager(
         logger,
         1,
+        1,
         FIND_MY_SPAWNS,
         FIND_STRUCTURES,
         FIND_MY_CONSTRUCTION_SITES,
@@ -178,6 +183,7 @@ describe("ConstructionManager", () => {
       const manager = new ConstructionManager(
         logger,
         1,
+        1,
         FIND_MY_SPAWNS,
         FIND_STRUCTURES,
         FIND_MY_CONSTRUCTION_SITES,
@@ -197,6 +203,7 @@ describe("ConstructionManager", () => {
     it("should not log for ERR_RCL_NOT_ENOUGH errors", () => {
       const manager = new ConstructionManager(
         logger,
+        1,
         1,
         FIND_MY_SPAWNS,
         FIND_STRUCTURES,
@@ -218,6 +225,7 @@ describe("ConstructionManager", () => {
       const manager = new ConstructionManager(
         logger,
         10,
+        1,
         FIND_MY_SPAWNS,
         FIND_STRUCTURES,
         FIND_MY_CONSTRUCTION_SITES,
@@ -238,6 +246,7 @@ describe("ConstructionManager", () => {
     it("should continue planning at same RCL until all structures are queued", () => {
       const manager = new ConstructionManager(
         logger,
+        1,
         1,
         FIND_MY_SPAWNS,
         FIND_STRUCTURES,
@@ -281,6 +290,7 @@ describe("ConstructionManager", () => {
       const manager = new ConstructionManager(
         logger,
         1,
+        1,
         FIND_MY_SPAWNS,
         FIND_STRUCTURES,
         FIND_MY_CONSTRUCTION_SITES,
@@ -307,6 +317,7 @@ describe("ConstructionManager", () => {
     it("should clear room planning state", () => {
       const manager = new ConstructionManager(
         logger,
+        1,
         1,
         FIND_MY_SPAWNS,
         FIND_STRUCTURES,
