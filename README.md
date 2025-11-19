@@ -63,11 +63,16 @@ The repository is organized as a monorepo with clear package boundaries:
 ```
 /
   /packages
-    /bot           # Core Screeps AI implementation
-    /docs          # Hexo documentation site
-    /utilities     # Build tooling and deployment scripts
-    /actions       # GitHub composite actions (placeholder)
-    /console       # Screeps console integration (placeholder)
+    /bot                 # Core Screeps AI implementation
+    /docs                # Hexo documentation site
+    /utilities           # Build tooling and deployment scripts
+    /screeps-profiler    # CPU profiling library
+    /screeps-perf        # Performance optimization library
+    /screeps-metrics     # Metrics collection library
+    /screeps-logger      # Logging library
+    /screeps-*           # Additional Screeps utility packages
+    /actions             # GitHub composite actions (placeholder)
+    /console             # Screeps console integration (placeholder)
   /.github         # GitHub workflows, actions, configs
   /reports         # CI/CD reports and artifacts
   /tests           # Test suites (unit, e2e, regression)
@@ -79,6 +84,10 @@ The repository is organized as a monorepo with clear package boundaries:
 - **`packages/bot/`** - Game runtime code, behaviors, memory management, and AI logic
 - **`packages/docs/`** - Documentation site built with Hexo (source, themes, config)
 - **`packages/utilities/`** - Build scripts, deployment tools, monitoring utilities
+- **`packages/screeps-profiler/`** - CPU profiling with decorator support and build-time optimization
+- **`packages/screeps-perf/`** - Performance optimizations (array methods, memory cleanup, pathfinding cache)
+- **`packages/screeps-metrics/`** - Metrics collection using official game APIs
+- **`packages/screeps-logger/`** - Logging utilities for Screeps
 - **`packages/actions/`** - Reusable GitHub Actions components (future)
 - **`packages/console/`** - Screeps console customizations (future)
 
