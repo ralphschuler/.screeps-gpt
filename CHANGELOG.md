@@ -5,6 +5,21 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Added
+
+- **Screeps Metrics Package**: New package `@ralphschuler/screeps-metrics` for comprehensive metrics collection
+  - Collects CPU metrics (usage, limits, bucket, tick limits, shard limits)
+  - Monitors V8 heap statistics via `Game.cpu.getHeapStatistics()`
+  - Tracks GCL (Global Control Level) progress
+  - Tracks GPL (Global Power Level) progress when available
+  - Collects detailed room-level metrics (energy, creeps, structures, hostiles)
+  - Tracks resource availability (credits, pixels, CPU unlocks, access keys)
+  - Fully typed with TypeScript
+  - Configurable metrics collection for CPU optimization
+  - Zero external dependencies (uses only official Screeps APIs)
+  - Comprehensive test coverage with unit tests
+  - Located at `packages/screeps-metrics/`
+
 ## [0.116.0] - 2025-11-19
 
 ### Added
