@@ -64,6 +64,7 @@
         "bun-plugin-screeps": "^1.0.0",
         "esbuild": "^0.25.11",
         "typescript": "^5.4.3",
+        "vitest": "^4.0.1",
       },
     },
     "packages/console": {
@@ -87,6 +88,9 @@
         "hexo-renderer-stylus": "^3.0.1",
         "hexo-server": "^3.0.0",
         "hexo-theme-landscape": "^1.0.0",
+      },
+      "devDependencies": {
+        "vitest": "^4.0.1",
       },
     },
     "packages/screeps-agent": {
@@ -193,6 +197,7 @@
         "@types/semver": "^7.5.8",
         "tsx": "^4.20.6",
         "typescript": "^5.4.3",
+        "vitest": "^4.0.1",
       },
     },
   },
