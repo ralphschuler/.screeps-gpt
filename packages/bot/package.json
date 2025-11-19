@@ -23,6 +23,9 @@
   "dependencies": {
     "@ralphschuler/screeps-logger": "workspace:*",
     "@ralphschuler/screeps-profiler": "workspace:*",
+    "@ralphschuler/screeps-cache": "workspace:*",
+    "@ralphschuler/screeps-perf": "workspace:*",
+    "@ralphschuler/screeps-kernel": "workspace:*",
     "screeps-cartographer": "^1.8.13"
   },
   "devDependencies": {

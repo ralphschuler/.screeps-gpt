@@ -1,4 +1,4 @@
-import type { StateConfig } from "../types.js";
+import type { StateConfig, Transition } from "../types.js";
 
 /**
  * Factory function type for creating reusable state configurations.
@@ -38,19 +38,23 @@ export function mergeStates<TContext, TEvent extends { type: string }>(
 
       if (!existingState) {
         // New state, just add it
-        result[stateName] = { ...newState };
+        if (newState) {
+          result[stateName] = { ...newState };
+        }
       } else {
         // Merge with existing state
-        result[stateName] = {
-          ...existingState,
-          ...newState,
-          on: {
-            ...existingState.on,
-            ...newState.on
-          },
-          onEntry: [...(existingState.onEntry || []), ...(newState.onEntry || [])],
-          onExit: [...(existingState.onExit || []), ...(newState.onExit || [])]
-        };
+        if (newState) {
+          result[stateName] = {
+            ...existingState,
+            ...newState,
+            on: {
+              ...existingState.on,
+              ...newState.on
+            },
+            onEntry: [...(existingState.onEntry || []), ...(newState.onEntry || [])],
+            onExit: [...(existingState.onExit || []), ...(newState.onExit || [])]
+          };
+        }
       }
     }
   }
@@ -123,21 +127,23 @@ export function prefixStates<TContext, TEvent extends { type: string }>(
   // Second pass: update all transition targets to use prefixed names
   for (const stateName in result) {
     const state = result[stateName];
-    if (state.on) {
-      const newOn: Record<string, StateConfig<TContext, TEvent>["on"][string]> = {};
+    if (state?.on) {
+      const newOn: Record<string, Transition<TContext, TEvent>> = {};
       for (const eventType in state.on) {
         const transition = state.on[eventType];
-        const originalTarget = transition.target;
+        if (transition) {
+          const originalTarget = transition.target;
 
-        // Check if the target exists in the original states (it should be prefixed)
-        if (originalTarget in states) {
-          newOn[eventType] = {
-            ...transition,
-            target: `${prefix}${originalTarget}`
-          };
-        } else {
-          // Keep unprefixed targets (they might reference external states)
-          newOn[eventType] = transition;
+          // Check if the target exists in the original states (it should be prefixed)
+          if (originalTarget in states) {
+            newOn[eventType] = {
+              ...transition,
+              target: `${prefix}${originalTarget}`
+            };
+          } else {
+            // Keep unprefixed targets (they might reference external states)
+            newOn[eventType] = transition;
+          }
         }
       }
       state.on = newOn;

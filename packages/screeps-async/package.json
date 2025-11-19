@@ -32,6 +32,9 @@
     "build": "tsc",
     "prepublishOnly": "npm run build"
   },
+  "dependencies": {
+    "@ralphschuler/screeps-logger": "workspace:*"
+  },
   "devDependencies": {
     "@types/node": "^24.9.1",
     "@types/screeps": "^3.3.8",

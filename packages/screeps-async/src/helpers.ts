@@ -136,13 +136,16 @@ export function* map<TItem, TResult>(
 ): TaskGenerator<TResult[]> {
   const results: TResult[] = [];
   for (let i = 0; i < items.length; i++) {
-    const gen = generatorFn(items[i], i);
-    let result = gen.next();
-    while (!result.done) {
-      yield;
-      result = gen.next();
+    const item = items[i];
+    if (item !== undefined) {
+      const gen = generatorFn(item, i);
+      let result = gen.next();
+      while (!result.done) {
+        yield;
+        result = gen.next();
+      }
+      results.push(result.value as TResult);
     }
-    results.push(result.value);
   }
   return results;
 }
@@ -153,14 +156,17 @@ export function* filter<T>(
 ): TaskGenerator<T[]> {
   const results: T[] = [];
   for (let i = 0; i < items.length; i++) {
-    const gen = predicateFn(items[i], i);
-    let result = gen.next();
-    while (!result.done) {
-      yield;
-      result = gen.next();
-    }
-    if (result.value) {
-      results.push(items[i]);
+    const item = items[i];
+    if (item !== undefined) {
+      const gen = predicateFn(item, i);
+      let result = gen.next();
+      while (!result.done) {
+        yield;
+        result = gen.next();
+      }
+      if (result.value) {
+        results.push(item);
+      }
     }
   }
   return results;
@@ -168,15 +174,17 @@ export function* filter<T>(
 
 export function* race<T>(...generators: Array<() => TaskGenerator<T>>): TaskGenerator<T> {
   const gens = generators.map(fn => fn());
-  const states = gens.map(() => ({ done: false, value: undefined as T }));
+  const states = gens.map(() => ({ done: false, value: undefined as T | undefined }));
 
   while (true) {
     for (let i = 0; i < gens.length; i++) {
-      if (!states[i].done) {
-        const result = gens[i].next();
+      const state = states[i];
+      const gen = gens[i];
+      if (state && gen && !state.done) {
+        const result = gen.next();
         if (result.done) {
-          states[i].done = true;
-          return result.value;
+          state.done = true;
+          return result.value as T;
         }
       }
     }
@@ -193,7 +201,7 @@ export function* all<T>(...generators: Array<() => TaskGenerator<T>>): TaskGener
       yield;
       result = gen.next();
     }
-    results.push(result.value);
+    results.push(result.value as T);
   }
   return results;
 }

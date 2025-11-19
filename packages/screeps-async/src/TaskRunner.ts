@@ -35,7 +35,7 @@ export class TaskRunner {
     this.tasks.set(id, task as Task<unknown>);
 
     if (this.config.debug) {
-      console.log(`[TaskRunner] Created task: ${id}`);
+      (globalThis as any).console.log(`[TaskRunner] Created task: ${id}`);
     }
 
     return task;
@@ -54,7 +54,7 @@ export class TaskRunner {
     if (task) {
       task.cancel(reason);
       if (this.config.debug) {
-        console.log(`[TaskRunner] Cancelled task: ${id} - ${reason ?? "No reason provided"}`);
+        (globalThis as any).console.log(`[TaskRunner] Cancelled task: ${id} - ${reason ?? "No reason provided"}`);
       }
       return true;
     }
@@ -134,7 +134,7 @@ export class TaskRunner {
 
     if (this.config.debug) {
       const cpuUsed = Game.cpu.getUsed() - startCpu;
-      console.log(
+      (globalThis as any).console.log(
         `[TaskRunner] Executed ${tasksExecuted} tasks, CPU: ${cpuUsed.toFixed(2)}/${budget}, Active: ${this.tasks.size}`
       );
     }
@@ -189,7 +189,7 @@ export class TaskRunner {
       this.memory.tasks = {};
     }
     if (this.config.debug) {
-      console.log("[TaskRunner] Cleared all tasks");
+      (globalThis as any).console.log("[TaskRunner] Cleared all tasks");
     }
   }
 
@@ -222,7 +222,7 @@ export class TaskRunner {
         delete this.memory.tasks[id];
       }
       if (this.config.debug) {
-        console.log(`[TaskRunner] Cleaned up task: ${id}`);
+        (globalThis as any).console.log(`[TaskRunner] Cleaned up task: ${id}`);
       }
     }
   }
@@ -251,7 +251,8 @@ export class TaskRunner {
           const task = Task.deserialize(state, factory);
           runner.tasks.set(id, task);
         } else if (runner.config.debug) {
-          console.log(`[TaskRunner] No factory found for task: ${id}`);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (globalThis as any).console.log(`[TaskRunner] No factory found for task: ${id}`);
         }
       }
     }

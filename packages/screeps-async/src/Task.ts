@@ -94,15 +94,20 @@ export class Task<T = unknown> {
   }
 
   public serialize(): TaskState {
-    return {
+    const state: TaskState = {
       id: this.state.id,
       status: this.state.status,
       result: this.state.result,
-      error: this.state.error,
       tickCreated: this.state.tickCreated,
-      tickCompleted: this.state.tickCompleted,
       ticksExecuted: this.state.ticksExecuted
     };
+    if (this.state.error !== undefined) {
+      state.error = this.state.error;
+    }
+    if (this.state.tickCompleted !== undefined) {
+      state.tickCompleted = this.state.tickCompleted;
+    }
+    return state;
   }
 
   public static deserialize<T>(state: TaskState, generatorFn: TaskGeneratorFn<T>): Task<T> {

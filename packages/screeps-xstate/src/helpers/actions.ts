@@ -39,7 +39,9 @@ export function log<TContext, TEvent>(
 ): Action<TContext, TEvent> {
   return (ctx, event) => {
     const msg = typeof message === "function" ? message(ctx, event) : message;
-    console.log(msg);
+    // Use globalThis.console to avoid TypeScript lib issues
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any).console.log(msg);
   };
 }
 
