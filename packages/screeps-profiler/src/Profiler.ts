@@ -5,12 +5,28 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 
+/// <reference types="@types/screeps" />
+
+import type {
+  Profiler,
+  ProfilerMemory,
+  ProfilerCache,
+  ProfilerOutputData,
+  ProfilerOptions
+} from "./types.js";
+
 /**
  * Performance Optimization: Cache profiler enabled state per tick
  * Avoids repeated Memory.profiler.start lookups on hot paths (thousands per tick)
  * Cleared automatically when profiler state changes via start/stop/clear
  */
-let profilerEnabledCache: { tick: number; enabled: boolean } | null = null;
+let profilerEnabledCache: ProfilerCache | null = null;
+
+/**
+ * Global flag to control profiler compilation
+ * Set at build time via esbuild define
+ */
+declare const __PROFILER_ENABLED__: boolean;
 
 /**
  * Fast profiler state check with tick-based caching
@@ -38,7 +54,27 @@ function clearEnabledCache(): void {
   profilerEnabledCache = null;
 }
 
-export function init(): Profiler {
+/**
+ * Initialize the profiler and return the CLI interface
+ *
+ * @param options - Configuration options
+ * @returns Profiler CLI interface
+ *
+ * @example
+ * ```typescript
+ * import { init } from '@ralphschuler/screeps-profiler';
+ *
+ * const profiler = init();
+ * global.Profiler = profiler;
+ *
+ * // In console:
+ * // Profiler.start()
+ * // Profiler.status()
+ * // Profiler.output()
+ * // Profiler.stop()
+ * ```
+ */
+export function init(options: ProfilerOptions = {}): Profiler {
   const defaults: ProfilerMemory = {
     data: {},
     total: 0
@@ -109,6 +145,11 @@ export function init(): Profiler {
   return cli;
 }
 
+/**
+ * Wrap a function or method to track its CPU usage
+ *
+ * @internal
+ */
 function wrapFunction(obj: object, key: PropertyKey, className?: string): void {
   const descriptor = Reflect.getOwnPropertyDescriptor(obj, key);
   if (!descriptor || descriptor.get || descriptor.set) {
@@ -154,6 +195,31 @@ function wrapFunction(obj: object, key: PropertyKey, className?: string): void {
   });
 }
 
+/**
+ * Profile decorator for methods and classes
+ *
+ * Can be used as a method decorator or class decorator to automatically
+ * track CPU usage of decorated functions.
+ *
+ * @example
+ * ```typescript
+ * import { profile } from '@ralphschuler/screeps-profiler';
+ *
+ * class MyClass {
+ *   @profile
+ *   myMethod() {
+ *     // This method's CPU usage will be tracked
+ *   }
+ * }
+ *
+ * // Or profile an entire class
+ * @profile
+ * class MyProfiledClass {
+ *   method1() { }
+ *   method2() { }
+ * }
+ * ```
+ */
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export function profile(target: Function): void;
 export function profile(
@@ -169,7 +235,8 @@ export function profile(
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   _descriptor?: TypedPropertyDescriptor<Function>
 ): void {
-  if (!__PROFILER_ENABLED__) {
+  // Check if profiler is enabled at build time
+  if (typeof __PROFILER_ENABLED__ !== "undefined" && !__PROFILER_ENABLED__) {
     return;
   }
 
@@ -192,33 +259,58 @@ export function profile(
   });
 }
 
+/**
+ * Check if profiler is currently enabled
+ *
+ * @internal
+ */
 function isEnabled(): boolean {
-  return Memory.profiler.start !== undefined;
+  return Memory.profiler?.start !== undefined;
 }
 
+/**
+ * Record CPU usage for a function
+ *
+ * @internal
+ */
 function record(key: string | symbol, time: number): void {
-  if (!Memory.profiler.data[String(key)]) {
-    Memory.profiler.data[String(key)] = {
+  if (!Memory.profiler) {
+    Memory.profiler = {
+      data: {},
+      total: 0
+    };
+  }
+
+  const keyStr = String(key);
+  if (!Memory.profiler.data[keyStr]) {
+    Memory.profiler.data[keyStr] = {
       calls: 0,
       time: 0
     };
   }
-  Memory.profiler.data[String(key)].calls++;
-  Memory.profiler.data[String(key)].time += time;
+  Memory.profiler.data[keyStr].calls++;
+  Memory.profiler.data[keyStr].time += time;
 }
 
-interface OutputData {
-  name: string;
-  calls: number;
-  cpuPerCall: number;
-  callsPerTick: number;
-  cpuPerTick: number;
-}
-
+/**
+ * Output profiler data to console
+ *
+ * @internal
+ */
 function outputProfilerData(): void {
+  if (!Memory.profiler) {
+    console.log("No profiler data available");
+    return;
+  }
+
   let totalTicks = Memory.profiler.total;
   if (Memory.profiler.start) {
     totalTicks += Game.time - Memory.profiler.start;
+  }
+
+  if (totalTicks === 0) {
+    console.log("No profiling data collected yet");
+    return;
   }
 
   ///////
@@ -226,18 +318,19 @@ function outputProfilerData(): void {
   let totalCpu = 0; // running count of average total CPU use per tick
   let calls: number;
   let time: number;
-  let result: Partial<OutputData>;
+  let result: Partial<ProfilerOutputData>;
   const data = Reflect.ownKeys(Memory.profiler.data).map(key => {
-    calls = Memory.profiler.data[String(key)].calls;
-    time = Memory.profiler.data[String(key)].time;
+    const keyStr = String(key);
+    calls = Memory.profiler.data[keyStr].calls;
+    time = Memory.profiler.data[keyStr].time;
     result = {};
-    result.name = String(key);
+    result.name = keyStr;
     result.calls = calls;
     result.cpuPerCall = time / calls;
     result.callsPerTick = calls / totalTicks;
     result.cpuPerTick = time / totalTicks;
     totalCpu += result.cpuPerTick;
-    return result as OutputData;
+    return result as ProfilerOutputData;
   });
 
   data.sort((lhs, rhs) => rhs.cpuPerTick - lhs.cpuPerTick);
@@ -247,7 +340,7 @@ function outputProfilerData(): void {
   let output = "";
 
   // get function name max length
-  const longestName = Math.max(...data.map(d => d.name.length)) + 2;
+  const longestName = Math.max(...data.map(d => d.name.length), 8) + 2;
 
   //// Header line
   output += padRight("Function", longestName);
@@ -273,11 +366,20 @@ function outputProfilerData(): void {
   console.log(output);
 }
 
-// Helper functions for padding (replacing lodash)
+/**
+ * Helper function for left padding strings
+ *
+ * @internal
+ */
 function padLeft(str: string, length: number): string {
   return str.padStart(length, " ");
 }
 
+/**
+ * Helper function for right padding strings
+ *
+ * @internal
+ */
 function padRight(str: string, length: number): string {
   return str.padEnd(length, " ");
 }

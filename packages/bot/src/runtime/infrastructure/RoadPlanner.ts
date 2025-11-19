@@ -1,5 +1,5 @@
 import type { GameContext, RoomLike } from "@runtime/types/GameContext";
-import { profile } from "@profiler";
+import { profile } from "@ralphschuler/screeps-profiler";
 import type { TrafficManager } from "./TrafficManager";
 
 /**

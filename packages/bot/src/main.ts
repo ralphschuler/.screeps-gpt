@@ -1,7 +1,7 @@
 import { createKernel } from "@runtime/bootstrap";
 import type { GameContext } from "@runtime/types/GameContext";
 import { BehaviorController } from "@runtime/behavior/BehaviorController";
-import { init as initProfiler } from "@profiler";
+import { init as initProfiler } from "@ralphschuler/screeps-profiler";
 import { Diagnostics } from "@runtime/utils/Diagnostics";
 
 // Task system is enabled by default (v0.32.0+)

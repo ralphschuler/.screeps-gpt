@@ -1,5 +1,5 @@
 import type { RoomLike } from "@runtime/types/GameContext";
-import { profile } from "@profiler";
+import { profile } from "@ralphschuler/screeps-profiler";
 
 /**
  * Squad composition

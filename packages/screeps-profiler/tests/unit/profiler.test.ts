@@ -1,10 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { init, profile } from "@ralphschuler/screeps-profiler";
+import { init, profile } from "../../src/index.js";
 
 // Setup global Memory and Game for tests
 declare global {
   var Memory: Memory;
   var Game: Game;
+  var __PROFILER_ENABLED__: boolean;
 }
 
 describe("Profiler", () => {
@@ -32,9 +33,15 @@ describe("Profiler", () => {
     // Initialize Game global for time tracking
     if (!global.Game) {
       global.Game = {
-        time: 0
+        time: 0,
+        cpu: {
+          getUsed: () => 0
+        }
       } as Game;
     }
+
+    // Set profiler enabled for tests
+    (global as any).__PROFILER_ENABLED__ = true;
   });
 
   describe("initialization", () => {
@@ -167,7 +174,7 @@ describe("Profiler", () => {
       expect(profile).toBeInstanceOf(Function);
     });
 
-    it("should not throw when applying decorator with profiler disabled", () => {
+    it("should not throw when applying decorator", () => {
       // Apply decorator to the test class
       profile(TestClass);
 

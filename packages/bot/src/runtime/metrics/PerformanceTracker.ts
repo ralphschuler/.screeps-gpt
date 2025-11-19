@@ -1,5 +1,5 @@
 import type { BehaviorSummary, PerformanceSnapshot } from "@shared/contracts";
-import { profile } from "@profiler";
+import { profile } from "@ralphschuler/screeps-profiler";
 
 interface CpuLike {
   getUsed(): number;

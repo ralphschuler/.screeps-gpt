@@ -23,7 +23,7 @@ import { DefenseCoordinator, type DefenseMemory } from "@runtime/defense/Defense
 import { TowerManager } from "@runtime/defense/TowerManager";
 import { CombatManager, type CombatManagerMemory } from "@runtime/defense/CombatManager";
 import type { GameContext } from "@runtime/types/GameContext";
-import { profile } from "@profiler";
+import { profile } from "@ralphschuler/screeps-profiler";
 
 export interface KernelConfig {
   memoryManager?: MemoryManager;

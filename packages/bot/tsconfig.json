@@ -7,8 +7,7 @@
     "paths": {
       "@runtime/*": ["src/runtime/*"],
       "@ai/*": ["src/ai/*"],
-      "@shared/*": ["src/shared/*"],
-      "@profiler": ["src/profiler"]
+      "@shared/*": ["src/shared/*"]
     }
   },
   "include": ["src", "tests", "vitest.config.ts"],

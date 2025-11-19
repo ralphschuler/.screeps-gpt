@@ -1,5 +1,5 @@
 import type { RoomLike } from "@runtime/types/GameContext";
-import { profile } from "@profiler";
+import { profile } from "@ralphschuler/screeps-profiler";
 
 /**
  * Energy priority levels for resource distribution.

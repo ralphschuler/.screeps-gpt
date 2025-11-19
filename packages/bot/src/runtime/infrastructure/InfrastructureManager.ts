@@ -2,7 +2,7 @@ import { RoadPlanner } from "./RoadPlanner";
 import { TrafficManager } from "./TrafficManager";
 import { ContainerPlacement } from "./ContainerPlacement";
 import type { GameContext } from "@runtime/types/GameContext";
-import { profile } from "@profiler";
+import { profile } from "@ralphschuler/screeps-profiler";
 
 /**
  * Infrastructure manager memory structure

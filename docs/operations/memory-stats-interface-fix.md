@@ -21,7 +21,7 @@ Multiple monitoring reports showed:
 
 ## Root Cause
 
-The `packages/bot/src/profiler/typings.d.ts` file contained a TypeScript interface declaration that created a conflict:
+The profiler's type definition file (now in `packages/screeps-profiler/src/types.ts`) previously contained a TypeScript interface declaration that created a conflict:
 
 ```typescript
 // PROBLEMATIC CODE (before fix)
@@ -111,7 +111,8 @@ This fix restores:
 
 - [StatsCollector Implementation](../packages/bot/src/runtime/metrics/StatsCollector.ts)
 - [Global Memory Interface](../packages/bot/types.d.ts)
-- [Profiler Types](../packages/bot/src/profiler/typings.d.ts)
+- [Profiler Package](../../packages/screeps-profiler/)
+- [Profiler Types](../../packages/screeps-profiler/src/types.ts)
 - [Monitoring Baselines](./monitoring-baselines.md)
 - [Strategic Analysis Reports](../../reports/monitoring/)
 

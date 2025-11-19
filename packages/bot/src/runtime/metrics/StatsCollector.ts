@@ -1,5 +1,5 @@
 import type { PerformanceSnapshot } from "@shared/contracts";
-import { profile } from "@profiler";
+import { profile } from "@ralphschuler/screeps-profiler";
 
 interface RoomStats {
   energyAvailable: number;

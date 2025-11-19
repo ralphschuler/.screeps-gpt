@@ -27,7 +27,7 @@ export default defineConfig({
       "@runtime": resolve(rootDir, "packages/bot/src/runtime"),
       "@shared": resolve(rootDir, "packages/bot/src/shared"),
       "@ai": resolve(rootDir, "packages/bot/src/ai"),
-      "@profiler": resolve(rootDir, "packages/bot/src/profiler")
+      "@ralphschuler/screeps-profiler": resolve(rootDir, "packages/screeps-profiler/src")
     }
   },
   define: {

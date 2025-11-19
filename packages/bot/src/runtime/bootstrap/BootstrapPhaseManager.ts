@@ -1,4 +1,4 @@
-import { profile } from "@profiler";
+import { profile } from "@ralphschuler/screeps-profiler";
 import type { GameContext } from "@runtime/types/GameContext";
 
 export interface BootstrapConfig {

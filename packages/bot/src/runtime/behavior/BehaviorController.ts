@@ -1,7 +1,7 @@
 import type { BehaviorSummary } from "@shared/contracts";
 import type { CreepLike, GameContext, SpawnLike } from "@runtime/types/GameContext";
 import { TaskManager } from "@runtime/tasks";
-import { profile } from "@profiler";
+import { profile } from "@ralphschuler/screeps-profiler";
 import { CreepCommunicationManager } from "./CreepCommunicationManager";
 import { EnergyPriorityManager, DEFAULT_ENERGY_CONFIG } from "@runtime/energy";
 import { BodyComposer } from "./BodyComposer";

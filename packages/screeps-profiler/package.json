@@ -1,0 +1,47 @@
+{
+  "name": "@ralphschuler/screeps-profiler",
+  "version": "1.0.0",
+  "description": "CPU profiling library for Screeps with decorator support and build-time optimization",
+  "license": "MIT",
+  "author": "OpenAI Automations",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "keywords": [
+    "screeps",
+    "profiler",
+    "performance",
+    "cpu",
+    "monitoring",
+    "decorator"
+  ],
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ralphschuler/.screeps-gpt.git",
+    "directory": "packages/screeps-profiler"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^24.9.1",
+    "@types/screeps": "^3.3.8",
+    "typescript": "^5.4.3",
+    "vitest": "^4.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
