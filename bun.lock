@@ -158,6 +158,16 @@
         "vitest": "^4.0.1",
       },
     },
+    "packages/screeps-metrics": {
+      "name": "@ralphschuler/screeps-metrics",
+      "version": "1.0.0",
+      "devDependencies": {
+        "@types/node": "^24.9.1",
+        "@types/screeps": "^3.3.8",
+        "typescript": "^5.4.3",
+        "vitest": "^4.0.1",
+      },
+    },
     "packages/screeps-perf": {
       "name": "@ralphschuler/screeps-perf",
       "version": "1.0.0",
@@ -438,6 +448,8 @@
     "@ralphschuler/screeps-logger": ["@ralphschuler/screeps-logger@workspace:packages/screeps-logger"],
 
     "@ralphschuler/screeps-mcp": ["@ralphschuler/screeps-mcp@workspace:packages/screeps-mcp"],
+
+    "@ralphschuler/screeps-metrics": ["@ralphschuler/screeps-metrics@workspace:packages/screeps-metrics"],
 
     "@ralphschuler/screeps-perf": ["@ralphschuler/screeps-perf@workspace:packages/screeps-perf"],
 
