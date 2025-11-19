@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { CacheMethod, HeapCache, MemoryCache } from './CacheMethods.js';
-import { CacheKey } from './CacheKeys.js';
+import { CacheMethod, HeapCache, MemoryCache } from "./CacheMethods.js";
+import { CacheKey } from "./CacheKeys.js";
 
 type Decorator = (target: unknown, propertyKey: string) => void;
 
