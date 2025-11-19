@@ -396,7 +396,7 @@ ls -la reports/ptr-stats/
    ```bash
    # Create missing directory
    mkdir -p reports/screeps-stats
-   
+
    # Add .gitkeep to track directory
    touch reports/screeps-stats/.gitkeep
    ```
@@ -422,13 +422,13 @@ ls -la reports/ptr-stats/
    ```bash
    # Test resilient telemetry collection
    npx tsx packages/utilities/scripts/fetch-resilient-telemetry.ts
-   
+
    # Verify latest.json was updated
    cat reports/screeps-stats/latest.json | jq '.timestamp'
-   
+
    # Verify PTR alerts creates timestamped files
    npx tsx packages/utilities/scripts/check-ptr-alerts.ts
-   
+
    # Check ptr-stats directory now has files
    ls -la reports/ptr-stats/
    ```

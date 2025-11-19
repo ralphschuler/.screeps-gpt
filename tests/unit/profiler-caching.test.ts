@@ -2,10 +2,10 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 
 /**
  * Test suite for profiler tick-based caching optimization
- * 
+ *
  * Validates that the profiler state check (isEnabledFast) correctly caches
  * the enabled state per tick to reduce Memory.profiler.start access overhead.
- * 
+ *
  * Related issue: #961 - CPU profiler overhead optimization
  */
 describe("Profiler Caching Optimization", () => {
@@ -49,7 +49,7 @@ describe("Profiler Caching Optimization", () => {
     // 1. First call on a tick checks Memory.profiler.start and caches result
     // 2. Subsequent calls on same tick return cached value without Memory access
     // 3. Cache is invalidated when Game.time changes
-    
+
     const tick1 = 1000;
     const tick2 = 1001;
 
@@ -57,7 +57,7 @@ describe("Profiler Caching Optimization", () => {
     global.Game.time = tick1;
     // First call would check Memory and cache: enabled = false
     // Subsequent calls on tick 1 would use cached value
-    
+
     // Simulate tick 2 - profiler started
     global.Game.time = tick2;
     global.Memory.profiler.start = tick2;
@@ -73,13 +73,13 @@ describe("Profiler Caching Optimization", () => {
   it("should clear cache when profiler state changes via CLI", () => {
     // This test validates that cache invalidation works correctly
     // when profiler is started/stopped/cleared via console commands
-    
+
     // Conceptual validation:
     // 1. Cache populated on tick N with enabled=false
     // 2. User runs Profiler.start() on tick N
     // 3. clearEnabledCache() called
     // 4. Next profiler check returns enabled=true (not cached false)
-    
+
     // This ensures consistency between profiler state and cached value
     expect(true).toBe(true); // Placeholder for actual cache invalidation test
   });
@@ -88,15 +88,15 @@ describe("Profiler Caching Optimization", () => {
     // Conceptual test: With caching optimization:
     // - Without cache: 1000 method calls = 1000 Memory.profiler.start accesses
     // - With cache: 1000 method calls = 1 Memory.profiler.start access per tick
-    // 
+    //
     // Expected reduction: ~99.9% fewer Memory accesses
     // This translates to ~0.1-0.3 CPU savings per tick for wrapped methods
-    
+
     const methodCallsPerTick = 1000;
     const memoryAccessesWithoutCache = methodCallsPerTick;
     const memoryAccessesWithCache = 1; // Only first call per tick
 
-    const reductionPercentage = 
+    const reductionPercentage =
       ((memoryAccessesWithoutCache - memoryAccessesWithCache) / memoryAccessesWithoutCache) * 100;
 
     expect(reductionPercentage).toBeGreaterThan(99); // >99% reduction
@@ -105,10 +105,10 @@ describe("Profiler Caching Optimization", () => {
 
 /**
  * Performance regression test for CPU profiler overhead
- * 
+ *
  * Validates that profiler optimizations maintain acceptable CPU overhead
  * at different creep counts and profiler states.
- * 
+ *
  * Related issue: #961 - optimize CPU profiler overhead
  */
 describe("Profiler CPU Overhead Regression", () => {
@@ -117,7 +117,7 @@ describe("Profiler CPU Overhead Regression", () => {
     // - Baseline (1 creep): <1.0 CPU per tick
     // - Early game (6 creeps): <3.0 CPU per tick
     // - Mid game (12 creeps): <5.0 CPU per tick
-    
+
     const cpuTargets = {
       baseline: { creeps: 1, maxCpu: 1.0 },
       earlyGame: { creeps: 6, maxCpu: 3.0 },
@@ -129,7 +129,7 @@ describe("Profiler CPU Overhead Regression", () => {
     // 2. Run kernel for 10 ticks
     // 3. Measure average CPU per tick
     // 4. Assert CPU < target threshold
-    
+
     Object.entries(cpuTargets).forEach(([_phase, target]) => {
       expect(target.maxCpu).toBeGreaterThan(0); // Thresholds defined
       expect(target.creeps).toBeGreaterThan(0); // Test scenarios defined
@@ -140,11 +140,10 @@ describe("Profiler CPU Overhead Regression", () => {
     // With caching optimization, profiler overhead when stopped should be:
     // - <0.3 CPU per tick (compared to 0.5-1.5 before optimization)
     // - This represents ~60-80% reduction in overhead
-    
+
     const maxOverheadWhenStopped = 0.3;
     const previousOverhead = 1.0;
-    const reductionPercentage = 
-      ((previousOverhead - maxOverheadWhenStopped) / previousOverhead) * 100;
+    const reductionPercentage = ((previousOverhead - maxOverheadWhenStopped) / previousOverhead) * 100;
 
     expect(reductionPercentage).toBeGreaterThanOrEqual(60); // At least 60% reduction
   });

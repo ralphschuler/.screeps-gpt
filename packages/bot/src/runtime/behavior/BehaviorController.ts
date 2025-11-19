@@ -1042,28 +1042,33 @@ export class BehaviorController {
         if (isEmergency && role === "harvester" && room) {
           const energyAvailable = room.energyAvailable ?? 0;
           const energyCapacity = room.energyCapacityAvailable ?? 0;
-          
+
           // Check for energy stuck in containers/storage that cannot be transported
-          const containersWithEnergy = room.find(FIND_STRUCTURES, {
+          const allStructures = room.find(FIND_STRUCTURES, {
             filter: (s: AnyStructure) => {
               if (s.structureType !== STRUCTURE_CONTAINER && s.structureType !== STRUCTURE_STORAGE) {
                 return false;
               }
               return s.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
             }
-          }) as AnyStoreStructure[];
-          
+          });
+
+          const containersWithEnergy = allStructures.filter(
+            (s): s is StructureContainer | StructureStorage =>
+              s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_STORAGE
+          );
+
           const totalStoredEnergy = containersWithEnergy.reduce(
             (sum, structure) => sum + structure.store.getUsedCapacity(RESOURCE_ENERGY),
             0
           );
-          
+
           this.logger.warn?.(
             `[BehaviorController] ⚠️ EMERGENCY DEADLOCK: Cannot spawn harvester - ` +
-            `Energy: ${energyAvailable}/${energyCapacity} (${((energyAvailable / Math.max(energyCapacity, 1)) * 100).toFixed(1)}%) - ` +
-            `Minimum required: 150 energy (WORK+MOVE) - ` +
-            `Stored in containers: ${totalStoredEnergy} energy (inaccessible without creeps) - ` +
-            `Waiting for passive source regeneration to reach spawn threshold`
+              `Energy: ${energyAvailable}/${energyCapacity} (${((energyAvailable / Math.max(energyCapacity, 1)) * 100).toFixed(1)}%) - ` +
+              `Minimum required: 150 energy (WORK+MOVE) - ` +
+              `Stored in containers: ${totalStoredEnergy} energy (inaccessible without creeps) - ` +
+              `Waiting for passive source regeneration to reach spawn threshold`
           );
         }
         continue;
@@ -1094,13 +1099,13 @@ export class BehaviorController {
 
       const name = `${role}-${game.time}-${memory.creepCounter}`;
       memory.creepCounter += 1;
-      
+
       // Mark emergency creeps with flag for priority spawn refilling
       const creepMemory = definition.memory();
       if (isEmergency || harvesterCount === 0) {
         (creepMemory as BaseCreepMemory & { emergency?: boolean }).emergency = true;
       }
-      
+
       const result = spawn.spawnCreep(body, name, { memory: creepMemory });
       if (result === OK) {
         spawned.push(name);
@@ -1110,8 +1115,8 @@ export class BehaviorController {
         if (isEmergency || harvesterCount === 0) {
           const energyAvailable = room?.energyAvailable ?? 0;
           const energyCapacity = room?.energyCapacityAvailable ?? 0;
-          const energyPercent = energyCapacity > 0 ? ((energyAvailable / energyCapacity) * 100).toFixed(1) : '0.0';
-          
+          const energyPercent = energyCapacity > 0 ? ((energyAvailable / energyCapacity) * 100).toFixed(1) : "0.0";
+
           this.logger.log?.(
             `[BehaviorController] ⚠️ EMERGENCY SPAWN: ${name} with ${body.length} parts (${spawnCost} energy) - ` +
               `Recovering from total creep loss (${totalCreeps} creeps, ${harvesterCount} harvesters) - ` +
@@ -1130,8 +1135,8 @@ export class BehaviorController {
         } else if (role === "harvester" && harvesterCount < 2) {
           const energyAvailable = room?.energyAvailable ?? 0;
           const energyCapacity = room?.energyCapacityAvailable ?? 0;
-          const energyPercent = energyCapacity > 0 ? ((energyAvailable / energyCapacity) * 100).toFixed(1) : '0.0';
-          
+          const energyPercent = energyCapacity > 0 ? ((energyAvailable / energyCapacity) * 100).toFixed(1) : "0.0";
+
           this.logger.log?.(
             `[BehaviorController] EMERGENCY SPAWN: ${name} with ${body.length} parts (${spawnCost} energy) - ` +
               `Recovering from starvation (${harvesterCount} harvesters) - ` +
@@ -1301,7 +1306,7 @@ function ensureHarvesterTask(memory: HarvesterMemory, creep: CreepLike): Harvest
 function runHarvester(creep: ManagedCreep): string {
   const memory = creep.memory as HarvesterMemory;
   const comm = getComm();
-  
+
   // CRITICAL: Check if spawn needs immediate refilling BEFORE any other task
   // This ensures emergency recovery and prevents spawn starvation
   const hasEnergy = creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
@@ -1316,12 +1321,12 @@ function runHarvester(creep: ManagedCreep): string {
         return current < Math.max(150, capacity * 0.5);
       }
     }) as StructureSpawn[];
-    
+
     if (spawnsNeedingEnergy.length > 0) {
       // FORCE delivery to spawn - override any other task
       memory.task = DELIVER_TASK;
       comm?.say(creep, "🚨spawn");
-      
+
       const spawn = creep.pos.findClosestByPath(spawnsNeedingEnergy) ?? spawnsNeedingEnergy[0];
       const result = creep.transfer(spawn, RESOURCE_ENERGY);
       if (result === ERR_NOT_IN_RANGE) {
@@ -1330,7 +1335,7 @@ function runHarvester(creep: ManagedCreep): string {
       return DELIVER_TASK;
     }
   }
-  
+
   const task = ensureHarvesterTask(memory, creep);
 
   if (task === HARVEST_TASK) {
@@ -1427,7 +1432,7 @@ function runUpgrader(creep: ManagedCreep): string {
   const memory = creep.memory as UpgraderMemory;
   const comm = getComm();
   const energyMgr = getEnergyManager();
-  
+
   // CRITICAL: Check if spawn needs immediate refilling BEFORE any other task
   const hasEnergy = creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
   if (hasEnergy) {
@@ -1440,7 +1445,7 @@ function runUpgrader(creep: ManagedCreep): string {
         return current < Math.max(150, capacity * 0.5);
       }
     }) as StructureSpawn[];
-    
+
     if (spawnsNeedingEnergy.length > 0) {
       comm?.say(creep, "🚨spawn");
       const spawn = creep.pos.findClosestByPath(spawnsNeedingEnergy) ?? spawnsNeedingEnergy[0];
@@ -1451,7 +1456,7 @@ function runUpgrader(creep: ManagedCreep): string {
       return UPGRADE_TASK; // Return current task to avoid state confusion
     }
   }
-  
+
   const task = ensureUpgraderTask(memory, creep);
 
   if (task === RECHARGE_TASK) {
@@ -1527,7 +1532,7 @@ function runBuilder(creep: ManagedCreep): string {
   const memory = creep.memory as BuilderMemory;
   const comm = getComm();
   const energyMgr = getEnergyManager();
-  
+
   // CRITICAL: Check if spawn needs immediate refilling BEFORE any other task
   const hasEnergy = creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
   if (hasEnergy) {
@@ -1540,7 +1545,7 @@ function runBuilder(creep: ManagedCreep): string {
         return current < Math.max(150, capacity * 0.5);
       }
     }) as StructureSpawn[];
-    
+
     if (spawnsNeedingEnergy.length > 0) {
       comm?.say(creep, "🚨spawn");
       const spawn = creep.pos.findClosestByPath(spawnsNeedingEnergy) ?? spawnsNeedingEnergy[0];
@@ -1551,7 +1556,7 @@ function runBuilder(creep: ManagedCreep): string {
       return BUILDER_BUILD_TASK; // Return current task to avoid state confusion
     }
   }
-  
+
   const task = ensureBuilderTask(memory, creep);
 
   if (task === BUILDER_GATHER_TASK) {
