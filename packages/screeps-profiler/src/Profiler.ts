@@ -95,6 +95,9 @@ export function init(_options: ProfilerOptions = {}): Profiler {
     },
 
     start() {
+      if (!Memory.profiler) {
+        Memory.profiler = { data: {}, total: 0 };
+      }
       Memory.profiler.start = Game.time;
       // Clear cache when profiler state changes
       clearEnabledCache();
@@ -112,7 +115,10 @@ export function init(_options: ProfilerOptions = {}): Profiler {
       if (!isEnabled()) {
         return "Profiler is not running";
       }
-      const timeRunning = Game.time - Memory.profiler.start!;
+      if (!Memory.profiler || Memory.profiler.start === undefined) {
+        return "Profiler is not running";
+      }
+      const timeRunning = Game.time - Memory.profiler.start;
       Memory.profiler.total += timeRunning;
       delete Memory.profiler.start;
       // Clear cache when profiler state changes
@@ -308,19 +314,23 @@ function outputProfilerData(): void {
   let calls: number;
   let time: number;
   let result: Partial<ProfilerOutputData>;
-  const data = Reflect.ownKeys(Memory.profiler.data).map(key => {
-    const keyStr = String(key);
-    calls = Memory.profiler.data[keyStr].calls;
-    time = Memory.profiler.data[keyStr].time;
-    result = {};
-    result.name = keyStr;
-    result.calls = calls;
-    result.cpuPerCall = time / calls;
-    result.callsPerTick = calls / totalTicks;
-    result.cpuPerTick = time / totalTicks;
-    totalCpu += result.cpuPerTick;
-    return result as ProfilerOutputData;
-  });
+  const data = Reflect.ownKeys(Memory.profiler?.data ?? {})
+    .map(key => {
+      const keyStr = String(key);
+      const entry = Memory.profiler?.data?.[keyStr];
+      if (!entry) return null;
+      calls = entry.calls;
+      time = entry.time;
+      result = {};
+      result.name = keyStr;
+      result.calls = calls;
+      result.cpuPerCall = time / calls;
+      result.callsPerTick = calls / totalTicks;
+      result.cpuPerTick = time / totalTicks;
+      totalCpu += result.cpuPerTick;
+      return result as ProfilerOutputData;
+    })
+    .filter((d): d is ProfilerOutputData => d !== null);
 
   data.sort((lhs, rhs) => rhs.cpuPerTick - lhs.cpuPerTick);
 
