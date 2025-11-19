@@ -10,8 +10,9 @@
     "moduleResolution": "NodeNext",
     "target": "ES2022",
     "lib": ["ES2022"],
-    "types": ["node", "vitest/globals"],
-    "experimentalDecorators": true
+    "types": [],
+    "experimentalDecorators": true,
+    "skipLibCheck": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "tests", "vitest.config.ts"]
