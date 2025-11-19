@@ -384,6 +384,12 @@ export class BehaviorController {
       : // eslint-disable-next-line @typescript-eslint/no-deprecated
         this.executeWithRoleSystem(game, memory);
 
+    // Store task stats in Memory for next tick's spawn decisions
+    // Task generation happens during executeWithTaskSystem, so stats are available now
+    if (this.options.useTaskSystem) {
+      memory.taskStats = this.taskManager.getTaskStats();
+    }
+
     memory.roles = roleCounts;
 
     return {
@@ -647,43 +653,6 @@ export class BehaviorController {
   }
 
   /**
-   * Calculates task-based creep demand when using the task system.
-   * Returns the number of additional creeps needed based on pending task count.
-   *
-   * @param totalCreeps - Current number of creeps
-   * @returns Number of additional creeps needed (0 if task system is disabled)
-   */
-  private calculateTaskBasedCreepDemand(totalCreeps: number): number {
-    if (!this.options.useTaskSystem) {
-      return 0;
-    }
-
-    const taskStats = this.taskManager.getTaskStats();
-    const pendingTasks = taskStats.pending;
-
-    // If no pending tasks, no additional demand
-    if (pendingTasks === 0) {
-      return 0;
-    }
-
-    // Assume each creep can handle ~3-5 tasks on average
-    const tasksPerCreep = 4;
-    const idealCreepCount = Math.ceil(pendingTasks / tasksPerCreep);
-
-    // Calculate additional creeps needed (capped at +3 per tick to prevent spawn spam)
-    const additionalNeeded = Math.max(0, Math.min(3, idealCreepCount - totalCreeps));
-
-    if (additionalNeeded > 0) {
-      this.logger.log?.(
-        `[BehaviorController] Task queue has ${pendingTasks} pending tasks, ` +
-          `${totalCreeps} creeps active. Requesting ${additionalNeeded} additional creeps.`
-      );
-    }
-
-    return additionalNeeded;
-  }
-
-  /**
    * Calculates dynamic role minimums based on room infrastructure and energy sources.
    *
    * When containers exist near energy sources, the system transitions to a more
@@ -696,7 +665,8 @@ export class BehaviorController {
    * When links are operational (RCL 5+), hauler count is reduced as links
    * handle energy transport more efficiently.
    *
-   * When using task system: Also increases harvester count based on pending task queue.
+   * When using task system: Also increases harvester count based on pending task queue
+   * from the previous tick (stored in Memory.taskStats).
    *
    * @param game - The game context
    * @returns Adjusted role minimums for the current room state
@@ -938,29 +908,40 @@ export class BehaviorController {
       }
     }
 
-    // Task-based demand: Scale workforce based on pending task queue
-    // When using task system, additional creeps may be needed to handle pending tasks
-    const totalCreeps = Object.keys(game.creeps).length;
-    const taskDemand = this.calculateTaskBasedCreepDemand(totalCreeps);
+    // Task-based demand: Scale workforce based on pending task queue from previous tick
+    // Note: Task generation happens AFTER spawn decisions, so we use stats from previous tick
+    // stored in Memory to inform current tick's spawn decisions
+    if (this.options.useTaskSystem && game.memory.taskStats) {
+      const totalCreeps = Object.keys(game.creeps).length;
+      const previousTickPendingTasks = game.memory.taskStats.pending;
 
-    if (taskDemand > 0) {
-      // Distribute task demand across harvester and upgrader roles
-      // Harvesters handle energy gathering tasks, upgraders handle controller tasks
-      const currentHarvesterMin = adjustedMinimums.harvester ?? ROLE_DEFINITIONS["harvester"].minimum;
-      const currentUpgraderMin = adjustedMinimums.upgrader ?? ROLE_DEFINITIONS["upgrader"].minimum;
+      // Calculate additional creeps needed based on previous tick's pending tasks
+      // Assume each creep can handle ~3-5 tasks on average
+      const tasksPerCreep = 4;
+      const idealCreepCount = Math.ceil(previousTickPendingTasks / tasksPerCreep);
 
-      // Add half of task demand to harvesters (rounded up), half to upgraders (rounded down)
-      const harvesterBonus = Math.ceil(taskDemand / 2);
-      const upgraderBonus = Math.floor(taskDemand / 2);
+      // Calculate additional creeps needed (capped at +3 per tick to prevent spawn spam)
+      const taskDemand = Math.max(0, Math.min(3, idealCreepCount - totalCreeps));
 
-      adjustedMinimums.harvester = currentHarvesterMin + harvesterBonus;
-      adjustedMinimums.upgrader = currentUpgraderMin + upgraderBonus;
+      if (taskDemand > 0) {
+        // Distribute task demand across harvester and upgrader roles
+        // Harvesters handle energy gathering tasks, upgraders handle controller tasks
+        const currentHarvesterMin = adjustedMinimums.harvester ?? ROLE_DEFINITIONS["harvester"].minimum;
+        const currentUpgraderMin = adjustedMinimums.upgrader ?? ROLE_DEFINITIONS["upgrader"].minimum;
 
-      this.logger.log?.(
-        `[BehaviorController] Task-based demand: +${taskDemand} creeps needed ` +
-          `(harvester: ${currentHarvesterMin} → ${adjustedMinimums.harvester}, ` +
-          `upgrader: ${currentUpgraderMin} → ${adjustedMinimums.upgrader})`
-      );
+        // Add half of task demand to harvesters (rounded up), half to upgraders (rounded down)
+        const harvesterBonus = Math.ceil(taskDemand / 2);
+        const upgraderBonus = Math.floor(taskDemand / 2);
+
+        adjustedMinimums.harvester = currentHarvesterMin + harvesterBonus;
+        adjustedMinimums.upgrader = currentUpgraderMin + upgraderBonus;
+
+        this.logger.log?.(
+          `[BehaviorController] Task-based demand: +${taskDemand} creeps needed ` +
+            `(pending tasks: ${previousTickPendingTasks}, harvester: ${currentHarvesterMin} → ${adjustedMinimums.harvester}, ` +
+            `upgrader: ${currentUpgraderMin} → ${adjustedMinimums.upgrader})`
+        );
+      }
     }
 
     return adjustedMinimums;
