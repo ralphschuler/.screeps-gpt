@@ -56,9 +56,12 @@
       "name": "@ralphschuler/screeps-gpt-bot",
       "version": "0.45.4",
       "dependencies": {
+        "@ralphschuler/screeps-cache": "workspace:*",
         "@ralphschuler/screeps-logger": "workspace:*",
+        "@ralphschuler/screeps-perf": "workspace:*",
         "@ralphschuler/screeps-profiler": "workspace:*",
         "screeps-cartographer": "^1.8.13",
+        "screeps-kernel": "workspace:*",
       },
       "devDependencies": {
         "@types/screeps": "^3.3.8",
