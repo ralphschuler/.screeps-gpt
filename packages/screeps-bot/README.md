@@ -73,11 +73,56 @@ Then import it in `main.ts` to trigger registration:
 import "./processes/MyProcess";
 ```
 
-## Example Processes
+## Implemented Processes
 
-### HarvesterProcess (State Machines)
+### 1. RoomProcess (Decision Trees) - Priority 70
 
-Demonstrates `screeps-xstate` for state-based creep behavior:
+Strategic room management using `screeps-xtree`:
+
+```typescript
+@process({ name: "Room", priority: 70, singleton: true })
+export class RoomProcess {
+  // Uses decision trees to determine:
+  // - When to spawn harvesters, builders, upgraders
+  // - When to enter defense mode
+  // - When to expand or consolidate
+}
+```
+
+**Decision Flow:**
+1. Emergency: Hostiles present → Defend
+2. No harvesters → Spawn harvester (critical)
+3. < 2 harvesters → Spawn harvester
+4. < 2 builders → Spawn builder
+5. < 1 upgrader → Spawn upgrader
+6. Level 6+ → Expand
+7. Level 3+ → Consolidate
+8. Otherwise → Idle
+
+### 2. TowerProcess (State Machines) - Priority 60
+
+Tower defense using `screeps-xstate`:
+
+```typescript
+@process({ name: "Tower", priority: 60, singleton: true })
+export class TowerProcess {
+  // Uses state machines for:
+  // - Detecting and engaging hostiles
+  // - Repairing damaged structures
+  // - Priority-based action selection
+}
+```
+
+**States:**
+- `idle` → Check for threats
+- `finding_hostile` → Locate enemy creeps
+- `attacking` → Engage hostiles (highest priority)
+- `finding_damaged` → Locate damaged structures
+- `repairing` → Repair structures (lower priority)
+
+### 3. HarvesterProcess (State Machines) - Priority 50
+
+Energy harvesting using `screeps-xstate` for state-based creep behavior:
 
 ```typescript
 @process({ name: "Harvester", priority: 50, singleton: true })
@@ -96,7 +141,7 @@ export class HarvesterProcess {
 - Automatic state transitions with guards
 - Visual feedback with creep.say()
 
-### BuilderProcess (Decision Trees)
+### 4. BuilderProcess (Decision Trees) - Priority 40
 
 Demonstrates `screeps-xtree` for prioritized decision-making:
 
@@ -121,21 +166,42 @@ export class BuilderProcess {
 - Dynamic context evaluation
 - Efficient action selection
 
+### 5. ScoutProcess (Async Tasks) - Priority 20
+
+Room exploration using `screeps-async`:
+
+```typescript
+@process({ name: "Scout", priority: 20, singleton: true })
+export class ScoutProcess {
+  // Uses async/await patterns for:
+  // - Multi-tick room exploration
+  // - CPU-intensive pathfinding
+  // - Distributed task execution
+}
+```
+
+**Async Task Flow:**
+1. **Phase 1:** Find unexplored room (CPU intensive)
+2. **Phase 2:** Navigate to target (multi-tick movement)
+3. **Phase 3:** Explore room (scan sources, controller, hostiles)
+
+Each phase yields control between ticks, distributing CPU load.
+
 ## Package Integration
 
 This bot demonstrates integration of:
 
-| Package | Usage | Example |
-|---------|-------|---------|
-| `screeps-kernel` | Process orchestration | `@process` decorator, Kernel.run() |
-| `screeps-xstate` | State machines | HarvesterProcess behavior states |
-| `screeps-xtree` | Decision trees | BuilderProcess priority decisions |
-| `screeps-logger` | Structured logging | ctx.logger.log() throughout |
-| `screeps-profiler` | CPU profiling | Auto-initialized in main.ts |
-| `screeps-async` | Multi-tick ops | *(Future: DefenseProcess)* |
-| `screeps-cache` | Caching | *(Future: LogisticsProcess)* |
-| `screeps-perf` | Performance | *(Future: PathfindingProcess)* |
-| `screeps-metrics` | Telemetry | *(Future: StatsProcess)* |
+| Package | Usage | Where Used |
+|---------|-------|------------|
+| `screeps-kernel` | Process orchestration | All processes via `@process` decorator |
+| `screeps-xstate` | State machines | HarvesterProcess, TowerProcess |
+| `screeps-xtree` | Decision trees | RoomProcess, BuilderProcess |
+| `screeps-async` | Multi-tick ops | ScoutProcess (exploration tasks) |
+| `screeps-logger` | Structured logging | All processes via ctx.logger |
+| `screeps-cache` | Caching | *(Available for optimization)* |
+| `screeps-perf` | Performance | *(Available for optimization)* |
+| `screeps-metrics` | Telemetry | *(Available for monitoring)* |
+| `screeps-profiler` | CPU profiling | *(Available for analysis)* |
 
 ## Configuration
 

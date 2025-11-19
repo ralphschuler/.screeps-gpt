@@ -47,7 +47,9 @@ export class BuilderProcess {
       return;
     }
 
-    ctx.logger.log(`[Builder] Processing ${builders.length} builders`);
+    if (ctx.logger) {
+      ctx.logger.log(`[Builder] Processing ${builders.length} builders`);
+    }
 
     // Process each builder
     for (const creep of builders) {

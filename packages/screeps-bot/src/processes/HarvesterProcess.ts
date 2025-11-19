@@ -7,7 +7,7 @@ import { StateMachine } from "@ralphschuler/screeps-xstate";
  */
 interface HarvesterContext {
   creep: Creep;
-  sourceId?: Id<Source>;
+  sourceId?: Id<Source> | undefined;
 }
 
 /**
@@ -44,7 +44,9 @@ export class HarvesterProcess {
       return;
     }
 
-    ctx.logger.log(`[Harvester] Processing ${harvesters.length} harvesters`);
+    if (ctx.logger) {
+      ctx.logger.log(`[Harvester] Processing ${harvesters.length} harvesters`);
+    }
 
     // Process each harvester
     for (const creep of harvesters) {
@@ -179,7 +181,7 @@ export class HarvesterProcess {
       filter: (structure: Structure) => {
         return (
           (structure.structureType === STRUCTURE_SPAWN || structure.structureType === STRUCTURE_EXTENSION) &&
-          structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+          (structure as StructureSpawn | StructureExtension).store.getFreeCapacity(RESOURCE_ENERGY) > 0
         );
       }
     });

@@ -13,13 +13,23 @@ import { Kernel } from "@ralphschuler/screeps-kernel";
 import { Logger } from "@ralphschuler/screeps-logger";
 
 // Import processes to trigger decorator registration
-import "./processes/HarvesterProcess";
-import "./processes/BuilderProcess";
+import "./processes/RoomProcess";      // Priority 70 - Room strategy (decision trees)
+import "./processes/TowerProcess";     // Priority 60 - Tower defense (state machines)
+import "./processes/HarvesterProcess"; // Priority 50 - Energy harvesting (state machines)
+import "./processes/BuilderProcess";   // Priority 40 - Construction (decision trees)
+import "./processes/ScoutProcess";     // Priority 20 - Exploration (async tasks)
 
 // Extend Memory interface for custom properties
 declare global {
   interface CreepMemory {
     role?: string;
+  }
+  
+  interface RoomMemory {
+    lastScouted?: number;
+    sources?: Id<Source>[];
+    controller?: Id<StructureController> | null;
+    hostiles?: number;
   }
 }
 
@@ -30,8 +40,15 @@ function initializeBot(): { kernel: Kernel; logger: Logger } {
   // Create logger
   const logger = new Logger({ minLevel: "info" });
 
+  // Create logger adapter for kernel (kernel expects simpler interface)
+  const kernelLogger = {
+    log: (message: string) => logger.info(message),
+    warn: (message: string) => logger.warn(message),
+    error: (message: string) => logger.error(message)
+  };
+
   // Create kernel
-  const kernel = new Kernel({ logger });
+  const kernel = new Kernel({ logger: kernelLogger });
 
   logger.info("[Bot] Modular bot initialized with kernel");
 
