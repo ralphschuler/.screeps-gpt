@@ -178,7 +178,6 @@ export class Diagnostics {
       // Return the full systemReport including report and metadata
       // Extract to local variable - type assertion is safe after existence check
       const memorySystemReport = Memory.systemReport;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const report: SystemReport = memorySystemReport.report;
       return {
         lastGenerated: memorySystemReport.lastGenerated,

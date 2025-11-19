@@ -105,7 +105,7 @@ export class Kernel {
     // Extract infrastructure memory with proper type narrowing for ESLint strict rules
     let infrastructureMemory: InfrastructureMemory | undefined;
     if (typeof Memory !== "undefined") {
-      infrastructureMemory = Memory.infrastructure as InfrastructureMemory | undefined;
+      infrastructureMemory = Memory.infrastructure;
     }
 
     this.infrastructureManager =
@@ -131,11 +131,14 @@ export class Kernel {
         Memory.combat ??= { squads: {} };
       }
 
-      const threatMemory: ThreatMemory | undefined = typeof Memory !== "undefined" ? Memory.threats : undefined;
-      const defenseMemory: DefenseMemory | undefined = typeof Memory !== "undefined" ? Memory.defense : undefined;
+      const threatMemory: ThreatMemory | undefined =
+        typeof Memory !== "undefined" && Memory.threats ? Memory.threats : undefined;
+      const defenseMemory: DefenseMemory | undefined =
+        typeof Memory !== "undefined" && Memory.defense ? Memory.defense : undefined;
       const threatDetector = new ThreatDetector(this.logger, threatMemory);
       const towerManager = new TowerManager(this.logger);
-      const combatMemory: CombatManagerMemory | undefined = typeof Memory !== "undefined" ? Memory.combat : undefined;
+      const combatMemory: CombatManagerMemory | undefined =
+        typeof Memory !== "undefined" && Memory.combat ? Memory.combat : undefined;
       const combatManager = new CombatManager({ logger: this.logger, memory: combatMemory });
       this.defenseCoordinator = new DefenseCoordinator(
         threatDetector,
