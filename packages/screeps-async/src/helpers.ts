@@ -136,7 +136,7 @@ export function* map<TItem, TResult>(
 ): TaskGenerator<TResult[]> {
   const results: TResult[] = [];
   for (let i = 0; i < items.length; i++) {
-    const gen = generatorFn(items[i]!, i);
+    const gen = generatorFn(items[i], i);
     let result = gen.next();
     while (!result.done) {
       yield;
