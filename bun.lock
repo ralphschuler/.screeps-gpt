@@ -57,6 +57,7 @@
       "version": "0.45.4",
       "dependencies": {
         "@ralphschuler/screeps-logger": "workspace:*",
+        "@ralphschuler/screeps-profiler": "workspace:*",
         "screeps-cartographer": "^1.8.13",
       },
       "devDependencies": {
@@ -180,6 +181,16 @@
     },
     "packages/screeps-perf": {
       "name": "@ralphschuler/screeps-perf",
+      "version": "1.0.0",
+      "devDependencies": {
+        "@types/node": "^24.9.1",
+        "@types/screeps": "^3.3.8",
+        "typescript": "^5.4.3",
+        "vitest": "^4.0.1",
+      },
+    },
+    "packages/screeps-profiler": {
+      "name": "@ralphschuler/screeps-profiler",
       "version": "1.0.0",
       "devDependencies": {
         "@types/node": "^24.9.1",
@@ -462,6 +473,8 @@
     "@ralphschuler/screeps-metrics": ["@ralphschuler/screeps-metrics@workspace:packages/screeps-metrics"],
 
     "@ralphschuler/screeps-perf": ["@ralphschuler/screeps-perf@workspace:packages/screeps-perf"],
+
+    "@ralphschuler/screeps-profiler": ["@ralphschuler/screeps-profiler@workspace:packages/screeps-profiler"],
 
     "@ralphschuler/screeps-xstate": ["@ralphschuler/screeps-xstate@workspace:packages/screeps-xstate"],
 

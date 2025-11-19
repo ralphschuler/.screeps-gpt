@@ -20,6 +20,17 @@ All notable changes to this project are documented here. This changelog now main
   - Comprehensive test coverage with unit tests
   - Located at `packages/screeps-metrics/`
 
+### Fixed
+
+- **PTR Energy Capacity Monitoring Validation**: Documented resolution of issue ralphschuler/.screeps-gpt#1056
+  - Issue: Energy capacity utilization at 29.5% (133/450) during active extension construction
+  - Root cause: Temporary resource constraint while 2 extension sites under construction
+  - Resolution: Self-resolved through normal game progression when extensions completed
+  - Outcome: Energy capacity increased from 450 to 500, achieving 100% utilization
+  - Added regression test suite validating monitoring system correctly tracks energy trends during construction phases
+  - Confirms low energy during construction is expected behavior, not a bug
+  - Validates monitoring system's ability to detect and track issue resolution automatically
+
 ## [0.116.0] - 2025-11-19
 
 ### Added
