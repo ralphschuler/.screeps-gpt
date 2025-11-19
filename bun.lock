@@ -131,6 +131,16 @@
         "vitest": "^4.0.1",
       },
     },
+    "packages/screeps-kernel": {
+      "name": "screeps-kernel",
+      "version": "1.0.0",
+      "devDependencies": {
+        "@types/node": "^24.9.1",
+        "@types/screeps": "^3.3.8",
+        "typescript": "^5.4.3",
+        "vitest": "^4.0.1",
+      },
+    },
     "packages/screeps-logger": {
       "name": "@ralphschuler/screeps-logger",
       "version": "0.1.0",
@@ -1408,6 +1418,8 @@
     "screeps-api": ["screeps-api@1.16.1", "", { "dependencies": { "axios": "^0.28.0", "commander": "^7.2.0", "debug": "^4.1.1", "ws": "^7.4.4", "yamljs": "^0.3.0" }, "optionalDependencies": { "bufferutil": "^4.0.1", "utf-8-validate": "^5.0.2" }, "bin": { "screeps-api": "bin/screeps-api.js" } }, "sha512-VwgibYPCFXaRlNdFrC188s6juKdAbMIeLy6oRa030IRSUuIZFpe7m4NHzMxLC30qq3cZejdlOedXXthOnNkggA=="],
 
     "screeps-cartographer": ["screeps-cartographer@1.8.13", "", { "dependencies": { "screeps-utf15": "^1.0.1", "ts-polyfill": "^3.8.2" } }, "sha512-zOGDAosHuOfItpIvqOY8H37BBbUpZUqCtNKbsYYm9VD7C94iGEIZ587qcFjHOOqEiy0P1Pj5iO32TgO6mZ3X1A=="],
+
+    "screeps-kernel": ["screeps-kernel@workspace:packages/screeps-kernel"],
 
     "screeps-utf15": ["screeps-utf15@1.0.1", "", {}, "sha512-0KTHWUeHsItaVBLG3GMlREeX/L88XTHpB07IOZauuPn1YQxZNZAeUhOoL1QX3EoOkPsXafMa2mAMEnD2QveSGw=="],
 
