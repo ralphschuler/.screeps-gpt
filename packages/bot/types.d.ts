@@ -161,6 +161,18 @@ declare global {
     threats?: ThreatMemory;
     defense?: DefenseMemory;
     combat?: CombatManagerMemory;
+    /**
+     * Task system statistics from the previous tick.
+     * Used to inform spawn decisions based on task queue demand.
+     * @see src/runtime/tasks/TaskManager.ts
+     * @see src/runtime/behavior/BehaviorController.ts
+     */
+    taskStats?: {
+      total: number;
+      pending: number;
+      assigned: number;
+      complete: number;
+    };
   }
 
   interface CreepMemory {
