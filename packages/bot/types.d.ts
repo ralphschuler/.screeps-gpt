@@ -8,6 +8,14 @@ import type { DefenseMemory } from "./src/runtime/defense/DefenseCoordinator";
 import type { CombatManagerMemory } from "./src/runtime/defense/CombatManager";
 
 declare global {
+  /**
+   * Build-time constants injected by esbuild define
+   * These are replaced at compile time with literal values from environment variables
+   */
+  const __PROFILER_ENABLED__: "true" | "false";
+  const __TASK_SYSTEM_ENABLED__: string;
+  const __ROOM_VISUALS_ENABLED__: string;
+
   interface Memory {
     /**
      * Memory schema version for migration tracking.
