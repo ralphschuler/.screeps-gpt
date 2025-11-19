@@ -37,7 +37,7 @@ export class HarvesterProcess {
 
     // Find all harvester creeps
     const harvesters = Object.values(game.creeps).filter(
-      (creep) => creep.memory.role === "harvester" && !creep.spawning
+      (creep: Creep) => creep.memory.role === "harvester" && !creep.spawning
     );
 
     if (harvesters.length === 0) {
@@ -96,38 +96,38 @@ export class HarvesterProcess {
       "idle",
       {
         idle: {
-          onEntry: [(ctx) => ctx.creep.say("💤")],
+          onEntry: [(ctx: HarvesterContext) => ctx.creep.say("💤")],
           on: {
             FIND_SOURCE: { target: "finding_source" }
           }
         },
         finding_source: {
-          onEntry: [(ctx) => ctx.creep.say("🔍")],
+          onEntry: [(ctx: HarvesterContext) => ctx.creep.say("🔍")],
           on: {
             HARVEST: { target: "harvesting" }
           }
         },
         harvesting: {
-          onEntry: [(ctx) => ctx.creep.say("⛏️")],
+          onEntry: [(ctx: HarvesterContext) => ctx.creep.say("⛏️")],
           on: {
             ENERGY_FULL: {
               target: "returning",
-              guard: (ctx) => ctx.creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0
+              guard: (ctx: HarvesterContext) => ctx.creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0
             }
           }
         },
         returning: {
-          onEntry: [(ctx) => ctx.creep.say("🔙")],
+          onEntry: [(ctx: HarvesterContext) => ctx.creep.say("🔙")],
           on: {
             DELIVER: { target: "delivering" }
           }
         },
         delivering: {
-          onEntry: [(ctx) => ctx.creep.say("📦")],
+          onEntry: [(ctx: HarvesterContext) => ctx.creep.say("📦")],
           on: {
             ENERGY_EMPTY: {
               target: "idle",
-              guard: (ctx) => ctx.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0
+              guard: (ctx: HarvesterContext) => ctx.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0
             }
           }
         }
@@ -176,7 +176,7 @@ export class HarvesterProcess {
     const { creep } = context;
 
     const target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
-      filter: (structure) => {
+      filter: (structure: Structure) => {
         return (
           (structure.structureType === STRUCTURE_SPAWN || structure.structureType === STRUCTURE_EXTENSION) &&
           structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0

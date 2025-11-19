@@ -40,7 +40,7 @@ export class BuilderProcess {
 
     // Find all builder creeps
     const builders = Object.values(game.creeps).filter(
-      (creep) => creep.memory.role === "builder" && !creep.spawning
+      (creep: Creep) => creep.memory.role === "builder" && !creep.spawning
     );
 
     if (builders.length === 0) {
@@ -94,7 +94,7 @@ export class BuilderProcess {
       hasEnergy: creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0,
       constructionSites: room.find(FIND_MY_CONSTRUCTION_SITES).length,
       damagedStructures: room.find(FIND_STRUCTURES, {
-        filter: (s) => s.hits < s.hitsMax && s.structureType !== STRUCTURE_WALL
+        filter: (s: Structure) => s.hits < s.hitsMax && s.structureType !== STRUCTURE_WALL
       }).length,
       controllerNeedsUpgrade: room.controller ? room.controller.level < 8 : false
     };
@@ -148,7 +148,7 @@ export class BuilderProcess {
 
   private repair(creep: Creep): void {
     const target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
-      filter: (s) => s.hits < s.hitsMax && s.structureType !== STRUCTURE_WALL
+      filter: (s: Structure) => s.hits < s.hitsMax && s.structureType !== STRUCTURE_WALL
     });
 
     if (!target) {

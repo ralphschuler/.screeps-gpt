@@ -11,11 +11,17 @@
 
 import { Kernel } from "@ralphschuler/screeps-kernel";
 import { Logger } from "@ralphschuler/screeps-logger";
-import { init as initProfiler } from "@ralphschuler/screeps-profiler";
 
 // Import processes to trigger decorator registration
 import "./processes/HarvesterProcess";
 import "./processes/BuilderProcess";
+
+// Extend Memory interface for custom properties
+declare global {
+  interface CreepMemory {
+    role?: string;
+  }
+}
 
 /**
  * Initialize the bot
@@ -23,12 +29,6 @@ import "./processes/BuilderProcess";
 function initializeBot(): { kernel: Kernel; logger: Logger } {
   // Create logger
   const logger = new Logger({ minLevel: "info" });
-
-  // Initialize profiler
-  const profiler = initProfiler();
-  if (typeof global !== "undefined") {
-    global.Profiler = profiler;
-  }
 
   // Create kernel
   const kernel = new Kernel({ logger });
