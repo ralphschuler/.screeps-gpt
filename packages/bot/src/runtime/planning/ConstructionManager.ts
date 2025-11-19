@@ -13,6 +13,7 @@ interface RoomConstructionState {
 export class ConstructionManager {
   private readonly roomPlanners: Map<string, RoomConstructionState> = new Map();
   private readonly maxSitesPerTick: number;
+  private readonly maxSitesPerRoom: number;
   private readonly findMySpawns: FindConstant;
   private readonly findStructures: FindConstant;
   private readonly findConstructionSites: FindConstant;
@@ -22,7 +23,8 @@ export class ConstructionManager {
 
   public constructor(
     private readonly logger: Pick<Console, "log" | "warn"> = console,
-    maxSitesPerTick: number = 1,
+    maxSitesPerTick: number = 5,
+    maxSitesPerRoom: number = 1,
     findMySpawns?: FindConstant,
     findStructures?: FindConstant,
     findConstructionSites?: FindConstant,
@@ -31,6 +33,7 @@ export class ConstructionManager {
     errRclNotEnough?: number
   ) {
     this.maxSitesPerTick = maxSitesPerTick;
+    this.maxSitesPerRoom = maxSitesPerRoom;
     // Use lazy evaluation - only access global constants if not provided
     this.findMySpawns = findMySpawns ?? (typeof FIND_MY_SPAWNS !== "undefined" ? FIND_MY_SPAWNS : 104);
     this.findStructures = findStructures ?? (typeof FIND_STRUCTURES !== "undefined" ? FIND_STRUCTURES : 107);
@@ -58,7 +61,7 @@ export class ConstructionManager {
       const created = this.planRoomConstruction(room);
       sitesCreated += created;
 
-      // Limit construction sites created per tick to avoid CPU spikes
+      // Limit total construction sites created per tick to avoid CPU spikes
       if (sitesCreated >= this.maxSitesPerTick) {
         break;
       }
@@ -105,8 +108,8 @@ export class ConstructionManager {
 
     let sitesCreated = 0;
     for (const structure of missing) {
-      // Limit sites per tick
-      if (sitesCreated >= this.maxSitesPerTick) {
+      // Limit sites per room
+      if (sitesCreated >= this.maxSitesPerRoom) {
         break;
       }
 
