@@ -172,8 +172,8 @@ export function* race<T>(...generators: Array<() => TaskGenerator<T>>): TaskGene
 
   while (true) {
     for (let i = 0; i < gens.length; i++) {
-      if (!states[i]!.done) {
-        const result = gens[i]!.next();
+      if (!states[i].done) {
+        const result = gens[i].next();
         if (result.done) {
           return result.value;
         }
