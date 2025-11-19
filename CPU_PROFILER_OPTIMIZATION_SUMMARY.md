@@ -37,7 +37,7 @@ The profiler decorator (`@profile`) wraps **every method** of 65+ classes across
 
 ### 1. Profiler Tick-Based Caching ✅
 
-**File:** `packages/bot/src/profiler/Profiler.ts`
+**File:** `packages/screeps-profiler/src/Profiler.ts`
 
 **Problem:** Wrapper function called `isEnabled()` on every method invocation, causing thousands of `Memory.profiler.start` lookups per tick.
 

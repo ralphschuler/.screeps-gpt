@@ -22,7 +22,7 @@
       "@runtime/*": ["packages/bot/src/runtime/*"],
       "@ai/*": ["packages/bot/src/ai/*"],
       "@shared/*": ["packages/bot/src/shared/*"],
-      "@profiler": ["packages/bot/src/profiler"]
+      "@ralphschuler/screeps-profiler": ["packages/screeps-profiler/src"]
     }
   },
   "include": [
