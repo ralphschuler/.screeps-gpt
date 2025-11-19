@@ -122,12 +122,12 @@ export class ThreatDetector {
       if (part.type === TOUGH) bodyParts.tough++;
     }
 
-    // Calculate threat score
+    // Calculate threat score (aligned with CombatManager scoring)
     let threatScore = 0;
     threatScore += bodyParts.attack * 10;      // Melee attackers
-    threatScore += bodyParts.rangedAttack * 8; // Ranged attackers
-    threatScore += bodyParts.heal * 12;        // Healers are high priority
-    threatScore += bodyParts.work * 5;         // Dismantlers
+    threatScore += bodyParts.rangedAttack * 5; // Ranged attackers
+    threatScore += bodyParts.heal * 8;         // Healers are high priority
+    threatScore += bodyParts.work * 5;         // Dismantlers (not in CombatManager, but useful for detection)
     threatScore += bodyParts.tough * 2;        // Tanky creeps
 
     return {

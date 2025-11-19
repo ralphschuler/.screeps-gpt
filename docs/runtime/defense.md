@@ -19,10 +19,10 @@ The ThreatDetector scans rooms for hostile creeps and calculates threat levels b
 - `high`: 3+ hostiles or high threat (threat score < 300)
 - `critical`: 5+ hostiles or very high threat (threat score ≥ 300)
 
-**Threat Scoring:**
+**Threat Scoring (aligned with CombatManager):**
 - `ATTACK` parts: 10 points each
-- `RANGED_ATTACK` parts: 8 points each
-- `HEAL` parts: 12 points each (highest priority - healers sustain enemy forces)
+- `RANGED_ATTACK` parts: 5 points each
+- `HEAL` parts: 8 points each (highest priority - healers sustain enemy forces)
 - `WORK` parts: 5 points each (dismantlers threaten structures)
 - `TOUGH` parts: 2 points each
 

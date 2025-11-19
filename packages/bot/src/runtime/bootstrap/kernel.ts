@@ -123,7 +123,20 @@ export class Kernel {
     this.empireManager = config.empireManager ?? new EmpireManager({ logger: this.logger });
     
     // Initialize defense system with memory references
+    // Initialize Memory structures before passing to defense components to ensure they exist
     if (!config.defenseCoordinator) {
+      if (typeof Memory !== "undefined") {
+        if (!Memory.threats) {
+          Memory.threats = { rooms: {}, lastUpdate: 0 };
+        }
+        if (!Memory.defense) {
+          Memory.defense = { posture: {}, lastDefenseAction: 0 };
+        }
+        if (!Memory.combat) {
+          Memory.combat = { squads: {} };
+        }
+      }
+      
       const threatMemory = typeof Memory !== "undefined" ? Memory.threats : undefined;
       const defenseMemory = typeof Memory !== "undefined" ? Memory.defense : undefined;
       const threatDetector = new ThreatDetector(this.logger, threatMemory);

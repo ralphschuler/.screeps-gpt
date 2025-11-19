@@ -172,14 +172,13 @@ describe("ThreatDetector", () => {
   });
 
   describe("Threat scoring", () => {
-    it("should prioritize healers with higher threat score", () => {
+    it("should calculate threat scores aligned with CombatManager", () => {
       const attacker: Creep = {
         id: "attacker" as Id<Creep>,
         name: "Attacker",
         pos: { x: 25, y: 25 } as RoomPosition,
         owner: { username: "Enemy" } as Owner,
         body: [
-          { type: ATTACK, hits: 100 },
           { type: ATTACK, hits: 100 },
           { type: MOVE, hits: 100 }
         ]
@@ -211,7 +210,9 @@ describe("ThreatDetector", () => {
       const attackerThreat = assessment.threats.find(t => t.id === attacker.id);
       const healerThreat = assessment.threats.find(t => t.id === healer.id);
 
-      expect(healerThreat?.threatScore).toBeGreaterThan(attackerThreat?.threatScore ?? 0);
+      // Threat scoring aligned with CombatManager: ATTACK=10, HEAL=8
+      expect(attackerThreat?.threatScore).toBe(10);
+      expect(healerThreat?.threatScore).toBe(8);
     });
 
     it("should calculate threat score for dismantlers", () => {

@@ -979,9 +979,13 @@ export class BehaviorController {
     // and needs to be distributed to spawns/extensions/towers for operations.
     
     // Check for defensive posture requiring defender spawning
-    const needsDefenders = memory.defense && Object.values(memory.defense.posture).some(
-      posture => posture === "defensive" || posture === "emergency"
-    );
+    // Only consider owned rooms to avoid triggering defense mode for hostile/scouted rooms
+    const needsDefenders = memory.defense && game.rooms &&
+      Object.entries(memory.defense.posture).some(
+        ([roomName, posture]) =>
+          game.rooms[roomName]?.controller?.my &&
+          (posture === "defensive" || posture === "emergency")
+      );
     
     let roleOrder: RoleName[];
     if (needsDefenders) {
@@ -1459,7 +1463,7 @@ function runUpgrader(creep: ManagedCreep): string {
   const shouldPauseUpgrading = roomPosture === "defensive" || roomPosture === "emergency";
   
   if (shouldPauseUpgrading) {
-    // During combat, upgraders should act as energy distributors instead
+    // During combat, upgraders move to a safe position and pause upgrading
     comm?.say(creep, "🛡️");
     // Move to a safe position near storage/spawn
     const safeSpot = creep.room.storage ?? creep.room.find(FIND_MY_SPAWNS)[0];

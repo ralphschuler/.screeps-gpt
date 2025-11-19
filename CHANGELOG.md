@@ -13,7 +13,7 @@ All notable changes to this project are documented here. This changelog now main
   - Integrated defense system into kernel execution flow (runs before infrastructure management)
   - Added defensive posture system: normal → alert → defensive → emergency
   - Threat levels: none, low, medium, high, critical (based on hostile count and body composition)
-  - Threat scoring prioritizes healers (12 pts), attackers (10/8 pts), and dismantlers (5 pts)
+  - Threat scoring aligned with CombatManager: attackers (10 pts), healers (8 pts), ranged (5 pts), dismantlers (5 pts)
   - Memory persistence in Memory.threats, Memory.defense, Memory.combat
   - Automatic spawn priority adjustment: defenders prioritized during defensive/emergency postures
   - Controller upgrading pauses during defensive/emergency postures (issue ralphschuler/.screeps-gpt#702)
