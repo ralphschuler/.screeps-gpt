@@ -358,6 +358,146 @@ const action1 = tree1.evaluate(context);
 const action2 = tree2.evaluate(context); // Reuse context
 ```
 
+## Composability
+
+`screeps-xtree` provides powerful utilities for creating reusable and composable decision tree patterns.
+
+### Subtree Factories
+
+Create parameterized decision subtrees:
+
+```typescript
+import { createSubtreeFactory, DecisionTreeBuilder } from "@ralphschuler/screeps-xtree";
+
+const createThresholdCheck = createSubtreeFactory<Context, Action, { threshold: number }>(({ threshold }) => {
+  const builder = new DecisionTreeBuilder<Context, Action>();
+  return builder.if(ctx => ctx.value > threshold, builder.leaf({ type: "high" }), builder.leaf({ type: "low" }));
+});
+
+// Use with different parameters
+const highThreshold = createThresholdCheck({ threshold: 75 });
+const lowThreshold = createThresholdCheck({ threshold: 25 });
+```
+
+### Condition Combinators
+
+Combine conditions with logical operators:
+
+```typescript
+import { andConditions, orConditions, notCondition } from "@ralphschuler/screeps-xtree";
+
+// AND: All conditions must be true
+const needsEnergyAndSafe = andConditions(
+  ctx => ctx.energy < 50,
+  ctx => !ctx.underAttack
+);
+
+// OR: Any condition can be true
+const criticalOrEmergency = orConditions(
+  ctx => ctx.health < 100,
+  ctx => ctx.emergency
+);
+
+// NOT: Negate a condition
+const notDisabled = notCondition(ctx => ctx.disabled);
+```
+
+### Switch Case Helpers
+
+Create switch-case patterns easily:
+
+```typescript
+import { createSwitchCases, DecisionTreeBuilder } from "@ralphschuler/screeps-xtree";
+
+const builder = new DecisionTreeBuilder<Context, Action>();
+
+const prioritySwitch = createSwitchCases(
+  builder,
+  [
+    { condition: ctx => ctx.priority === "critical", result: { type: "emergency" } },
+    { condition: ctx => ctx.priority === "high", result: { type: "urgent" } },
+    { condition: ctx => ctx.priority === "medium", result: { type: "normal" } }
+  ],
+  { type: "idle" } // default
+);
+```
+
+### Wrapping Subtrees
+
+Conditionally execute complex subtrees:
+
+```typescript
+import { wrapWithCondition, DecisionTreeBuilder } from "@ralphschuler/screeps-xtree";
+
+const builder = new DecisionTreeBuilder<Context, Action>();
+
+// Complex decision logic
+const expensiveSubtree = builder.switch([
+  // ... many conditions
+]);
+
+// Only evaluate if enabled
+const wrapped = wrapWithCondition(
+  builder,
+  ctx => ctx.enabled,
+  expensiveSubtree,
+  { type: "idle" } // fallback
+);
+```
+
+### Composition Example: Reusable Creep Behaviors
+
+```typescript
+import {
+  createSubtreeFactory,
+  andConditions,
+  createPriorityTree,
+  DecisionTreeBuilder
+} from "@ralphschuler/screeps-xtree";
+
+// Create reusable energy check
+const createEnergyCheck = createSubtreeFactory<Context, Action, { threshold: number }>(({ threshold }) => {
+  const builder = new DecisionTreeBuilder<Context, Action>();
+  return builder.if(ctx => ctx.energy > threshold, builder.leaf({ type: "work" }), builder.leaf({ type: "harvest" }));
+});
+
+// Create role-specific priorities
+const createRoleTree = createSubtreeFactory<Context, Action, { energyThreshold: number; primaryTask: Action }>(
+  ({ energyThreshold, primaryTask }) => {
+    const builder = new DecisionTreeBuilder<Context, Action>();
+
+    return createPriorityTree(
+      builder,
+      [
+        {
+          condition: andConditions(
+            ctx => ctx.underAttack,
+            ctx => ctx.health < 500
+          ),
+          result: { type: "flee" }
+        },
+        {
+          condition: ctx => ctx.energy > energyThreshold,
+          result: primaryTask
+        }
+      ],
+      { type: "harvest" }
+    );
+  }
+);
+
+// Use the factories for different roles
+const harvesterTree = createRoleTree({
+  energyThreshold: 50,
+  primaryTask: { type: "deliver" }
+});
+
+const builderTree = createRoleTree({
+  energyThreshold: 25,
+  primaryTask: { type: "build" }
+});
+```
+
 ## API Reference
 
 ### DecisionTree

@@ -12,3 +12,10 @@ export type { Guard, Action, Transition, StateConfig, SerializedMachine } from "
 export { and, or, not } from "./helpers/guards.js";
 export { assign, log, chain } from "./helpers/actions.js";
 export { serialize, restore } from "./helpers/persistence.js";
+export {
+  mergeStates,
+  createStateFactory,
+  prefixStates,
+  createBridge,
+  type StateFactory
+} from "./helpers/composition.js";
