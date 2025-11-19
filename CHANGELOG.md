@@ -7,6 +7,21 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Added
 
+- **Automated Threat Detection and Defense Coordination System**: Implemented comprehensive defense automation with threat detection, defensive posture management, and coordinated responses
+  - Created ThreatDetector class for room scanning and threat assessment with intelligent scoring
+  - Created DefenseCoordinator class to manage defensive responses and coordinate tower/combat operations
+  - Integrated defense system into kernel execution flow (runs before infrastructure management)
+  - Added defensive posture system: normal → alert → defensive → emergency
+  - Threat levels: none, low, medium, high, critical (based on hostile count and body composition)
+  - Threat scoring prioritizes healers (12 pts), attackers (10/8 pts), and dismantlers (5 pts)
+  - Memory persistence in Memory.threats, Memory.defense, Memory.combat
+  - Automatic spawn priority adjustment: defenders prioritized during defensive/emergency postures
+  - Controller upgrading pauses during defensive/emergency postures (issue ralphschuler/.screeps-gpt#702)
+  - Upgraders move to safe positions near storage/spawns during combat
+  - Memory cleanup for stale threat data (default: 100 ticks)
+  - Added 23 comprehensive unit tests covering threat detection and defense coordination
+  - Added comprehensive documentation in docs/runtime/defense.md
+  - Resolves issue ralphschuler/.screeps-gpt#1024 (implement automated threat detection and defense coordination)
 - **Path Caching System**: Implemented comprehensive path caching with TTL and LRU eviction for CPU optimization
   - Created PathCache class with configurable TTL (default 1500 ticks) and LRU eviction
   - Integrated path caching into DefaultPathfinder and CartographerPathfinder
