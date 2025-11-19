@@ -317,11 +317,11 @@ describe("RCL 4 Extension Construction Regression", () => {
       const room = createMockRoom("W1N1", 4);
       const game = createMockGame({ W1N1: room });
 
-      // Create manager with maxSitesPerTick = 3
+      // Create manager with maxSitesPerTick = 3 and maxSitesPerRoom = 3
       const manager = new ConstructionManager(
         mockLogger,
         3, // maxSitesPerTick
-        1, // maxSitesPerRoom
+        3, // maxSitesPerRoom - allow 3 sites from single room
         FIND_MY_SPAWNS,
         FIND_STRUCTURES,
         FIND_MY_CONSTRUCTION_SITES,
