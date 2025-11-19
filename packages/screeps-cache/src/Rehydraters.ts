@@ -5,18 +5,16 @@ export const defaultRehydrater: Rehydrater = d => d;
 
 // Access RoomPosition from global context (works in both Node.js and Screeps)
 const getRoomPosition = (): any => {
-  if (typeof global !== 'undefined' && (global as any).RoomPosition) {
+  if (typeof global !== "undefined" && (global as any).RoomPosition) {
     return (global as any).RoomPosition;
   }
-  if (typeof globalThis !== 'undefined' && (globalThis as any).RoomPosition) {
+  if (typeof globalThis !== "undefined" && (globalThis as any).RoomPosition) {
     return (globalThis as any).RoomPosition;
   }
   return undefined;
 };
 
-export const asRoomPosition: Rehydrater = (
-  pos: { x: number; y: number; roomName: string } | undefined
-): any => {
+export const asRoomPosition: Rehydrater = (pos: { x: number; y: number; roomName: string } | undefined): any => {
   if (!pos) return;
   const RoomPositionClass = getRoomPosition();
   if (!RoomPositionClass) return pos;

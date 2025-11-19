@@ -11,7 +11,7 @@ npm install @ralphschuler/screeps-cache
 ## Usage
 
 ```typescript
-import { heapCacheGetter, memoryCacheGetter, memoryCache, keyById } from '@ralphschuler/screeps-cache';
+import { heapCacheGetter, memoryCacheGetter, memoryCache, keyById } from "@ralphschuler/screeps-cache";
 
 class CachedContainer {
   constructor(public id: Id<StructureContainer>) {}
