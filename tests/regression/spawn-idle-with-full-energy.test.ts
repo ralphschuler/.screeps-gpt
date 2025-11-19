@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { BehaviorController } from "@runtime/behavior/BehaviorController";
-import type { GameContext, RoomLike } from "@runtime/types/GameContext";
+import type { GameContext } from "@runtime/types/GameContext";
 
 /**
  * Regression test for Issue #1027: Spawn idle despite available energy

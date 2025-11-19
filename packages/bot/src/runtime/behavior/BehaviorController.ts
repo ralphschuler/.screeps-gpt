@@ -669,9 +669,10 @@ export class BehaviorController {
    * from the previous tick (stored in Memory.taskStats).
    *
    * @param game - The game context
+   * @param memory - The Memory object for accessing task stats
    * @returns Adjusted role minimums for the current room state
    */
-  private calculateDynamicRoleMinimums(game: GameContext): Partial<Record<RoleName, number>> {
+  private calculateDynamicRoleMinimums(game: GameContext, memory: Memory): Partial<Record<RoleName, number>> {
     const adjustedMinimums: Partial<Record<RoleName, number>> = {};
 
     // Count sources with adjacent containers and detect link network
@@ -911,9 +912,9 @@ export class BehaviorController {
     // Task-based demand: Scale workforce based on pending task queue from previous tick
     // Note: Task generation happens AFTER spawn decisions, so we use stats from previous tick
     // stored in Memory to inform current tick's spawn decisions
-    if (this.options.useTaskSystem && game.memory.taskStats) {
+    if (this.options.useTaskSystem && memory.taskStats) {
       const totalCreeps = Object.keys(game.creeps).length;
-      const previousTickPendingTasks = game.memory.taskStats.pending;
+      const previousTickPendingTasks = memory.taskStats.pending;
 
       // Calculate additional creeps needed based on previous tick's pending tasks
       // Assume each creep can handle ~3-5 tasks on average
@@ -968,7 +969,7 @@ export class BehaviorController {
     this.validateSpawnHealth(game.spawns, game.creeps, game.time, memory);
 
     // Detect containers near sources and adjust role minimums dynamically
-    const adjustedMinimums = this.calculateDynamicRoleMinimums(game);
+    const adjustedMinimums = this.calculateDynamicRoleMinimums(game, memory);
 
     // Get current harvester count for emergency spawn detection
     const harvesterCount = roleCounts["harvester"] ?? 0;
