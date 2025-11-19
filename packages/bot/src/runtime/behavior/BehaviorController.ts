@@ -977,8 +977,29 @@ export class BehaviorController {
     // prioritize them FIRST to activate logistics infrastructure immediately.
     // This is critical because storage/towers indicate energy already exists in the room
     // and needs to be distributed to spawns/extensions/towers for operations.
+    
+    // Check for defensive posture requiring defender spawning
+    const needsDefenders = memory.defense && Object.values(memory.defense.posture).some(
+      posture => posture === "defensive" || posture === "emergency"
+    );
+    
     let roleOrder: RoleName[];
-    if (needsCriticalHauler) {
+    if (needsDefenders) {
+      // Defense mode: prioritize defenders (attacker, healer) after essential roles
+      roleOrder = [
+        "harvester", // Essential for energy
+        "hauler", // Essential for logistics
+        "attacker", // CRITICAL: defend against threats
+        "healer", // CRITICAL: support defenders
+        "upgrader",
+        "builder",
+        "stationaryHarvester",
+        "repairer",
+        "remoteMiner",
+        "dismantler",
+        "claimer"
+      ];
+    } else if (needsCriticalHauler) {
       // Hauler emergency mode: spawn hauler first to activate logistics
       roleOrder = [
         "hauler", // CRITICAL: logistics infrastructure exists but not operational
@@ -1432,6 +1453,21 @@ function runUpgrader(creep: ManagedCreep): string {
   const memory = creep.memory as UpgraderMemory;
   const comm = getComm();
   const energyMgr = getEnergyManager();
+
+  // Check if room is under defensive posture - pause upgrading during combat
+  const roomPosture = Memory.defense?.posture[creep.room.name];
+  const shouldPauseUpgrading = roomPosture === "defensive" || roomPosture === "emergency";
+  
+  if (shouldPauseUpgrading) {
+    // During combat, upgraders should act as energy distributors instead
+    comm?.say(creep, "🛡️");
+    // Move to a safe position near storage/spawn
+    const safeSpot = creep.room.storage ?? creep.room.find(FIND_MY_SPAWNS)[0];
+    if (safeSpot && creep.pos.getRangeTo(safeSpot) > 3) {
+      creep.moveTo(safeSpot, { range: 3, reusePath: 10 });
+    }
+    return UPGRADE_TASK; // Keep task state but don't upgrade
+  }
 
   // CRITICAL: Check if spawn needs immediate refilling BEFORE any other task
   const hasEnergy = creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
