@@ -25,6 +25,13 @@
       "@profiler": ["packages/bot/src/profiler"]
     }
   },
-  "include": ["packages/*/src", "packages/*/scripts", "packages/*/tests", "packages/bot/types.d.ts", "tests"],
+  "include": [
+    "packages/*/src",
+    "packages/*/scripts",
+    "packages/*/tests",
+    "packages/bot/types.d.ts",
+    "packages/*/vitest.config.ts",
+    "tests"
+  ],
   "exclude": ["node_modules", "dist", "build"]
 }
