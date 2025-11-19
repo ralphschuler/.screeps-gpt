@@ -1,0 +1,34 @@
+{
+  "name": "@ralphschuler/screeps-async",
+  "version": "0.1.0",
+  "description": "Generator-based async patterns for multi-tick operations in Screeps runtime",
+  "license": "MIT",
+  "author": "OpenAI Automations",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "keywords": [
+    "screeps",
+    "async",
+    "generator",
+    "multi-tick",
+    "task",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ralphschuler/.screeps-gpt.git",
+    "directory": "packages/screeps-async"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.1",
+    "@types/screeps": "^3.3.8",
+    "typescript": "^5.4.3",
+    "vitest": "^4.0.1"
+  }
+}
