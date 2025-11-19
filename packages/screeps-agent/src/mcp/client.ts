@@ -6,7 +6,8 @@
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
-import type { ScreepsConfig, MCPResourceType } from "../types.js";
+import type { ScreepsConfig } from "../types.js";
+import { MCPResourceType } from "../types.js";
 
 /**
  * MCP client for Screeps operations

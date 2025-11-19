@@ -5,7 +5,8 @@
  */
 
 import type { MCPClient } from "../mcp/client.js";
-import type { TestExecutionResult, TaskResult, AgentAction, ActionType } from "../types.js";
+import type { TestExecutionResult, TaskResult, AgentAction } from "../types.js";
+import { ActionType } from "../types.js";
 
 /**
  * Testing capability for running and validating tests
