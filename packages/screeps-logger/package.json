@@ -1,0 +1,36 @@
+{
+  "name": "@ralphschuler/screeps-logger",
+  "version": "0.1.0",
+  "description": "Structured logger with timestamp support for Screeps runtime",
+  "license": "MIT",
+  "author": "OpenAI Automations",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "keywords": [
+    "screeps",
+    "logger",
+    "logging",
+    "structured-logging",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ralphschuler/.screeps-gpt.git",
+    "directory": "packages/screeps-logger"
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.1",
+    "@types/screeps": "^3.3.8",
+    "typescript": "^5.4.3",
+    "vitest": "^4.0.1"
+  }
+}
