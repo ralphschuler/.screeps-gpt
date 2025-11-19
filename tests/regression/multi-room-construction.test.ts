@@ -141,7 +141,7 @@ describe("Multi-room construction planning (regression #632)", () => {
     const manager = new ConstructionManager(
       logger,
       3, // Total budget = 3
-      2, // Per-room budget = 2
+      1, // Per-room budget = 1 (easier to test exact counts)
       FIND_MY_SPAWNS,
       FIND_STRUCTURES,
       FIND_MY_CONSTRUCTION_SITES,
@@ -165,9 +165,9 @@ describe("Multi-room construction planning (regression #632)", () => {
     // Should create at most 3 sites total (total budget)
     expect(created).toBe(3);
 
-    // Count how many rooms got sites
+    // Exactly 3 rooms should get sites (one site per room with per-room budget = 1)
     const roomsWithSites = rooms.filter(r => r.createConstructionSite.mock.calls.length > 0);
-    expect(roomsWithSites.length).toBeLessThanOrEqual(3);
+    expect(roomsWithSites.length).toBe(3);
   });
 
   it("should scale better than old default (maxSitesPerTick=1)", () => {

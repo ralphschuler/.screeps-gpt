@@ -133,10 +133,11 @@ describe("RCL 4 Extension Construction Regression", () => {
       const room = createMockRoom("W1N1", 4);
       const game = createMockGame({ W1N1: room });
 
-      // Create ConstructionManager with maxSitesPerTick = 1 (default behavior)
+      // Create ConstructionManager with maxSitesPerTick = 1 (old default behavior)
       const manager = new ConstructionManager(
         mockLogger,
         1, // maxSitesPerTick
+        1, // maxSitesPerRoom
         FIND_MY_SPAWNS,
         FIND_STRUCTURES,
         FIND_MY_CONSTRUCTION_SITES,
@@ -193,6 +194,7 @@ describe("RCL 4 Extension Construction Regression", () => {
       const manager = new ConstructionManager(
         mockLogger,
         1,
+        1,
         FIND_MY_SPAWNS,
         FIND_STRUCTURES,
         FIND_MY_CONSTRUCTION_SITES,
@@ -228,6 +230,7 @@ describe("RCL 4 Extension Construction Regression", () => {
 
       const manager = new ConstructionManager(
         mockLogger,
+        1,
         1,
         FIND_MY_SPAWNS,
         FIND_STRUCTURES,
@@ -276,6 +279,7 @@ describe("RCL 4 Extension Construction Regression", () => {
       const manager = new ConstructionManager(
         mockLogger,
         1,
+        1,
         FIND_MY_SPAWNS,
         FIND_STRUCTURES,
         FIND_MY_CONSTRUCTION_SITES,
@@ -317,6 +321,7 @@ describe("RCL 4 Extension Construction Regression", () => {
       const manager = new ConstructionManager(
         mockLogger,
         3, // maxSitesPerTick
+        1, // maxSitesPerRoom
         FIND_MY_SPAWNS,
         FIND_STRUCTURES,
         FIND_MY_CONSTRUCTION_SITES,
@@ -366,6 +371,7 @@ describe("RCL 4 Extension Construction Regression", () => {
 
       const manager = new ConstructionManager(
         mockLogger,
+        1,
         1,
         FIND_MY_SPAWNS,
         FIND_STRUCTURES,
