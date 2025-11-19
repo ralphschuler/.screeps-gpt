@@ -158,7 +158,7 @@ export class Kernel {
       config.visualManager ??
       new RoomVisualManager({
         enabled:
-          process.env.ROOM_VISUALS_ENABLED === "true" ||
+          __ROOM_VISUALS_ENABLED__ === "true" ||
           (typeof Memory !== "undefined" && Memory.experimentalFeatures?.roomVisuals === true)
       });
     this.repositorySignalProvider = config.repositorySignalProvider;

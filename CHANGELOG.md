@@ -5,6 +5,23 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Changed
+
+- **Screeps-Kernel Integration**: Refactored bot package to use `@ralphschuler/screeps-kernel` decorator-based process management system
+  - Replaced custom `createKernel()` factory with `Kernel` class from `@ralphschuler/screeps-kernel`
+  - Created `MainProcess` wrapper using `@process` decorator to bridge screeps-kernel with existing bot logic
+  - Renamed `process` decorator import to `registerProcess` to avoid shadowing Node.js global
+  - Migrated from `process.env` to build-time constants (`__PROFILER_ENABLED__`, `__TASK_SYSTEM_ENABLED__`, `__ROOM_VISUALS_ENABLED__`)
+  - Updated esbuild configuration to inject environment variables as compile-time constants
+  - Enhanced screeps-profiler with null safety checks for `Memory.profiler`
+  - Added comprehensive architecture documentation in `SCREEPS_KERNEL_INTEGRATION.md`
+  - Zero breaking changes - all 783 unit tests pass
+  - Establishes foundation for future modularization of bot components
+- **Package Build Automation**: Added postinstall scripts to all workspace packages
+  - Automatically builds packages after `npm install` or `bun install`
+  - Ensures packages are ready for import in workspace without manual build steps
+  - Affects: screeps-kernel, screeps-profiler, screeps-logger, screeps-cache, screeps-perf, screeps-metrics, screeps-async, screeps-xstate, screeps-xtree, screeps-mcp, screeps-agent
+
 ### Added
 
 - **Screeps Metrics Package**: New package `@ralphschuler/screeps-metrics` for comprehensive metrics collection

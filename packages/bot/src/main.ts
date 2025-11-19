@@ -1,30 +1,15 @@
-import { createKernel } from "@runtime/bootstrap";
+import { Kernel } from "@ralphschuler/screeps-kernel";
 import type { GameContext } from "@runtime/types/GameContext";
-import { BehaviorController } from "@runtime/behavior/BehaviorController";
 import { init as initProfiler } from "@ralphschuler/screeps-profiler";
 import { Diagnostics } from "@runtime/utils/Diagnostics";
 
-// Task system is enabled by default (v0.32.0+)
-// Can be disabled via TASK_SYSTEM_ENABLED=false or Memory flag
-// Memory access is safe here as it's initialized by the Screeps engine before loop() is called
-const taskSystemEnabled =
-  process.env.TASK_SYSTEM_ENABLED === "false"
-    ? false
-    : process.env.TASK_SYSTEM_ENABLED === "true"
-      ? true
-      : typeof Memory !== "undefined" && Memory.experimentalFeatures?.taskSystem === false
-        ? false
-        : true; // Default to enabled
+// Import process modules to trigger @process decorator registration
+import "@runtime/processes";
 
-const kernel = createKernel({
-  repositorySignalProvider: () => {
-    return Memory.systemReport?.report?.repository;
-  },
-  behavior: new BehaviorController({
-    useTaskSystem: taskSystemEnabled,
-    cpuSafetyMargin: 0.8,
-    maxCpuPerCreep: 1.5
-  })
+// Create kernel instance using screeps-kernel
+const kernel = new Kernel({
+  logger: console,
+  cpuEmergencyThreshold: 0.9
 });
 
 // Initialize profiler and expose it globally for console access

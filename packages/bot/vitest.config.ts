@@ -15,7 +15,9 @@ export default defineConfig({
     }
   },
   define: {
-    __PROFILER_ENABLED__: false
+    __PROFILER_ENABLED__: false,
+    __TASK_SYSTEM_ENABLED__: JSON.stringify("true"),
+    __ROOM_VISUALS_ENABLED__: JSON.stringify("false")
   },
   test: {
     globals: true,
