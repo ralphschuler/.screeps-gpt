@@ -3,6 +3,9 @@ import type { ColonyManagerMemory } from "./packages/bot/src/runtime/planning/Co
 import type { ProfilerMemory } from "./packages/bot/src/shared/profiler-types";
 import type { CommunicationVerbosity } from "./packages/bot/src/runtime/behavior/CreepCommunicationManager";
 import type { InfrastructureMemory } from "./packages/bot/src/runtime/infrastructure/InfrastructureManager";
+import type { ThreatMemory } from "./packages/bot/src/runtime/defense/ThreatDetector";
+import type { DefenseMemory } from "./packages/bot/src/runtime/defense/DefenseCoordinator";
+import type { CombatManagerMemory } from "./packages/bot/src/runtime/defense/CombatManager";
 
 declare global {
   interface Memory {
@@ -148,6 +151,16 @@ declare global {
         orders: number;
       };
     };
+    /**
+     * Threat detection and defense coordination memory.
+     * Tracks hostile creeps and defensive posture per room.
+     * @see src/runtime/defense/ThreatDetector.ts
+     * @see src/runtime/defense/DefenseCoordinator.ts
+     * @see src/runtime/defense/CombatManager.ts
+     */
+    threats?: ThreatMemory;
+    defense?: DefenseMemory;
+    combat?: CombatManagerMemory;
   }
 
   interface CreepMemory {

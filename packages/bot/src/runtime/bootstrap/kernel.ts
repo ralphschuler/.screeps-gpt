@@ -18,6 +18,10 @@ import { InfrastructureManager, type InfrastructureMemory } from "@runtime/infra
 import { LinkManager } from "@runtime/infrastructure/LinkManager";
 import { BootstrapPhaseManager } from "./BootstrapPhaseManager";
 import { EmpireManager } from "@runtime/empire";
+import { ThreatDetector, type ThreatMemory } from "@runtime/defense/ThreatDetector";
+import { DefenseCoordinator, type DefenseMemory } from "@runtime/defense/DefenseCoordinator";
+import { TowerManager } from "@runtime/defense/TowerManager";
+import { CombatManager, type CombatManagerMemory } from "@runtime/defense/CombatManager";
 import type { GameContext } from "@runtime/types/GameContext";
 import { profile } from "@profiler";
 
@@ -39,6 +43,7 @@ export interface KernelConfig {
   linkManager?: LinkManager;
   bootstrapManager?: BootstrapPhaseManager;
   empireManager?: EmpireManager;
+  defenseCoordinator?: DefenseCoordinator;
   repositorySignalProvider?: () => RepositorySignal | undefined;
   logger?: Pick<Console, "log" | "warn">;
   cpuEmergencyThreshold?: number;
@@ -71,6 +76,7 @@ export class Kernel {
   private readonly linkManager: LinkManager;
   private readonly bootstrapManager: BootstrapPhaseManager;
   private readonly empireManager: EmpireManager;
+  private readonly defenseCoordinator: DefenseCoordinator;
   private readonly repositorySignalProvider?: () => RepositorySignal | undefined;
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly cpuEmergencyThreshold: number;
@@ -115,6 +121,33 @@ export class Kernel {
       });
     this.bootstrapManager = config.bootstrapManager ?? new BootstrapPhaseManager({}, this.logger);
     this.empireManager = config.empireManager ?? new EmpireManager({ logger: this.logger });
+
+    // Initialize defense system with memory references
+    // Initialize Memory structures before passing to defense components to ensure they exist
+    if (!config.defenseCoordinator) {
+      if (typeof Memory !== "undefined") {
+        Memory.threats ??= { rooms: {}, lastUpdate: 0 };
+        Memory.defense ??= { posture: {}, lastDefenseAction: 0 };
+        Memory.combat ??= { squads: {} };
+      }
+
+      const threatMemory: ThreatMemory | undefined = typeof Memory !== "undefined" ? Memory.threats : undefined;
+      const defenseMemory: DefenseMemory | undefined = typeof Memory !== "undefined" ? Memory.defense : undefined;
+      const threatDetector = new ThreatDetector(this.logger, threatMemory);
+      const towerManager = new TowerManager(this.logger);
+      const combatMemory: CombatManagerMemory | undefined = typeof Memory !== "undefined" ? Memory.combat : undefined;
+      const combatManager = new CombatManager({ logger: this.logger, memory: combatMemory });
+      this.defenseCoordinator = new DefenseCoordinator(
+        threatDetector,
+        towerManager,
+        combatManager,
+        this.logger,
+        defenseMemory
+      );
+    } else {
+      this.defenseCoordinator = config.defenseCoordinator;
+    }
+
     this.enableGarbageCollection = config.enableGarbageCollection ?? true;
     this.garbageCollectionInterval = config.garbageCollectionInterval ?? 10;
     this.enableSelfHealing = config.enableSelfHealing ?? true;
@@ -320,6 +353,20 @@ export class Kernel {
           );
         }
         this.bootstrapManager.markRoadsPlanned(memory, roadPlanningStatus.roomName);
+      }
+    }
+
+    // Run threat detection and defense coordination (before infrastructure management)
+    // Initialize defense memory structures if needed
+    memory.threats ??= { rooms: {}, lastUpdate: 0 };
+    memory.defense ??= { posture: {}, lastDefenseAction: 0 };
+    memory.combat ??= { squads: {} };
+
+    // Coordinate defense for all owned rooms
+    for (const roomName in game.rooms) {
+      const room = game.rooms[roomName];
+      if (room.controller?.my) {
+        this.defenseCoordinator.coordinateDefense(room, game.time);
       }
     }
 

@@ -977,8 +977,35 @@ export class BehaviorController {
     // prioritize them FIRST to activate logistics infrastructure immediately.
     // This is critical because storage/towers indicate energy already exists in the room
     // and needs to be distributed to spawns/extensions/towers for operations.
+
+    // Check for defensive posture requiring defender spawning
+    // Only consider owned rooms to avoid triggering defense mode for hostile/scouted rooms
+    const needsDefenders = Boolean(
+      memory.defense &&
+        game.rooms &&
+        Object.entries(memory.defense.posture as Record<string, string>).some(
+          ([roomName, posture]) =>
+            game.rooms[roomName]?.controller?.my && (posture === "defensive" || posture === "emergency")
+        )
+    );
+
     let roleOrder: RoleName[];
-    if (needsCriticalHauler) {
+    if (needsDefenders) {
+      // Defense mode: prioritize defenders (attacker, healer) after essential roles
+      roleOrder = [
+        "harvester", // Essential for energy
+        "hauler", // Essential for logistics
+        "attacker", // CRITICAL: defend against threats
+        "healer", // CRITICAL: support defenders
+        "upgrader",
+        "builder",
+        "stationaryHarvester",
+        "repairer",
+        "remoteMiner",
+        "dismantler",
+        "claimer"
+      ];
+    } else if (needsCriticalHauler) {
       // Hauler emergency mode: spawn hauler first to activate logistics
       roleOrder = [
         "hauler", // CRITICAL: logistics infrastructure exists but not operational
@@ -1432,6 +1459,24 @@ function runUpgrader(creep: ManagedCreep): string {
   const memory = creep.memory as UpgraderMemory;
   const comm = getComm();
   const energyMgr = getEnergyManager();
+
+  // Check if room is under defensive posture - pause upgrading during combat
+  const roomPosture = (Memory.defense?.posture as Record<string, string> | undefined)?.[creep.room.name];
+  const shouldPauseUpgrading = roomPosture === "defensive" || roomPosture === "emergency";
+
+  if (shouldPauseUpgrading) {
+    // During combat, upgraders move to a safe position and pause upgrading
+    comm?.say(creep, "🛡️");
+    // Move to a safe position near storage/spawn
+    const safeSpot = creep.room.storage ?? creep.room.find(FIND_MY_SPAWNS)[0];
+    if (safeSpot) {
+      const distance = creep.pos.getRangeTo(safeSpot);
+      if (distance > 3) {
+        void creep.moveTo(safeSpot, { range: 3, reusePath: 10 });
+      }
+    }
+    return UPGRADE_TASK; // Keep task state but don't upgrade
+  }
 
   // CRITICAL: Check if spawn needs immediate refilling BEFORE any other task
   const hasEnergy = creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
@@ -2385,9 +2430,10 @@ function runAttacker(creep: ManagedCreep): string {
   }
 
   // Priority 2: Attack hostile spawns
-  const hostileSpawns = creep.room.find(FIND_HOSTILE_STRUCTURES, {
-    filter: (s: Structure) => s.structureType === STRUCTURE_SPAWN
-  }) as StructureSpawn[];
+  const hostileSpawns = creep.room.find(FIND_STRUCTURES, {
+    filter: (s: Structure): s is StructureSpawn =>
+      !s.my && "owner" in s && s.owner !== undefined && s.structureType === STRUCTURE_SPAWN
+  });
   if (hostileSpawns.length > 0) {
     const target: StructureSpawn | null = creep.pos.findClosestByPath(hostileSpawns);
     const actualTarget: StructureSpawn = target ?? hostileSpawns[0];
@@ -2400,9 +2446,10 @@ function runAttacker(creep: ManagedCreep): string {
   }
 
   // Priority 3: Attack hostile towers
-  const hostileTowers = creep.room.find(FIND_HOSTILE_STRUCTURES, {
-    filter: (s: Structure) => s.structureType === STRUCTURE_TOWER
-  }) as StructureTower[];
+  const hostileTowers = creep.room.find(FIND_STRUCTURES, {
+    filter: (s: Structure): s is StructureTower =>
+      !s.my && "owner" in s && s.owner !== undefined && s.structureType === STRUCTURE_TOWER
+  });
   if (hostileTowers.length > 0) {
     const target: StructureTower | null = creep.pos.findClosestByPath(hostileTowers);
     const actualTarget: StructureTower = target ?? hostileTowers[0];
@@ -2415,7 +2462,9 @@ function runAttacker(creep: ManagedCreep): string {
   }
 
   // Priority 4: Attack any hostile structure
-  const hostileStructures = creep.room.find(FIND_HOSTILE_STRUCTURES) as Structure[];
+  const hostileStructures = creep.room.find(FIND_STRUCTURES, {
+    filter: (s: Structure): s is OwnedStructure => !s.my && "owner" in s && s.owner !== undefined
+  });
   if (hostileStructures.length > 0) {
     const target: Structure | null = creep.pos.findClosestByPath(hostileStructures);
     const actualTarget: Structure = target ?? hostileStructures[0];
@@ -2535,9 +2584,10 @@ function runDismantler(creep: ManagedCreep): string {
   comm?.say(creep, "🔨");
 
   // Priority 1: Dismantle ramparts (create breach points)
-  const ramparts = creep.room.find(FIND_HOSTILE_STRUCTURES, {
-    filter: (s: Structure) => s.structureType === STRUCTURE_RAMPART
-  }) as StructureRampart[];
+  const ramparts = creep.room.find(FIND_STRUCTURES, {
+    filter: (s: Structure): s is StructureRampart =>
+      !s.my && "owner" in s && s.owner !== undefined && s.structureType === STRUCTURE_RAMPART
+  });
   if (ramparts.length > 0) {
     const target: StructureRampart | null = creep.pos.findClosestByPath(ramparts);
     const actualTarget: StructureRampart = target ?? ramparts[0];
@@ -2565,9 +2615,10 @@ function runDismantler(creep: ManagedCreep): string {
   }
 
   // Priority 3: Dismantle towers
-  const towers = creep.room.find(FIND_HOSTILE_STRUCTURES, {
-    filter: (s: Structure) => s.structureType === STRUCTURE_TOWER
-  }) as StructureTower[];
+  const towers = creep.room.find(FIND_STRUCTURES, {
+    filter: (s: Structure): s is StructureTower =>
+      !s.my && "owner" in s && s.owner !== undefined && s.structureType === STRUCTURE_TOWER
+  });
   if (towers.length > 0) {
     const target: StructureTower | null = creep.pos.findClosestByPath(towers);
     const actualTarget: StructureTower = target ?? towers[0];
@@ -2580,7 +2631,9 @@ function runDismantler(creep: ManagedCreep): string {
   }
 
   // Priority 4: Dismantle any hostile structure
-  const hostileStructures = creep.room.find(FIND_HOSTILE_STRUCTURES) as Structure[];
+  const hostileStructures = creep.room.find(FIND_STRUCTURES, {
+    filter: (s: Structure): s is OwnedStructure => !s.my && "owner" in s && s.owner !== undefined
+  });
   if (hostileStructures.length > 0) {
     const target: Structure | null = creep.pos.findClosestByPath(hostileStructures);
     const actualTarget: Structure = target ?? hostileStructures[0];
