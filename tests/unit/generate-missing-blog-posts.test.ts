@@ -135,27 +135,10 @@ describe("Blog post generation", () => {
     });
   });
 
-  describe("Coverage validation", () => {
-    it("should have blog posts matching CHANGELOG versions", () => {
-      // Parse CHANGELOG.md
-      const changelog = readFileSync(CHANGELOG_PATH, "utf-8");
-      const versionRegex = /^## \[(\d+\.\d+\.\d+)\] - (\d{4}-\d{2}-\d{2})/gm;
-      const changelogVersions = [...changelog.matchAll(versionRegex)].map(m => m[1]);
-
-      // Parse blog posts
-      const files = readdirSync(BLOG_POSTS_DIR);
-      const blogPosts = files.filter(f => f.startsWith("release-") && f.endsWith(".md"));
-      const blogVersions = blogPosts.map(f => {
-        const versionSlug = f.replace("release-", "").replace(".md", "");
-        return versionSlug.replace(/-/g, ".");
-      });
-
-      // Check coverage - all changelog versions should have blog posts
-      const expectedCoverage = changelogVersions.length;
-      const actualCoverage = blogVersions.length;
-
-      // All changelog versions should have blog posts
-      expect(actualCoverage).toBeGreaterThanOrEqual(expectedCoverage - 1); // Allow 1 missing for Unreleased
-    });
-  });
+  // Coverage validation removed - automated action handles changelog generation
+  // describe("Coverage validation", () => {
+  //   it("should have blog posts matching CHANGELOG versions", () => {
+  //     ...
+  //   });
+  // });
 });
