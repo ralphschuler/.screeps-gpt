@@ -12,6 +12,11 @@
     "dist/main.js.map",
     "src"
   ],
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
   "dependencies": {
     "@ralphschuler/screeps-logger": "workspace:*",
     "screeps-cartographer": "^1.8.13"
@@ -20,6 +25,7 @@
     "@types/screeps": "^3.3.8",
     "bun-plugin-screeps": "^1.0.0",
     "esbuild": "^0.25.11",
-    "typescript": "^5.4.3"
+    "typescript": "^5.4.3",
+    "vitest": "^4.0.1"
   }
 }

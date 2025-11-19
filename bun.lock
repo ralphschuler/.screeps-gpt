@@ -117,6 +117,16 @@
         "vitest": "^4.0.1",
       },
     },
+    "packages/screeps-cache": {
+      "name": "@ralphschuler/screeps-cache",
+      "version": "1.0.0",
+      "devDependencies": {
+        "@types/node": "^24.9.1",
+        "@types/screeps": "^3.3.8",
+        "typescript": "^5.4.3",
+        "vitest": "^4.0.1",
+      },
+    },
     "packages/screeps-logger": {
       "name": "@ralphschuler/screeps-logger",
       "version": "0.1.0",
@@ -399,6 +409,8 @@
     "@ralphschuler/screeps-agent": ["@ralphschuler/screeps-agent@workspace:packages/screeps-agent"],
 
     "@ralphschuler/screeps-async": ["@ralphschuler/screeps-async@workspace:packages/screeps-async"],
+
+    "@ralphschuler/screeps-cache": ["@ralphschuler/screeps-cache@workspace:packages/screeps-cache"],
 
     "@ralphschuler/screeps-gpt-actions": ["@ralphschuler/screeps-gpt-actions@workspace:packages/actions"],
 

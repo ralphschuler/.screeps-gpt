@@ -1,2 +1,51 @@
 npx lint-staged
-npm run test:unit
+
+# Detect which packages have changes
+CHANGED=$(tsx packages/utilities/scripts/detect-changed-packages.ts)
+
+# If root-level changes, run all tests
+if [ "$CHANGED" = "ROOT" ]; then
+  echo "⚙️  Root-level changes detected. Running root tests..."
+  npm run test:unit
+  exit $?
+fi
+
+# If no changes detected, skip tests
+if [ "$CHANGED" = "NONE" ]; then
+  echo "✓ No package changes detected. Skipping tests."
+  exit 0
+fi
+
+# Run tests for each changed package that has tests
+echo "⚙️  Changed packages: $CHANGED"
+TEST_FAILED=0
+
+while IFS= read -r PACKAGE; do
+  if [ -z "$PACKAGE" ]; then
+    continue
+  fi
+  
+  # Extract package directory from package name
+  PACKAGE_DIR=$(find packages -type f -name "package.json" -exec grep -l "\"name\": \"$PACKAGE\"" {} \; | head -1 | xargs dirname)
+  
+  if [ -z "$PACKAGE_DIR" ]; then
+    continue
+  fi
+  
+  # Check if package has test script
+  if grep -q '"test"' "$PACKAGE_DIR/package.json" 2>/dev/null; then
+    echo "🧪 Running tests for $PACKAGE..."
+    (cd "$PACKAGE_DIR" && npm run test) || TEST_FAILED=1
+  else
+    echo "⊘ No tests configured for $PACKAGE"
+  fi
+done <<< "$CHANGED"
+
+# If any package-specific tests failed, fail the hook
+if [ $TEST_FAILED -eq 1 ]; then
+  echo "❌ Some package tests failed"
+  exit 1
+fi
+
+echo "✓ All package tests passed"
+exit 0
