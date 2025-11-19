@@ -1,19 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 
 /// <reference types="@types/screeps" />
 
-import type {
-  Profiler,
-  ProfilerMemory,
-  ProfilerCache,
-  ProfilerOutputData,
-  ProfilerOptions
-} from "./types.js";
+import type { Profiler, ProfilerMemory, ProfilerCache, ProfilerOutputData, ProfilerOptions } from "./types.js";
 
 /**
  * Performance Optimization: Cache profiler enabled state per tick
@@ -74,7 +63,7 @@ function clearEnabledCache(): void {
  * // Profiler.stop()
  * ```
  */
-export function init(options: ProfilerOptions = {}): Profiler {
+export function init(_options: ProfilerOptions = {}): Profiler {
   const defaults: ProfilerMemory = {
     data: {},
     total: 0

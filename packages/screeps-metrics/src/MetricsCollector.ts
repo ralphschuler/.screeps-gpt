@@ -37,7 +37,7 @@ export class MetricsCollector {
    *
    * @param options - Configuration options for what metrics to collect
    */
-  constructor(options: MetricsOptions = {}) {
+  public constructor(options: MetricsOptions = {}) {
     this.options = {
       collectCpu: options.collectCpu ?? true,
       collectHeap: options.collectHeap ?? true,
@@ -60,9 +60,7 @@ export class MetricsCollector {
     const gcl = this.options.collectGcl ? this.collectGclMetrics() : this.getEmptyGclMetrics();
     const gpl = this.options.collectGpl ? this.collectGplMetrics() : null;
     const rooms = this.options.collectRooms ? this.collectRoomMetrics() : {};
-    const resources = this.options.collectResources
-      ? this.collectResourceMetrics()
-      : this.getEmptyResourceMetrics();
+    const resources = this.options.collectResources ? this.collectResourceMetrics() : this.getEmptyResourceMetrics();
 
     return {
       tick,
@@ -135,8 +133,7 @@ export class MetricsCollector {
    * @returns GCL metrics including level, progress, and percentage
    */
   public collectGclMetrics(): GclMetrics {
-    const progressPercent =
-      Game.gcl.progressTotal > 0 ? (Game.gcl.progress / Game.gcl.progressTotal) * 100 : 0;
+    const progressPercent = Game.gcl.progressTotal > 0 ? (Game.gcl.progress / Game.gcl.progressTotal) * 100 : 0;
 
     return {
       level: Game.gcl.level,
@@ -156,8 +153,7 @@ export class MetricsCollector {
       return null;
     }
 
-    const progressPercent =
-      Game.gpl.progressTotal > 0 ? (Game.gpl.progress / Game.gpl.progressTotal) * 100 : 0;
+    const progressPercent = Game.gpl.progressTotal > 0 ? (Game.gpl.progress / Game.gpl.progressTotal) * 100 : 0;
 
     return {
       level: Game.gpl.level,
