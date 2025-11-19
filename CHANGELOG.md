@@ -22,6 +22,15 @@ All notable changes to this project are documented here. This changelog now main
   - Added 23 comprehensive unit tests covering threat detection and defense coordination
   - Added comprehensive documentation in docs/runtime/defense.md
   - Resolves issue ralphschuler/.screeps-gpt#1024 (implement automated threat detection and defense coordination)
+
+- **Multi-room Construction Budget**: Enhanced ConstructionManager to support per-room construction limits
+  - Added `maxSitesPerRoom` parameter (default: 1) to prevent single-room spam
+  - Increased `maxSitesPerTick` default from 1 to 5 for multi-room scaling
+  - Allows up to 5 rooms to build concurrently instead of 1 per tick
+  - Scales better for multi-room operation (5x improvement)
+  - Added regression test suite for multi-room construction planning
+  - Resolves issue ralphschuler/.screeps-gpt#632 (ConstructionManager maxSitesPerTick=1 bottlenecks multi-room expansion)
+
 - **Path Caching System**: Implemented comprehensive path caching with TTL and LRU eviction for CPU optimization
   - Created PathCache class with configurable TTL (default 1500 ticks) and LRU eviction
   - Integrated path caching into DefaultPathfinder and CartographerPathfinder
