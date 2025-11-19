@@ -63,35 +63,35 @@ async function fetchProfilerFromConsole(): Promise<ProfilerMemory | null> {
       }
 
       console.log(`  Sending console command to retrieve Memory.profiler...`);
-    
-    // Note: ScreepsAPI.console() returns a Promise despite typing issues in older versions
-    const response = (await api.console(profilerCommand, shard)) as ConsoleResponse;
 
-    console.log(`  Console API response received (ok: ${response.ok})`);
+      // Note: ScreepsAPI.console() returns a Promise despite typing issues in older versions
+      const response = (await api.console(profilerCommand, shard)) as ConsoleResponse;
 
-    if (!response.ok) {
-      console.error(`❌ Console command failed`);
-      console.error(`   Error: ${response.error || "Unknown error"}`);
-      console.error(`   Response status: ${response.ok}`);
-      console.error(`   This may indicate:`);
-      console.error(`     - Invalid or expired SCREEPS_TOKEN`);
-      console.error(`     - Network connectivity issues`);
-      console.error(`     - Screeps server API unavailable`);
-      console.error(`     - Rate limiting`);
-      throw new Error(response.error || "Console command failed");
-    }
+      console.log(`  Console API response received (ok: ${response.ok})`);
 
-    console.log(`  Parsing console response data...`);
-    const result = JSON.parse(response.data) as ProfilerMemory | { error: string };
+      if (!response.ok) {
+        console.error(`❌ Console command failed`);
+        console.error(`   Error: ${response.error || "Unknown error"}`);
+        console.error(`   Response status: ${response.ok}`);
+        console.error(`   This may indicate:`);
+        console.error(`     - Invalid or expired SCREEPS_TOKEN`);
+        console.error(`     - Network connectivity issues`);
+        console.error(`     - Screeps server API unavailable`);
+        console.error(`     - Rate limiting`);
+        throw new Error(response.error || "Console command failed");
+      }
 
-    if ("error" in result) {
-      console.log(`⚠ Profiler not available: ${result.error}`);
-      console.log(`  This typically means:`);
-      console.log(`    - Memory.profiler is undefined (bot not deployed with profiler enabled)`);
-      console.log(`    - Memory has been reset`);
-      console.log(`    - Bot code hasn't executed first tick yet`);
-      return null;
-    }
+      console.log(`  Parsing console response data...`);
+      const result = JSON.parse(response.data) as ProfilerMemory | { error: string };
+
+      if ("error" in result) {
+        console.log(`⚠ Profiler not available: ${result.error}`);
+        console.log(`  This typically means:`);
+        console.log(`    - Memory.profiler is undefined (bot not deployed with profiler enabled)`);
+        console.log(`    - Memory has been reset`);
+        console.log(`    - Bot code hasn't executed first tick yet`);
+        return null;
+      }
 
       console.log(`✓ Profiler data fetched successfully`);
       console.log(
@@ -101,7 +101,7 @@ async function fetchProfilerFromConsole(): Promise<ProfilerMemory | null> {
       return result;
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      
+
       // Determine if error is retryable
       const isRetryable =
         error instanceof Error &&
@@ -121,14 +121,14 @@ async function fetchProfilerFromConsole(): Promise<ProfilerMemory | null> {
       if (error instanceof Error) {
         console.error(`   Error: ${error.message}`);
         console.error(`   Error type: ${error.constructor.name}`);
-        
+
         // Log response data if available (for API errors)
         const apiError = error as Error & { response?: { status?: number; data?: unknown } };
         if (apiError.response) {
           console.error(`   HTTP Status: ${apiError.response.status}`);
           console.error(`   Response data:`, apiError.response.data);
         }
-        
+
         // Provide actionable error messages
         if (error.message.includes("ENOTFOUND") || error.message.includes("ECONNREFUSED")) {
           console.error(`   → Network error: Cannot reach Screeps server`);
@@ -143,7 +143,7 @@ async function fetchProfilerFromConsole(): Promise<ProfilerMemory | null> {
       } else {
         console.error(`   Error: ${String(error)}`);
       }
-      
+
       throw lastError;
     }
   }
@@ -229,7 +229,7 @@ async function main(): Promise<void> {
   } catch (error) {
     console.error("Failed to fetch profiler data:");
     fetchError = error instanceof Error ? error.message : String(error);
-    
+
     if (error instanceof Error) {
       console.error(`  Error: ${error.message}`);
     } else {

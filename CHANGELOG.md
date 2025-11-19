@@ -5,6 +5,21 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Added
+
+- **Path Caching System**: Implemented comprehensive path caching with TTL and LRU eviction for CPU optimization
+  - Created PathCache class with configurable TTL (default 1500 ticks) and LRU eviction
+  - Integrated path caching into DefaultPathfinder and CartographerPathfinder
+  - Added cost matrix caching for terrain and structures
+  - Cache metrics tracking: hit rate, CPU savings, cache sizes, evictions
+  - Cache invalidation API for room and structure changes
+  - Expected CPU savings: 20-30% reduction in pathfinding overhead
+  - Expected pathfinding call reduction: 60-70% through cache hits
+  - Target cache hit rate: >70% within 100 ticks
+  - Memory footprint: <100KB for typical usage
+  - Added 37 comprehensive tests (25 unit, 12 regression)
+  - Resolves issue ralphschuler/.screeps-gpt#1008 (implement path caching with TTL)
+
 ### Performance
 
 - **CPU Profiler Optimization**: Reduced profiler overhead by 60-80% through caching and interval-based collection

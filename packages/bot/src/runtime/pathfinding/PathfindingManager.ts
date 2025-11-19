@@ -1,6 +1,7 @@
 import type { PathfindingOptions, PathfindingProvider } from "./PathfindingProvider";
 import { DefaultPathfinder } from "./DefaultPathfinder";
 import { CartographerPathfinder } from "./CartographerPathfinder";
+import { PathCache, type PathCacheConfig, type PathCacheMetrics } from "./PathCache";
 
 /**
  * Configuration for pathfinding system
@@ -10,6 +11,8 @@ export interface PathfindingConfig {
   provider?: "default" | "cartographer";
   /** Whether to enable path caching (default: true) */
   enableCaching?: boolean;
+  /** Configuration for path cache */
+  cacheConfig?: PathCacheConfig;
   /** Logger for debugging */
   logger?: Pick<Console, "log" | "warn">;
 }
@@ -22,10 +25,14 @@ export class PathfindingManager {
   private readonly provider: PathfindingProvider;
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly enableCaching: boolean;
+  private readonly pathCache: PathCache | null;
 
   public constructor(config: PathfindingConfig = {}) {
     this.logger = config.logger ?? console;
     this.enableCaching = config.enableCaching ?? true;
+
+    // Initialize path cache if enabled
+    this.pathCache = this.enableCaching ? new PathCache(config.cacheConfig) : null;
 
     // Initialize selected provider
     const providerName = config.provider ?? "default";
@@ -38,12 +45,15 @@ export class PathfindingManager {
    * Create pathfinding provider based on configuration
    */
   private createProvider(providerName: "default" | "cartographer"): PathfindingProvider {
+    // PathCache is required for providers to prevent fragmentation
+    const cache = this.pathCache ?? new PathCache();
+
     switch (providerName) {
       case "cartographer":
-        return new CartographerPathfinder();
+        return new CartographerPathfinder(cache);
       case "default":
       default:
-        return new DefaultPathfinder();
+        return new DefaultPathfinder(cache);
     }
   }
 
@@ -76,5 +86,46 @@ export class PathfindingManager {
    */
   public getProviderName(): string {
     return this.provider.getName();
+  }
+
+  /**
+   * Get cache metrics (if caching is enabled)
+   * @returns Cache metrics or null if caching is disabled
+   */
+  public getCacheMetrics(): PathCacheMetrics | null {
+    return this.pathCache?.getMetrics() ?? null;
+  }
+
+  /**
+   * Reset cache metrics
+   * Note: Silently does nothing if caching is disabled
+   */
+  public resetCacheMetrics(): void {
+    this.pathCache?.resetMetrics();
+  }
+
+  /**
+   * Invalidate all cached paths in a specific room
+   * Note: Silently does nothing if caching is disabled
+   */
+  public invalidateRoom(roomName: string): void {
+    this.pathCache?.invalidateRoom(roomName);
+  }
+
+  /**
+   * Invalidate structure-based caches for a room
+   * (call this when structures are built/destroyed)
+   * Note: Silently does nothing if caching is disabled
+   */
+  public invalidateStructures(roomName: string): void {
+    this.pathCache?.invalidateStructures(roomName);
+  }
+
+  /**
+   * Clear all caches
+   * Note: Silently does nothing if caching is disabled
+   */
+  public clearCache(): void {
+    this.pathCache?.clear();
   }
 }

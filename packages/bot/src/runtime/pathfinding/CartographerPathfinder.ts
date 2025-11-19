@@ -1,11 +1,20 @@
 import { moveTo } from "screeps-cartographer";
 import type { PathfindingOptions, PathfindingProvider, PathfindingResult } from "./PathfindingProvider";
+import { PathCache } from "./PathCache";
 
 /**
  * Advanced pathfinding implementation using screeps-cartographer library
  * Provides optimized pathfinding with caching and multi-room support
+ *
+ * @param pathCache - Shared PathCache instance. Required to prevent cache fragmentation.
  */
 export class CartographerPathfinder implements PathfindingProvider {
+  private readonly pathCache: PathCache;
+
+  public constructor(pathCache: PathCache) {
+    this.pathCache = pathCache;
+  }
+
   public getName(): string {
     return "cartographer";
   }
@@ -15,13 +24,26 @@ export class CartographerPathfinder implements PathfindingProvider {
     goal: RoomPosition | { pos: RoomPosition },
     opts: PathfindingOptions = {}
   ): PathfindingResult {
-    const cpuStart = Game.cpu.getUsed();
-
     const goalPos = goal instanceof RoomPosition ? goal : goal.pos;
     const range = opts.range ?? 1;
+    const currentTick = Game.time;
+
+    // Check cache first
+    const cached = this.pathCache.getPath(origin, goalPos, currentTick, { range });
+    if (cached && !cached.incomplete) {
+      return {
+        path: cached.path,
+        ops: cached.ops,
+        cost: 0, // Cache hit has minimal CPU cost
+        incomplete: false
+      };
+    }
+
+    // Cache miss - perform pathfinding
+    const cpuStart = Game.cpu.getUsed();
 
     // Use native PathFinder for path calculation
-    // Cartographer's moveTo handles caching internally
+    // Cartographer's moveTo handles caching internally for movement
     const result = PathFinder.search(
       origin,
       { pos: goalPos, range },
@@ -35,6 +57,16 @@ export class CartographerPathfinder implements PathfindingProvider {
     );
 
     const cpuCost = Game.cpu.getUsed() - cpuStart;
+
+    // Cache successful paths
+    if (!result.incomplete) {
+      this.pathCache.setPath(origin, goalPos, result.path, currentTick, {
+        ops: result.ops,
+        cpuCost,
+        incomplete: result.incomplete,
+        range
+      });
+    }
 
     return {
       path: result.path,

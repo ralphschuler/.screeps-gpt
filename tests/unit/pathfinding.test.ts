@@ -2,7 +2,8 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   PathfindingManager,
   DefaultPathfinder,
-  CartographerPathfinder
+  CartographerPathfinder,
+  PathCache
 } from "../../packages/bot/src/runtime/pathfinding";
 
 // Mock screeps-cartographer at the top level
@@ -94,7 +95,7 @@ describe("Pathfinding Abstraction Layer", () => {
     let pathfinder: DefaultPathfinder;
 
     beforeEach(() => {
-      pathfinder = new DefaultPathfinder();
+      pathfinder = new DefaultPathfinder(new PathCache());
     });
 
     it("should return correct provider name", () => {
@@ -135,10 +136,11 @@ describe("Pathfinding Abstraction Layer", () => {
       const origin = new RoomPosition(10, 10, "W1N1");
       const goal = new RoomPosition(25, 25, "W1N1");
 
-      // Mock Game.cpu.getUsed
+      // Mock Game.cpu.getUsed and Game.time
       const mockGetUsed = vi.fn();
       mockGetUsed.mockReturnValueOnce(0).mockReturnValueOnce(0.5);
       global.Game = {
+        time: 1000,
         cpu: {
           getUsed: mockGetUsed
         }
@@ -167,7 +169,7 @@ describe("Pathfinding Abstraction Layer", () => {
     let pathfinder: CartographerPathfinder;
 
     beforeEach(() => {
-      pathfinder = new CartographerPathfinder();
+      pathfinder = new CartographerPathfinder(new PathCache());
     });
 
     it("should return correct provider name", () => {
@@ -190,10 +192,11 @@ describe("Pathfinding Abstraction Layer", () => {
       const origin = new RoomPosition(10, 10, "W1N1");
       const goal = new RoomPosition(25, 25, "W1N1");
 
-      // Mock Game.cpu.getUsed
+      // Mock Game.cpu.getUsed and Game.time
       const mockGetUsed = vi.fn();
       mockGetUsed.mockReturnValueOnce(0).mockReturnValueOnce(0.3);
       global.Game = {
+        time: 1000,
         cpu: {
           getUsed: mockGetUsed
         }

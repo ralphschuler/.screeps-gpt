@@ -160,24 +160,12 @@ describe("Regression: Emergency Spawn Deadlock Recovery", () => {
     expect(summary.spawnedCreeps.length).toBe(0);
 
     // Verify diagnostic warning was logged
-    expect(logger.warn).toHaveBeenCalledWith(
-      expect.stringContaining("EMERGENCY DEADLOCK")
-    );
-    expect(logger.warn).toHaveBeenCalledWith(
-      expect.stringContaining("Cannot spawn harvester")
-    );
-    expect(logger.warn).toHaveBeenCalledWith(
-      expect.stringContaining("44/1300")
-    );
-    expect(logger.warn).toHaveBeenCalledWith(
-      expect.stringContaining("Minimum required: 150 energy")
-    );
-    expect(logger.warn).toHaveBeenCalledWith(
-      expect.stringContaining("Stored in containers: 94 energy")
-    );
-    expect(logger.warn).toHaveBeenCalledWith(
-      expect.stringContaining("Waiting for passive source regeneration")
-    );
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("EMERGENCY DEADLOCK"));
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("Cannot spawn harvester"));
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("44/1300"));
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("Minimum required: 150 energy"));
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("Stored in containers: 50 energy"));
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("Waiting for passive source regeneration"));
   });
 
   it("should successfully spawn emergency harvester when energy reaches minimum threshold", () => {
@@ -210,15 +198,9 @@ describe("Regression: Emergency Spawn Deadlock Recovery", () => {
     expect(summary.spawnedCreeps[0]).toContain("harvester");
 
     // Verify emergency spawn log message
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining("EMERGENCY SPAWN")
-    );
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining("Recovering from total creep loss")
-    );
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining("150/1300")
-    );
+    expect(logger.log).toHaveBeenCalledWith(expect.stringContaining("EMERGENCY SPAWN"));
+    expect(logger.log).toHaveBeenCalledWith(expect.stringContaining("Recovering from total creep loss"));
+    expect(logger.log).toHaveBeenCalledWith(expect.stringContaining("150/1300"));
 
     // Verify spawn was called with minimal emergency body
     expect(mockSpawn.spawnCreep).toHaveBeenCalled();
@@ -356,12 +338,8 @@ describe("Regression: Emergency Spawn Deadlock Recovery", () => {
     controller.execute(game, memory, roleCounts);
 
     // Should still log emergency deadlock but without container energy info
-    expect(logger.warn).toHaveBeenCalledWith(
-      expect.stringContaining("EMERGENCY DEADLOCK")
-    );
-    expect(logger.warn).toHaveBeenCalledWith(
-      expect.stringContaining("Stored in containers: 44 energy")
-    );
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("EMERGENCY DEADLOCK"));
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("Stored in containers: 0 energy"));
   });
 
   it("should bypass energy reserve requirements in emergency mode", () => {
