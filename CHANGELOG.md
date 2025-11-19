@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.116.0] - 2025-11-19
+
 ### Added
 
 - **Automated Threat Detection and Defense Coordination System**: Implemented comprehensive defense automation with threat detection, defensive posture management, and coordinated responses
