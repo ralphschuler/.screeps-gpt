@@ -1,0 +1,56 @@
+{
+  "name": "@ralphschuler/screeps-bot",
+  "version": "1.0.0",
+  "description": "Reference implementation of a modular Screeps bot using kernel and standalone screeps-* packages",
+  "license": "MIT",
+  "author": "OpenAI Automations",
+  "type": "module",
+  "main": "dist/main.js",
+  "screeps_bot": true,
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "keywords": [
+    "screeps",
+    "bot",
+    "kernel",
+    "modular",
+    "reference-implementation"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ralphschuler/.screeps-gpt.git",
+    "directory": "packages/screeps-bot"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@ralphschuler/screeps-async": "workspace:*",
+    "@ralphschuler/screeps-cache": "workspace:*",
+    "@ralphschuler/screeps-kernel": "workspace:*",
+    "@ralphschuler/screeps-logger": "workspace:*",
+    "@ralphschuler/screeps-metrics": "workspace:*",
+    "@ralphschuler/screeps-perf": "workspace:*",
+    "@ralphschuler/screeps-profiler": "workspace:*",
+    "@ralphschuler/screeps-xstate": "workspace:*",
+    "@ralphschuler/screeps-xtree": "workspace:*",
+    "screeps-cartographer": "^1.8.13"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.1",
+    "@types/screeps": "^3.3.8",
+    "typescript": "^5.4.3",
+    "vitest": "^4.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
