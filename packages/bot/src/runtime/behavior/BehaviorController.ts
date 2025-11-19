@@ -983,10 +983,10 @@ export class BehaviorController {
     const needsDefenders = Boolean(
       memory.defense &&
         game.rooms &&
-        Object.entries(memory.defense.posture as Record<string, string>).some(
-          ([roomName, posture]) =>
-            game.rooms[roomName]?.controller?.my && (posture === "defensive" || posture === "emergency")
-        )
+        Object.keys(memory.defense.posture).some(roomName => {
+          const posture = memory.defense?.posture[roomName];
+          return game.rooms[roomName]?.controller?.my && (posture === "defensive" || posture === "emergency");
+        })
     );
 
     let roleOrder: RoleName[];
@@ -1461,19 +1461,22 @@ function runUpgrader(creep: ManagedCreep): string {
   const energyMgr = getEnergyManager();
 
   // Check if room is under defensive posture - pause upgrading during combat
-  const roomPosture = (Memory.defense?.posture as Record<string, string> | undefined)?.[creep.room.name];
+  const roomPosture = Memory.defense?.posture[creep.room.name];
   const shouldPauseUpgrading = roomPosture === "defensive" || roomPosture === "emergency";
 
   if (shouldPauseUpgrading) {
     // During combat, upgraders move to a safe position and pause upgrading
     comm?.say(creep, "🛡️");
     // Move to a safe position near storage/spawn
-    const safeSpot = creep.room.storage ?? creep.room.find(FIND_MY_SPAWNS)[0];
-    if (safeSpot) {
-      const distance = creep.pos.getRangeTo(safeSpot);
-      if (distance > 3) {
-        void creep.moveTo(safeSpot, { range: 3, reusePath: 10 });
-      }
+    let safeSpot: { pos: RoomPosition } | undefined;
+    if (creep.room.storage) {
+      safeSpot = creep.room.storage;
+    } else {
+      const spawns = creep.room.find(FIND_MY_SPAWNS) as StructureSpawn[];
+      safeSpot = spawns[0];
+    }
+    if (safeSpot && !creep.pos.inRangeTo(safeSpot, 3)) {
+      void creep.moveTo(safeSpot, { range: 3, reusePath: 10 });
     }
     return UPGRADE_TASK; // Keep task state but don't upgrade
   }

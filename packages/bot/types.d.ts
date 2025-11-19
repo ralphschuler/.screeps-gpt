@@ -1,11 +1,11 @@
-import type { SystemReport } from "./packages/bot/src/shared/contracts";
-import type { ColonyManagerMemory } from "./packages/bot/src/runtime/planning/ColonyManager";
-import type { ProfilerMemory } from "./packages/bot/src/shared/profiler-types";
-import type { CommunicationVerbosity } from "./packages/bot/src/runtime/behavior/CreepCommunicationManager";
-import type { InfrastructureMemory } from "./packages/bot/src/runtime/infrastructure/InfrastructureManager";
-import type { ThreatMemory } from "./packages/bot/src/runtime/defense/ThreatDetector";
-import type { DefenseMemory } from "./packages/bot/src/runtime/defense/DefenseCoordinator";
-import type { CombatManagerMemory } from "./packages/bot/src/runtime/defense/CombatManager";
+import type { SystemReport } from "./src/shared/contracts";
+import type { ColonyManagerMemory } from "./src/runtime/planning/ColonyManager";
+import type { ProfilerMemory } from "./src/shared/profiler-types";
+import type { CommunicationVerbosity } from "./src/runtime/behavior/CreepCommunicationManager";
+import type { InfrastructureMemory } from "./src/runtime/infrastructure/InfrastructureManager";
+import type { ThreatMemory } from "./src/runtime/defense/ThreatDetector";
+import type { DefenseMemory } from "./src/runtime/defense/DefenseCoordinator";
+import type { CombatManagerMemory } from "./src/runtime/defense/CombatManager";
 
 declare global {
   interface Memory {
