@@ -129,6 +129,24 @@ jobs:
           screeps-protocol: ${{ vars.SCREEPS_PROTOCOL }}
           screeps-path: ${{ vars.SCREEPS_PATH }}
 
+      - name: Start profiler after deployment
+        if: >-
+          success() &&
+          (vars.PROFILER_ENABLED == 'true' || vars.PROFILER_ENABLED == '')
+        env:
+          SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
+          SCREEPS_HOST: ${{ vars.SCREEPS_HOST }}
+          SCREEPS_PORT: ${{ vars.SCREEPS_PORT }}
+          SCREEPS_PROTOCOL: ${{ vars.SCREEPS_PROTOCOL }}
+          SCREEPS_PATH: ${{ vars.SCREEPS_PATH }}
+          SCREEPS_SHARD: ${{ vars.SCREEPS_SHARD || 'shard3' }}
+        run: |
+          echo "::notice::Starting profiler via console command..."
+          npx tsx packages/utilities/scripts/ensure-profiler-running.ts || \
+            echo "::warning::Failed to start profiler automatically - \
+            may require manual start via console"
+        continue-on-error: true
+
       - name: Notify deployment failure
         if: failure()
         uses: ./.github/actions/send-push-notification
