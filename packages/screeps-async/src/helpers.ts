@@ -153,14 +153,14 @@ export function* filter<T>(
 ): TaskGenerator<T[]> {
   const results: T[] = [];
   for (let i = 0; i < items.length; i++) {
-    const gen = predicateFn(items[i]!, i);
+    const gen = predicateFn(items[i], i);
     let result = gen.next();
     while (!result.done) {
       yield;
       result = gen.next();
     }
     if (result.value) {
-      results.push(items[i]!);
+      results.push(items[i]);
     }
   }
   return results;
