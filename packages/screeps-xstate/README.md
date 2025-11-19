@@ -567,6 +567,130 @@ for (const name in Game.creeps) {
 }
 ```
 
+## Composability
+
+`screeps-xstate` provides powerful utilities for creating reusable and composable state machine patterns.
+
+### Merging State Configurations
+
+Combine multiple state configurations into one:
+
+```typescript
+import { mergeStates } from "@ralphschuler/screeps-xstate";
+
+const baseStates = {
+  idle: {
+    on: {
+      START: { target: "working" }
+    }
+  }
+};
+
+const workStates = {
+  working: {
+    on: {
+      STOP: { target: "idle" }
+    }
+  }
+};
+
+const allStates = mergeStates(baseStates, workStates);
+```
+
+### State Factories
+
+Create parameterized state configurations:
+
+```typescript
+import { createStateFactory } from "@ralphschuler/screeps-xstate";
+
+const createRoleStates = createStateFactory<Context, Event, { speed: number }>(({ speed }) => ({
+  moving: {
+    onEntry: [ctx => (ctx.speed = speed)],
+    on: {
+      STOP: { target: "idle" }
+    }
+  },
+  idle: {
+    on: {
+      MOVE: { target: "moving" }
+    }
+  }
+}));
+
+const fastStates = createRoleStates({ speed: 10 });
+const slowStates = createRoleStates({ speed: 5 });
+```
+
+### Prefixing States
+
+Namespace states to avoid conflicts when composing:
+
+```typescript
+import { prefixStates, mergeStates } from "@ralphschuler/screeps-xstate";
+
+const baseStates = {
+  idle: { on: { START: { target: "active" } } },
+  active: { on: { STOP: { target: "idle" } } }
+};
+
+const workStates = prefixStates("work_", baseStates);
+const combatStates = prefixStates("combat_", baseStates);
+
+const allStates = mergeStates(workStates, combatStates);
+// Results in: work_idle, work_active, combat_idle, combat_active
+```
+
+### Bridging State Machines
+
+Connect separate state machine configurations:
+
+```typescript
+import { createBridge, mergeStates } from "@ralphschuler/screeps-xstate";
+
+const workStates = { work_idle: {}, work_active: {} };
+const combatStates = { combat_idle: {}, combat_active: {} };
+
+const bridge = createBridge("work_idle", "ENTER_COMBAT", "combat_active");
+
+const combined = mergeStates(workStates, combatStates, bridge);
+```
+
+### Composition Example: Multi-Mode Creep
+
+```typescript
+import { createStateFactory, prefixStates, mergeStates, createBridge } from "@ralphschuler/screeps-xstate";
+
+// Create reusable movement states
+const createMovementStates = createStateFactory<Context, Event, { mode: string }>(({ mode }) => ({
+  moving: {
+    onEntry: [ctx => ctx.creep.say(`Moving in ${mode} mode`)],
+    on: {
+      ARRIVED: { target: "acting" }
+    }
+  },
+  acting: {
+    on: {
+      DONE: { target: "moving" }
+    }
+  }
+}));
+
+// Create work and combat modes with prefixes
+const workStates = prefixStates("work_", createMovementStates({ mode: "work" }));
+const combatStates = prefixStates("combat_", createMovementStates({ mode: "combat" }));
+
+// Bridge between modes
+const workToCombat = createBridge("work_acting", "ENEMY_DETECTED", "combat_moving", ctx => ctx.nearbyEnemies > 0);
+
+const combatToWork = createBridge("combat_acting", "SAFE", "work_moving", ctx => ctx.nearbyEnemies === 0);
+
+// Combine everything
+const allStates = mergeStates(workStates, combatStates, workToCombat, combatToWork);
+
+const machine = new StateMachine("work_moving", allStates, initialContext);
+```
+
 ## Performance
 
 `screeps-xstate` is designed for minimal CPU overhead:
