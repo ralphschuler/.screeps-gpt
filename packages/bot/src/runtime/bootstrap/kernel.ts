@@ -126,15 +126,9 @@ export class Kernel {
     // Initialize Memory structures before passing to defense components to ensure they exist
     if (!config.defenseCoordinator) {
       if (typeof Memory !== "undefined") {
-        if (!Memory.threats) {
-          Memory.threats = { rooms: {}, lastUpdate: 0 };
-        }
-        if (!Memory.defense) {
-          Memory.defense = { posture: {}, lastDefenseAction: 0 };
-        }
-        if (!Memory.combat) {
-          Memory.combat = { squads: {} };
-        }
+        Memory.threats ??= { rooms: {}, lastUpdate: 0 };
+        Memory.defense ??= { posture: {}, lastDefenseAction: 0 };
+        Memory.combat ??= { squads: {} };
       }
 
       const threatMemory = typeof Memory !== "undefined" ? Memory.threats : undefined;
@@ -364,15 +358,9 @@ export class Kernel {
 
     // Run threat detection and defense coordination (before infrastructure management)
     // Initialize defense memory structures if needed
-    if (!memory.threats) {
-      memory.threats = { rooms: {}, lastUpdate: 0 };
-    }
-    if (!memory.defense) {
-      memory.defense = { posture: {}, lastDefenseAction: 0 };
-    }
-    if (!memory.combat) {
-      memory.combat = { squads: {} };
-    }
+    memory.threats ??= { rooms: {}, lastUpdate: 0 };
+    memory.defense ??= { posture: {}, lastDefenseAction: 0 };
+    memory.combat ??= { squads: {} };
 
     // Coordinate defense for all owned rooms
     for (const roomName in game.rooms) {

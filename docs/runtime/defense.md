@@ -13,6 +13,7 @@ The automated defense system provides real-time threat detection and coordinated
 The ThreatDetector scans rooms for hostile creeps and calculates threat levels based on body composition and hostile count.
 
 **Threat Levels:**
+
 - `none`: No hostiles present
 - `low`: Single weak hostile (threat score < 50)
 - `medium`: 2+ hostiles or moderate threat (threat score < 150)
@@ -20,6 +21,7 @@ The ThreatDetector scans rooms for hostile creeps and calculates threat levels b
 - `critical`: 5+ hostiles or very high threat (threat score ≥ 300)
 
 **Threat Scoring (aligned with CombatManager):**
+
 - `ATTACK` parts: 10 points each
 - `RANGED_ATTACK` parts: 5 points each
 - `HEAL` parts: 8 points each (highest priority - healers sustain enemy forces)
@@ -42,12 +44,14 @@ Threat data is tracked in `Memory.threats` with automatic cleanup of stale data 
 The DefenseCoordinator integrates threat detection with tower and combat operations, managing defensive posture and coordinating responses.
 
 **Defensive Postures:**
+
 - `normal`: No threats, routine operations
 - `alert`: Low/medium threat detected
 - `defensive`: High threat, pause controller upgrading
 - `emergency`: Critical threat, maximum defensive priority
 
 **Coordination:**
+
 - Activates towers to attack hostiles
 - Deploys combat squads when threats detected
 - Adjusts spawn priorities for defender creation
@@ -101,11 +105,13 @@ this.behavior.execute(game, memory, roleCounts, bootstrapMinimums);
 The defense system modifies spawn priorities when threats are detected:
 
 **Normal Mode:**
+
 ```
 harvester → upgrader → builder → stationaryHarvester → hauler → repairer → remoteMiner → attacker → healer
 ```
 
 **Defense Mode (defensive/emergency posture):**
+
 ```
 harvester → hauler → attacker → healer → upgrader → builder → ...
 ```
@@ -139,7 +145,7 @@ const threatenedRooms = defenseCoordinator.getThreatenedRooms();
 ```typescript
 Memory.threats = {
   rooms: {
-    "W0N0": {
+    W0N0: {
       roomName: "W0N0",
       threatLevel: "high",
       hostileCount: 3,
@@ -163,14 +169,14 @@ Memory.threats = {
 
 Memory.defense = {
   posture: {
-    "W0N0": "defensive"
+    W0N0: "defensive"
   },
   lastDefenseAction: 1000
 };
 
 Memory.combat = {
   squads: {
-    "squad_1000_soldier1_soldier2": {
+    squad_1000_soldier1_soldier2: {
       id: "squad_1000_soldier1_soldier2",
       members: ["soldier1", "soldier2"],
       role: "defense",
@@ -184,16 +190,19 @@ Memory.combat = {
 ## Performance Characteristics
 
 **Threat Detection:**
+
 - Room scanning: O(n) where n = number of hostile creeps
 - Memory updates: O(1) per room
 - Cleanup: O(m) where m = number of tracked rooms
 
 **Defense Coordination:**
+
 - Tower activation: Handled by TowerManager (existing)
 - Squad deployment: Handled by CombatManager (existing)
 - CPU impact: Minimal (<0.1 CPU per room with threats)
 
 **Memory Impact:**
+
 - Base memory: ~100 bytes per threatened room
 - Threat data: ~50 bytes per detected hostile
 - Automatic cleanup prevents memory bloat
@@ -227,6 +236,7 @@ Potential improvements for Phase 5 (offensive operations):
 ## See Also
 
 **Source Files:**
+
 - `packages/bot/src/runtime/defense/ThreatDetector.ts`
 - `packages/bot/src/runtime/defense/DefenseCoordinator.ts`
 - `packages/bot/src/runtime/defense/TowerManager.ts`

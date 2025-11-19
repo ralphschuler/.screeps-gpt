@@ -140,9 +140,12 @@ export class CombatManager {
 
     // Find hostile structures (towers, spawns)
     const hostileStructures = room.find(FIND_STRUCTURES, {
-      filter: (s: Structure) =>
-        !s.my && s.owner && (s.structureType === STRUCTURE_TOWER || s.structureType === STRUCTURE_SPAWN)
-    }) as Structure[];
+      filter: (s: Structure): s is OwnedStructure =>
+        !s.my &&
+        "owner" in s &&
+        s.owner !== undefined &&
+        (s.structureType === STRUCTURE_TOWER || s.structureType === STRUCTURE_SPAWN)
+    });
 
     for (const structure of hostileStructures) {
       threats.push({
