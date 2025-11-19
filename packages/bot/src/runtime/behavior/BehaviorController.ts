@@ -983,7 +983,7 @@ export class BehaviorController {
     const needsDefenders = Boolean(
       memory.defense &&
         game.rooms &&
-        Object.entries(memory.defense.posture).some(
+        Object.entries(memory.defense.posture as Record<string, string>).some(
           ([roomName, posture]) =>
             game.rooms[roomName]?.controller?.my && (posture === "defensive" || posture === "emergency")
         )
@@ -1461,7 +1461,7 @@ function runUpgrader(creep: ManagedCreep): string {
   const energyMgr = getEnergyManager();
 
   // Check if room is under defensive posture - pause upgrading during combat
-  const roomPosture = Memory.defense?.posture[creep.room.name] as string | undefined;
+  const roomPosture = (Memory.defense?.posture as Record<string, string> | undefined)?.[creep.room.name];
   const shouldPauseUpgrading = roomPosture === "defensive" || roomPosture === "emergency";
 
   if (shouldPauseUpgrading) {
@@ -1469,8 +1469,11 @@ function runUpgrader(creep: ManagedCreep): string {
     comm?.say(creep, "🛡️");
     // Move to a safe position near storage/spawn
     const safeSpot = creep.room.storage ?? creep.room.find(FIND_MY_SPAWNS)[0];
-    if (safeSpot && creep.pos.getRangeTo(safeSpot) > 3) {
-      void creep.moveTo(safeSpot, { range: 3, reusePath: 10 });
+    if (safeSpot) {
+      const distance = creep.pos.getRangeTo(safeSpot);
+      if (distance > 3) {
+        void creep.moveTo(safeSpot, { range: 3, reusePath: 10 });
+      }
     }
     return UPGRADE_TASK; // Keep task state but don't upgrade
   }

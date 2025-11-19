@@ -149,7 +149,7 @@ export class CombatManager {
 
     for (const structure of hostileStructures) {
       threats.push({
-        id: structure.id,
+        id: structure.id as Id<Creep>,
         room: room.name,
         threat: 50,
         priority: 100

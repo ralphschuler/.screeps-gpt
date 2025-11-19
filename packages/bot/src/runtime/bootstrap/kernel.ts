@@ -18,10 +18,10 @@ import { InfrastructureManager, type InfrastructureMemory } from "@runtime/infra
 import { LinkManager } from "@runtime/infrastructure/LinkManager";
 import { BootstrapPhaseManager } from "./BootstrapPhaseManager";
 import { EmpireManager } from "@runtime/empire";
-import { ThreatDetector } from "@runtime/defense/ThreatDetector";
-import { DefenseCoordinator } from "@runtime/defense/DefenseCoordinator";
+import { ThreatDetector, type ThreatMemory } from "@runtime/defense/ThreatDetector";
+import { DefenseCoordinator, type DefenseMemory } from "@runtime/defense/DefenseCoordinator";
 import { TowerManager } from "@runtime/defense/TowerManager";
-import { CombatManager } from "@runtime/defense/CombatManager";
+import { CombatManager, type CombatManagerMemory } from "@runtime/defense/CombatManager";
 import type { GameContext } from "@runtime/types/GameContext";
 import { profile } from "@profiler";
 
@@ -131,11 +131,11 @@ export class Kernel {
         Memory.combat ??= { squads: {} };
       }
 
-      const threatMemory = typeof Memory !== "undefined" ? Memory.threats : undefined;
-      const defenseMemory = typeof Memory !== "undefined" ? Memory.defense : undefined;
+      const threatMemory: ThreatMemory | undefined = typeof Memory !== "undefined" ? Memory.threats : undefined;
+      const defenseMemory: DefenseMemory | undefined = typeof Memory !== "undefined" ? Memory.defense : undefined;
       const threatDetector = new ThreatDetector(this.logger, threatMemory);
       const towerManager = new TowerManager(this.logger);
-      const combatMemory = typeof Memory !== "undefined" ? Memory.combat : undefined;
+      const combatMemory: CombatManagerMemory | undefined = typeof Memory !== "undefined" ? Memory.combat : undefined;
       const combatManager = new CombatManager({ logger: this.logger, memory: combatMemory });
       this.defenseCoordinator = new DefenseCoordinator(
         threatDetector,
