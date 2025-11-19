@@ -20,6 +20,7 @@ export default [
   {
     ignores: [
       "dist/**",
+      "**/dist/**",
       "build/**",
       "coverage/**",
       "node_modules/**",

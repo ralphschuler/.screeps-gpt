@@ -56,6 +56,7 @@
       "name": "@ralphschuler/screeps-gpt-bot",
       "version": "0.45.4",
       "dependencies": {
+        "@ralphschuler/screeps-logger": "workspace:*",
         "screeps-cartographer": "^1.8.13",
       },
       "devDependencies": {
@@ -106,6 +107,26 @@
         "vitest": "^4.0.1",
       },
     },
+    "packages/screeps-async": {
+      "name": "@ralphschuler/screeps-async",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@types/node": "^24.9.1",
+        "@types/screeps": "^3.3.8",
+        "typescript": "^5.4.3",
+        "vitest": "^4.0.1",
+      },
+    },
+    "packages/screeps-logger": {
+      "name": "@ralphschuler/screeps-logger",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@types/node": "^24.9.1",
+        "@types/screeps": "^3.3.8",
+        "typescript": "^5.4.3",
+        "vitest": "^4.0.1",
+      },
+    },
     "packages/screeps-mcp": {
       "name": "@ralphschuler/screeps-mcp",
       "version": "0.1.0",
@@ -128,6 +149,16 @@
       "version": "0.1.0",
       "devDependencies": {
         "@types/node": "^24.9.1",
+        "typescript": "^5.4.3",
+        "vitest": "^4.0.1",
+      },
+    },
+    "packages/screeps-xtree": {
+      "name": "@ralphschuler/screeps-xtree",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@types/node": "^24.9.1",
+        "@types/screeps": "^3.3.8",
         "typescript": "^5.4.3",
         "vitest": "^4.0.1",
       },
@@ -367,6 +398,8 @@
 
     "@ralphschuler/screeps-agent": ["@ralphschuler/screeps-agent@workspace:packages/screeps-agent"],
 
+    "@ralphschuler/screeps-async": ["@ralphschuler/screeps-async@workspace:packages/screeps-async"],
+
     "@ralphschuler/screeps-gpt-actions": ["@ralphschuler/screeps-gpt-actions@workspace:packages/actions"],
 
     "@ralphschuler/screeps-gpt-bot": ["@ralphschuler/screeps-gpt-bot@workspace:packages/bot"],
@@ -375,9 +408,13 @@
 
     "@ralphschuler/screeps-gpt-utilities": ["@ralphschuler/screeps-gpt-utilities@workspace:packages/utilities"],
 
+    "@ralphschuler/screeps-logger": ["@ralphschuler/screeps-logger@workspace:packages/screeps-logger"],
+
     "@ralphschuler/screeps-mcp": ["@ralphschuler/screeps-mcp@workspace:packages/screeps-mcp"],
 
     "@ralphschuler/screeps-xstate": ["@ralphschuler/screeps-xstate@workspace:packages/screeps-xstate"],
+
+    "@ralphschuler/screeps-xtree": ["@ralphschuler/screeps-xtree@workspace:packages/screeps-xtree"],
 
     "@rollup/rollup-android-arm-eabi": ["@rollup/rollup-android-arm-eabi@4.52.5", "", { "os": "android", "cpu": "arm" }, "sha512-8c1vW4ocv3UOMp9K+gToY5zL2XiiVw3k7f1ksf4yO1FlDFQ1C2u72iACFnSOceJFsWskc2WZNqeRhFRPzv+wtQ=="],
 

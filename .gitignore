@@ -10,6 +10,11 @@
 /build/*
 /coverage
 
+# Package build artifacts
+packages/*/dist
+packages/*/build
+*.tsbuildinfo
+
 # TypeScript definitions installed by Typings
 /typings
 
