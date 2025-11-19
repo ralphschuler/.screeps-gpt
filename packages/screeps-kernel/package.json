@@ -1,5 +1,5 @@
 {
-  "name": "screeps-kernel",
+  "name": "@ralphschuler/screeps-kernel",
   "version": "1.0.0",
   "description": "Custom TypeScript kernel with decorator-based API for Screeps AI automation",
   "license": "MIT",
@@ -30,7 +30,9 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@ralphschuler/screeps-logger": "workspace:*"
+  },
   "devDependencies": {
     "@types/node": "^24.9.1",
     "@types/screeps": "^3.3.8",

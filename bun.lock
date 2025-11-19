@@ -118,6 +118,30 @@
     "packages/screeps-async": {
       "name": "@ralphschuler/screeps-async",
       "version": "0.1.0",
+      "dependencies": {
+        "@ralphschuler/screeps-logger": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/node": "^24.9.1",
+        "@types/screeps": "^3.3.8",
+        "typescript": "^5.4.3",
+        "vitest": "^4.0.1",
+      },
+    },
+    "packages/screeps-bot": {
+      "name": "@ralphschuler/screeps-bot",
+      "version": "1.0.0",
+      "dependencies": {
+        "@ralphschuler/screeps-async": "workspace:*",
+        "@ralphschuler/screeps-cache": "workspace:*",
+        "@ralphschuler/screeps-logger": "workspace:*",
+        "@ralphschuler/screeps-metrics": "workspace:*",
+        "@ralphschuler/screeps-perf": "workspace:*",
+        "@ralphschuler/screeps-profiler": "workspace:*",
+        "@ralphschuler/screeps-xstate": "workspace:*",
+        "@ralphschuler/screeps-xtree": "workspace:*",
+        "screeps-kernel": "workspace:*",
+      },
       "devDependencies": {
         "@types/node": "^24.9.1",
         "@types/screeps": "^3.3.8",
@@ -458,6 +482,8 @@
     "@ralphschuler/screeps-agent": ["@ralphschuler/screeps-agent@workspace:packages/screeps-agent"],
 
     "@ralphschuler/screeps-async": ["@ralphschuler/screeps-async@workspace:packages/screeps-async"],
+
+    "@ralphschuler/screeps-bot": ["@ralphschuler/screeps-bot@workspace:packages/screeps-bot"],
 
     "@ralphschuler/screeps-cache": ["@ralphschuler/screeps-cache@workspace:packages/screeps-cache"],
 
