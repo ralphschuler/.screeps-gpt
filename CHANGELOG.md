@@ -18,7 +18,7 @@ All notable changes to this project are documented here. This changelog now main
   - Target cache hit rate: >70% within 100 ticks
   - Memory footprint: <100KB for typical usage
   - Added 37 comprehensive tests (25 unit, 12 regression)
-  - Resolves issue ralphschuler/.screeps-gpt (implement path caching with TTL)
+  - Resolves issue ralphschuler/.screeps-gpt#1008 (implement path caching with TTL)
 
 ### Performance
 

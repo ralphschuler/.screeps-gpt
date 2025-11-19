@@ -5,12 +5,14 @@ import { PathCache } from "./PathCache";
 /**
  * Advanced pathfinding implementation using screeps-cartographer library
  * Provides optimized pathfinding with caching and multi-room support
+ *
+ * @param pathCache - Shared PathCache instance. Required to prevent cache fragmentation.
  */
 export class CartographerPathfinder implements PathfindingProvider {
   private readonly pathCache: PathCache;
 
-  public constructor(pathCache?: PathCache) {
-    this.pathCache = pathCache ?? new PathCache();
+  public constructor(pathCache: PathCache) {
+    this.pathCache = pathCache;
   }
 
   public getName(): string {

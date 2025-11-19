@@ -4,12 +4,14 @@ import { PathCache } from "./PathCache";
 /**
  * Default pathfinding implementation using native Screeps PathFinder
  * This is the baseline implementation that uses the built-in Screeps pathfinding.
+ *
+ * @param pathCache - Shared PathCache instance. Required to prevent cache fragmentation.
  */
 export class DefaultPathfinder implements PathfindingProvider {
   private readonly pathCache: PathCache;
 
-  public constructor(pathCache?: PathCache) {
-    this.pathCache = pathCache ?? new PathCache();
+  public constructor(pathCache: PathCache) {
+    this.pathCache = pathCache;
   }
 
   public getName(): string {

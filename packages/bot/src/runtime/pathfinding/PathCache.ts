@@ -232,9 +232,18 @@ export class PathCache {
    * Invalidate all paths in a specific room
    */
   public invalidateRoom(roomName: string): void {
+    // Use precise room name matching to avoid false positives
+    // Cache key format: fromX,fromY-toX,toY-fromRoom-toRoom-rRange
     for (const [key] of this.pathCache) {
-      if (key.includes(roomName)) {
-        this.pathCache.delete(key);
+      // Parse the key to extract room names
+      const parts = key.split("-");
+      // Key structure: "x,y" - "x,y" - "fromRoom" - "toRoom" - "rRange"
+      if (parts.length >= 5) {
+        const fromRoom = parts[2];
+        const toRoom = parts[3];
+        if (fromRoom === roomName || toRoom === roomName) {
+          this.pathCache.delete(key);
+        }
       }
     }
 
@@ -254,9 +263,17 @@ export class PathCache {
     this.costMatrixCache.delete(structuresKey);
 
     // Invalidate paths in this room (structures affect pathing)
+    // Use precise room name matching to avoid false positives
     for (const [key] of this.pathCache) {
-      if (key.includes(roomName)) {
-        this.pathCache.delete(key);
+      // Parse the key to extract room names
+      const parts = key.split("-");
+      // Key structure: "x,y" - "x,y" - "fromRoom" - "toRoom" - "rRange"
+      if (parts.length >= 5) {
+        const fromRoom = parts[2];
+        const toRoom = parts[3];
+        if (fromRoom === roomName || toRoom === roomName) {
+          this.pathCache.delete(key);
+        }
       }
     }
   }
@@ -301,6 +318,10 @@ export class PathCache {
 
   /**
    * Evict the least recently used path entry
+   *
+   * Note: This uses O(n) linear scan. For better performance with large caches,
+   * consider using a doubly-linked list with Map for O(1) LRU operations.
+   * Current implementation is acceptable for default cache size (1000 entries).
    */
   private evictLRUPath(currentTick: number): void {
     let oldestKey: string | null = null;
@@ -321,6 +342,10 @@ export class PathCache {
 
   /**
    * Evict the least recently used cost matrix entry
+   *
+   * Note: This uses O(n) linear scan. For better performance with large caches,
+   * consider using a doubly-linked list with Map for O(1) LRU operations.
+   * Current implementation is acceptable for default cache size (50 entries).
    */
   private evictLRUCostMatrix(currentTick: number): void {
     let oldestKey: string | null = null;

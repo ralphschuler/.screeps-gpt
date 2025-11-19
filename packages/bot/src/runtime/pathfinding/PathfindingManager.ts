@@ -45,12 +45,15 @@ export class PathfindingManager {
    * Create pathfinding provider based on configuration
    */
   private createProvider(providerName: "default" | "cartographer"): PathfindingProvider {
+    // PathCache is required for providers to prevent fragmentation
+    const cache = this.pathCache ?? new PathCache();
+
     switch (providerName) {
       case "cartographer":
-        return new CartographerPathfinder(this.pathCache ?? undefined);
+        return new CartographerPathfinder(cache);
       case "default":
       default:
-        return new DefaultPathfinder(this.pathCache ?? undefined);
+        return new DefaultPathfinder(cache);
     }
   }
 
@@ -87,6 +90,7 @@ export class PathfindingManager {
 
   /**
    * Get cache metrics (if caching is enabled)
+   * @returns Cache metrics or null if caching is disabled
    */
   public getCacheMetrics(): PathCacheMetrics | null {
     return this.pathCache?.getMetrics() ?? null;
@@ -94,6 +98,7 @@ export class PathfindingManager {
 
   /**
    * Reset cache metrics
+   * Note: Silently does nothing if caching is disabled
    */
   public resetCacheMetrics(): void {
     this.pathCache?.resetMetrics();
@@ -101,6 +106,7 @@ export class PathfindingManager {
 
   /**
    * Invalidate all cached paths in a specific room
+   * Note: Silently does nothing if caching is disabled
    */
   public invalidateRoom(roomName: string): void {
     this.pathCache?.invalidateRoom(roomName);
@@ -109,6 +115,7 @@ export class PathfindingManager {
   /**
    * Invalidate structure-based caches for a room
    * (call this when structures are built/destroyed)
+   * Note: Silently does nothing if caching is disabled
    */
   public invalidateStructures(roomName: string): void {
     this.pathCache?.invalidateStructures(roomName);
@@ -116,6 +123,7 @@ export class PathfindingManager {
 
   /**
    * Clear all caches
+   * Note: Silently does nothing if caching is disabled
    */
   public clearCache(): void {
     this.pathCache?.clear();

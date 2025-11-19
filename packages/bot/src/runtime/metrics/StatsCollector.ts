@@ -160,13 +160,8 @@ export class StatsCollector {
 
     // OPTIMIZATION: Allow runtime override via Memory flag for debugging
     // Set Memory.experimentalFeatures.statsDebug = true to enable diagnostic logging
-    const experimentalFeatures: unknown = memory.experimentalFeatures;
-    const statsDebugFlag =
-      experimentalFeatures && typeof experimentalFeatures === "object" && "statsDebug" in experimentalFeatures
-        ? (experimentalFeatures as { statsDebug: unknown }).statsDebug
-        : undefined;
-    const diagnosticsEnabled: boolean =
-      this.diagnosticLoggingEnabled || (typeof statsDebugFlag === "boolean" && statsDebugFlag === true);
+    const statsDebugFlag = (memory.experimentalFeatures as { statsDebug?: boolean } | undefined)?.statsDebug;
+    const diagnosticsEnabled: boolean = this.diagnosticLoggingEnabled || statsDebugFlag === true;
 
     const shouldLog: boolean = diagnosticsEnabled && game.time - this.lastLogTick >= this.LOG_INTERVAL;
 
