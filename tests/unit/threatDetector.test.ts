@@ -12,7 +12,7 @@ describe("ThreatDetector", () => {
       lastUpdate: 0
     };
     threatDetector = new ThreatDetector({ log: vi.fn(), warn: vi.fn() }, mockMemory);
-    
+
     // Mock Game.time
     (global as { Game?: { time: number } }).Game = { time: 1000 };
   });

@@ -977,16 +977,17 @@ export class BehaviorController {
     // prioritize them FIRST to activate logistics infrastructure immediately.
     // This is critical because storage/towers indicate energy already exists in the room
     // and needs to be distributed to spawns/extensions/towers for operations.
-    
+
     // Check for defensive posture requiring defender spawning
     // Only consider owned rooms to avoid triggering defense mode for hostile/scouted rooms
-    const needsDefenders = memory.defense && game.rooms &&
+    const needsDefenders =
+      memory.defense &&
+      game.rooms &&
       Object.entries(memory.defense.posture).some(
         ([roomName, posture]) =>
-          game.rooms[roomName]?.controller?.my &&
-          (posture === "defensive" || posture === "emergency")
+          game.rooms[roomName]?.controller?.my && (posture === "defensive" || posture === "emergency")
       );
-    
+
     let roleOrder: RoleName[];
     if (needsDefenders) {
       // Defense mode: prioritize defenders (attacker, healer) after essential roles
@@ -1461,7 +1462,7 @@ function runUpgrader(creep: ManagedCreep): string {
   // Check if room is under defensive posture - pause upgrading during combat
   const roomPosture = Memory.defense?.posture[creep.room.name];
   const shouldPauseUpgrading = roomPosture === "defensive" || roomPosture === "emergency";
-  
+
   if (shouldPauseUpgrading) {
     // During combat, upgraders move to a safe position and pause upgrading
     comm?.say(creep, "🛡️");

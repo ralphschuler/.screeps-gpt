@@ -23,13 +23,7 @@ describe("DefenseCoordinator", () => {
     towerManager = new TowerManager(logger);
     combatManager = new CombatManager({ logger });
 
-    coordinator = new DefenseCoordinator(
-      threatDetector,
-      towerManager,
-      combatManager,
-      logger,
-      defenseMemory
-    );
+    coordinator = new DefenseCoordinator(threatDetector, towerManager, combatManager, logger, defenseMemory);
 
     // Mock Game.time
     (global as { Game?: { time: number } }).Game = { time: 1000 };

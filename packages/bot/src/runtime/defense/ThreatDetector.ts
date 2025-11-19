@@ -54,10 +54,7 @@ export class ThreatDetector {
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly memoryRef?: ThreatMemory;
 
-  public constructor(
-    logger: Pick<Console, "log" | "warn"> = console,
-    memory?: ThreatMemory
-  ) {
+  public constructor(logger: Pick<Console, "log" | "warn"> = console, memory?: ThreatMemory) {
     this.logger = logger;
     this.memoryRef = memory;
   }
@@ -67,10 +64,8 @@ export class ThreatDetector {
    */
   public scanRoom(room: RoomLike, currentTick: number): RoomThreatAssessment {
     const hostiles = room.find(FIND_HOSTILE_CREEPS) as Creep[];
-    
-    const threats: DetectedThreat[] = hostiles.map(hostile => 
-      this.analyzeHostile(hostile, room.name, currentTick)
-    );
+
+    const threats: DetectedThreat[] = hostiles.map(hostile => this.analyzeHostile(hostile, room.name, currentTick));
 
     const totalThreatScore = threats.reduce((sum, t) => sum + t.threatScore, 0);
     const threatLevel = this.calculateThreatLevel(hostiles.length, totalThreatScore);
@@ -94,7 +89,7 @@ export class ThreatDetector {
     if (threatLevel !== "none") {
       this.logger.log?.(
         `[ThreatDetector] ${room.name}: ${threatLevel.toUpperCase()} threat - ` +
-        `${hostiles.length} hostiles, score ${totalThreatScore}`
+          `${hostiles.length} hostiles, score ${totalThreatScore}`
       );
     }
 
@@ -124,11 +119,11 @@ export class ThreatDetector {
 
     // Calculate threat score (aligned with CombatManager scoring)
     let threatScore = 0;
-    threatScore += bodyParts.attack * 10;      // Melee attackers
+    threatScore += bodyParts.attack * 10; // Melee attackers
     threatScore += bodyParts.rangedAttack * 5; // Ranged attackers
-    threatScore += bodyParts.heal * 8;         // Healers are high priority
-    threatScore += bodyParts.work * 5;         // Dismantlers (not in CombatManager, but useful for detection)
-    threatScore += bodyParts.tough * 2;        // Tanky creeps
+    threatScore += bodyParts.heal * 8; // Healers are high priority
+    threatScore += bodyParts.work * 5; // Dismantlers (not in CombatManager, but useful for detection)
+    threatScore += bodyParts.tough * 2; // Tanky creeps
 
     return {
       id: hostile.id,
@@ -184,7 +179,7 @@ export class ThreatDetector {
    */
   public hasActiveThreats(roomName: string, maxAge: number = 10): boolean {
     const assessment = this.getThreatAssessment(roomName);
-    
+
     if (!assessment || assessment.threatLevel === "none") {
       return false;
     }

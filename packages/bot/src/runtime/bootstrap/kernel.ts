@@ -121,7 +121,7 @@ export class Kernel {
       });
     this.bootstrapManager = config.bootstrapManager ?? new BootstrapPhaseManager({}, this.logger);
     this.empireManager = config.empireManager ?? new EmpireManager({ logger: this.logger });
-    
+
     // Initialize defense system with memory references
     // Initialize Memory structures before passing to defense components to ensure they exist
     if (!config.defenseCoordinator) {
@@ -136,7 +136,7 @@ export class Kernel {
           Memory.combat = { squads: {} };
         }
       }
-      
+
       const threatMemory = typeof Memory !== "undefined" ? Memory.threats : undefined;
       const defenseMemory = typeof Memory !== "undefined" ? Memory.defense : undefined;
       const threatDetector = new ThreatDetector(this.logger, threatMemory);
@@ -153,7 +153,7 @@ export class Kernel {
     } else {
       this.defenseCoordinator = config.defenseCoordinator;
     }
-    
+
     this.enableGarbageCollection = config.enableGarbageCollection ?? true;
     this.garbageCollectionInterval = config.garbageCollectionInterval ?? 10;
     this.enableSelfHealing = config.enableSelfHealing ?? true;

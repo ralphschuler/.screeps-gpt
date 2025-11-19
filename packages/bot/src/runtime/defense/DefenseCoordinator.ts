@@ -62,7 +62,7 @@ export class DefenseCoordinator {
 
     // Determine defensive posture
     const posture = this.determinePosture(threatAssessment);
-    
+
     // Store posture in memory
     if (this.memoryRef) {
       this.memoryRef.posture[room.name] = posture;
@@ -93,8 +93,8 @@ export class DefenseCoordinator {
       if (result.towersEngaged > 0 || result.squadsDeployed > 0) {
         this.logger.log?.(
           `[DefenseCoordinator] ${room.name}: ${posture.toUpperCase()} - ` +
-          `Towers: ${result.towersEngaged}, Squads: ${result.squadsDeployed}, ` +
-          `Engagements: ${result.threatsNeutralized}`
+            `Towers: ${result.towersEngaged}, Squads: ${result.squadsDeployed}, ` +
+            `Engagements: ${result.threatsNeutralized}`
         );
       }
     }
