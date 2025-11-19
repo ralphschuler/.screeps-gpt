@@ -123,6 +123,7 @@ interface Memory {
 ## Compatibility
 
 - **Node.js**: >= 18.0.0
+- **Bun**: >= 1.0.0
 - **Screeps**: Compatible with both MMO and private servers
 - **TypeScript**: >= 5.0.0
 

@@ -20,7 +20,7 @@ fi
 echo "⚙️  Changed packages: $CHANGED"
 TEST_FAILED=0
 
-while IFS= read -r PACKAGE; do
+echo "$CHANGED" | while IFS= read -r PACKAGE; do
   if [ -z "$PACKAGE" ]; then
     continue
   fi
@@ -39,7 +39,7 @@ while IFS= read -r PACKAGE; do
   else
     echo "⊘ No tests configured for $PACKAGE"
   fi
-done <<< "$CHANGED"
+done
 
 # If any package-specific tests failed, fail the hook
 if [ $TEST_FAILED -eq 1 ]; then
