@@ -1,4 +1,4 @@
-import type { DecisionNode } from "./types.js";
+import type { DecisionNode, NoopNode, SwitchNode } from "./types.js";
 import { DecisionTree } from "./DecisionTree.js";
 
 /**
@@ -61,12 +61,15 @@ export class DecisionTreeBuilder<TContext, TResult> {
     }>,
     defaultNode?: DecisionNode<TContext, TResult>
   ): DecisionNode<TContext, TResult> {
-    return {
+    const node: SwitchNode<TContext, TResult> = {
       id: `switch-${this.nodeCounter++}`,
       type: "switch",
-      cases,
-      defaultNode
+      cases
     };
+    if (defaultNode !== undefined) {
+      node.defaultNode = defaultNode;
+    }
+    return node;
   }
 
   /**
@@ -92,12 +95,15 @@ export class DecisionTreeBuilder<TContext, TResult> {
    * @returns A noop decision node
    */
   public noop(next: DecisionNode<TContext, TResult>, label?: string): DecisionNode<TContext, TResult> {
-    return {
+    const node: NoopNode<TContext, TResult> = {
       id: `noop-${this.nodeCounter++}`,
       type: "noop",
-      next,
-      label
+      next
     };
+    if (label !== undefined) {
+      node.label = label;
+    }
+    return node;
   }
 
   /**

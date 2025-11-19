@@ -81,7 +81,10 @@ export class DecisionTree<TContext, TResult> {
 
       default:
         // This should never happen with proper TypeScript types
-        throw new DecisionTreeError(`Unknown node type at node ${node.id}`, node.id);
+        throw new DecisionTreeError(
+          `Unknown node type at node ${(node as DecisionNode<TContext, TResult>).id}`,
+          (node as DecisionNode<TContext, TResult>).id
+        );
     }
   }
 

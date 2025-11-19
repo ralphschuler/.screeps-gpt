@@ -121,8 +121,6 @@ export class MetricsCollector {
       mallocedMemory: heapStats.malloced_memory,
       peakMallocedMemory: heapStats.peak_malloced_memory,
       doesZapGarbage: heapStats.does_zap_garbage,
-      numberOfNativeContexts: heapStats.number_of_native_contexts,
-      numberOfDetachedContexts: heapStats.number_of_detached_contexts,
       externalMemory: heapStats.externally_allocated_size
     };
   }
@@ -205,10 +203,10 @@ export class MetricsCollector {
 
     return {
       totalEnergy: this.calculateTotalEnergy(),
-      credits: resources[RESOURCE_CREDITS] ?? 0,
-      pixels: resources[RESOURCE_PIXEL] ?? 0,
-      cpuUnlocks: resources[RESOURCE_CPU_UNLOCK] ?? 0,
-      accessKeys: resources[RESOURCE_ACCESS_KEY] ?? 0
+      credits: (resources as Record<string, number>)["credits"] ?? 0,
+      pixels: (resources as Record<string, number>)["pixel"] ?? 0,
+      cpuUnlocks: (resources as Record<string, number>)["cpuUnlock"] ?? 0,
+      accessKeys: (resources as Record<string, number>)["accessKey"] ?? 0
     };
   }
 
