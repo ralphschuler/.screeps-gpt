@@ -922,6 +922,11 @@ export class BehaviorController {
       else if (rcl === 3 && energyRatio > 0.8) {
         upgraderCount = 4;
       }
+      // RCL 1-2 with high energy: 4 upgraders to accelerate early progression
+      // This prevents spawn idle when energy is maxed but minimums are met
+      else if (rcl <= 2 && energyRatio >= 0.9) {
+        upgraderCount = 4;
+      }
 
       // Only adjust if we calculated a higher count (never reduce below minimum)
       if (upgraderCount > ROLE_DEFINITIONS["upgrader"].minimum) {
@@ -931,6 +936,31 @@ export class BehaviorController {
             `(RCL ${rcl}, energy: ${energyRatio.toFixed(2)}, storage: ${storageRatio.toFixed(2)})`
         );
       }
+    }
+
+    // Task-based demand: Scale workforce based on pending task queue
+    // When using task system, additional creeps may be needed to handle pending tasks
+    const totalCreeps = Object.keys(game.creeps).length;
+    const taskDemand = this.calculateTaskBasedCreepDemand(totalCreeps);
+
+    if (taskDemand > 0) {
+      // Distribute task demand across harvester and upgrader roles
+      // Harvesters handle energy gathering tasks, upgraders handle controller tasks
+      const currentHarvesterMin = adjustedMinimums.harvester ?? ROLE_DEFINITIONS["harvester"].minimum;
+      const currentUpgraderMin = adjustedMinimums.upgrader ?? ROLE_DEFINITIONS["upgrader"].minimum;
+
+      // Add half of task demand to harvesters (rounded up), half to upgraders (rounded down)
+      const harvesterBonus = Math.ceil(taskDemand / 2);
+      const upgraderBonus = Math.floor(taskDemand / 2);
+
+      adjustedMinimums.harvester = currentHarvesterMin + harvesterBonus;
+      adjustedMinimums.upgrader = currentUpgraderMin + upgraderBonus;
+
+      this.logger.log?.(
+        `[BehaviorController] Task-based demand: +${taskDemand} creeps needed ` +
+          `(harvester: ${currentHarvesterMin} → ${adjustedMinimums.harvester}, ` +
+          `upgrader: ${currentUpgraderMin} → ${adjustedMinimums.upgrader})`
+      );
     }
 
     return adjustedMinimums;
