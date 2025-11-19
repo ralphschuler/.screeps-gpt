@@ -122,7 +122,7 @@ export class ScreensAgent {
     return {
       success: reviewResult.status !== "changes_requested",
       message: reviewResult.summary,
-      data: reviewResult
+      data: reviewResult as unknown as Record<string, unknown>
     };
   }
 
