@@ -2,16 +2,10 @@
  * Shared profiler types and utilities used across runtime and monitoring scripts
  */
 
-export interface ProfilerData {
-  calls: number;
-  time: number;
-}
+import type { ProfilerData, ProfilerMemory } from "@ralphschuler/screeps-profiler";
 
-export interface ProfilerMemory {
-  data: { [name: string]: ProfilerData };
-  start?: number;
-  total: number;
-}
+// Re-export core types from profiler package
+export type { ProfilerData, ProfilerMemory };
 
 export interface ProfilerSnapshot {
   fetchedAt: string;

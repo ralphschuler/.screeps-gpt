@@ -1,4 +1,4 @@
-import { profile } from "@profiler";
+import { profile } from "@ralphschuler/screeps-profiler";
 import { WallUpgradeManager } from "@runtime/defense/WallUpgradeManager";
 
 /**

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { init as initProfiler, profile } from "@profiler";
+import { init as initProfiler, profile } from "@ralphschuler/screeps-profiler";
 
 // Setup global Memory and Game for tests
 declare global {

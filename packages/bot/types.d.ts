@@ -1,6 +1,6 @@
 import type { SystemReport } from "./src/shared/contracts";
 import type { ColonyManagerMemory } from "./src/runtime/planning/ColonyManager";
-import type { ProfilerMemory } from "./src/shared/profiler-types";
+import type { ProfilerMemory } from "@ralphschuler/screeps-profiler";
 import type { CommunicationVerbosity } from "./src/runtime/behavior/CreepCommunicationManager";
 import type { InfrastructureMemory } from "./src/runtime/infrastructure/InfrastructureManager";
 import type { ThreatMemory } from "./src/runtime/defense/ThreatDetector";

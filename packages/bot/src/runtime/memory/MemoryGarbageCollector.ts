@@ -1,4 +1,4 @@
-import { profile } from "@profiler";
+import { profile } from "@ralphschuler/screeps-profiler";
 
 /**
  * Configuration options for memory garbage collection

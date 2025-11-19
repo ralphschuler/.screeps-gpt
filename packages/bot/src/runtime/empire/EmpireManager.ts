@@ -1,7 +1,7 @@
 import type { GameContext, RoomLike } from "@runtime/types/GameContext";
 import { ColonyManager } from "@runtime/planning/ColonyManager";
 import { ScoutManager } from "@runtime/scouting/ScoutManager";
-import { profile } from "@profiler";
+import { profile } from "@ralphschuler/screeps-profiler";
 
 /**
  * Room threat assessment

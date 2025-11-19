@@ -1,5 +1,5 @@
 import type { RoomLike } from "@runtime/types/GameContext";
-import { profile } from "@profiler";
+import { profile } from "@ralphschuler/screeps-profiler";
 
 /**
  * Resource request for inter-room transfers

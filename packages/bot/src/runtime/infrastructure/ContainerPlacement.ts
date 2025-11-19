@@ -1,4 +1,4 @@
-import { profile } from "@profiler";
+import { profile } from "@ralphschuler/screeps-profiler";
 
 /**
  * Manages automatic placement of containers at energy sources for RCL 2+

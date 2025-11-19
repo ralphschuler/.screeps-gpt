@@ -1,4 +1,4 @@
-import { profile } from "@profiler";
+import { profile } from "@ralphschuler/screeps-profiler";
 
 /**
  * Body part configuration for a creep role

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import * as Profiler from "@profiler";
+import { init, profile } from "@ralphschuler/screeps-profiler";
 
 // Setup global Memory and Game for tests
 declare global {
@@ -39,7 +39,7 @@ describe("Profiler", () => {
 
   describe("initialization", () => {
     it("should initialize profiler with default memory structure", () => {
-      const profiler = Profiler.init();
+      const profiler = init();
       expect(profiler).toBeDefined();
       expect(global.Memory.profiler).toBeDefined();
       expect(global.Memory.profiler.data).toEqual({});
@@ -47,7 +47,7 @@ describe("Profiler", () => {
     });
 
     it("should expose standard profiler methods", () => {
-      const profiler = Profiler.init();
+      const profiler = init();
       expect(profiler.start).toBeInstanceOf(Function);
       expect(profiler.stop).toBeInstanceOf(Function);
       expect(profiler.status).toBeInstanceOf(Function);
@@ -58,7 +58,7 @@ describe("Profiler", () => {
 
   describe("start/stop", () => {
     it("should start profiling and set start tick", () => {
-      const profiler = Profiler.init();
+      const profiler = init();
       global.Game.time = 100;
 
       const result = profiler.start();
@@ -67,7 +67,7 @@ describe("Profiler", () => {
     });
 
     it("should stop profiling and update total ticks", () => {
-      const profiler = Profiler.init();
+      const profiler = init();
       global.Game.time = 100;
 
       profiler.start();
@@ -80,7 +80,7 @@ describe("Profiler", () => {
     });
 
     it("should return message when stopping while not running", () => {
-      const profiler = Profiler.init();
+      const profiler = init();
       const result = profiler.stop();
       expect(result).toBe("Profiler is not running");
     });
@@ -88,12 +88,12 @@ describe("Profiler", () => {
 
   describe("status", () => {
     it("should report stopped status when not running", () => {
-      const profiler = Profiler.init();
+      const profiler = init();
       expect(profiler.status()).toBe("Profiler is stopped");
     });
 
     it("should report running status when profiling is active", () => {
-      const profiler = Profiler.init();
+      const profiler = init();
       global.Game.time = 100;
       profiler.start();
       expect(profiler.status()).toBe("Profiler is running");
@@ -102,7 +102,7 @@ describe("Profiler", () => {
 
   describe("clear", () => {
     it("should clear profiling data", () => {
-      const profiler = Profiler.init();
+      const profiler = init();
       global.Memory.profiler.data = { "test:method": { calls: 10, time: 5.0 } };
       global.Memory.profiler.total = 100;
 
@@ -114,7 +114,7 @@ describe("Profiler", () => {
     });
 
     it("should preserve running state when clearing", () => {
-      const profiler = Profiler.init();
+      const profiler = init();
       global.Game.time = 100;
 
       profiler.start();
@@ -127,7 +127,7 @@ describe("Profiler", () => {
 
   describe("output", () => {
     it("should output profiling data without errors", () => {
-      const profiler = Profiler.init();
+      const profiler = init();
       const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
       global.Memory.profiler.data = {
@@ -143,7 +143,7 @@ describe("Profiler", () => {
     });
 
     it("should handle empty profiling data", () => {
-      const profiler = Profiler.init();
+      const profiler = init();
       const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
       global.Memory.profiler.total = 0;
@@ -163,13 +163,13 @@ describe("Profiler", () => {
     }
 
     it("should have profile decorator function available", () => {
-      expect(Profiler.profile).toBeDefined();
-      expect(Profiler.profile).toBeInstanceOf(Function);
+      expect(profile).toBeDefined();
+      expect(profile).toBeInstanceOf(Function);
     });
 
     it("should not throw when applying decorator with profiler disabled", () => {
       // Apply decorator to the test class
-      Profiler.profile(TestClass);
+      profile(TestClass);
 
       const instance = new TestClass();
       expect(instance.testMethod()).toBe("test");
@@ -178,7 +178,7 @@ describe("Profiler", () => {
 
   describe("toString", () => {
     it("should provide usage information", () => {
-      const profiler = Profiler.init();
+      const profiler = init();
       const helpText = profiler.toString();
 
       expect(helpText).toContain("Profiler.start()");

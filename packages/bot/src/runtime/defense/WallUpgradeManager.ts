@@ -1,5 +1,5 @@
 import type { RoomLike } from "@runtime/types/GameContext";
-import { profile } from "@profiler";
+import { profile } from "@ralphschuler/screeps-profiler";
 
 /**
  * Defines a wall/rampart upgrade stage tied to controller level
