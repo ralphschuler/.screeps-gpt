@@ -47,7 +47,7 @@ export class BuilderProcess {
       return;
     }
 
-    if (ctx.logger) {
+    if (ctx.logger && ctx.logger.log) {
       ctx.logger.log(`[Builder] Processing ${builders.length} builders`);
     }
 

@@ -44,7 +44,7 @@ export class HarvesterProcess {
       return;
     }
 
-    if (ctx.logger) {
+    if (ctx.logger && ctx.logger.log) {
       ctx.logger.log(`[Harvester] Processing ${harvesters.length} harvesters`);
     }
 

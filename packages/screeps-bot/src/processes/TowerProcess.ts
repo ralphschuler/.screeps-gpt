@@ -51,7 +51,7 @@ export class TowerProcess {
       return;
     }
 
-    if (ctx.logger) {
+    if (ctx.logger && ctx.logger.log) {
       ctx.logger.log(`[Tower] Processing ${towers.length} towers`);
     }
 

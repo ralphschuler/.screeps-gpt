@@ -31,7 +31,7 @@ export class ScoutProcess {
       return;
     }
 
-    if (ctx.logger) {
+    if (ctx.logger && ctx.logger.log) {
       ctx.logger.log(`[Scout] Processing ${scouts.length} scouts`);
     }
 

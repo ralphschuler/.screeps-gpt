@@ -116,7 +116,7 @@ export class RoomProcess {
     // Use decision tree to determine strategy
     const action = this.decisionTree.evaluate(strategyContext);
 
-    if (ctx.logger) {
+    if (ctx.logger && ctx.logger.log) {
       ctx.logger.log(`[Room ${room.name}] Strategy: ${action}`);
     }
 
@@ -132,15 +132,15 @@ export class RoomProcess {
         this.spawnCreep(room, "upgrader", [WORK, CARRY, MOVE], ctx);
         break;
       case "defend":
-        if (ctx.logger) ctx.logger.log(`[Room ${room.name}] Defense mode activated`);
+        if (ctx.logger && ctx.logger.log) ctx.logger.log(`[Room ${room.name}] Defense mode activated`);
         // Defense handled by TowerProcess
         break;
       case "expand":
-        if (ctx.logger) ctx.logger.log(`[Room ${room.name}] Expansion phase`);
+        if (ctx.logger && ctx.logger.log) ctx.logger.log(`[Room ${room.name}] Expansion phase`);
         // Expansion logic would go here
         break;
       case "consolidate":
-        if (ctx.logger) ctx.logger.log(`[Room ${room.name}] Consolidation phase`);
+        if (ctx.logger && ctx.logger.log) ctx.logger.log(`[Room ${room.name}] Consolidation phase`);
         // Consolidation logic would go here
         break;
       case "idle":
@@ -178,7 +178,7 @@ export class RoomProcess {
       memory: { role }
     });
 
-    if (result === OK && ctx.logger) {
+    if (result === OK && ctx.logger && ctx.logger.log) {
       ctx.logger.log(`[Room ${room.name}] Spawning ${role}: ${name}`);
     }
   }

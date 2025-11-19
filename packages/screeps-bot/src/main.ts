@@ -9,6 +9,8 @@
  * - Demonstrates integration of all screeps-* packages
  */
 
+/// <reference types="@types/screeps" />
+
 import { Kernel } from "@ralphschuler/screeps-kernel";
 import { Logger } from "@ralphschuler/screeps-logger";
 
