@@ -1,4 +1,4 @@
-# @ralphschuler/screeps-kernel
+# screeps-kernel
 
 Custom TypeScript kernel with decorator-based API for Screeps AI automation. Inspired by [screeps-microkernel](https://github.com/riggs/screeps-microkernel) patterns, designed for type safety and modularity.
 
@@ -15,13 +15,13 @@ Custom TypeScript kernel with decorator-based API for Screeps AI automation. Ins
 ## Installation
 
 ```bash
-bun add @ralphschuler/screeps-kernel
+bun add screeps-kernel
 ```
 
 ## Basic Usage
 
 ```typescript
-import { Kernel, process, ProcessContext } from "@ralphschuler/screeps-kernel";
+import { Kernel, process, ProcessContext } from "screeps-kernel";
 
 // Define a process with decorator
 @process({ name: "BehaviorController", priority: 50, singleton: true })
@@ -157,7 +157,7 @@ export class MemoryManager {
 }
 
 // main.ts
-import { Kernel } from "@ralphschuler/screeps-kernel";
+import { Kernel } from "screeps-kernel";
 import "./BehaviorController";
 import "./MemoryManager";
 

@@ -1,5 +1,5 @@
 {
-  "name": "@ralphschuler/screeps-kernel",
+  "name": "screeps-kernel",
   "version": "1.0.0",
   "description": "Custom TypeScript kernel with decorator-based API for Screeps AI automation",
   "license": "MIT",

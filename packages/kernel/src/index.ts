@@ -1,12 +1,12 @@
 /**
- * @ralphschuler/screeps-kernel
+ * screeps-kernel
  *
  * Custom TypeScript kernel with decorator-based API for Screeps AI automation.
  * Inspired by screeps-microkernel patterns, designed for type safety and modularity.
  *
  * @example Basic Usage
  * ```typescript
- * import { Kernel, process, ProcessContext } from '@ralphschuler/screeps-kernel';
+ * import { Kernel, process, ProcessContext } from 'screeps-kernel';
  *
  * // Define a process with decorator
  * @process({ name: 'MyProcess', priority: 100, singleton: true })
