@@ -12,6 +12,9 @@
     "dist/main.js.map",
     "src"
   ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
