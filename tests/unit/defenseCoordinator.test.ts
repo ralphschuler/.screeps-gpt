@@ -77,8 +77,16 @@ describe("DefenseCoordinator", () => {
           { type: ATTACK, hits: 100 },
           { type: ATTACK, hits: 100 },
           { type: ATTACK, hits: 100 },
+          { type: ATTACK, hits: 100 },
+          { type: ATTACK, hits: 100 },
+          { type: ATTACK, hits: 100 },
+          { type: ATTACK, hits: 100 },
+          { type: ATTACK, hits: 100 },
           { type: HEAL, hits: 100 },
-          { type: HEAL, hits: 100 }
+          { type: HEAL, hits: 100 },
+          { type: HEAL, hits: 100 },
+          { type: HEAL, hits: 100 },
+          { type: MOVE, hits: 100 }
         ]
       } as Creep;
 
