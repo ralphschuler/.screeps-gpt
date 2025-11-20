@@ -24,10 +24,10 @@ const PUBLIC_DIR = join(DOCS_BUILD_DIR, "public");
 
 describe("Hexo documentation build (#252)", () => {
   beforeAll(() => {
-    // Ensure packages/docs dependencies are installed (Bun workspace handles this)
+    // Ensure packages/docs dependencies are installed (Yarn workspace handles this)
     console.log("Building documentation site...");
-    execSync("bun run build", { cwd: DOCS_BUILD_DIR, stdio: "inherit" });
-  }, 60000); // 60 second timeout for bun operations and hexo build
+    execSync("yarn build", { cwd: DOCS_BUILD_DIR, stdio: "inherit" });
+  }, 60000); // 60 second timeout for yarn operations and hexo build
 
   describe("Build process validation", () => {
     it("should have valid Hexo configuration file", () => {
