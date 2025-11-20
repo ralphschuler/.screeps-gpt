@@ -10,8 +10,14 @@ import { CodeReviewCapability } from "./capabilities/codeReview.js";
 import { ImplementationCapability } from "./capabilities/implementation.js";
 import { TestingCapability } from "./capabilities/testing.js";
 import { DeploymentCapability } from "./capabilities/deployment.js";
-import type { AgentConfig, TaskContext, TaskResult } from "./types.js";
-import { AgentTask, AutonomyLevel } from "./types.js";
+import {
+  AgentTask,
+  AutonomyLevel,
+  type AgentConfig,
+  type ScreepsConfig,
+  type TaskContext,
+  type TaskResult
+} from "./types.js";
 
 /**
  * Main agent class for orchestrating development tasks
@@ -133,9 +139,9 @@ export class ScreensAgent {
     console.log("🛠️  Implementing feature...");
 
     const spec = {
-      title: (context.parameters.title as string) || "Feature",
-      description: (context.parameters.description as string) || "",
-      requirements: (context.parameters.requirements as string[]) || []
+      title: (context.parameters["title"] as string) || "Feature",
+      description: (context.parameters["description"] as string) || "",
+      requirements: (context.parameters["requirements"] as string[]) || []
     };
 
     return await this.implementation.implementFeature(spec);
@@ -147,7 +153,7 @@ export class ScreensAgent {
   private async runTests(context: TaskContext): Promise<TaskResult> {
     console.log("🧪 Running tests...");
 
-    const suites = (context.parameters.suites as string[]) || ["unit"];
+    const suites = (context.parameters["suites"] as string[]) || ["unit"];
     return await this.testing.executeTests(suites);
   }
 
@@ -243,28 +249,37 @@ async function main() {
   }
 
   // Load configuration from environment
-  const config: AgentConfig = {
-    name: process.env.AGENT_NAME || "screeps-agent",
-    version: process.env.AGENT_VERSION || "0.1.0",
-    screeps: {
-      token: process.env.SCREEPS_TOKEN,
-      email: process.env.SCREEPS_EMAIL,
-      password: process.env.SCREEPS_PASSWORD,
-      host: process.env.SCREEPS_HOST || "screeps.com",
-      port: process.env.SCREEPS_PORT ? parseInt(process.env.SCREEPS_PORT, 10) : 443,
-      protocol: (process.env.SCREEPS_PROTOCOL as "http" | "https") || "https",
-      shard: process.env.SCREEPS_SHARD || "shard3"
-    },
-    github: process.env.GITHUB_TOKEN
-      ? {
-          token: process.env.GITHUB_TOKEN,
-          repository: process.env.GITHUB_REPOSITORY || "",
-          baseBranch: process.env.GITHUB_BASE_BRANCH || "main"
-        }
-      : undefined,
-    autonomyLevel: (process.env.AUTONOMY_LEVEL as AutonomyLevel) || AutonomyLevel.Manual,
-    timeout: process.env.TIMEOUT ? parseInt(process.env.TIMEOUT, 10) : 45
+  const screepsConfig: ScreepsConfig = {
+    host: process.env["SCREEPS_HOST"] || "screeps.com",
+    port: process.env["SCREEPS_PORT"] ? parseInt(process.env["SCREEPS_PORT"], 10) : 443,
+    protocol: (process.env["SCREEPS_PROTOCOL"] as "http" | "https") || "https",
+    shard: process.env["SCREEPS_SHARD"] || "shard3"
   };
+  if (process.env["SCREEPS_TOKEN"]) {
+    screepsConfig.token = process.env["SCREEPS_TOKEN"];
+  }
+  if (process.env["SCREEPS_EMAIL"]) {
+    screepsConfig.email = process.env["SCREEPS_EMAIL"];
+  }
+  if (process.env["SCREEPS_PASSWORD"]) {
+    screepsConfig.password = process.env["SCREEPS_PASSWORD"];
+  }
+
+  const config: AgentConfig = {
+    name: process.env["AGENT_NAME"] || "screeps-agent",
+    version: process.env["AGENT_VERSION"] || "0.1.0",
+    screeps: screepsConfig,
+    autonomyLevel: (process.env["AUTONOMY_LEVEL"] as AutonomyLevel) || AutonomyLevel.Manual,
+    timeout: process.env["TIMEOUT"] ? parseInt(process.env["TIMEOUT"], 10) : 45
+  };
+
+  if (process.env["GITHUB_TOKEN"]) {
+    config.github = {
+      token: process.env["GITHUB_TOKEN"],
+      repository: process.env["GITHUB_REPOSITORY"] || "",
+      baseBranch: process.env["GITHUB_BASE_BRANCH"] || "main"
+    };
+  }
 
   // Validate configuration
   if (!config.screeps.token && (!config.screeps.email || !config.screeps.password)) {

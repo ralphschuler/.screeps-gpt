@@ -268,12 +268,15 @@ export class TestingCapability {
    * Log an action
    */
   private logAction(type: ActionType, description: string, details?: Record<string, unknown>): void {
-    this.actions.push({
+    const action: AgentAction = {
       type,
       timestamp: new Date(),
-      description,
-      details
-    });
+      description
+    };
+    if (details !== undefined) {
+      action.details = details;
+    }
+    this.actions.push(action);
   }
 
   /**

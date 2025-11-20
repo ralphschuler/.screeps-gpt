@@ -68,6 +68,7 @@ export class CodeReviewCapability {
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
+      if (!line) continue;
       const match = anyTypeRegex.exec(line);
       if (match) {
         comments.push({
@@ -83,6 +84,7 @@ export class CodeReviewCapability {
     const nonNullRegex = /!\s*[;,)\]]/g;
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
+      if (!line) continue;
       if (nonNullRegex.test(line)) {
         comments.push({
           path: file.path,
@@ -102,6 +104,7 @@ export class CodeReviewCapability {
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
+      if (!line) continue;
 
       // Check for pathfinding in loops
       if (
@@ -149,6 +152,7 @@ export class CodeReviewCapability {
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
+      if (!line) continue;
 
       // Check for unnecessary lookups
       if (line.includes("Game.rooms")) {
@@ -184,6 +188,7 @@ export class CodeReviewCapability {
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
+      if (!line) continue;
 
       // Check for unbounded memory growth
       if (line.includes("Memory.") && line.includes("push(")) {
