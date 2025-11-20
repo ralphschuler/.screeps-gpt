@@ -36,7 +36,7 @@ describe("fetch-room-analysis defensive parsing", () => {
     // Mock: presence check shows 0 rooms (early exit path)
     mockConsoleMethod.mockResolvedValueOnce({ ok: 1, data: "0" }); // presence check
 
-    const { performRoomAnalysis } = await import("../../packages/utilities/scripts/fetch-room-analysis");
+    const { performRoomAnalysis } = await import("../../scripts/fetch-room-analysis");
 
     const result = await performRoomAnalysis();
 
@@ -52,7 +52,7 @@ describe("fetch-room-analysis defensive parsing", () => {
       .mockResolvedValueOnce({ ok: 1, data: JSON.stringify({ username: "TestUser" }) }) // username
       .mockResolvedValueOnce({ ok: 1, data: "undefined" }); // rooms command returns undefined
 
-    const { performRoomAnalysis } = await import("../../packages/utilities/scripts/fetch-room-analysis");
+    const { performRoomAnalysis } = await import("../../scripts/fetch-room-analysis");
 
     const result = await performRoomAnalysis();
 
@@ -67,7 +67,7 @@ describe("fetch-room-analysis defensive parsing", () => {
       .mockResolvedValueOnce({ ok: 1, data: JSON.stringify({ username: "TestUser" }) }) // username
       .mockResolvedValueOnce({ ok: 1, data: "" }); // rooms command returns empty
 
-    const { performRoomAnalysis } = await import("../../packages/utilities/scripts/fetch-room-analysis");
+    const { performRoomAnalysis } = await import("../../scripts/fetch-room-analysis");
 
     const result = await performRoomAnalysis();
 
@@ -82,7 +82,7 @@ describe("fetch-room-analysis defensive parsing", () => {
       .mockResolvedValueOnce({ ok: 1, data: JSON.stringify({ username: "TestUser" }) }) // username
       .mockResolvedValueOnce({ ok: 1, data: "null" }); // rooms command returns null
 
-    const { performRoomAnalysis } = await import("../../packages/utilities/scripts/fetch-room-analysis");
+    const { performRoomAnalysis } = await import("../../scripts/fetch-room-analysis");
 
     const result = await performRoomAnalysis();
 
@@ -97,7 +97,7 @@ describe("fetch-room-analysis defensive parsing", () => {
       .mockResolvedValueOnce({ ok: 1, data: JSON.stringify({ username: "TestUser" }) }) // username
       .mockResolvedValueOnce({ ok: 1, data: JSON.stringify({ error: "not an array" }) }); // rooms command
 
-    const { performRoomAnalysis } = await import("../../packages/utilities/scripts/fetch-room-analysis");
+    const { performRoomAnalysis } = await import("../../scripts/fetch-room-analysis");
 
     const result = await performRoomAnalysis();
 
@@ -112,7 +112,7 @@ describe("fetch-room-analysis defensive parsing", () => {
       .mockResolvedValueOnce({ ok: 1, data: JSON.stringify({ username: "TestUser" }) }) // username
       .mockResolvedValueOnce({ ok: 1, data: "{invalid json}" }); // rooms command
 
-    const { performRoomAnalysis } = await import("../../packages/utilities/scripts/fetch-room-analysis");
+    const { performRoomAnalysis } = await import("../../scripts/fetch-room-analysis");
 
     const result = await performRoomAnalysis();
 
@@ -124,7 +124,7 @@ describe("fetch-room-analysis defensive parsing", () => {
     // Mock: presence check returns invalid number
     mockConsoleMethod.mockResolvedValueOnce({ ok: 1, data: "not-a-number" });
 
-    const { performRoomAnalysis } = await import("../../packages/utilities/scripts/fetch-room-analysis");
+    const { performRoomAnalysis } = await import("../../scripts/fetch-room-analysis");
 
     const result = await performRoomAnalysis();
 
@@ -137,7 +137,7 @@ describe("fetch-room-analysis defensive parsing", () => {
     // Mock: presence check shows 0 rooms
     mockConsoleMethod.mockResolvedValueOnce({ ok: 1, data: "0" });
 
-    const { performRoomAnalysis } = await import("../../packages/utilities/scripts/fetch-room-analysis");
+    const { performRoomAnalysis } = await import("../../scripts/fetch-room-analysis");
 
     const result = await performRoomAnalysis();
 
@@ -161,7 +161,7 @@ describe("fetch-room-analysis defensive parsing", () => {
   it("should require SCREEPS_TOKEN", async () => {
     delete process.env.SCREEPS_TOKEN;
 
-    const { performRoomAnalysis } = await import("../../packages/utilities/scripts/fetch-room-analysis");
+    const { performRoomAnalysis } = await import("../../scripts/fetch-room-analysis");
 
     await expect(performRoomAnalysis()).rejects.toThrow("Missing SCREEPS_TOKEN environment variable");
   });
@@ -170,7 +170,7 @@ describe("fetch-room-analysis defensive parsing", () => {
     delete process.env.SCREEPS_SHARD;
     mockConsoleMethod.mockResolvedValueOnce({ ok: 1, data: "0" });
 
-    const { performRoomAnalysis } = await import("../../packages/utilities/scripts/fetch-room-analysis");
+    const { performRoomAnalysis } = await import("../../scripts/fetch-room-analysis");
 
     const result = await performRoomAnalysis();
 
@@ -181,7 +181,7 @@ describe("fetch-room-analysis defensive parsing", () => {
     process.env.SCREEPS_SHARD = "shard1";
     mockConsoleMethod.mockResolvedValueOnce({ ok: 1, data: "0" });
 
-    const { performRoomAnalysis } = await import("../../packages/utilities/scripts/fetch-room-analysis");
+    const { performRoomAnalysis } = await import("../../scripts/fetch-room-analysis");
 
     const result = await performRoomAnalysis();
 

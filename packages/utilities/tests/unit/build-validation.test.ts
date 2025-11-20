@@ -13,7 +13,7 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { mkdir, writeFile, rm } from "node:fs/promises";
 import { resolve } from "node:path";
-import { buildProject, validateFile } from "../../packages/utilities/scripts/lib/buildProject";
+import { buildProject, validateFile } from "../../scripts/lib/buildProject";
 
 const TEST_DIST_DIR = resolve("dist");
 const TEST_TEMP_DIR = resolve("/tmp/build-validation-test");

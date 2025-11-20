@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { releaseVersion, parseChangelog } from "../../packages/utilities/scripts/lib/changelog";
+import { releaseVersion, parseChangelog } from "../../scripts/lib/changelog";
 
 describe("Changelog Release Management", () => {
   it("should move unreleased content to a new version section", () => {

@@ -43,7 +43,7 @@ describe("check-bot-aliveness defensive parsing", () => {
     // Mock: console returns "undefined" string (common when bot has no game presence)
     mockConsoleMethod.mockResolvedValueOnce({ ok: 1, data: "undefined" });
 
-    const { checkBotAliveness } = await import("../../packages/utilities/scripts/check-bot-aliveness");
+    const { checkBotAliveness } = await import("../../scripts/check-bot-aliveness");
 
     const result = await checkBotAliveness();
 
@@ -56,7 +56,7 @@ describe("check-bot-aliveness defensive parsing", () => {
     // Mock: console returns empty string
     mockConsoleMethod.mockResolvedValueOnce({ ok: 1, data: "" });
 
-    const { checkBotAliveness } = await import("../../packages/utilities/scripts/check-bot-aliveness");
+    const { checkBotAliveness } = await import("../../scripts/check-bot-aliveness");
 
     const result = await checkBotAliveness();
 
@@ -69,7 +69,7 @@ describe("check-bot-aliveness defensive parsing", () => {
     // Mock: console returns "null" string
     mockConsoleMethod.mockResolvedValueOnce({ ok: 1, data: "null" });
 
-    const { checkBotAliveness } = await import("../../packages/utilities/scripts/check-bot-aliveness");
+    const { checkBotAliveness } = await import("../../scripts/check-bot-aliveness");
 
     const result = await checkBotAliveness();
 
@@ -82,7 +82,7 @@ describe("check-bot-aliveness defensive parsing", () => {
     // Mock: console returns undefined response.data (the bug scenario)
     mockConsoleMethod.mockResolvedValueOnce({ ok: 1, data: undefined });
 
-    const { checkBotAliveness } = await import("../../packages/utilities/scripts/check-bot-aliveness");
+    const { checkBotAliveness } = await import("../../scripts/check-bot-aliveness");
 
     const result = await checkBotAliveness();
 
@@ -95,7 +95,7 @@ describe("check-bot-aliveness defensive parsing", () => {
     // Mock: console returns null response.data
     mockConsoleMethod.mockResolvedValueOnce({ ok: 1, data: null });
 
-    const { checkBotAliveness } = await import("../../packages/utilities/scripts/check-bot-aliveness");
+    const { checkBotAliveness } = await import("../../scripts/check-bot-aliveness");
 
     const result = await checkBotAliveness();
 
@@ -108,7 +108,7 @@ describe("check-bot-aliveness defensive parsing", () => {
     // Mock: console returns malformed JSON
     mockConsoleMethod.mockResolvedValueOnce({ ok: 1, data: "{invalid json}" });
 
-    const { checkBotAliveness } = await import("../../packages/utilities/scripts/check-bot-aliveness");
+    const { checkBotAliveness } = await import("../../scripts/check-bot-aliveness");
 
     const result = await checkBotAliveness();
 
@@ -120,7 +120,7 @@ describe("check-bot-aliveness defensive parsing", () => {
     // Mock: console returns a valid JSON but not an object (e.g., array or primitive)
     mockConsoleMethod.mockResolvedValueOnce({ ok: 1, data: "123" });
 
-    const { checkBotAliveness } = await import("../../packages/utilities/scripts/check-bot-aliveness");
+    const { checkBotAliveness } = await import("../../scripts/check-bot-aliveness");
 
     const result = await checkBotAliveness();
 
@@ -136,7 +136,7 @@ describe("check-bot-aliveness defensive parsing", () => {
       data: JSON.stringify({ hasSpawns: true, spawnCount: 2, rooms: 1 })
     });
 
-    const { checkBotAliveness } = await import("../../packages/utilities/scripts/check-bot-aliveness");
+    const { checkBotAliveness } = await import("../../scripts/check-bot-aliveness");
 
     const result = await checkBotAliveness();
 
@@ -152,7 +152,7 @@ describe("check-bot-aliveness defensive parsing", () => {
       data: JSON.stringify({ hasSpawns: false, spawnCount: 0, rooms: 1 })
     });
 
-    const { checkBotAliveness } = await import("../../packages/utilities/scripts/check-bot-aliveness");
+    const { checkBotAliveness } = await import("../../scripts/check-bot-aliveness");
 
     const result = await checkBotAliveness();
 
@@ -168,7 +168,7 @@ describe("check-bot-aliveness defensive parsing", () => {
       data: JSON.stringify({ hasSpawns: false, spawnCount: 0, rooms: 0 })
     });
 
-    const { checkBotAliveness } = await import("../../packages/utilities/scripts/check-bot-aliveness");
+    const { checkBotAliveness } = await import("../../scripts/check-bot-aliveness");
 
     const result = await checkBotAliveness();
 
@@ -185,7 +185,7 @@ describe("check-bot-aliveness defensive parsing", () => {
       error: "Authentication failed"
     });
 
-    const { checkBotAliveness } = await import("../../packages/utilities/scripts/check-bot-aliveness");
+    const { checkBotAliveness } = await import("../../scripts/check-bot-aliveness");
 
     const result = await checkBotAliveness();
 
@@ -197,7 +197,7 @@ describe("check-bot-aliveness defensive parsing", () => {
     // Mock: console throws exception
     mockConsoleMethod.mockRejectedValueOnce(new Error("Network timeout"));
 
-    const { checkBotAliveness } = await import("../../packages/utilities/scripts/check-bot-aliveness");
+    const { checkBotAliveness } = await import("../../scripts/check-bot-aliveness");
 
     const result = await checkBotAliveness();
 
@@ -208,7 +208,7 @@ describe("check-bot-aliveness defensive parsing", () => {
   it("should require SCREEPS_TOKEN environment variable", async () => {
     delete process.env.SCREEPS_TOKEN;
 
-    const { checkBotAliveness } = await import("../../packages/utilities/scripts/check-bot-aliveness");
+    const { checkBotAliveness } = await import("../../scripts/check-bot-aliveness");
 
     const result = await checkBotAliveness();
 
@@ -223,7 +223,7 @@ describe("check-bot-aliveness defensive parsing", () => {
       data: JSON.stringify({ hasSpawns: true, spawnCount: 1, rooms: 1 })
     });
 
-    const { checkBotAliveness } = await import("../../packages/utilities/scripts/check-bot-aliveness");
+    const { checkBotAliveness } = await import("../../scripts/check-bot-aliveness");
 
     await checkBotAliveness();
 
@@ -238,7 +238,7 @@ describe("check-bot-aliveness defensive parsing", () => {
       data: JSON.stringify({ hasSpawns: true, spawnCount: 1, rooms: 1 })
     });
 
-    const { checkBotAliveness } = await import("../../packages/utilities/scripts/check-bot-aliveness");
+    const { checkBotAliveness } = await import("../../scripts/check-bot-aliveness");
 
     await checkBotAliveness();
 
@@ -276,7 +276,7 @@ describe("check-bot-aliveness defensive parsing", () => {
     // But we should never get to console because Memory.stats shows bot is active
     mockConsoleMethod.mockResolvedValueOnce({ ok: 1, data: "undefined" });
 
-    const { checkBotAliveness } = await import("../../packages/utilities/scripts/check-bot-aliveness");
+    const { checkBotAliveness } = await import("../../scripts/check-bot-aliveness");
 
     const result = await checkBotAliveness();
 
@@ -303,7 +303,7 @@ describe("check-bot-aliveness defensive parsing", () => {
       data: JSON.stringify({ hasSpawns: true, spawnCount: 2, rooms: 1 })
     });
 
-    const { checkBotAliveness } = await import("../../packages/utilities/scripts/check-bot-aliveness");
+    const { checkBotAliveness } = await import("../../scripts/check-bot-aliveness");
 
     const result = await checkBotAliveness();
 
@@ -329,7 +329,7 @@ describe("check-bot-aliveness defensive parsing", () => {
       })
     });
 
-    const { checkBotAliveness } = await import("../../packages/utilities/scripts/check-bot-aliveness");
+    const { checkBotAliveness } = await import("../../scripts/check-bot-aliveness");
 
     const result = await checkBotAliveness();
 
@@ -350,7 +350,7 @@ describe("check-bot-aliveness defensive parsing", () => {
       })
     });
 
-    const { checkBotAliveness } = await import("../../packages/utilities/scripts/check-bot-aliveness");
+    const { checkBotAliveness } = await import("../../scripts/check-bot-aliveness");
 
     const result = await checkBotAliveness();
 

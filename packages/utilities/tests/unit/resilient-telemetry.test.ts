@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { analyzePTRStats } from "../../packages/utilities/scripts/check-ptr-alerts.js";
-import type { PTRStatsSnapshot } from "../../packages/utilities/scripts/check-ptr-alerts.js";
+import { analyzePTRStats } from "../../scripts/check-ptr-alerts.js";
+import type { PTRStatsSnapshot } from "../../scripts/check-ptr-alerts.js";
 
 describe("Resilient Telemetry Infrastructure", () => {
   describe("Complete infrastructure failure detection", () => {
