@@ -98,10 +98,12 @@ describe("CreepMemoryCleaner", () => {
 
   describe("setupCreepMemoryCleaner", () => {
     it("should patch StructureSpawn.prototype.createCreep", () => {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const originalCreateCreep = StructureSpawn.prototype.createCreep;
 
       setupCreepMemoryCleaner();
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(StructureSpawn.prototype.createCreep).not.toBe(originalCreateCreep);
     });
 
@@ -118,6 +120,7 @@ describe("CreepMemoryCleaner", () => {
 
       try {
         // This will call our patched version which should trigger cleanup
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         spawn.createCreep();
       } catch {
         // Original createCreep may fail in test environment, that's okay

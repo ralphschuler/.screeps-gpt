@@ -31,7 +31,13 @@ export default [
       "docs/**",
       "source/**",
       "themes/**",
-      "**/examples/**"
+      "**/examples/**",
+      "**/*.d.ts",
+      "**/dist/**/*.js",
+      "**/build/**/*.js",
+      "packages/*/src/**/*.js", // Only generated files in package src dirs
+      "**/*.js.map",
+      "**/*.d.ts.map"
     ]
   },
 

@@ -41,7 +41,7 @@ describe("Profiler", () => {
     }
 
     // Set profiler enabled for tests
-    (global as any).__PROFILER_ENABLED__ = true;
+    (global as typeof global & { __PROFILER_ENABLED__?: boolean }).__PROFILER_ENABLED__ = true;
   });
 
   describe("initialization", () => {
