@@ -5,7 +5,8 @@
  */
 
 import type { MCPClient } from "../mcp/client.js";
-import type { TaskResult, AgentAction, ActionType } from "../types.js";
+import type { TaskResult, AgentAction } from "../types.js";
+import { ActionType } from "../types.js";
 
 /**
  * Implementation capability for feature development

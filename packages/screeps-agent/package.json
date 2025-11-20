@@ -27,6 +27,7 @@
     "agent": "node dist/agent.js"
   },
   "dependencies": {
+    "@cfworker/json-schema": "^4.1.1",
     "@modelcontextprotocol/sdk": "^1.0.4",
     "@ralphschuler/screeps-mcp": "workspace:*",
     "screeps-api": "^1.16.1",

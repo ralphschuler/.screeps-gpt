@@ -10,7 +10,8 @@ import { CodeReviewCapability } from "./capabilities/codeReview.js";
 import { ImplementationCapability } from "./capabilities/implementation.js";
 import { TestingCapability } from "./capabilities/testing.js";
 import { DeploymentCapability } from "./capabilities/deployment.js";
-import type { AgentConfig, AgentTask, TaskContext, TaskResult, AutonomyLevel } from "./types.js";
+import type { AgentConfig, TaskContext, TaskResult } from "./types.js";
+import { AgentTask, AutonomyLevel } from "./types.js";
 
 /**
  * Main agent class for orchestrating development tasks
@@ -121,7 +122,7 @@ export class ScreensAgent {
     return {
       success: reviewResult.status !== "changes_requested",
       message: reviewResult.summary,
-      data: reviewResult
+      data: reviewResult as unknown as Record<string, unknown>
     };
   }
 
