@@ -895,7 +895,8 @@ export class BehaviorController {
       }
       // RCL 1-2 with high energy: 4 upgraders to accelerate early progression
       // This prevents spawn idle when energy is maxed but minimums are met
-      else if (rcl <= 2 && energyRatio >= 0.9) {
+      // Threshold lowered to 0.8 (80%) to prevent spawn idle at healthy energy levels (Issue #1105)
+      else if (rcl <= 2 && energyRatio >= 0.8) {
         upgraderCount = 4;
       }
 
