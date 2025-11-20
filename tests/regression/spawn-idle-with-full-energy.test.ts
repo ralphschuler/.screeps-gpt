@@ -80,31 +80,38 @@ describe("Spawn Idle with Full Energy (Regression #1027)", () => {
         // Current workforce: 7 creeps (meets minimums: 2 harvesters, 3 upgraders, 2 builders)
         "harvester-1": {
           memory: { role: "harvester" },
-          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 }
+          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+          room
         } as Creep,
         "harvester-2": {
           memory: { role: "harvester" },
-          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 }
+          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+          room
         } as Creep,
         "upgrader-1": {
           memory: { role: "upgrader" },
-          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 }
+          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+          room
         } as Creep,
         "upgrader-2": {
           memory: { role: "upgrader" },
-          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 }
+          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+          room
         } as Creep,
         "upgrader-3": {
           memory: { role: "upgrader" },
-          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 }
+          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+          room
         } as Creep,
         "builder-1": {
           memory: { role: "builder" },
-          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 }
+          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+          room
         } as Creep,
         "builder-2": {
           memory: { role: "builder" },
-          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 }
+          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+          room
         } as Creep
       },
       spawns: { Spawn1: spawn },
@@ -171,31 +178,38 @@ describe("Spawn Idle with Full Energy (Regression #1027)", () => {
       creeps: {
         "harvester-1": {
           memory: { role: "harvester" },
-          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 }
+          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+          room
         } as Creep,
         "harvester-2": {
           memory: { role: "harvester" },
-          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 }
+          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+          room
         } as Creep,
         "upgrader-1": {
           memory: { role: "upgrader" },
-          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 }
+          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+          room
         } as Creep,
         "upgrader-2": {
           memory: { role: "upgrader" },
-          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 }
+          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+          room
         } as Creep,
         "upgrader-3": {
           memory: { role: "upgrader" },
-          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 }
+          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+          room
         } as Creep,
         "builder-1": {
           memory: { role: "builder" },
-          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 }
+          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+          room
         } as Creep,
         "builder-2": {
           memory: { role: "builder" },
-          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 }
+          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+          room
         } as Creep
       },
       spawns: { Spawn1: spawn },
@@ -254,31 +268,38 @@ describe("Spawn Idle with Full Energy (Regression #1027)", () => {
       creeps: {
         "harvester-1": {
           memory: { role: "harvester" },
-          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 }
+          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+          room
         } as Creep,
         "harvester-2": {
           memory: { role: "harvester" },
-          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 }
+          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+          room
         } as Creep,
         "upgrader-1": {
           memory: { role: "upgrader" },
-          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 }
+          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+          room
         } as Creep,
         "upgrader-2": {
           memory: { role: "upgrader" },
-          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 }
+          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+          room
         } as Creep,
         "upgrader-3": {
           memory: { role: "upgrader" },
-          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 }
+          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+          room
         } as Creep,
         "builder-1": {
           memory: { role: "builder" },
-          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 }
+          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+          room
         } as Creep,
         "builder-2": {
           memory: { role: "builder" },
-          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 }
+          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+          room
         } as Creep
       },
       spawns: { Spawn1: spawn },
@@ -342,23 +363,28 @@ describe("Spawn Idle with Full Energy (Regression #1027)", () => {
       creeps: {
         "harvester-1": {
           memory: { role: "harvester" },
-          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 }
+          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+          room
         } as Creep,
         "harvester-2": {
           memory: { role: "harvester" },
-          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 }
+          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+          room
         } as Creep,
         "upgrader-1": {
           memory: { role: "upgrader" },
-          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 }
+          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+          room
         } as Creep,
         "upgrader-2": {
           memory: { role: "upgrader" },
-          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 }
+          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+          room
         } as Creep,
         "builder-1": {
           memory: { role: "builder" },
-          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 }
+          store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+          room
         } as Creep
       },
       spawns: { Spawn1: spawn },
