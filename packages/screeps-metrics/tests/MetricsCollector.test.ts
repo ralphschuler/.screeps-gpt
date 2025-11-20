@@ -1,15 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
-// Define Screeps constants first
-const FIND_MY_CREEPS = 101;
-const FIND_HOSTILE_CREEPS = 102;
-const FIND_SOURCES = 105;
-const FIND_STRUCTURES = 107;
-const RESOURCE_CREDITS = "credits";
-const RESOURCE_PIXEL = "pixel";
-const RESOURCE_CPU_UNLOCK = "cpuUnlock";
-const RESOURCE_ACCESS_KEY = "accessKey";
-
 // Setup Screeps global mocks before importing the module
 const mockHeapStats = {
   total_heap_size: 50000000,
@@ -91,6 +81,16 @@ const mockGame = {
   }
 };
 
+// Define Screeps constants
+const FIND_MY_CREEPS = 101;
+const FIND_HOSTILE_CREEPS = 102;
+const FIND_SOURCES = 105;
+const FIND_STRUCTURES = 107;
+const RESOURCE_CREDITS = "credits";
+const RESOURCE_PIXEL = "pixel";
+const RESOURCE_CPU_UNLOCK = "cpuUnlock";
+const RESOURCE_ACCESS_KEY = "accessKey";
+
 // Setup global mocks
 global.Game = mockGame as unknown as Game;
 global.FIND_MY_CREEPS = FIND_MY_CREEPS;
@@ -104,6 +104,7 @@ global.RESOURCE_ACCESS_KEY = RESOURCE_ACCESS_KEY as ResourceConstant;
 
 // Now import the module after mocks are setup
 import { MetricsCollector } from "../src/MetricsCollector";
+import type { MetricsSnapshot } from "../src/types";
 
 describe("MetricsCollector", () => {
   beforeEach(() => {

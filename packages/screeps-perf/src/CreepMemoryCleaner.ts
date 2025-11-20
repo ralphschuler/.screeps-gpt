@@ -31,10 +31,13 @@ export function cleanUpCreepMemory(): void {
 /**
  * Patches Spawn.prototype.createCreep to automatically trigger memory cleanup
  * This ensures memory is cleaned up without requiring explicit calls from user code
+ * Note: createCreep is deprecated, but this wrapper is intentional to provide backward compatibility
  */
 export function setupCreepMemoryCleaner(): void {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const originalCreateCreep = StructureSpawn.prototype.createCreep;
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   StructureSpawn.prototype.createCreep = function (
     this: StructureSpawn,
     ...args: Parameters<typeof originalCreateCreep>
