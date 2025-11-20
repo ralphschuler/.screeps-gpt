@@ -17,8 +17,8 @@ export class MainProcess {
       return Memory.systemReport?.report?.repository;
     };
 
-    // Configure the legacy kernel with role-based system
-    // Task system has been removed - only role-based system is available
+    // Configure the kernel with role-based system
+    // The task system has been removed; only the role-based system is available
     const config: LegacyKernelConfig = {
       repositorySignalProvider,
       behavior: new BehaviorController({
