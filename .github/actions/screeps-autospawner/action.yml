@@ -30,10 +30,10 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Setup Bun
-      uses: oven-sh/setup-bun@v2
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
       with:
-        bun-version: 1.3.1
+        node-version-file: .nvmrc
 
     - name: Check spawn status and auto-respawn
       id: autospawn
@@ -46,4 +46,4 @@ runs:
         SCREEPS_PATH: ${{ inputs.screeps-path }}
       run: |
         cd ${{ github.action_path }}/../../..
-        bun run tsx packages/utilities/scripts/screeps-autospawn.ts
+        yarn tsx packages/utilities/scripts/screeps-autospawn.ts
