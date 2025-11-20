@@ -78,12 +78,12 @@ Agents working on runtime code should understand:
 
 ### 1. Tooling
 
-- Use bun for running scripts (`bun run <script>`). Package scripts are defined in `package.json`.
-- Format code with `bun run format:write` and verify with `bun run format:check`.
-- Lint TypeScript code with `bun run lint` (use `lint:fix` for automatic fixes).
+- Use yarn for running scripts (`yarn <script>`). Package scripts are defined in `package.json`.
+- Format code with `yarn format:write` and verify with `yarn format:check`.
+- Lint TypeScript code with `yarn lint` (use `lint:fix` for automatic fixes).
 - All tests are managed by Vitest. Run the relevant suites (`test:unit`, `test:e2e`, `test:regression`, `test:coverage`) before publishing changes.
-- Build with `bun run build` (uses esbuild to create `dist/main.js`).
-- System evaluation with `bun run analyze:system` produces `reports/system-evaluation.json`.
+- Build with `yarn build` (uses esbuild to create `dist/main.js`).
+- System evaluation with `yarn analyze:system` produces `reports/system-evaluation.json`.
 
 ### 2. Coding Standards
 
@@ -99,7 +99,7 @@ Agents working on runtime code should understand:
 - Features should be opt-out rather than opt-in (e.g., `FEATURE_ENABLED=false` to disable, not `FEATURE_ENABLED=true` to enable).
 - This ensures continuous monitoring, testing, and immediate value delivery without manual activation.
 - Only disable features when there is a documented performance or compatibility concern.
-- Example: The profiler is enabled by default (`__PROFILER_ENABLED__` defaults to `true`). Use `PROFILER_ENABLED=false` or `bun run build:no-profiler` to explicitly disable.
+- Example: The profiler is enabled by default (`__PROFILER_ENABLED__` defaults to `true`). Use `PROFILER_ENABLED=false` or `yarn build:no-profiler` to explicitly disable.
 
 ### 3. Documentation Discipline
 
@@ -113,8 +113,8 @@ Agents working on runtime code should understand:
 **Changelog requirements:**
 
 - Update the `[Unreleased]` section of `CHANGELOG.md` with every pull request.
-- Run `bun run versions:update` after editing `CHANGELOG.md` to refresh `docs/changelog/versions.{json,md}`.
-- Regenerate the documentation site with `bun run build:docs-site` when previewing changes.
+- Run `yarn versions:update` after editing `CHANGELOG.md` to refresh `docs/changelog/versions.{json,md}`.
+- Regenerate the documentation site with `yarn build:docs-site` when previewing changes.
 
 **Cross-references:**
 
@@ -198,7 +198,7 @@ The configuration files in `.github/mcp/` define MCP server commands and environ
 
 - Place long-lived automation or evaluation reports in the `reports/` directory.
 - Coverage information consumed by scripts must remain compatible with `scripts/evaluate-system.ts`.
-- Run `bun run test:actions` to dry-run workflows locally with the `act` CLI.
+- Run `yarn test:actions` to dry-run workflows locally with the `act` CLI.
 
 ### 7. Regression Discipline
 
@@ -206,7 +206,7 @@ The configuration files in `.github/mcp/` define MCP server commands and environ
 
 1. **Capture first**: Add or update a regression test demonstrating the bug before implementing a fix.
 2. **Document**: Record the root cause, regression test name, and remediation in `docs/operations/`.
-3. **Update changelog**: Add to `CHANGELOG.md` `[Unreleased]` section and run `bun run versions:update`.
+3. **Update changelog**: Add to `CHANGELOG.md` `[Unreleased]` section and run `yarn versions:update`.
 4. **Reference**: Link the regression test in both documentation and changelog.
 
 ## Guardrails and Best Practices
@@ -222,13 +222,13 @@ The configuration files in `.github/mcp/` define MCP server commands and environ
 
 Before merging changes:
 
-1. Run `bun run format:write` to format code
-2. Run `bun run lint` to check code style
-3. Run `bun run test:unit` for unit tests
-4. Run `bun run test:e2e` for end-to-end tests (PTR profile)
-5. Run `bun run test:regression` for regression tests
-6. Run `bun run test:coverage` to verify coverage
-7. Run `bun run analyze:system` to check system evaluation
+1. Run `yarn format:write` to format code
+2. Run `yarn lint` to check code style
+3. Run `yarn test:unit` for unit tests
+4. Run `yarn test:e2e` for end-to-end tests (PTR profile)
+5. Run `yarn test:regression` for regression tests
+6. Run `yarn test:coverage` to verify coverage
+7. Run `yarn analyze:system` to check system evaluation
 
 ### Labels
 
@@ -294,7 +294,7 @@ When a new agent or contributor starts work:
 4. ✓ Browse [`docs/`](docs/) knowledge base, especially `docs/automation/overview.md`
 5. ✓ Review [`TASKS.md`](TASKS.md) for current priorities
 6. ✓ Check [`CHANGELOG.md`](CHANGELOG.md) for recent changes
-7. ✓ Run `bun install && bun run lint && bun run test:unit` to verify environment
+7. ✓ Run `yarn install && yarn lint && yarn test:unit` to verify environment
 8. ✓ Understand workflow permissions in `.github/workflows/`
 9. ✓ Review prompt templates in `.github/copilot/prompts/`
 10. ✓ Familiarize with label definitions in `.github/labels.yml`

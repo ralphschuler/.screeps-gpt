@@ -1,11 +1,20 @@
 # Changelog
 
 All notable changes to this project are documented here. This changelog now maintains the full release history—update the
-`[Unreleased]` section with your changes and run `bun run versions:update` to refresh the release index.
+`[Unreleased]` section with your changes and run `yarn versions:update` to refresh the release index.
 
 ## [Unreleased]
 
 ### Changed
+
+- **Package Manager Migration**: Migrated from Bun to Yarn 4 (Berry) as the primary package manager
+  - Replaced `bun.lock` with `yarn.lock` for dependency management
+  - Updated all documentation (README.md, DOCS.md, AGENTS.md, .github/copilot-instructions.md) to use yarn commands
+  - Removed Bun-specific dependencies (`bun-plugin-screeps`)
+  - Configured Yarn with node-modules linker for better compatibility
+  - Added GitHub Package Registry configuration for @ralphschuler scope in `.yarnrc.yml` and `.npmrc`
+  - Updated repository to be private for workspace support
+  - All builds, tests, and workflows remain fully functional
 
 - **Spawn Utilization Optimization**: Lowered RCL 1-2 energy threshold from 90% to 80% for dynamic upgrader scaling
   - Fixes spawn idle issue where spawns remained inactive despite 82% energy capacity and significant CPU headroom
