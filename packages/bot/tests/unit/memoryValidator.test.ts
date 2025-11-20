@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { MemoryValidator } from "../../packages/bot/src/runtime/memory/MemoryValidator";
+import { MemoryValidator } from "../../src/runtime/memory/MemoryValidator";
 
 describe("MemoryValidator", () => {
   describe("validateStats", () => {

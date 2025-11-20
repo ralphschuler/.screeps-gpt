@@ -37,7 +37,8 @@ export default [
       "**/build/**/*.js",
       "packages/*/src/**/*.js", // Only generated files in package src dirs
       "**/*.js.map",
-      "**/*.d.ts.map"
+      "**/*.d.ts.map",
+      ".yarn/**" // Yarn release files
     ]
   },
 

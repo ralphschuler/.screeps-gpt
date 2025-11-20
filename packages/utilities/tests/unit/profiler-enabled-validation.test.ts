@@ -10,7 +10,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { validateProfilerEnabled } from "../../packages/utilities/scripts/lib/buildProject";
+import { validateProfilerEnabled } from "../../scripts/lib/buildProject";
 
 describe("PROFILER_ENABLED Validation", () => {
   let originalEnv: string | undefined;

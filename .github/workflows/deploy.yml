@@ -70,12 +70,12 @@ jobs:
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          bun-version: 1.3.1
+          node-version-file: .nvmrc
       - name: Install dependencies
-        run: bun install --no-optional
+        run: yarn install --frozen-lockfile
       - name: Cache build output
         id: cache-build
         uses: actions/cache@v4
@@ -85,7 +85,7 @@ jobs:
             build-${{ runner.os }}-${{
             hashFiles('packages/bot/src/**/*',
             'packages/utilities/scripts/build.ts',
-            'tsconfig.json', 'bun.lock') }}
+            'tsconfig.json', 'yarn.lock') }}
           restore-keys: |
             build-${{ runner.os }}-
       - name: Build and deploy
@@ -102,7 +102,7 @@ jobs:
           SCREEPS_PROTOCOL: ${{ vars.SCREEPS_PROTOCOL }}
           SCREEPS_BRANCH: ${{ vars.SCREEPS_BRANCH }}
           SCREEPS_PATH: ${{ vars.SCREEPS_PATH }}
-        run: bun run deploy
+        run: yarn deploy
 
       - name: Notify deployment success
         if: success()

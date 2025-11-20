@@ -930,7 +930,7 @@ Screeps runs JavaScript/TypeScript only; RL models are Python-based
 
 **5. Deployment Complexity**
 
-- Current: single `bun run deploy`
+- Current: single `yarn deploy`
 - RL: multi-service deployment pipeline
 - Infrastructure management burden
 - CI/CD complexity increases

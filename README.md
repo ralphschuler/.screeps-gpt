@@ -31,11 +31,11 @@ A TypeScript-based Screeps bot with autonomous creep management, resource optimi
 
 ### 2. Development Infrastructure
 
-Bun-managed TypeScript codebase with comprehensive testing, linting, and build automation.
+Yarn-managed TypeScript codebase with comprehensive testing, linting, and build automation.
 
 **Technology Stack:**
 
-- **Runtime**: Bun 1.3+ with TypeScript targeting Node.js 18–22
+- **Runtime**: Node.js 18–22 with Yarn 4+ (Berry)
 - **Build**: esbuild for fast bundling
 - **Testing**: Vitest with unit, e2e, and regression test suites (including documentation build validation)
 - **Quality**: ESLint, Prettier, pre-commit hooks
@@ -97,7 +97,7 @@ All packages share a common root configuration for TypeScript, ESLint, and testi
 
 ### Prerequisites
 
-- [Bun](https://bun.sh) v1.0+ (or Docker for containerized development)
+- [Yarn](https://yarnpkg.com) v1.22+ (or Docker for containerized development)
 - [Node.js](https://nodejs.org/) 18.x–22.x
 - Screeps account with API token
 
@@ -106,23 +106,23 @@ All packages share a common root configuration for TypeScript, ESLint, and testi
 **Option 1: Local Development**
 
 ```bash
-bun install
-bun run build
-bun run test:unit
+yarn install
+yarn build
+yarn test:unit
 ```
 
 **Option 2: Docker Development**
 
 ```bash
-bun run docker:build
-bun run docker:test:unit
+yarn docker:build
+yarn docker:test:unit
 ```
 
 ### Deploy to Screeps
 
 ```bash
 # Configure secrets: SCREEPS_TOKEN, SCREEPS_HOST (optional)
-bun run deploy
+yarn deploy
 ```
 
 **Task System (Default Since v0.32.0):**
@@ -259,10 +259,10 @@ Multiple specialized Copilot agents collaborate on different aspects of developm
 We welcome contributions! Here's how to get started:
 
 1. **Fork and clone** the repository
-2. **Install dependencies**: `bun install` (or use Docker: `bun run docker:build`)
+2. **Install dependencies**: `yarn install` (or use Docker: `yarn docker:build`)
 3. **Review documentation**: Read [AGENTS.md](AGENTS.md) for repository conventions
 4. **Make your changes**: Update code, tests, and documentation together
-5. **Run quality checks**: `bun run format:write && bun run lint && bun run test:unit && bun run test:docs`
+5. **Run quality checks**: `yarn format:write && yarn lint && yarn test:unit && yarn test:docs`
 6. **Submit a PR**: The automation will validate your changes
 
 **Need help?** Check out:
@@ -414,4 +414,4 @@ MIT © OpenAI Automations
 
 ---
 
-**Built with:** TypeScript • Bun • GitHub Actions • GitHub Copilot CLI • Screeps API
+**Built with:** TypeScript • Yarn • GitHub Actions • GitHub Copilot CLI • Screeps API

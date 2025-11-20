@@ -85,7 +85,7 @@ Added regression test `tests/regression/memory-stats-interface.test.ts` that ver
 
 ## Verification
 
-1. **Build Test**: `bun run build` - Successful compilation
+1. **Build Test**: `yarn build` - Successful compilation
 2. **Unit Tests**: All 838 tests pass
 3. **Regression Tests**: All 422 tests pass (including new interface test)
 4. **Bundle Check**: Confirmed `memory.stats =` assignments present in `dist/main.js`

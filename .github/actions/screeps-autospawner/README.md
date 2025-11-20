@@ -105,7 +105,7 @@ For PTR, set to `/ptr`
 
 ```yaml
 - name: Deploy to Screeps
-  run: bun run deploy
+  run: yarn deploy
   env:
     SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
 
@@ -184,14 +184,14 @@ Comprehensive error handling at each step:
 export SCREEPS_TOKEN="your-test-token"
 
 # Run the script
-bun run tsx packages/utilities/scripts/screeps-autospawn.ts
+yarn tsx packages/utilities/scripts/screeps-autospawn.ts
 ```
 
 ### Linting
 
 ```bash
-bun run lint
-bun run format:write
+yarn lint
+yarn format:write
 ```
 
 ## Security

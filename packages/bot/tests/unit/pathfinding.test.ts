@@ -4,7 +4,7 @@ import {
   DefaultPathfinder,
   CartographerPathfinder,
   PathCache
-} from "../../packages/bot/src/runtime/pathfinding";
+} from "../../src/runtime/pathfinding";
 
 // Mock screeps-cartographer at the top level
 vi.mock("screeps-cartographer", () => ({

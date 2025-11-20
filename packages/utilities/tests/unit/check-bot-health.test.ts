@@ -5,7 +5,7 @@ import {
   loadHealthState,
   saveHealthState,
   type HealthState
-} from "../../packages/utilities/scripts/check-bot-health.js";
+} from "../../scripts/check-bot-health.js";
 
 describe("check-bot-health", () => {
   const testHealthDir = resolve("reports", "monitoring");

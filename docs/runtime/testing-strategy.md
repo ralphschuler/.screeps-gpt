@@ -412,16 +412,16 @@ beforeEach(() => {
 
 ```bash
 # Run all unit tests
-bun run test:unit
+yarn test:unit
 
 # Run specific test file
-bun run test:unit tests/unit/memory-manager.test.ts
+yarn test:unit tests/unit/memory-manager.test.ts
 
 # Run with coverage
-bun run test:coverage
+yarn test:coverage
 
 # Run in watch mode (for development)
-bun run test:unit --watch
+yarn test:unit --watch
 ```
 
 ### CI/CD Integration
@@ -443,7 +443,7 @@ bun run test:unit --watch
 
 ```bash
 # Deploy to PTR
-SCREEPS_BRANCH=ptr bun run deploy
+SCREEPS_BRANCH=ptr yarn deploy
 
 # Monitor PTR (automated)
 # See .github/workflows/screeps-monitoring.yml

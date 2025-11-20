@@ -37,7 +37,7 @@ describe("fetch-screeps-stats", () => {
       mockFetch.mockResolvedValue(mockResponse);
 
       // Dynamic import to get fresh module with env vars
-      await import("../../packages/utilities/scripts/fetch-screeps-stats.mjs");
+      await import("../../scripts/fetch-screeps-stats.mjs");
 
       // Wait for async operations
       await vi.waitFor(() => {
@@ -58,7 +58,7 @@ describe("fetch-screeps-stats", () => {
       };
       mockFetch.mockResolvedValue(mockResponse);
 
-      await import("../../packages/utilities/scripts/fetch-screeps-stats.mjs");
+      await import("../../scripts/fetch-screeps-stats.mjs");
 
       await vi.waitFor(() => {
         expect(mockFetch).toHaveBeenCalled();
@@ -79,7 +79,7 @@ describe("fetch-screeps-stats", () => {
       };
       mockFetch.mockResolvedValue(mockResponse);
 
-      await import("../../packages/utilities/scripts/fetch-screeps-stats.mjs");
+      await import("../../scripts/fetch-screeps-stats.mjs");
 
       await vi.waitFor(() => {
         expect(mockFetch).toHaveBeenCalled();
@@ -100,7 +100,7 @@ describe("fetch-screeps-stats", () => {
       };
       mockFetch.mockResolvedValue(fetchResponse);
 
-      await import("../../packages/utilities/scripts/fetch-screeps-stats.mjs");
+      await import("../../scripts/fetch-screeps-stats.mjs");
 
       await vi.waitFor(() => {
         expect(mockFetch).toHaveBeenCalled();
@@ -122,7 +122,7 @@ describe("fetch-screeps-stats", () => {
       };
       mockFetch.mockResolvedValue(mockResponse);
 
-      await import("../../packages/utilities/scripts/fetch-screeps-stats.mjs");
+      await import("../../scripts/fetch-screeps-stats.mjs");
 
       await vi.waitFor(() => {
         expect(mockFetch).toHaveBeenCalled();
@@ -142,7 +142,7 @@ describe("fetch-screeps-stats", () => {
       };
       mockFetch.mockResolvedValue(mockResponse);
 
-      await import("../../packages/utilities/scripts/fetch-screeps-stats.mjs");
+      await import("../../scripts/fetch-screeps-stats.mjs");
 
       await vi.waitFor(() => {
         expect(mockFetch).toHaveBeenCalled();
@@ -167,7 +167,7 @@ describe("fetch-screeps-stats", () => {
 
       const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-      await import("../../packages/utilities/scripts/fetch-screeps-stats.mjs");
+      await import("../../scripts/fetch-screeps-stats.mjs");
 
       await vi.waitFor(() => {
         expect(consoleErrorSpy).toHaveBeenCalled();
@@ -187,7 +187,7 @@ describe("fetch-screeps-stats", () => {
       };
       mockFetch.mockResolvedValue(mockResponse);
 
-      await import("../../packages/utilities/scripts/fetch-screeps-stats.mjs");
+      await import("../../scripts/fetch-screeps-stats.mjs");
 
       await vi.waitFor(() => {
         expect(writeFileSync).toHaveBeenCalled();
@@ -213,7 +213,7 @@ describe("fetch-screeps-stats", () => {
       };
       mockFetch.mockResolvedValue(mockResponse);
 
-      await import("../../packages/utilities/scripts/fetch-screeps-stats.mjs");
+      await import("../../scripts/fetch-screeps-stats.mjs");
 
       await vi.waitFor(() => {
         expect(writeFileSync).toHaveBeenCalled();

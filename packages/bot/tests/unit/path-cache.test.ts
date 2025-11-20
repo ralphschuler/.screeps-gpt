@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { PathCache } from "../../packages/bot/src/runtime/pathfinding/PathCache";
+import { PathCache } from "../../src/runtime/pathfinding/PathCache";
 
 // Mock RoomPosition for tests
 class MockRoomPosition {

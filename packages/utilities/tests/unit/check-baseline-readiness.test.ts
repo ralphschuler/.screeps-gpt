@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdirSync, rmSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
-import type { BotSnapshot } from "../../packages/utilities/scripts/types/bot-snapshot";
+import type { BotSnapshot } from "../../scripts/types/bot-snapshot";
 
 describe("check-baseline-readiness", () => {
   const testSnapshotsDir = resolve("reports", "bot-snapshots-test");

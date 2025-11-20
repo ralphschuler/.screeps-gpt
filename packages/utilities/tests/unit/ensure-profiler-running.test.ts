@@ -45,7 +45,7 @@ describe("Ensure Profiler Running Script", () => {
       delete process.env.SCREEPS_TOKEN;
 
       // Dynamic import to ensure fresh module state
-      const { ensureProfilerRunning } = await import("../../packages/utilities/scripts/ensure-profiler-running");
+      const { ensureProfilerRunning } = await import("../../scripts/ensure-profiler-running");
 
       await expect(ensureProfilerRunning()).rejects.toThrow("Missing SCREEPS_TOKEN environment variable");
     });
@@ -57,7 +57,7 @@ describe("Ensure Profiler Running Script", () => {
 
       // Just verify no error is thrown during module load
       expect(() => {
-        import("../../packages/utilities/scripts/ensure-profiler-running");
+        import("../../scripts/ensure-profiler-running");
       }).not.toThrow();
     });
   });

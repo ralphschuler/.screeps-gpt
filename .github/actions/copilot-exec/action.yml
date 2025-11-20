@@ -120,21 +120,16 @@ runs:
         fi
         echo "$HOME/.npm/_global/bin" >> "$GITHUB_PATH"
 
-    - name: Setup Bun
-      uses: oven-sh/setup-bun@v2
-      with:
-        bun-version: "1.3.1"
-
     - name: Install project dependencies (if package.json present)
       if: steps.cache-deps.outputs.cache-hit != 'true'
       shell: bash
       run: |
         set -euo pipefail
         if [ -f package.json ]; then
-          echo "📦 Installing project dependencies with Bun"
-          if ! bun install --frozen-lockfile; then
+          echo "📦 Installing project dependencies with Yarn"
+          if ! yarn install --frozen-lockfile; then
             echo "⚠️ Frozen lockfile install failed, falling back to regular install"
-            bun install
+            yarn install
           fi
         else
           echo "ℹ️ No package.json found, skipping dependency install"

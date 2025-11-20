@@ -4,9 +4,9 @@ This repository hosts an autonomous Screeps AI with comprehensive automation. Wh
 
 ## Technology Stack
 
-- **Runtime**: Bun 1.3.1+ (JavaScript runtime with built-in TypeScript support)
+- **Runtime**: Node.js 18.x-22.x
 - **Language**: TypeScript (strict mode enabled)
-- **Package Manager**: Bun
+- **Package Manager**: Yarn 4+ (Berry)
 - **Build Tool**: esbuild
 - **Testing Framework**: Vitest
 - **Linting**: ESLint with TypeScript plugin
@@ -105,25 +105,25 @@ This repository hosts an autonomous Screeps AI with comprehensive automation. Wh
 ### Available Commands
 
 ```bash
-bun run build              # Bundle AI into dist/main.js
-bun run lint               # Run ESLint (use lint:fix for auto-fixes)
-bun run format:write       # Format code with Prettier
-bun run test:unit          # Run unit tests
-bun run test:e2e           # Run end-to-end simulations (PTR profile)
-bun run test:regression    # Run regression tests
-bun run test:coverage      # Generate coverage reports
-bun run test:actions       # Dry-run workflows locally with act
-bun run analyze:system     # Evaluate build quality
-bun run deploy             # Deploy to Screeps (requires secrets)
+yarn build              # Bundle AI into dist/main.js
+yarn lint               # Run ESLint (use lint:fix for auto-fixes)
+yarn format:write       # Format code with Prettier
+yarn test:unit          # Run unit tests
+yarn test:e2e           # Run end-to-end simulations (PTR profile)
+yarn test:regression    # Run regression tests
+yarn test:coverage      # Generate coverage reports
+yarn test:actions       # Dry-run workflows locally with act
+yarn analyze:system     # Evaluate build quality
+yarn deploy             # Deploy to Screeps (requires secrets)
 ```
 
 ### Before Committing
 
-1. Run `bun run format:write` to format code
-2. Run `bun run lint` to check code style
+1. Run `yarn format:write` to format code
+2. Run `yarn lint` to check code style
 3. Run relevant test suites (`test:unit`, `test:e2e`, `test:regression`)
 4. Update `CHANGELOG.md` `[Unreleased]` section
-5. Run `bun run versions:update` after changelog updates
+5. Run `yarn versions:update` after changelog updates
 
 ### Bug Fix Protocol
 
@@ -156,7 +156,7 @@ bun run deploy             # Deploy to Screeps (requires secrets)
 - Keep main documentation in root (`README.md`, `DOCS.md`, `AGENTS.md`, `TASKS.md`)
 - Place detailed runbooks in `docs/` subdirectories
 - Link new documents from `README.md`, `DOCS.md`, or `docs/index.md`
-- Generate documentation site with `bun run build:docs-site`
+- Generate documentation site with `yarn build:docs-site`
 
 ## Automation & Workflows
 

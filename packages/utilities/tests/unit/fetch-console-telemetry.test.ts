@@ -53,7 +53,7 @@ describe("Console Telemetry with Chunked Queries", () => {
         });
 
       // Import after mocks are set up
-      const { fetchConsoleTelemetry } = await import("../../packages/utilities/scripts/fetch-console-telemetry");
+      const { fetchConsoleTelemetry } = await import("../../scripts/fetch-console-telemetry");
 
       const result = await fetchConsoleTelemetry();
 
@@ -95,7 +95,7 @@ describe("Console Telemetry with Chunked Queries", () => {
         .mockResolvedValueOnce({ ok: 1, data: JSON.stringify({ total: 0, byRole: {} }) })
         .mockResolvedValueOnce({ ok: 1, data: JSON.stringify({ energy: 0 }) });
 
-      const { fetchConsoleTelemetry } = await import("../../packages/utilities/scripts/fetch-console-telemetry");
+      const { fetchConsoleTelemetry } = await import("../../scripts/fetch-console-telemetry");
       const result = await fetchConsoleTelemetry();
 
       expect(result.tick).toBe(1000);
@@ -124,7 +124,7 @@ describe("Console Telemetry with Chunked Queries", () => {
         .mockResolvedValueOnce({ ok: 1, data: JSON.stringify({ total: 50, byRole: { harvester: 10 } }) })
         .mockResolvedValueOnce({ ok: 1, data: JSON.stringify({ energy: 1000000 }) });
 
-      const { fetchConsoleTelemetry } = await import("../../packages/utilities/scripts/fetch-console-telemetry");
+      const { fetchConsoleTelemetry } = await import("../../scripts/fetch-console-telemetry");
       const result = await fetchConsoleTelemetry();
 
       expect(result.tick).toBe(5000);
@@ -148,7 +148,7 @@ describe("Console Telemetry with Chunked Queries", () => {
         .mockResolvedValueOnce({ ok: 1, data: JSON.stringify({ total: 0, byRole: {} }) })
         .mockResolvedValueOnce({ ok: 1, data: JSON.stringify({ energy: 0 }) });
 
-      const { fetchConsoleTelemetry } = await import("../../packages/utilities/scripts/fetch-console-telemetry");
+      const { fetchConsoleTelemetry } = await import("../../scripts/fetch-console-telemetry");
       const result = await fetchConsoleTelemetry();
 
       // Should have succeeded after retries
@@ -163,7 +163,7 @@ describe("Console Telemetry with Chunked Queries", () => {
         .mockRejectedValueOnce(new Error("Network error"))
         .mockRejectedValueOnce(new Error("Network error"));
 
-      const { fetchConsoleTelemetry } = await import("../../packages/utilities/scripts/fetch-console-telemetry");
+      const { fetchConsoleTelemetry } = await import("../../scripts/fetch-console-telemetry");
 
       await expect(fetchConsoleTelemetry()).rejects.toThrow("Failed to fetch console telemetry");
       expect(mockConsoleMethod).toHaveBeenCalledTimes(3);
@@ -172,7 +172,7 @@ describe("Console Telemetry with Chunked Queries", () => {
     it("should handle API errors with ok: 0", async () => {
       mockConsoleMethod.mockResolvedValueOnce({ ok: 0, error: "Invalid command" });
 
-      const { fetchConsoleTelemetry } = await import("../../packages/utilities/scripts/fetch-console-telemetry");
+      const { fetchConsoleTelemetry } = await import("../../scripts/fetch-console-telemetry");
 
       await expect(fetchConsoleTelemetry()).rejects.toThrow("Failed to fetch console telemetry");
     });
@@ -191,7 +191,7 @@ describe("Console Telemetry with Chunked Queries", () => {
         .mockResolvedValueOnce({ ok: 1, data: JSON.stringify({ total: 0, byRole: {} }) })
         .mockResolvedValueOnce({ ok: 1, data: JSON.stringify({ energy: 0 }) });
 
-      const { fetchConsoleTelemetry } = await import("../../packages/utilities/scripts/fetch-console-telemetry");
+      const { fetchConsoleTelemetry } = await import("../../scripts/fetch-console-telemetry");
       const result = await fetchConsoleTelemetry();
 
       // Should succeed without validation errors
@@ -205,7 +205,7 @@ describe("Console Telemetry with Chunked Queries", () => {
     it("should throw descriptive error messages", async () => {
       mockConsoleMethod.mockRejectedValue(new Error("Network timeout"));
 
-      const { fetchConsoleTelemetry } = await import("../../packages/utilities/scripts/fetch-console-telemetry");
+      const { fetchConsoleTelemetry } = await import("../../scripts/fetch-console-telemetry");
 
       await expect(fetchConsoleTelemetry()).rejects.toThrow("Failed to fetch console telemetry");
     });
@@ -213,7 +213,7 @@ describe("Console Telemetry with Chunked Queries", () => {
     it("should require SCREEPS_TOKEN", async () => {
       delete process.env.SCREEPS_TOKEN;
 
-      const { fetchConsoleTelemetry } = await import("../../packages/utilities/scripts/fetch-console-telemetry");
+      const { fetchConsoleTelemetry } = await import("../../scripts/fetch-console-telemetry");
 
       await expect(fetchConsoleTelemetry()).rejects.toThrow("Missing SCREEPS_TOKEN environment variable");
     });

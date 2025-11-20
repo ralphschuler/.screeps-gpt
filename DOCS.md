@@ -7,30 +7,30 @@ For GitHub Copilot and automation agents, comprehensive operational guidelines a
 ## Quick Start
 
 1. **Install prerequisites**
-   - [Bun](https://bun.sh) 1.0 or newer.
+   - [Yarn](https://yarnpkg.com) 1.22 or newer.
    - Node.js 18.x–22.x (Node 22 is used in CI to install the Copilot CLI).
    - A Screeps account with access to the Public Test Realm (PTR) for end-to-end experiments.
 2. **Install dependencies**
    ```bash
-   bun install
+   yarn install
    ```
 3. **Run the local quality gates**
    ```bash
-   bun run lint
-   bun run format:check
-   bun run test:unit
-   bun run test:e2e   # executes against the PTR profile
-   bun run test:regression
-   bun run test:docs  # validates documentation build and deployment
-   bun run test:coverage
-   bun run test:actions
-   bun run analyze:system
+   yarn lint
+   yarn format:check
+   yarn test:unit
+   yarn test:e2e   # executes against the PTR profile
+   yarn test:regression
+   yarn test:docs  # validates documentation build and deployment
+   yarn test:coverage
+   yarn test:actions
+   yarn analyze:system
    ```
 
 ```
 4. **Build and deploy**
- - Produce a Screeps bundle with `bun run build`.
- - Deploy to Screeps PTR with `SCREEPS_HOST=ptr.screeps.com bun run deploy` (requires `SCREEPS_TOKEN`).
+ - Produce a Screeps bundle with `yarn build`.
+ - Deploy to Screeps PTR with `SCREEPS_HOST=ptr.screeps.com yarn deploy` (requires `SCREEPS_TOKEN`).
 5. **Read the automation specs**
  - Workflow definitions live in [`.github/workflows/`](.github/workflows/) and are summarised in [`docs/automation/overview.md`](docs/automation/overview.md).
  - Prompts for Copilot-driven automation live in [`.github/copilot/prompts/`](.github/copilot/prompts/).
@@ -78,9 +78,9 @@ For architectural inspiration and large-scale automation patterns, explore the o
 
 - When you fix a defect or address an operational issue, record the scenario and your findings in `docs/` (usually under `docs/operations/`) before landing the fix.
 - Add a regression test that reproduces the bug *before* applying the fix; reference that test in both the documentation and `CHANGELOG.md`.
-- Update the `[Unreleased]` section of `CHANGELOG.md` with every pull request and run `bun run versions:update` to refresh the generated release index under `docs/changelog/`.
-- Regenerate the static documentation site locally with `bun run build:docs-site` when editing docs so you can preview what GitHub Pages will publish.
-- Generate blog posts for new releases automatically (via workflow) or manually with `bun run docs:generate-blog-posts` for bulk generation of missing posts.
+- Update the `[Unreleased]` section of `CHANGELOG.md` with every pull request and run `yarn versions:update` to refresh the generated release index under `docs/changelog/`.
+- Regenerate the static documentation site locally with `yarn build:docs-site` when editing docs so you can preview what GitHub Pages will publish.
+- Generate blog posts for new releases automatically (via workflow) or manually with `yarn docs:generate-blog-posts` for bulk generation of missing posts.
 
 ## Maintenance Tips
 
