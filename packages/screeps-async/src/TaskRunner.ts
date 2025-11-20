@@ -1,5 +1,6 @@
 import { Task } from "./Task";
 import type { TaskState, TaskStatus, TaskGeneratorFn, TaskOptions, TaskRunnerConfig, TaskStats } from "./types";
+import { Logger } from "@ralphschuler/screeps-logger";
 
 export class TaskRunner {
   private tasks: Map<string, Task<unknown>> = new Map();
@@ -7,6 +8,7 @@ export class TaskRunner {
   private readonly memory: {
     tasks?: Record<string, TaskState>;
   };
+  private readonly logger: Logger;
 
   public constructor(memory: { tasks?: Record<string, TaskState> }, config: TaskRunnerConfig = {}) {
     this.memory = memory;
@@ -15,6 +17,13 @@ export class TaskRunner {
       defaultCleanupDelay: config.defaultCleanupDelay ?? 10,
       debug: config.debug ?? false
     };
+
+    // Initialize logger with debug level when debug is enabled
+    this.logger = new Logger({
+      minLevel: this.config.debug ? "debug" : "info",
+      includeTimestamp: true,
+      includeLevel: true
+    });
 
     if (!this.memory.tasks) {
       this.memory.tasks = {};
@@ -34,9 +43,7 @@ export class TaskRunner {
     const task = new Task(id, generatorFn, taskOptions);
     this.tasks.set(id, task as Task<unknown>);
 
-    if (this.config.debug) {
-      (globalThis as any).console.log(`[TaskRunner] Created task: ${id}`);
-    }
+    this.logger.debug(`[TaskRunner] Created task: ${id}`);
 
     return task;
   }
@@ -53,9 +60,7 @@ export class TaskRunner {
     const task = this.tasks.get(id);
     if (task) {
       task.cancel(reason);
-      if (this.config.debug) {
-        (globalThis as any).console.log(`[TaskRunner] Cancelled task: ${id} - ${reason ?? "No reason provided"}`);
-      }
+      this.logger.debug(`[TaskRunner] Cancelled task: ${id} - ${reason ?? "No reason provided"}`);
       return true;
     }
     return false;
@@ -132,12 +137,10 @@ export class TaskRunner {
       tasksExecuted++;
     }
 
-    if (this.config.debug) {
-      const cpuUsed = Game.cpu.getUsed() - startCpu;
-      (globalThis as any).console.log(
-        `[TaskRunner] Executed ${tasksExecuted} tasks, CPU: ${cpuUsed.toFixed(2)}/${budget}, Active: ${this.tasks.size}`
-      );
-    }
+    const cpuUsed = Game.cpu.getUsed() - startCpu;
+    this.logger.debug(
+      `[TaskRunner] Executed ${tasksExecuted} tasks, CPU: ${cpuUsed.toFixed(2)}/${budget}, Active: ${this.tasks.size}`
+    );
 
     return tasksExecuted;
   }
@@ -188,9 +191,7 @@ export class TaskRunner {
     if (this.memory.tasks) {
       this.memory.tasks = {};
     }
-    if (this.config.debug) {
-      (globalThis as any).console.log("[TaskRunner] Cleared all tasks");
-    }
+    this.logger.debug("[TaskRunner] Cleared all tasks");
   }
 
   public getTaskCount(status?: TaskStatus): number {
@@ -221,9 +222,7 @@ export class TaskRunner {
       if (this.memory.tasks && this.memory.tasks[id]) {
         delete this.memory.tasks[id];
       }
-      if (this.config.debug) {
-        (globalThis as any).console.log(`[TaskRunner] Cleaned up task: ${id}`);
-      }
+      this.logger.debug(`[TaskRunner] Cleaned up task: ${id}`);
     }
   }
 
@@ -250,9 +249,8 @@ export class TaskRunner {
         if (factory) {
           const task = Task.deserialize(state, factory);
           runner.tasks.set(id, task);
-        } else if (runner.config.debug) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (globalThis as any).console.log(`[TaskRunner] No factory found for task: ${id}`);
+        } else {
+          runner.logger.debug(`[TaskRunner] No factory found for task: ${id}`);
         }
       }
     }

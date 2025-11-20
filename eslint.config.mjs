@@ -31,7 +31,11 @@ export default [
       "docs/**",
       "source/**",
       "themes/**",
-      "**/examples/**"
+      "**/examples/**",
+      "**/*.d.ts",
+      "**/*.js",
+      "**/*.js.map",
+      "**/*.d.ts.map"
     ]
   },
 
