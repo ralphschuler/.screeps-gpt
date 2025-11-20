@@ -60,35 +60,35 @@ jobs:
 
       - name: Build package
         run: |
-            if [ -d "packages/${{ matrix.pkg }}" ] && [ -f "packages/${{ matrix.pkg }}/tsconfig.json" ]; then
+            PKG_DIR="packages/${{ matrix.pkg }}"
+            if [ -d "$PKG_DIR" ] && [ -f "$PKG_DIR/tsconfig.json" ]; then
               echo "Building ${{ matrix.pkg }}..."
-              (cd "packages/${{ matrix.pkg }}" && npm run build) || \
+              (cd "$PKG_DIR" && npm run build) || \
                 echo "Warning: ${{ matrix.pkg }} build failed"
             fi
 
       - name: Publish package
         run: |
-          
-            if [ -d "packages/${{ matrix.pkg }}" ] && [ -f "packages/${{ matrix.pkg }}/package.json" ]; then
+            PKG_DIR="packages/${{ matrix.pkg }}"
+            if [ -d "$PKG_DIR" ] && [ -f "$PKG_DIR/package.json" ]; then
               # Check if package is private
-              if grep -q '"private".*true' "packages/${{ matrix.pkg }}/package.json"; then
+              if grep -q '"private".*true' "$PKG_DIR/package.json"; then
                 echo "Skipping private package: ${{ matrix.pkg }}"
                 continue
               fi
 
               # Check if package has build output
-              if [ ! -d "packages/${{ matrix.pkg }}/dist" ]; then
+              if [ ! -d "$PKG_DIR/dist" ]; then
                 echo "Skipping ${{ matrix.pkg }}: no dist/ folder"
                 continue
               fi
 
               echo "Publishing ${{ matrix.pkg }}..."
-              (cd "packages/${{ matrix.pkg }}" && npm publish) || \
+              (cd "$PKG_DIR" && npm publish) || \
                 echo "Warning: Failed to publish $${{ matrix.pkg }}"
             fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
   publish-bot:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -124,7 +124,6 @@ jobs:
 
       - name: Publish package
         run: |
-        
           if [ -d "packages/bot" ] && [ -f "packages/bot/package.json" ]; then
             # Check if package is private
             if grep -q '"private".*true' "packages/bot/package.json"; then
