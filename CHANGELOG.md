@@ -7,6 +7,13 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Changed
 
+- **Spawn Utilization Optimization**: Lowered RCL 1-2 energy threshold from 90% to 80% for dynamic upgrader scaling
+  - Fixes spawn idle issue where spawns remained inactive despite 82% energy capacity and significant CPU headroom
+  - Enables proactive spawning of additional upgraders during healthy energy states (80%+ capacity)
+  - Expected improvements: 20-30% faster RCL progression at early levels, increased spawn uptime from ~60% to >80%
+  - Only affects RCL 1-2 (by design), higher RCLs use different thresholds
+  - Added regression test suite validating spawn behavior at various energy thresholds (75%, 80%, 82%)
+  - Resolves issue #1105: PTR spawn idle during healthy energy state
 - **Screeps-Kernel Integration**: Refactored bot package to use `@ralphschuler/screeps-kernel` decorator-based process management system
   - Replaced custom `createKernel()` factory with `Kernel` class from `@ralphschuler/screeps-kernel`
   - Created `MainProcess` wrapper using `@process` decorator to bridge screeps-kernel with existing bot logic
