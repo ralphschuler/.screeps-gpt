@@ -44,12 +44,10 @@ export function validateProfilerEnabled(): boolean {
  *
  * Default values:
  * - __PROFILER_ENABLED__: "true" (enabled by default, accepts "true" or "false")
- * - __TASK_SYSTEM_ENABLED__: "true" (enabled by default as of v0.32.0)
  * - __ROOM_VISUALS_ENABLED__: "false" (disabled by default for performance)
  */
 const RUNTIME_DEFINES = {
   __PROFILER_ENABLED__: validateProfilerEnabled() ? "true" : "false",
-  __TASK_SYSTEM_ENABLED__: JSON.stringify(process.env.TASK_SYSTEM_ENABLED ?? "true"),
   __ROOM_VISUALS_ENABLED__: JSON.stringify(process.env.ROOM_VISUALS_ENABLED ?? "false")
 } as const;
 
