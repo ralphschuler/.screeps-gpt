@@ -81,26 +81,27 @@ export function formatResourceURI(resourceType: MCPResourceType, params?: Record
 export function validateToolArguments(toolName: string, args: Record<string, unknown>): void {
   switch (toolName) {
     case "screeps.console":
-      if (typeof args.command !== "string") {
+      if (typeof args["command"] !== "string") {
         throw new Error("Console command must be a string");
       }
       break;
 
     case "screeps.memory.get":
-      if (args.path && typeof args.path !== "string") {
+      if (args["path"] && typeof args["path"] !== "string") {
         throw new Error("Memory path must be a string");
       }
       break;
 
     case "screeps.memory.set":
-      if (typeof args.path !== "string") {
+      if (typeof args["path"] !== "string") {
         throw new Error("Memory path must be a string");
       }
-      if (args.value === undefined) {
+      if (args["value"] === undefined) {
         throw new Error("Memory value is required");
       }
       // Validate against prototype pollution
-      if (args.path.includes("__proto__") || args.path.includes("constructor") || args.path.includes("prototype")) {
+      const path = args["path"] as string;
+      if (path.includes("__proto__") || path.includes("constructor") || path.includes("prototype")) {
         throw new Error("Memory path contains forbidden keywords (prototype pollution protection)");
       }
       break;

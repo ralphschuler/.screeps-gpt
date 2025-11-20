@@ -6,8 +6,8 @@
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
-import type { ScreepsConfig } from "../types.js";
-import { MCPResourceType } from "../types.js";
+import { z } from "zod";
+import { MCPResourceType, type ScreepsConfig } from "../types.js";
 
 /**
  * MCP client for Screeps operations
@@ -43,19 +43,31 @@ export class MCPClient {
       );
 
       // Set up stdio transport to communicate with MCP server
+      const mcpEnv: Record<string, string> = {
+        SCREEPS_TOKEN: this.config.token || "",
+        SCREEPS_EMAIL: this.config.email || "",
+        SCREEPS_PASSWORD: this.config.password || "",
+        SCREEPS_HOST: this.config.host || "screeps.com",
+        SCREEPS_PORT: String(this.config.port || 443),
+        SCREEPS_PROTOCOL: this.config.protocol || "https",
+        SCREEPS_SHARD: this.config.shard || "shard3"
+      };
+      // Preserve TZ if set
+      const tz = process.env["TZ"];
+      if (tz) {
+        mcpEnv["TZ"] = tz;
+      }
+      // Combine with filtered process.env
+      const combinedEnv: Record<string, string> = { ...mcpEnv };
+      for (const [key, value] of Object.entries(process.env)) {
+        if (value !== undefined) {
+          combinedEnv[key] = value;
+        }
+      }
       this.transport = new StdioClientTransport({
         command: "npx",
         args: ["-y", "@ralphschuler/screeps-mcp"],
-        env: {
-          ...process.env,
-          SCREEPS_TOKEN: this.config.token || "",
-          SCREEPS_EMAIL: this.config.email || "",
-          SCREEPS_PASSWORD: this.config.password || "",
-          SCREEPS_HOST: this.config.host || "screeps.com",
-          SCREEPS_PORT: String(this.config.port || 443),
-          SCREEPS_PROTOCOL: this.config.protocol || "https",
-          SCREEPS_SHARD: this.config.shard || "shard3"
-        }
+        env: combinedEnv
       });
 
       // Connect client to transport
@@ -99,7 +111,8 @@ export class MCPClient {
           method: "resources/read",
           params: { uri }
         },
-        { timeout: 30000 }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        z.object({}) as any
       );
 
       return response;
@@ -125,7 +138,8 @@ export class MCPClient {
             arguments: args
           }
         },
-        { timeout: 60000 }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        z.object({}) as any
       );
 
       return response;
@@ -148,7 +162,8 @@ export class MCPClient {
           method: "resources/list",
           params: {}
         },
-        { timeout: 30000 }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        z.object({ resources: z.array(z.unknown()).optional() }) as any
       );
 
       return (response as { resources?: unknown[] }).resources || [];
@@ -171,7 +186,8 @@ export class MCPClient {
           method: "tools/list",
           params: {}
         },
-        { timeout: 30000 }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        z.object({ tools: z.array(z.unknown()).optional() }) as any
       );
 
       return (response as { tools?: unknown[] }).tools || [];

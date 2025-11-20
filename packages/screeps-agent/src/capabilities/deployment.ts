@@ -5,13 +5,13 @@
  */
 
 import type { MCPClient } from "../mcp/client.js";
-import type {
-  DeploymentResult,
-  ValidationResult,
-  ValidationCheck,
-  TaskResult,
-  AgentAction,
-  ActionType
+import {
+  ActionType,
+  type DeploymentResult,
+  type ValidationResult,
+  type ValidationCheck,
+  type TaskResult,
+  type AgentAction
 } from "../types.js";
 
 /**
@@ -58,7 +58,7 @@ export class DeploymentCapability {
       return {
         success: deploymentResult.success && validation.passed,
         message: deploymentResult.message,
-        data: deploymentResult,
+        data: deploymentResult as unknown as Record<string, unknown>,
         actions: this.actions
       };
     } catch (error) {
@@ -88,8 +88,8 @@ export class DeploymentCapability {
 
       checks.push({
         name: "Bot is running",
-        passed: stats.cpu !== undefined && stats.cpu.used > 0,
-        message: stats.cpu ? `Bot is active (CPU: ${stats.cpu.used})` : "Bot is not running"
+        passed: stats.cpu !== undefined && (stats.cpu.used ?? 0) > 0,
+        message: stats.cpu ? `Bot is active (CPU: ${stats.cpu.used ?? 0})` : "Bot is not running"
       });
 
       // Check spawns are active
@@ -150,7 +150,7 @@ export class DeploymentCapability {
       };
 
       const health = {
-        cpuUsage: stats.cpu ? stats.cpu.used / (stats.cpu.limit || 100) : 0,
+        cpuUsage: stats.cpu ? (stats.cpu.used ?? 0) / (stats.cpu.limit || 100) : 0,
         gclLevel: stats.gcl?.level || 0,
         roomCount: stats.rooms || 0,
         creepCount: stats.creeps || 0
@@ -284,12 +284,15 @@ export class DeploymentCapability {
    * Log an action
    */
   private logAction(type: ActionType, description: string, details?: Record<string, unknown>): void {
-    this.actions.push({
+    const action: AgentAction = {
       type,
       timestamp: new Date(),
-      description,
-      details
-    });
+      description
+    };
+    if (details !== undefined) {
+      action.details = details;
+    }
+    this.actions.push(action);
   }
 
   /**
