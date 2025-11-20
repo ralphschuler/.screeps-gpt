@@ -176,7 +176,7 @@ describe("Profiler Compilation Integration", () => {
     expect(workflowContent).toMatch(/PROFILER_ENABLED:\s*\$\{\{\s*vars\.PROFILER_ENABLED\s*\|\|\s*['"]true['"]\s*\}\}/);
 
     // Verify it's in the correct step (Build and deploy)
-    const buildStepMatch = workflowContent.match(/- name: Build and deploy[\s\S]*?run: bun run deploy/);
+    const buildStepMatch = workflowContent.match(/- name: Build and deploy[\s\S]*?run: yarn deploy/);
     expect(buildStepMatch).toBeTruthy();
     expect(buildStepMatch![0]).toContain("PROFILER_ENABLED:");
   });
@@ -191,7 +191,7 @@ describe("Profiler Compilation Integration", () => {
     expect(workflowContent).toMatch(/PROFILER_ENABLED:\s*\$\{\{\s*vars\.PROFILER_ENABLED\s*\|\|\s*['"]true['"]\s*\}\}/);
 
     // Verify it's in the correct step (Build AI)
-    const buildStepMatch = workflowContent.match(/- name: Build AI[\s\S]*?run: bun run build/);
+    const buildStepMatch = workflowContent.match(/- name: Build AI[\s\S]*?run: yarn build/);
     expect(buildStepMatch).toBeTruthy();
     expect(buildStepMatch![0]).toContain("PROFILER_ENABLED:");
   });

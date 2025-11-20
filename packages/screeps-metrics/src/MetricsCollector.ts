@@ -121,6 +121,8 @@ export class MetricsCollector {
       mallocedMemory: heapStats.malloced_memory,
       peakMallocedMemory: heapStats.peak_malloced_memory,
       doesZapGarbage: heapStats.does_zap_garbage,
+      numberOfNativeContexts: heapStats.number_of_native_contexts,
+      numberOfDetachedContexts: heapStats.number_of_detached_contexts,
       externalMemory: heapStats.externally_allocated_size
     };
   }
