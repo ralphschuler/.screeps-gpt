@@ -120,18 +120,18 @@ describe("Deploy workflow trigger configuration", () => {
     expect(workflow.jobs.deploy.environment.url).toBe("https://screeps.com");
   });
 
-  it("should use Bun for deployment", () => {
-    const setupBunStep = workflow.jobs.deploy.steps.find(step => step.name === "Setup Bun");
+  it("should use Node.js for deployment", () => {
+    const setupNodeStep = workflow.jobs.deploy.steps.find(step => step.name === "Setup Node.js");
 
-    expect(setupBunStep).toBeDefined();
-    expect(setupBunStep?.uses).toContain("oven-sh/setup-bun");
+    expect(setupNodeStep).toBeDefined();
+    expect(setupNodeStep?.uses).toContain("actions/setup-node");
   });
 
   it("should run build and deploy step", () => {
     const deployStep = workflow.jobs.deploy.steps.find(step => step.id === "deploy");
 
     expect(deployStep).toBeDefined();
-    expect(deployStep?.run).toBe("bun run deploy");
+    expect(deployStep?.run).toBe("yarn deploy");
   });
 
   it("should have required secrets configured", () => {
