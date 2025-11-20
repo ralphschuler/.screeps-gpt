@@ -742,7 +742,7 @@ For detailed troubleshooting procedures, see [Bootstrap Phases Guide](../runtime
 
 1. Clone fresh from GitHub
 2. Verify main branch integrity
-3. Rebuild: `bun install && yarn build`
+3. Rebuild: `yarn install && yarn build`
 4. Redeploy: `yarn deploy`
 
 #### Lost Profiler Data

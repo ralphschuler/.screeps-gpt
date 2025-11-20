@@ -7,7 +7,9 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "bin": "./dist/server.js",
+  "bin": {
+    "screeps-mcp": "./dist/server.js"
+  },
   "files": [
     "dist",
     "README.md"
