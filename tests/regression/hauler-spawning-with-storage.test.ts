@@ -25,7 +25,7 @@ describe("Hauler Spawning with Storage/Towers", () => {
   beforeEach(() => {
     behaviorController = new BehaviorController(
       {
-        useTaskSystem: false,
+        
         cpuSafetyMargin: 0.85,
         maxCpuPerCreep: 1.5
       },

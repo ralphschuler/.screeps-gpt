@@ -18,10 +18,9 @@ describe("Harvester Container Transfer E2E", () => {
   let mockSource: Source;
 
   beforeEach(() => {
-    // Create behavior controller with legacy role system for testing
+    // Create behavior controller for testing
     behaviorController = new BehaviorController(
       {
-        useTaskSystem: false, // Use legacy role-based system for this test
         cpuSafetyMargin: 0.85,
         maxCpuPerCreep: 1.5
       },

@@ -34,7 +34,7 @@ describe("Spawn Idle at RCL2 - Energy Threshold Issue", () => {
   });
 
   it("should spawn additional upgraders at RCL2 with 80% energy capacity", () => {
-    const controller = new BehaviorController({ useTaskSystem: false }, { log: vi.fn(), warn: vi.fn() });
+    const controller = new BehaviorController({ }, { log: vi.fn(), warn: vi.fn() });
 
     const sources = [{ id: "source1" as Id<Source>, energy: 3000 }];
 
@@ -81,7 +81,7 @@ describe("Spawn Idle at RCL2 - Energy Threshold Issue", () => {
   });
 
   it("should spawn additional upgraders at RCL2 with 82% energy capacity (original monitoring case)", () => {
-    const controller = new BehaviorController({ useTaskSystem: false }, { log: vi.fn(), warn: vi.fn() });
+    const controller = new BehaviorController({ }, { log: vi.fn(), warn: vi.fn() });
 
     const sources = [{ id: "source1" as Id<Source>, energy: 3000 }];
 
@@ -133,7 +133,7 @@ describe("Spawn Idle at RCL2 - Energy Threshold Issue", () => {
   });
 
   it("should NOT spawn additional upgraders at RCL2 with 75% energy capacity (below threshold)", () => {
-    const controller = new BehaviorController({ useTaskSystem: false }, { log: vi.fn(), warn: vi.fn() });
+    const controller = new BehaviorController({ }, { log: vi.fn(), warn: vi.fn() });
 
     const sources = [{ id: "source1" as Id<Source>, energy: 3000 }];
 
@@ -182,7 +182,7 @@ describe("Spawn Idle at RCL2 - Energy Threshold Issue", () => {
   });
 
   it("should spawn additional upgraders at RCL1 with 80% energy capacity", () => {
-    const controller = new BehaviorController({ useTaskSystem: false }, { log: vi.fn(), warn: vi.fn() });
+    const controller = new BehaviorController({ }, { log: vi.fn(), warn: vi.fn() });
 
     const sources = [{ id: "source1" as Id<Source>, energy: 3000 }];
 

@@ -15,7 +15,6 @@ import type { GameContext } from "@runtime/types/GameContext";
  *
  * Expected Behavior: Spawn should scale workforce proactively when:
  * - Energy capacity is high (>90%) and bucket is healthy
- * - Task queue has pending tasks requiring additional creeps
  * - Low RCL rooms (1-2) should aggressively spawn to accelerate progression
  */
 describe("Spawn Idle with Full Energy (Regression #1027)", () => {
@@ -43,7 +42,7 @@ describe("Spawn Idle with Full Energy (Regression #1027)", () => {
   });
 
   it("should spawn upgraders when energy is maxed at RCL2", () => {
-    const controller = new BehaviorController({ useTaskSystem: true }, { log: vi.fn(), warn: vi.fn() });
+    const controller = new BehaviorController({}, { log: vi.fn(), warn: vi.fn() });
 
     const source = {
       id: "source1" as Id<Source>,
@@ -134,8 +133,8 @@ describe("Spawn Idle with Full Energy (Regression #1027)", () => {
     expect(upgraderSpawned).toBe(true);
   });
 
-  it("should spawn creeps based on task queue demand", () => {
-    const controller = new BehaviorController({ useTaskSystem: true }, { log: vi.fn(), warn: vi.fn() });
+  it("should spawn additional upgraders when energy is maxed at RCL2", () => {
+    const controller = new BehaviorController({}, { log: vi.fn(), warn: vi.fn() });
 
     const source = {
       id: "source1" as Id<Source>,
@@ -212,13 +211,13 @@ describe("Spawn Idle with Full Energy (Regression #1027)", () => {
 
     const result = controller.execute(game, memory, roleCounts);
 
-    // With task system enabled and full energy, spawn should be active
+    // With full energy, spawn should be active
     expect(result.spawnedCreeps.length).toBeGreaterThan(0);
     expect(spawn.spawnCreep).toHaveBeenCalled();
   });
 
   it("should not spawn when workforce is optimal and energy is low", () => {
-    const controller = new BehaviorController({ useTaskSystem: true }, { log: vi.fn(), warn: vi.fn() });
+    const controller = new BehaviorController({}, { log: vi.fn(), warn: vi.fn() });
 
     const source = {
       id: "source1" as Id<Source>,
@@ -301,7 +300,7 @@ describe("Spawn Idle with Full Energy (Regression #1027)", () => {
   });
 
   it("should handle RCL4 with high energy similar to RCL2", () => {
-    const controller = new BehaviorController({ useTaskSystem: true }, { log: vi.fn(), warn: vi.fn() });
+    const controller = new BehaviorController({}, { log: vi.fn(), warn: vi.fn() });
 
     const source = {
       id: "source1" as Id<Source>,

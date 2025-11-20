@@ -52,7 +52,7 @@ describe("CPU timeout prevention regression", () => {
   describe("BehaviorController CPU budget management", () => {
     it("should stop processing creeps when CPU budget is exceeded", () => {
       const warn = vi.fn();
-      const controller = new BehaviorController({ cpuSafetyMargin: 0.9, useTaskSystem: false }, { log: vi.fn(), warn });
+      const controller = new BehaviorController({ cpuSafetyMargin: 0.9, }, { log: vi.fn(), warn });
 
       let cpuUsed = 0;
       const creeps: Record<string, CreepLike> = {
@@ -106,7 +106,7 @@ describe("CPU timeout prevention regression", () => {
 
     it("should log warning when a single creep consumes excessive CPU", () => {
       const warn = vi.fn();
-      const controller = new BehaviorController({ maxCpuPerCreep: 1.0, useTaskSystem: false }, { log: vi.fn(), warn });
+      const controller = new BehaviorController({ maxCpuPerCreep: 1.0, }, { log: vi.fn(), warn });
 
       let cpuUsed = 0;
       const creeps: Record<string, CreepLike> = {
@@ -164,7 +164,7 @@ describe("CPU timeout prevention regression", () => {
 
     it("should successfully process all creeps when CPU budget is not exceeded", () => {
       const warn = vi.fn();
-      const controller = new BehaviorController({ useTaskSystem: false }, { log: vi.fn(), warn });
+      const controller = new BehaviorController({ }, { log: vi.fn(), warn });
 
       const creeps: Record<string, CreepLike> = {
         creep1: createMockCreep("creep1", "harvester"),
@@ -198,7 +198,7 @@ describe("CPU timeout prevention regression", () => {
     it("should abort tick when emergency CPU threshold is exceeded", () => {
       const warn = vi.fn();
       const kernel = new Kernel({
-        behavior: new BehaviorController({ useTaskSystem: false }),
+        behavior: new BehaviorController({ }),
         cpuEmergencyThreshold: 0.95,
         logger: { log: vi.fn(), warn }
       });
@@ -249,7 +249,7 @@ describe("CPU timeout prevention regression", () => {
       const warn = vi.fn();
       const log = vi.fn();
       const kernel = new Kernel({
-        behavior: new BehaviorController({ useTaskSystem: false }),
+        behavior: new BehaviorController({ }),
         cpuEmergencyThreshold: 0.95,
         logger: { log, warn }
       });

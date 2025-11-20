@@ -44,7 +44,6 @@ describe("Container Harvesting Workflow", () => {
   beforeEach(() => {
     behaviorController = new BehaviorController(
       {
-        useTaskSystem: false, // Disable task system: this regression test targets legacy role-based behavior for Phase 1 container harvesting. Enabling the task system would alter test coverage and invalidate the regression scenario.
         cpuSafetyMargin: 0.85,
         maxCpuPerCreep: 1.5
       },
