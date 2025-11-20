@@ -5,6 +5,9 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.125.1] - 2025-11-20
+
+
 ### Changed
 
 - **Package Manager Migration**: Migrated from Bun to Yarn 4 (Berry) as the primary package manager
@@ -63,6 +66,7 @@ All notable changes to this project are documented here. This changelog now main
   - Added regression test suite validating monitoring system correctly tracks energy trends during construction phases
   - Confirms low energy during construction is expected behavior, not a bug
   - Validates monitoring system's ability to detect and track issue resolution automatically
+
 
 ## [0.116.0] - 2025-11-19
 

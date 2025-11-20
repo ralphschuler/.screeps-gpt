@@ -51,18 +51,25 @@
  * ```
  */
 export { init, profile } from "./Profiler.js";
-export type { Profiler, ProfilerMemory, ProfilerData, ProfilerOutputData, ProfilerOptions, ProfilerCache } from "./types.js";
+export type {
+  Profiler,
+  ProfilerMemory,
+  ProfilerData,
+  ProfilerOutputData,
+  ProfilerOptions,
+  ProfilerCache
+} from "./types.js";
 declare global {
-    namespace NodeJS {
-        interface Global {
-            Profiler?: import("./types.js").Profiler;
-        }
+  namespace NodeJS {
+    interface Global {
+      Profiler?: import("./types.js").Profiler;
     }
-    interface Window {
-        Profiler?: import("./types.js").Profiler;
-    }
-    let Profiler: import("./types.js").Profiler | undefined;
-    const __PROFILER_ENABLED__: boolean;
+  }
+  interface Window {
+    Profiler?: import("./types.js").Profiler;
+  }
+  let Profiler: import("./types.js").Profiler | undefined;
+  const __PROFILER_ENABLED__: boolean;
 }
 export {};
 //# sourceMappingURL=index.d.ts.map

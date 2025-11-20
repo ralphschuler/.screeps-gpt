@@ -1,11 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { existsSync, mkdirSync, writeFileSync, unlinkSync } from "node:fs";
 import { resolve } from "node:path";
-import {
-  loadHealthState,
-  saveHealthState,
-  type HealthState
-} from "../../scripts/check-bot-health.js";
+import { loadHealthState, saveHealthState, type HealthState } from "../../scripts/check-bot-health.js";
 
 describe("check-bot-health", () => {
   const testHealthDir = resolve("reports", "monitoring");
