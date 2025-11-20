@@ -626,7 +626,7 @@ Overmind employs multi-layered caching strategies:
 - **Method:** Use PTR monitoring and regression testing
 - **Metrics:** CPU usage, bucket stability, room performance
 - **Baseline:** Establish performance baselines before/after changes
-- **Tool:** `bun run analyze:system` for system evaluation
+- **Tool:** `yarn analyze:system` for system evaluation
 
 ## Related Issues & Dependencies
 

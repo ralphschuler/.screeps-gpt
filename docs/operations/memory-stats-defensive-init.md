@@ -103,7 +103,7 @@ Added comprehensive regression test `tests/regression/memory-stats-defensive-ini
 
 ## Verification
 
-1. **Build Test**: `bun run build` - Successful compilation (822.5kb)
+1. **Build Test**: `yarn build` - Successful compilation (822.5kb)
 2. **Unit Tests**: All 904 tests pass
 3. **Regression Tests**: All 456 tests pass (including new defensive init test)
 4. **Bundle Check**: Confirmed defensive initialization present in `dist/main.js` line 22485-22490

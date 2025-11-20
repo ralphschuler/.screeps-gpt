@@ -145,7 +145,7 @@ if (!Memory.stats) {
 1. Check deploy workflow logs in GitHub Actions
 2. Verify Screeps API credentials (secrets)
 3. Check build output validity (MIN_SIZE validation)
-4. Manual deploy if needed: `bun run deploy`
+4. Manual deploy if needed: `yarn deploy`
 
 **Root Causes**:
 
@@ -158,7 +158,7 @@ if (!Memory.stats) {
 
 1. Verify secrets: `SCREEPS_TOKEN`, `SCREEPS_USERNAME`, `SCREEPS_BRANCH`
 2. Check build artifacts: `ls -lh dist/main.js` (should be >50KB)
-3. Test API connection: `bun run deploy --dry-run` (when available)
+3. Test API connection: `yarn deploy --dry-run` (when available)
 4. Review deployment logs for specific errors
 
 **Prevention**:
@@ -188,10 +188,10 @@ if (!Memory.stats) {
 
 ```bash
 # Build locally
-bun run build
+yarn build
 
 # Deploy manually
-bun run deploy
+yarn deploy
 ```
 
 **Validation**:
@@ -209,8 +209,8 @@ bun run deploy
 
 1. Identify last known good version in CHANGELOG
 2. Checkout that version: `git checkout v0.X.Y`
-3. Build: `bun run build`
-4. Deploy: `bun run deploy`
+3. Build: `yarn build`
+4. Deploy: `yarn deploy`
 5. Monitor for stability
 6. Create hotfix branch if needed
 
@@ -227,8 +227,8 @@ bun run deploy
 
 **Process**:
 
-1. Build with test configuration: `bun run build`
-2. Deploy to PTR branch: `SCREEPS_BRANCH=ptr bun run deploy`
+1. Build with test configuration: `yarn build`
+2. Deploy to PTR branch: `SCREEPS_BRANCH=ptr yarn deploy`
 3. Monitor PTR telemetry via `screeps-monitoring.yml`
 4. Run automated validation tests
 5. Review strategic analysis reports
@@ -313,10 +313,10 @@ Completely removes profiler overhead by excluding wrapper code at build time:
 
 ```bash
 # Build without profiler (zero overhead)
-PROFILER_ENABLED=false bun run build
+PROFILER_ENABLED=false yarn build
 
 # Deploy without profiler
-PROFILER_ENABLED=false bun run deploy
+PROFILER_ENABLED=false yarn deploy
 ```
 
 **Effect**: Removes ALL profiler overhead, reducing CPU by 0.5-1.5 per tick at low creep counts.
@@ -742,8 +742,8 @@ For detailed troubleshooting procedures, see [Bootstrap Phases Guide](../runtime
 
 1. Clone fresh from GitHub
 2. Verify main branch integrity
-3. Rebuild: `bun install && bun run build`
-4. Redeploy: `bun run deploy`
+3. Rebuild: `bun install && yarn build`
+4. Redeploy: `yarn deploy`
 
 #### Lost Profiler Data
 
@@ -751,7 +751,7 @@ For detailed troubleshooting procedures, see [Bootstrap Phases Guide](../runtime
 
 **Recovery**:
 
-1. Ensure profiler running: `bun run tsx packages/utilities/scripts/ensure-profiler-running.ts`
+1. Ensure profiler running: `yarn tsx packages/utilities/scripts/ensure-profiler-running.ts`
 2. Wait for data collection (30 min monitoring cycle)
 3. Download from `reports/profiler/latest.json`
 
