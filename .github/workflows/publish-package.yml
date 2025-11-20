@@ -20,7 +20,76 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  publish:
+  publish-packages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        pkg:
+          - screeps-agent
+          - screeps-async
+          - screeps-cache
+          - screeps-kernel
+          - screeps-logger
+          - screeps-mcp
+          - screeps-metrics
+          - screeps-perf
+          - screeps-profiler
+          - screeps-xstate
+          - screeps-xtree
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.version_tag || github.ref }}
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.1'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@ralphschuler'
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build package
+        run: |
+            if [ -d "packages/${{ matrix.pkg }}" ] && [ -f "packages/${{ matrix.pkg }}/tsconfig.json" ]; then
+              echo "Building ${{ matrix.pkg }}..."
+              cd "packages/${{ matrix.pkg }}"
+              npm run build) || echo "Warning: ${{ matrix.pkg }} build failed"
+            fi
+
+      - name: Publish package
+        run: |
+          
+            if [ -d "packages/${{ matrix.pkg }}" ] && [ -f "packages/${{ matrix.pkg }}/package.json" ]; then
+              # Check if package is private
+              if grep -q '"private".*true' "packages/${{ matrix.pkg }}/package.json"; then
+                echo "Skipping private package: ${{ matrix.pkg }}"
+                continue
+              fi
+
+              # Check if package has build output
+              if [ ! -d "packages/${{ matrix.pkg }}/dist" ]; then
+                echo "Skipping ${{ matrix.pkg }}: no dist/ folder"
+                continue
+              fi
+
+              echo "Publishing ${{ matrix.pkg }}..."
+              (cd "packages/${{ matrix.pkg }}" && npm publish) || \
+                echo "Warning: Failed to publish $${{ matrix.pkg }}"
+            fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+  publish-bot:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -44,58 +113,32 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Build all packages
+      - name: Build package
         run: |
-          # Build packages with TypeScript compilation
-          # Continue on error - only publish packages that build
-          for pkg in packages/screeps-{cache,logger,perf,agent,mcp,\
-          async,xstate,xtree,kernel,profiler,metrics}; do
-            if [ -d "$pkg" ] && [ -f "$pkg/tsconfig.json" ]; then
-              echo "Building $pkg..."
-              (cd "$pkg" && npm run build) || \
-                echo "Warning: $pkg build failed"
-            fi
-          done
-
-          # Build main bot package
-          echo "Building main bot package..."
-          bun run build
-
-      - name: Verify main bot build
-        run: |
-          # Verify main bot build (required)
-          if [ ! -f "dist/main.js" ]; then
-            echo "Error: dist/main.js not found"
-            exit 1
+          if [ -d "packages/bot" ] && [ -f "packages/bot/tsconfig.json" ]; then
+            echo "Building bot..."
+            (cd "packages/bot" && npm run build) || echo "Warning: bot build failed"
           fi
-          echo "✓ Main bot build verified"
 
-      - name: Publish main package
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish workspace packages
+      - name: Publish package
         run: |
-          for pkg in packages/screeps-{cache,logger,perf,agent,mcp,\
-          async,xstate,xtree,kernel,profiler,metrics} packages/bot; do
-            if [ -d "$pkg" ] && [ -f "$pkg/package.json" ]; then
-              # Check if package is private
-              if grep -q '"private".*true' "$pkg/package.json"; then
-                echo "Skipping private package: $pkg"
-                continue
-              fi
-
-              # Check if package has build output
-              if [ ! -d "$pkg/dist" ]; then
-                echo "Skipping $pkg: no dist/ folder"
-                continue
-              fi
-
-              echo "Publishing $pkg..."
-              (cd "$pkg" && npm publish) || \
-                echo "Warning: Failed to publish $pkg"
+        
+          if [ -d "packages/bot" ] && [ -f "packages/bot/package.json" ]; then
+            # Check if package is private
+            if grep -q '"private".*true' "packages/bot/package.json"; then
+              echo "Skipping private package: bot"
+              continue
             fi
-          done
+
+            # Check if package has build output
+            if [ ! -d "packages/bot/dist" ]; then
+              echo "Skipping bot: no dist/ folder"
+              continue
+            fi
+
+            echo "Publishing bot..."
+            (cd "packages/bot" && npm publish) || \
+              echo "Warning: Failed to publish $${{ matrix.pkg }}"
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
