@@ -54,7 +54,10 @@ describe("Spawn Starvation Recovery (Issue #806)", () => {
             "harvester-999-0": {
               name: "harvester-999-0",
               memory: { role: "harvester" },
-              store: { getFreeCapacity: () => 0, getUsedCapacity: () => 0 }
+              store: { getFreeCapacity: () => 0, getUsedCapacity: () => 0 },
+              room: mockRoom,
+              upgradeController: vi.fn().mockReturnValue(OK),
+              moveTo: vi.fn().mockReturnValue(OK)
             } as unknown as CreepLike
           }
         : {},

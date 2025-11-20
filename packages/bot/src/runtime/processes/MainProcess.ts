@@ -17,22 +17,11 @@ export class MainProcess {
       return Memory.systemReport?.report?.repository;
     };
 
-    // Configure the legacy kernel with task system
-    // Task system is enabled by default (v0.32.0+)
-    // Can be disabled via TASK_SYSTEM_ENABLED=false or Memory flag
-    const taskSystemEnabled =
-      __TASK_SYSTEM_ENABLED__ === "false"
-        ? false
-        : __TASK_SYSTEM_ENABLED__ === "true"
-          ? true
-          : typeof Memory !== "undefined" && Memory.experimentalFeatures?.taskSystem === false
-            ? false
-            : true;
-
+    // Configure the kernel with role-based system
+    // The task system has been removed; only the role-based system is available
     const config: LegacyKernelConfig = {
       repositorySignalProvider,
       behavior: new BehaviorController({
-        useTaskSystem: taskSystemEnabled,
         cpuSafetyMargin: 0.8,
         maxCpuPerCreep: 1.5
       }),

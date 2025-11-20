@@ -76,7 +76,7 @@ describe(`Kernel (${TEST_REALM})`, () => {
 
     const memory = { creeps: {}, roles: {} } as unknown as Memory;
     const kernel = new Kernel({
-      behavior: new BehaviorController({ useTaskSystem: false }),
+      behavior: new BehaviorController({ }),
       logger: { log: vi.fn(), warn: vi.fn() }
     });
 

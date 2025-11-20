@@ -53,7 +53,7 @@ function createEmergencyGameContext(options: {
         getFreeCapacity: () => 50,
         getCapacity: () => 50
       },
-      room: { name: "W0N0" }
+      room: dummyRoom
     };
   }
   for (let i = options.harvesterCount; i < options.creepCount; i++) {
@@ -65,7 +65,7 @@ function createEmergencyGameContext(options: {
         getFreeCapacity: () => 50,
         getCapacity: () => 50
       },
-      room: { name: "W0N0" }
+      room: dummyRoom
     };
   }
 

@@ -1,6 +1,5 @@
 import type { BehaviorSummary } from "@shared/contracts";
 import type { CreepLike, GameContext, SpawnLike } from "@runtime/types/GameContext";
-import { TaskManager } from "@runtime/tasks";
 import { profile } from "@ralphschuler/screeps-profiler";
 import { CreepCommunicationManager } from "./CreepCommunicationManager";
 import { EnergyPriorityManager, DEFAULT_ENERGY_CONFIG } from "@runtime/energy";
@@ -294,8 +293,6 @@ const ROLE_DEFINITIONS: Record<RoleName, RoleDefinition> = {
 interface BehaviorControllerOptions {
   cpuSafetyMargin?: number;
   maxCpuPerCreep?: number;
-  useTaskSystem?: boolean;
-  pathfindingProvider?: "default" | "cartographer";
   enableCreepCommunication?: boolean;
 }
 
@@ -310,13 +307,11 @@ let wallUpgradeManager: WallUpgradeManager | null = null;
 
 /**
  * Coordinates spawning and per-tick behaviour execution for every registered role.
- * Uses priority-based task management system by default (v0.32.0+).
- * Legacy role-based system available via useTaskSystem: false.
+ * Uses role-based behavior system with individual role handlers.
  */
 @profile
 export class BehaviorController {
   private readonly options: Required<BehaviorControllerOptions>;
-  private readonly taskManager: TaskManager;
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly communicationManager: CreepCommunicationManager;
   private readonly energyPriorityManager: EnergyPriorityManager;
@@ -328,15 +323,8 @@ export class BehaviorController {
     this.options = {
       cpuSafetyMargin: options.cpuSafetyMargin ?? 0.85,
       maxCpuPerCreep: options.maxCpuPerCreep ?? 1.5,
-      useTaskSystem: options.useTaskSystem ?? true,
-      pathfindingProvider: options.pathfindingProvider ?? "default",
       enableCreepCommunication: options.enableCreepCommunication ?? true
     };
-    this.taskManager = new TaskManager({
-      cpuThreshold: this.options.cpuSafetyMargin,
-      pathfindingProvider: this.options.pathfindingProvider,
-      logger: this.logger
-    });
     this.communicationManager = new CreepCommunicationManager();
     communicationManager = this.communicationManager;
     this.energyPriorityManager = new EnergyPriorityManager({}, this.logger);
@@ -378,17 +366,8 @@ export class BehaviorController {
     const spawned: string[] = [];
     this.ensureRoleMinimums(game, memory, roleCounts, spawned, bootstrapRoleMinimums ?? {});
 
-    // Use task system if enabled, otherwise use legacy role-based system
-    const result = this.options.useTaskSystem
-      ? this.executeWithTaskSystem(game, memory)
-      : // eslint-disable-next-line @typescript-eslint/no-deprecated
-        this.executeWithRoleSystem(game, memory);
-
-    // Store task stats in Memory for next tick's spawn decisions
-    // Task generation happens during executeWithTaskSystem, so stats are available now
-    if (this.options.useTaskSystem) {
-      memory.taskStats = this.taskManager.getTaskStats();
-    }
+    // Execute role-based system
+    const result = this.executeWithRoleSystem(game, memory);
 
     memory.roles = roleCounts;
 
@@ -400,55 +379,7 @@ export class BehaviorController {
   }
 
   /**
-   * Execute using the task management system with priority-based task execution.
-   */
-  private executeWithTaskSystem(
-    game: GameContext,
-    _memory: Memory
-  ): { processedCreeps: number; tasksExecuted: Record<string, number> } {
-    const creeps = Object.values(game.creeps) as Creep[];
-    const dyingConfig = _memory.dyingCreepBehavior ?? { enabled: true, ttlThreshold: 50 };
-    const comm = getComm();
-
-    // Handle dying creeps first - they should drop energy and skip normal tasks
-    const activeCreeps: Creep[] = [];
-    for (const creep of creeps) {
-      const isDying = dyingConfig.enabled !== false && isCreepDying(creep, dyingConfig.ttlThreshold ?? 50);
-
-      if (isDying) {
-        const dropped = handleDyingCreepEnergyDrop(creep);
-        if (dropped) {
-          comm?.say(creep, "💀");
-        }
-      } else {
-        activeCreeps.push(creep);
-      }
-    }
-
-    // Generate tasks for each room
-    const rooms = Object.values(game.rooms);
-    for (const room of rooms) {
-      if (room.controller?.my) {
-        this.taskManager.generateTasks(room);
-      }
-    }
-
-    // Assign tasks to idle creeps (excluding dying creeps)
-    this.taskManager.assignTasks(activeCreeps);
-
-    // Execute tasks with CPU threshold management
-    const tasksExecuted = this.taskManager.executeTasks(activeCreeps, game.cpu.limit);
-
-    return {
-      processedCreeps: creeps.length,
-      tasksExecuted
-    };
-  }
-
-  /**
-   * Execute using the legacy role-based system.
-   * @deprecated Since v0.32.0 - Task system is now the default. Use useTaskSystem: false to enable.
-   * This method will be removed in a future version once task system is fully validated in production.
+   * Execute using the role-based system.
    */
   private executeWithRoleSystem(
     game: GameContext,
@@ -665,14 +596,10 @@ export class BehaviorController {
    * When links are operational (RCL 5+), hauler count is reduced as links
    * handle energy transport more efficiently.
    *
-   * When using task system: Also increases harvester count based on pending task queue
-   * from the previous tick (stored in Memory.taskStats).
-   *
    * @param game - The game context
-   * @param memory - The Memory object for accessing task stats
    * @returns Adjusted role minimums for the current room state
    */
-  private calculateDynamicRoleMinimums(game: GameContext, memory: Memory): Partial<Record<RoleName, number>> {
+  private calculateDynamicRoleMinimums(game: GameContext): Partial<Record<RoleName, number>> {
     const adjustedMinimums: Partial<Record<RoleName, number>> = {};
 
     // Count sources with adjacent containers and detect link network
@@ -910,42 +837,6 @@ export class BehaviorController {
       }
     }
 
-    // Task-based demand: Scale workforce based on pending task queue from previous tick
-    // Note: Task generation happens AFTER spawn decisions, so we use stats from previous tick
-    // stored in Memory to inform current tick's spawn decisions
-    if (this.options.useTaskSystem && memory.taskStats) {
-      const totalCreeps = Object.keys(game.creeps).length;
-      const previousTickPendingTasks = memory.taskStats.pending;
-
-      // Calculate additional creeps needed based on previous tick's pending tasks
-      // Assume each creep can handle ~3-5 tasks on average
-      const tasksPerCreep = 4;
-      const idealCreepCount = Math.ceil(previousTickPendingTasks / tasksPerCreep);
-
-      // Calculate additional creeps needed (capped at +3 per tick to prevent spawn spam)
-      const taskDemand = Math.max(0, Math.min(3, idealCreepCount - totalCreeps));
-
-      if (taskDemand > 0) {
-        // Distribute task demand across harvester and upgrader roles
-        // Harvesters handle energy gathering tasks, upgraders handle controller tasks
-        const currentHarvesterMin = adjustedMinimums.harvester ?? ROLE_DEFINITIONS["harvester"].minimum;
-        const currentUpgraderMin = adjustedMinimums.upgrader ?? ROLE_DEFINITIONS["upgrader"].minimum;
-
-        // Add half of task demand to harvesters (rounded up), half to upgraders (rounded down)
-        const harvesterBonus = Math.ceil(taskDemand / 2);
-        const upgraderBonus = Math.floor(taskDemand / 2);
-
-        adjustedMinimums.harvester = currentHarvesterMin + harvesterBonus;
-        adjustedMinimums.upgrader = currentUpgraderMin + upgraderBonus;
-
-        this.logger.log?.(
-          `[BehaviorController] Task-based demand: +${taskDemand} creeps needed ` +
-            `(pending tasks: ${previousTickPendingTasks}, harvester: ${currentHarvesterMin} → ${adjustedMinimums.harvester}, ` +
-            `upgrader: ${currentUpgraderMin} → ${adjustedMinimums.upgrader})`
-        );
-      }
-    }
-
     return adjustedMinimums;
   }
 
@@ -970,7 +861,7 @@ export class BehaviorController {
     this.validateSpawnHealth(game.spawns, game.creeps, game.time, memory);
 
     // Detect containers near sources and adjust role minimums dynamically
-    const adjustedMinimums = this.calculateDynamicRoleMinimums(game, memory);
+    const adjustedMinimums = this.calculateDynamicRoleMinimums(game);
 
     // Get current harvester count for emergency spawn detection
     const harvesterCount = roleCounts["harvester"] ?? 0;

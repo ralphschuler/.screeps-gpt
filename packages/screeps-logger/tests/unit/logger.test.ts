@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { Logger } from "../../packages/screeps-logger/src/Logger";
+import { Logger } from "../../src/Logger";
 
 describe("Logger", () => {
   let mockConsole: { log: ReturnType<typeof vi.fn> };

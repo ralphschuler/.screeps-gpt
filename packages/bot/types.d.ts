@@ -13,7 +13,6 @@ declare global {
    * These are replaced at compile time with literal values from environment variables
    */
   const __PROFILER_ENABLED__: "true" | "false";
-  const __TASK_SYSTEM_ENABLED__: string;
   const __ROOM_VISUALS_ENABLED__: string;
 
   interface Memory {
@@ -75,7 +74,6 @@ declare global {
     };
     creepCounter?: number;
     experimentalFeatures?: {
-      taskSystem?: boolean;
       roomVisuals?: boolean;
     };
     creepCommunication?: {
@@ -169,18 +167,6 @@ declare global {
     threats?: ThreatMemory;
     defense?: DefenseMemory;
     combat?: CombatManagerMemory;
-    /**
-     * Task system statistics from the previous tick.
-     * Used to inform spawn decisions based on task queue demand.
-     * @see src/runtime/tasks/TaskManager.ts
-     * @see src/runtime/behavior/BehaviorController.ts
-     */
-    taskStats?: {
-      total: number;
-      pending: number;
-      assigned: number;
-      complete: number;
-    };
   }
 
   interface CreepMemory {
@@ -190,7 +176,6 @@ declare global {
     homeRoom?: string;
     targetRoom?: string;
     sourceId?: Id<Source>;
-    taskId?: string;
   }
 }
 
