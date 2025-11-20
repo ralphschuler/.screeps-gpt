@@ -1,5 +1,12 @@
-# yarn lock file
-/yarn.lock
+# Keep yarn.lock for dependency pinning
+# But ignore yarn cache and install state
+.yarn/*
+!.yarn/releases
+!.yarn/patches
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
 
 # Ignore basic folders
 /dist

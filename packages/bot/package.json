@@ -21,16 +21,15 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@ralphschuler/screeps-logger": "workspace:*",
-    "@ralphschuler/screeps-profiler": "workspace:*",
     "@ralphschuler/screeps-cache": "workspace:*",
-    "@ralphschuler/screeps-perf": "workspace:*",
     "@ralphschuler/screeps-kernel": "workspace:*",
+    "@ralphschuler/screeps-logger": "workspace:*",
+    "@ralphschuler/screeps-perf": "workspace:*",
+    "@ralphschuler/screeps-profiler": "workspace:*",
     "screeps-cartographer": "^1.8.13"
   },
   "devDependencies": {
     "@types/screeps": "^3.3.8",
-    "bun-plugin-screeps": "^1.0.0",
     "esbuild": "^0.25.11",
     "typescript": "^5.4.3",
     "vitest": "^4.0.1"

@@ -5,9 +5,9 @@
   "license": "MIT",
   "author": "OpenAI Automations",
   "type": "module",
+  "private": true,
   "main": "dist/main.js",
   "screeps_bot": true,
-  "packageManager": "bun@1.3.1",
   "workspaces": [
     "packages/*"
   ],
@@ -27,7 +27,7 @@
   ],
   "engines": {
     "node": ">=18.0.0 <=22.x",
-    "bun": ">=1.0.0"
+    "yarn": ">=1.22.0"
   },
   "scripts": {
     "build": "tsx packages/utilities/scripts/build.ts",
@@ -44,7 +44,7 @@
     "format:write": "prettier --write .",
     "baselines:check": "tsx packages/utilities/scripts/check-baseline-readiness.ts",
     "baselines:establish": "tsx packages/utilities/scripts/establish-baselines.ts",
-    "test": "bun run test:unit",
+    "test": "yarn test:unit",
     "test:actions": "tsx packages/utilities/scripts/test-actions.ts",
     "test:unit": "vitest run --dir tests/unit",
     "test:e2e": "vitest run --dir tests/e2e",
@@ -102,7 +102,6 @@
     "@typescript-eslint/eslint-plugin": "^8.46.2",
     "@typescript-eslint/parser": "^8.46.2",
     "@vitest/coverage-v8": "^4.0.1",
-    "bun-plugin-screeps": "^1.0.0",
     "esbuild": "^0.25.11",
     "eslint": "^9.38.0",
     "eslint-config-prettier": "^10.1.8",
@@ -142,5 +141,6 @@
     ".github/workflows/*.{yml,yaml}": [
       "yamllint"
     ]
-  }
+  },
+  "packageManager": "yarn@4.11.0"
 }
