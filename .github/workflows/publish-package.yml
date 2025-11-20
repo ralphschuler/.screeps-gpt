@@ -62,8 +62,8 @@ jobs:
         run: |
             if [ -d "packages/${{ matrix.pkg }}" ] && [ -f "packages/${{ matrix.pkg }}/tsconfig.json" ]; then
               echo "Building ${{ matrix.pkg }}..."
-              cd "packages/${{ matrix.pkg }}"
-              npm run build) || echo "Warning: ${{ matrix.pkg }} build failed"
+              (cd "packages/${{ matrix.pkg }}" && npm run build) || \
+                echo "Warning: ${{ matrix.pkg }} build failed"
             fi
 
       - name: Publish package
@@ -118,7 +118,8 @@ jobs:
         run: |
           if [ -d "packages/bot" ] && [ -f "packages/bot/tsconfig.json" ]; then
             echo "Building bot..."
-            (cd "packages/bot" && npm run build) || echo "Warning: bot build failed"
+            (cd "packages/bot" && npm run build) || \
+              echo "Warning: bot build failed"
           fi
 
       - name: Publish package
