@@ -46,5 +46,9 @@ export declare function init(_options?: ProfilerOptions): Profiler;
  * ```
  */
 export declare function profile(target: Function): void;
-export declare function profile(target: object, key: string | symbol, _descriptor: TypedPropertyDescriptor<Function>): void;
+export declare function profile(
+  target: object,
+  key: string | symbol,
+  _descriptor: TypedPropertyDescriptor<Function>
+): void;
 //# sourceMappingURL=Profiler.d.ts.map

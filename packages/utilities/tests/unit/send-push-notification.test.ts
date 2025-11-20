@@ -31,9 +31,7 @@ describe("send-push-notification", () => {
     });
 
     it("should prevent notifications that are too frequent", async () => {
-      const { checkRateLimit, updateRateLimit } = await import(
-        "../../scripts/send-push-notification.js"
-      );
+      const { checkRateLimit, updateRateLimit } = await import("../../scripts/send-push-notification.js");
 
       // Send first notification
       expect(checkRateLimit()).toBe(true);

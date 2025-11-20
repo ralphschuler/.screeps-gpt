@@ -10,23 +10,23 @@ let profilerEnabledCache = null;
  * Reduces Memory access overhead from thousands to ~1-2 per tick
  */
 function isEnabledFast() {
-    var _a;
-    const currentTick = Game.time;
-    // Cache hit - return cached value
-    if (profilerEnabledCache && profilerEnabledCache.tick === currentTick) {
-        return profilerEnabledCache.enabled;
-    }
-    // Cache miss - check Memory and update cache
-    const enabled = ((_a = Memory.profiler) === null || _a === void 0 ? void 0 : _a.start) !== undefined;
-    profilerEnabledCache = { tick: currentTick, enabled };
-    return enabled;
+  var _a;
+  const currentTick = Game.time;
+  // Cache hit - return cached value
+  if (profilerEnabledCache && profilerEnabledCache.tick === currentTick) {
+    return profilerEnabledCache.enabled;
+  }
+  // Cache miss - check Memory and update cache
+  const enabled = ((_a = Memory.profiler) === null || _a === void 0 ? void 0 : _a.start) !== undefined;
+  profilerEnabledCache = { tick: currentTick, enabled };
+  return enabled;
 }
 /**
  * Clear profiler state cache when state changes
  * Called by start(), stop(), clear() to invalidate cache
  */
 function clearEnabledCache() {
-    profilerEnabledCache = null;
+  profilerEnabledCache = null;
 }
 /**
  * Initialize the profiler and return the CLI interface
@@ -49,64 +49,66 @@ function clearEnabledCache() {
  * ```
  */
 export function init(_options = {}) {
-    const defaults = {
+  const defaults = {
+    data: {},
+    total: 0
+  };
+  if (!Memory.profiler) {
+    Memory.profiler = defaults;
+  }
+  const cli = {
+    clear() {
+      const running = isEnabled();
+      // Create a new object to avoid mutating the defaults reference
+      Memory.profiler = {
         data: {},
         total: 0
-    };
-    if (!Memory.profiler) {
-        Memory.profiler = defaults;
+      };
+      if (running) {
+        Memory.profiler.start = Game.time;
+      }
+      // Clear cache when profiler state changes
+      clearEnabledCache();
+      return "Profiler Memory cleared";
+    },
+    output() {
+      outputProfilerData();
+      return "Done";
+    },
+    start() {
+      Memory.profiler.start = Game.time;
+      // Clear cache when profiler state changes
+      clearEnabledCache();
+      return "Profiler started";
+    },
+    status() {
+      if (isEnabled()) {
+        return "Profiler is running";
+      }
+      return "Profiler is stopped";
+    },
+    stop() {
+      if (!isEnabled()) {
+        return "Profiler is not running";
+      }
+      const timeRunning = Game.time - Memory.profiler.start;
+      Memory.profiler.total += timeRunning;
+      delete Memory.profiler.start;
+      // Clear cache when profiler state changes
+      clearEnabledCache();
+      return "Profiler stopped";
+    },
+    toString() {
+      return (
+        "Profiler.start() - Starts the profiler\n" +
+        "Profiler.stop() - Stops/Pauses the profiler\n" +
+        "Profiler.status() - Returns whether is profiler is currently running or not\n" +
+        "Profiler.output() - Pretty-prints the collected profiler data to the console\n" +
+        this.status()
+      );
     }
-    const cli = {
-        clear() {
-            const running = isEnabled();
-            // Create a new object to avoid mutating the defaults reference
-            Memory.profiler = {
-                data: {},
-                total: 0
-            };
-            if (running) {
-                Memory.profiler.start = Game.time;
-            }
-            // Clear cache when profiler state changes
-            clearEnabledCache();
-            return "Profiler Memory cleared";
-        },
-        output() {
-            outputProfilerData();
-            return "Done";
-        },
-        start() {
-            Memory.profiler.start = Game.time;
-            // Clear cache when profiler state changes
-            clearEnabledCache();
-            return "Profiler started";
-        },
-        status() {
-            if (isEnabled()) {
-                return "Profiler is running";
-            }
-            return "Profiler is stopped";
-        },
-        stop() {
-            if (!isEnabled()) {
-                return "Profiler is not running";
-            }
-            const timeRunning = Game.time - Memory.profiler.start;
-            Memory.profiler.total += timeRunning;
-            delete Memory.profiler.start;
-            // Clear cache when profiler state changes
-            clearEnabledCache();
-            return "Profiler stopped";
-        },
-        toString() {
-            return ("Profiler.start() - Starts the profiler\n" +
-                "Profiler.stop() - Stops/Pauses the profiler\n" +
-                "Profiler.status() - Returns whether is profiler is currently running or not\n" +
-                "Profiler.output() - Pretty-prints the collected profiler data to the console\n" +
-                this.status());
-        }
-    };
-    return cli;
+  };
+  return cli;
 }
 /**
  * Wrap a function or method to track its CPU usage
@@ -114,65 +116,67 @@ export function init(_options = {}) {
  * @internal
  */
 function wrapFunction(obj, key, className) {
-    const descriptor = Reflect.getOwnPropertyDescriptor(obj, key);
-    if (!descriptor || descriptor.get || descriptor.set) {
-        return;
+  const descriptor = Reflect.getOwnPropertyDescriptor(obj, key);
+  if (!descriptor || descriptor.get || descriptor.set) {
+    return;
+  }
+  if (key === "constructor") {
+    return;
+  }
+  const originalFunction = descriptor.value;
+  if (!originalFunction || typeof originalFunction !== "function") {
+    return;
+  }
+  // set a key for the object in memory
+  if (!className) {
+    className = obj.constructor ? `${obj.constructor.name}` : "";
+  }
+  const memKey = className + `:${String(key)}`;
+  // set a tag so we don't wrap a function twice
+  const savedName = `__${String(key)}__`;
+  if (Reflect.has(obj, savedName)) {
+    return;
+  }
+  Reflect.set(obj, savedName, originalFunction);
+  ///////////
+  Reflect.set(obj, key, function (...args) {
+    // OPTIMIZATION: Use cached profiler state to avoid repeated Memory lookups
+    // isEnabledFast() caches result per tick, reducing overhead from thousands to 1-2 Memory accesses
+    if (isEnabledFast()) {
+      const start = Game.cpu.getUsed();
+      const result = originalFunction.apply(this, args);
+      const end = Game.cpu.getUsed();
+      record(memKey, end - start);
+      return result;
     }
-    if (key === "constructor") {
-        return;
-    }
-    const originalFunction = descriptor.value;
-    if (!originalFunction || typeof originalFunction !== "function") {
-        return;
-    }
-    // set a key for the object in memory
-    if (!className) {
-        className = obj.constructor ? `${obj.constructor.name}` : "";
-    }
-    const memKey = className + `:${String(key)}`;
-    // set a tag so we don't wrap a function twice
-    const savedName = `__${String(key)}__`;
-    if (Reflect.has(obj, savedName)) {
-        return;
-    }
-    Reflect.set(obj, savedName, originalFunction);
-    ///////////
-    Reflect.set(obj, key, function (...args) {
-        // OPTIMIZATION: Use cached profiler state to avoid repeated Memory lookups
-        // isEnabledFast() caches result per tick, reducing overhead from thousands to 1-2 Memory accesses
-        if (isEnabledFast()) {
-            const start = Game.cpu.getUsed();
-            const result = originalFunction.apply(this, args);
-            const end = Game.cpu.getUsed();
-            record(memKey, end - start);
-            return result;
-        }
-        return originalFunction.apply(this, args);
-    });
+    return originalFunction.apply(this, args);
+  });
 }
 export function profile(
-// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-target, key, 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-_descriptor) {
-    // Check if profiler is enabled at build time
-    if (typeof __PROFILER_ENABLED__ !== "undefined" && !__PROFILER_ENABLED__) {
-        return;
-    }
-    if (key) {
-        // case of method decorator
-        wrapFunction(target, key);
-        return;
-    }
-    // case of class decorator
-    const ctor = target;
-    if (!ctor.prototype) {
-        return;
-    }
-    const className = ctor.name;
-    Reflect.ownKeys(ctor.prototype).forEach(k => {
-        wrapFunction(ctor.prototype, k, className);
-    });
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+  target,
+  key,
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+  _descriptor
+) {
+  // Check if profiler is enabled at build time
+  if (typeof __PROFILER_ENABLED__ !== "undefined" && !__PROFILER_ENABLED__) {
+    return;
+  }
+  if (key) {
+    // case of method decorator
+    wrapFunction(target, key);
+    return;
+  }
+  // case of class decorator
+  const ctor = target;
+  if (!ctor.prototype) {
+    return;
+  }
+  const className = ctor.name;
+  Reflect.ownKeys(ctor.prototype).forEach(k => {
+    wrapFunction(ctor.prototype, k, className);
+  });
 }
 /**
  * Check if profiler is currently enabled
@@ -180,8 +184,8 @@ _descriptor) {
  * @internal
  */
 function isEnabled() {
-    var _a;
-    return ((_a = Memory.profiler) === null || _a === void 0 ? void 0 : _a.start) !== undefined;
+  var _a;
+  return ((_a = Memory.profiler) === null || _a === void 0 ? void 0 : _a.start) !== undefined;
 }
 /**
  * Record CPU usage for a function
@@ -189,21 +193,21 @@ function isEnabled() {
  * @internal
  */
 function record(key, time) {
-    if (!Memory.profiler) {
-        Memory.profiler = {
-            data: {},
-            total: 0
-        };
-    }
-    const keyStr = String(key);
-    if (!Memory.profiler.data[keyStr]) {
-        Memory.profiler.data[keyStr] = {
-            calls: 0,
-            time: 0
-        };
-    }
-    Memory.profiler.data[keyStr].calls++;
-    Memory.profiler.data[keyStr].time += time;
+  if (!Memory.profiler) {
+    Memory.profiler = {
+      data: {},
+      total: 0
+    };
+  }
+  const keyStr = String(key);
+  if (!Memory.profiler.data[keyStr]) {
+    Memory.profiler.data[keyStr] = {
+      calls: 0,
+      time: 0
+    };
+  }
+  Memory.profiler.data[keyStr].calls++;
+  Memory.profiler.data[keyStr].time += time;
 }
 /**
  * Output profiler data to console
@@ -211,63 +215,63 @@ function record(key, time) {
  * @internal
  */
 function outputProfilerData() {
-    if (!Memory.profiler) {
-        console.log("No profiler data available");
-        return;
-    }
-    let totalTicks = Memory.profiler.total;
-    if (Memory.profiler.start) {
-        totalTicks += Game.time - Memory.profiler.start;
-    }
-    if (totalTicks === 0) {
-        console.log("No profiling data collected yet");
-        return;
-    }
-    ///////
-    // Process data
-    let totalCpu = 0; // running count of average total CPU use per tick
-    let calls;
-    let time;
-    let result;
-    const data = Reflect.ownKeys(Memory.profiler.data).map(key => {
-        const keyStr = String(key);
-        calls = Memory.profiler.data[keyStr].calls;
-        time = Memory.profiler.data[keyStr].time;
-        result = {};
-        result.name = keyStr;
-        result.calls = calls;
-        result.cpuPerCall = time / calls;
-        result.callsPerTick = calls / totalTicks;
-        result.cpuPerTick = time / totalTicks;
-        totalCpu += result.cpuPerTick;
-        return result;
-    });
-    data.sort((lhs, rhs) => rhs.cpuPerTick - lhs.cpuPerTick);
-    ///////
-    // Format data
-    let output = "";
-    // get function name max length
-    const longestName = Math.max(...data.map(d => d.name.length), 8) + 2;
-    //// Header line
-    output += padRight("Function", longestName);
-    output += padLeft("Tot Calls", 12);
-    output += padLeft("CPU/Call", 12);
-    output += padLeft("Calls/Tick", 12);
-    output += padLeft("CPU/Tick", 12);
-    output += padLeft("% of Tot\n", 12);
-    ////  Data lines
-    data.forEach(d => {
-        output += padRight(`${d.name}`, longestName);
-        output += padLeft(`${d.calls}`, 12);
-        output += padLeft(`${d.cpuPerCall.toFixed(2)}ms`, 12);
-        output += padLeft(`${d.callsPerTick.toFixed(2)}`, 12);
-        output += padLeft(`${d.cpuPerTick.toFixed(2)}ms`, 12);
-        output += padLeft(`${((d.cpuPerTick / totalCpu) * 100).toFixed(0)} %\n`, 12);
-    });
-    //// Footer line
-    output += `${totalTicks} total ticks measured`;
-    output += `\t\t\t${totalCpu.toFixed(2)} average CPU profiled per tick`;
-    console.log(output);
+  if (!Memory.profiler) {
+    console.log("No profiler data available");
+    return;
+  }
+  let totalTicks = Memory.profiler.total;
+  if (Memory.profiler.start) {
+    totalTicks += Game.time - Memory.profiler.start;
+  }
+  if (totalTicks === 0) {
+    console.log("No profiling data collected yet");
+    return;
+  }
+  ///////
+  // Process data
+  let totalCpu = 0; // running count of average total CPU use per tick
+  let calls;
+  let time;
+  let result;
+  const data = Reflect.ownKeys(Memory.profiler.data).map(key => {
+    const keyStr = String(key);
+    calls = Memory.profiler.data[keyStr].calls;
+    time = Memory.profiler.data[keyStr].time;
+    result = {};
+    result.name = keyStr;
+    result.calls = calls;
+    result.cpuPerCall = time / calls;
+    result.callsPerTick = calls / totalTicks;
+    result.cpuPerTick = time / totalTicks;
+    totalCpu += result.cpuPerTick;
+    return result;
+  });
+  data.sort((lhs, rhs) => rhs.cpuPerTick - lhs.cpuPerTick);
+  ///////
+  // Format data
+  let output = "";
+  // get function name max length
+  const longestName = Math.max(...data.map(d => d.name.length), 8) + 2;
+  //// Header line
+  output += padRight("Function", longestName);
+  output += padLeft("Tot Calls", 12);
+  output += padLeft("CPU/Call", 12);
+  output += padLeft("Calls/Tick", 12);
+  output += padLeft("CPU/Tick", 12);
+  output += padLeft("% of Tot\n", 12);
+  ////  Data lines
+  data.forEach(d => {
+    output += padRight(`${d.name}`, longestName);
+    output += padLeft(`${d.calls}`, 12);
+    output += padLeft(`${d.cpuPerCall.toFixed(2)}ms`, 12);
+    output += padLeft(`${d.callsPerTick.toFixed(2)}`, 12);
+    output += padLeft(`${d.cpuPerTick.toFixed(2)}ms`, 12);
+    output += padLeft(`${((d.cpuPerTick / totalCpu) * 100).toFixed(0)} %\n`, 12);
+  });
+  //// Footer line
+  output += `${totalTicks} total ticks measured`;
+  output += `\t\t\t${totalCpu.toFixed(2)} average CPU profiled per tick`;
+  console.log(output);
 }
 /**
  * Helper function for left padding strings
@@ -275,7 +279,7 @@ function outputProfilerData() {
  * @internal
  */
 function padLeft(str, length) {
-    return str.padStart(length, " ");
+  return str.padStart(length, " ");
 }
 /**
  * Helper function for right padding strings
@@ -283,6 +287,6 @@ function padLeft(str, length) {
  * @internal
  */
 function padRight(str, length) {
-    return str.padEnd(length, " ");
+  return str.padEnd(length, " ");
 }
 //# sourceMappingURL=Profiler.js.map
