@@ -49,7 +49,7 @@ jobs:
           # Build packages with TypeScript compilation
           # Continue on error - only publish packages that build
           for pkg in packages/screeps-{cache,logger,perf,agent,mcp,\
-          async,xstate,xtree}; do
+          async,xstate,xtree,kernel,profiler,metrics}; do
             if [ -d "$pkg" ] && [ -f "$pkg/tsconfig.json" ]; then
               echo "Building $pkg..."
               (cd "$pkg" && npm run build) || \
@@ -78,7 +78,7 @@ jobs:
       - name: Publish workspace packages
         run: |
           for pkg in packages/screeps-{cache,logger,perf,agent,mcp,\
-          async,xstate,xtree} packages/bot; do
+          async,xstate,xtree,kernel,profiler,metrics} packages/bot; do
             if [ -d "$pkg" ] && [ -f "$pkg/package.json" ]; then
               # Check if package is private
               if grep -q '"private".*true' "$pkg/package.json"; then
