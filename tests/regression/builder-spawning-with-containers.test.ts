@@ -21,6 +21,34 @@ describe("Builder Spawning with Containers", () => {
   let mockContainer1: StructureLike;
   let mockContainer2: StructureLike;
 
+  // Helper to create mock creeps based on role counts
+  const createMockCreeps = (roleCounts: Record<string, number>): Record<string, unknown> => {
+    const creeps: Record<string, unknown> = {};
+    let creepIndex = 0;
+    for (const [role, count] of Object.entries(roleCounts)) {
+      for (let i = 0; i < count; i++) {
+        const creepName = `${role}-${creepIndex++}`;
+        creeps[creepName] = {
+          name: creepName,
+          memory: { role },
+          store: {
+            getUsedCapacity: () => 0,
+            getFreeCapacity: () => 50,
+            getCapacity: () => 50
+          },
+          pos: {
+            x: 25,
+            y: 25,
+            roomName: "W1N1",
+            findClosestByPath: () => null
+          },
+          room: mockRoom
+        };
+      }
+    }
+    return creeps;
+  };
+
   beforeEach(() => {
     behaviorController = new BehaviorController();
 
@@ -184,12 +212,20 @@ describe("Builder Spawning with Containers", () => {
     // with stationary harvesters and haulers already present
     const roleCounts: Record<string, number> = {
       harvester: 2,
-      upgrader: 3,
+      upgrader: 4, // Set to 4 to match dynamic scaling for RCL 2 with high energy
       builder: 1, // Only 1 builder (below minimum of 2)
       stationaryHarvester: 2, // One per source
       hauler: 2, // Haulers present
       repairer: 1
     };
+
+    // Create mock creeps to match role counts (excluding complex roles that need Game global)
+    const creepCountsForMock = {
+      harvester: roleCounts.harvester,
+      upgrader: roleCounts.upgrader,
+      builder: roleCounts.builder
+    };
+    mockGame.creeps = createMockCreeps(creepCountsForMock);
 
     // Execute behavior controller with sufficient energy for reserve check
     mockRoom.energyAvailable = 600;
@@ -237,6 +273,14 @@ describe("Builder Spawning with Containers", () => {
       repairer: 1 // Repairer satisfied
     };
 
+    // Create mock creeps to match role counts (excluding complex roles that need Game global)
+    const creepCountsForMock = {
+      harvester: roleCounts.harvester,
+      upgrader: roleCounts.upgrader,
+      builder: roleCounts.builder
+    };
+    mockGame.creeps = createMockCreeps(creepCountsForMock);
+
     // Execute once to check that builder is recognized as needing to spawn
     const result = behaviorController.execute(mockGame, mockMemory, roleCounts);
 
@@ -260,12 +304,20 @@ describe("Builder Spawning with Containers", () => {
 
     const roleCounts: Record<string, number> = {
       harvester: 4, // Harvesters satisfied
-      upgrader: 3, // Upgraders satisfied
+      upgrader: 4, // Set to 4 to match dynamic scaling for RCL 2 with high energy
       builder: 0, // No builders yet - needs to spawn
       stationaryHarvester: 2, // Container economy active
       hauler: 2, // Haulers present
       repairer: 1 // Repairer present
     };
+
+    // Create mock creeps to match role counts (excluding complex roles that need Game global)
+    const creepCountsForMock = {
+      harvester: roleCounts.harvester,
+      upgrader: roleCounts.upgrader,
+      builder: roleCounts.builder
+    };
+    mockGame.creeps = createMockCreeps(creepCountsForMock);
 
     // Execute behavior controller
     const result = behaviorController.execute(mockGame, mockMemory, roleCounts);
