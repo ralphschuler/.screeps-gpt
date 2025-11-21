@@ -32,6 +32,6 @@
     "@types/screeps": "^3.3.8",
     "esbuild": "^0.25.11",
     "typescript": "^5.4.3",
-    "vitest": "^4.0.1"
+    "vitest": "^4.0.12"
   }
 }
