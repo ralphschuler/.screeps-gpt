@@ -25,19 +25,14 @@ export class DefenseProcess {
     this.logger = console;
     this.cpuEmergencyThreshold = 0.9;
 
-    // Initialize defense memory structures
-    if (typeof Memory !== "undefined") {
-      Memory.threats ??= { rooms: {}, lastUpdate: 0 };
-      Memory.defense ??= { posture: {}, lastDefenseAction: 0 };
-      Memory.combat ??= { squads: {} };
-    }
+    // Initialize defense memory structures once at construction
+    Memory.threats ??= { rooms: {}, lastUpdate: 0 };
+    Memory.defense ??= { posture: {}, lastDefenseAction: 0 };
+    Memory.combat ??= { squads: {} };
 
-    const threatMemory: ThreatMemory | undefined =
-      typeof Memory !== "undefined" && Memory.threats ? Memory.threats : undefined;
-    const defenseMemory: DefenseMemory | undefined =
-      typeof Memory !== "undefined" && Memory.defense ? Memory.defense : undefined;
-    const combatMemory: CombatManagerMemory | undefined =
-      typeof Memory !== "undefined" && Memory.combat ? Memory.combat : undefined;
+    const threatMemory: ThreatMemory | undefined = Memory.threats;
+    const defenseMemory: DefenseMemory | undefined = Memory.defense;
+    const combatMemory: CombatManagerMemory | undefined = Memory.combat;
 
     const threatDetector = new ThreatDetector(this.logger, threatMemory);
     const towerManager = new TowerManager(this.logger);
@@ -60,11 +55,6 @@ export class DefenseProcess {
     if (memory.emergencyReset) {
       return;
     }
-
-    // Initialize defense memory structures if needed
-    memory.threats ??= { rooms: {}, lastUpdate: 0 };
-    memory.defense ??= { posture: {}, lastDefenseAction: 0 };
-    memory.combat ??= { squads: {} };
 
     // CPU guard before defense operations
     if (gameContext.cpu.getUsed() > gameContext.cpu.limit * this.cpuEmergencyThreshold) {

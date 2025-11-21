@@ -24,11 +24,8 @@ export class InfrastructureProcess {
     this.logger = console;
     this.cpuEmergencyThreshold = 0.9;
 
-    // Extract infrastructure memory with proper type narrowing
-    let infrastructureMemory: InfrastructureMemory | undefined;
-    if (typeof Memory !== "undefined") {
-      infrastructureMemory = Memory.infrastructure;
-    }
+    // Extract infrastructure memory
+    const infrastructureMemory: InfrastructureMemory | undefined = Memory.infrastructure;
 
     this.infrastructureManager = new InfrastructureManager({
       logger: this.logger,

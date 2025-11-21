@@ -1,7 +1,6 @@
 import { process as registerProcess, type ProcessContext } from "@ralphschuler/screeps-kernel";
 import type { GameContext } from "@runtime/types/GameContext";
 import type { RepositorySignal } from "@shared/contracts";
-import { PerformanceTracker } from "@runtime/metrics/PerformanceTracker";
 import { StatsCollector } from "@runtime/metrics/StatsCollector";
 import { PixelGenerator } from "@runtime/metrics/PixelGenerator";
 import { SystemEvaluator } from "@runtime/evaluation/SystemEvaluator";
@@ -18,17 +17,14 @@ import { SystemEvaluator } from "@runtime/evaluation/SystemEvaluator";
  */
 @registerProcess({ name: "MetricsProcess", priority: 10, singleton: true })
 export class MetricsProcess {
-  private readonly tracker: PerformanceTracker;
   private readonly statsCollector: StatsCollector;
   private readonly pixelGenerator: PixelGenerator;
   private readonly evaluator: SystemEvaluator;
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly repositorySignalProvider?: () => RepositorySignal | undefined;
-  private tickStarted: boolean = false;
 
   public constructor() {
     this.logger = console;
-    this.tracker = new PerformanceTracker({}, this.logger);
     this.statsCollector = new StatsCollector({ enableDiagnostics: false });
     this.pixelGenerator = new PixelGenerator({}, this.logger);
     this.evaluator = new SystemEvaluator({}, this.logger);
@@ -43,25 +39,18 @@ export class MetricsProcess {
     const gameContext = ctx.game as GameContext;
     const memory = ctx.memory;
 
-    // Start performance tracking at the beginning of the tick
-    // This should ideally be done before any other process runs
-    if (!this.tickStarted) {
-      this.tracker.begin(gameContext);
-      this.tickStarted = true;
-    }
-
-    // If emergency reset or respawn occurred, end tracking with minimal summary
+    // If emergency reset or respawn occurred, collect minimal stats
     if (memory.emergencyReset || memory.needsRespawn) {
-      const snapshot = this.tracker.end(gameContext, {
+      const repository = this.repositorySignalProvider?.();
+      // Create minimal snapshot without performance tracking
+      const minimalSnapshot = {
+        cpuUsed: gameContext.cpu.getUsed(),
         processedCreeps: 0,
         spawnedCreeps: [],
         tasksExecuted: {}
-      });
-
-      const repository = this.repositorySignalProvider?.();
-      this.statsCollector.collect(gameContext, memory, snapshot);
-      this.evaluator.evaluateAndStore(memory, snapshot, repository);
-      this.tickStarted = false;
+      };
+      this.statsCollector.collect(gameContext, memory, minimalSnapshot);
+      this.evaluator.evaluateAndStore(memory, minimalSnapshot, repository);
       return;
     }
 
@@ -78,8 +67,13 @@ export class MetricsProcess {
       tasksExecuted: {}
     };
 
-    // End performance tracking
-    const snapshot = this.tracker.end(gameContext, behaviorSummary);
+    // Create performance snapshot by measuring CPU used during the entire tick
+    const snapshot = {
+      cpuUsed: gameContext.cpu.getUsed(),
+      processedCreeps: behaviorSummary.processedCreeps,
+      spawnedCreeps: behaviorSummary.spawnedCreeps,
+      tasksExecuted: behaviorSummary.tasksExecuted
+    };
 
     // Collect stats for monitoring
     if (gameContext.time % 100 === 0) {
@@ -110,8 +104,5 @@ export class MetricsProcess {
     } else {
       this.logger.log?.(`[MetricsProcess] ${result.report.summary}`);
     }
-
-    // Reset tick started flag for next tick
-    this.tickStarted = false;
   }
 }
