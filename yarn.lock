@@ -1324,6 +1324,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@ralphschuler/screeps-tasks@workspace:packages/screeps-tasks":
+  version: 0.0.0-use.local
+  resolution: "@ralphschuler/screeps-tasks@workspace:packages/screeps-tasks"
+  dependencies:
+    "@types/node": "npm:^24.9.1"
+    typescript: "npm:^5.4.3"
+    vitest: "npm:^4.0.12"
+  languageName: unknown
+  linkType: soft
+
 "@ralphschuler/screeps-xstate@workspace:packages/screeps-xstate":
   version: 0.0.0-use.local
   resolution: "@ralphschuler/screeps-xstate@workspace:packages/screeps-xstate"
