@@ -169,7 +169,7 @@ export class TaskNode implements ITaskNode {
    * Unassign creep from this task
    */
   public unassignCreep(): void {
-    delete this.assignedCreep;
+    this.assignedCreep = undefined;
   }
 
   /**

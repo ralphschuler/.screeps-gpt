@@ -217,12 +217,13 @@ export class DependencyTaskQueue {
 
   /**
    * Clean up tasks assigned to dead creeps
+   * @param creeps - Object mapping creep names to creep instances
    */
-  public cleanupDeadCreepTasks(game: { creeps: Record<string, unknown> }): number {
+  public cleanupDeadCreepTasks(creeps: Record<string, unknown>): number {
     let cleaned = 0;
 
     for (const task of this.tasks.values()) {
-      if (task.assignedCreep && !game.creeps[task.assignedCreep]) {
+      if (task.assignedCreep && !creeps[task.assignedCreep]) {
         task.unassignCreep();
         cleaned++;
       }

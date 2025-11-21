@@ -460,14 +460,12 @@ describe("DependencyTaskQueue", () => {
       queue.assignTask("creep-1", currentTick);
       queue.assignTask("creep-2", currentTick);
 
-      // Mock game with only creep-2 alive
-      const mockGame = {
-        creeps: {
-          "creep-2": {}
-        }
+      // Mock creeps with only creep-2 alive
+      const mockCreeps = {
+        "creep-2": {}
       };
 
-      const cleaned = queue.cleanupDeadCreepTasks(mockGame);
+      const cleaned = queue.cleanupDeadCreepTasks(mockCreeps);
 
       expect(cleaned).toBe(1);
       expect(task1.isAssigned()).toBe(false);

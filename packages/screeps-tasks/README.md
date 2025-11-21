@@ -172,7 +172,7 @@ const removed = queue.cleanupExpiredTasks(Game.time);
 console.log(`Removed ${removed} expired tasks`);
 
 // Cleanup dead creep tasks
-const cleaned = queue.cleanupDeadCreepTasks(Game);
+const cleaned = queue.cleanupDeadCreepTasks(Game.creeps);
 console.log(`Released ${cleaned} tasks from dead creeps`);
 
 // Clear all tasks
@@ -227,7 +227,7 @@ Queue manager with dependency-aware task assignment.
 - `failTask(taskId: string): boolean` - Mark task failed
 - `releaseTask(taskId: string, creepName: string): boolean` - Release task assignment
 - `cleanupExpiredTasks(currentTick: number): number` - Remove expired tasks
-- `cleanupDeadCreepTasks(game): number` - Release tasks from dead creeps
+- `cleanupDeadCreepTasks(creeps: Record<string, unknown>): number` - Release tasks from dead creeps
 - `resolveAll(): ResolutionResult` - Resolve all dependencies
 - `getStats(): object` - Get queue statistics
 
