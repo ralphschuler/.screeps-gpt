@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { Kernel } from "@runtime/bootstrap/kernel";
+import { Kernel } from "@ralphschuler/screeps-kernel";
 import type { GameContext } from "@runtime/types/GameContext";
 import type { InfrastructureMemory } from "@runtime/infrastructure/InfrastructureManager";
 

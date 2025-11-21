@@ -22,7 +22,10 @@ describe("TowerManager", () => {
         } as unknown as RoomPosition,
         attack: vi.fn(() => OK),
         heal: vi.fn(() => OK),
-        repair: vi.fn(() => OK)
+        repair: vi.fn(() => OK),
+        store: {
+          getUsedCapacity: vi.fn(() => 1000)
+        }
       } as unknown as StructureTower;
 
       const hostile: Creep = {
@@ -70,7 +73,10 @@ describe("TowerManager", () => {
         } as unknown as RoomPosition,
         attack: vi.fn(() => OK),
         heal: vi.fn(() => OK),
-        repair: vi.fn(() => OK)
+        repair: vi.fn(() => OK),
+        store: {
+          getUsedCapacity: vi.fn(() => 1000)
+        }
       } as unknown as StructureTower;
 
       const attacker: Creep = {
@@ -128,7 +134,10 @@ describe("TowerManager", () => {
         } as unknown as RoomPosition,
         attack: vi.fn(() => OK),
         heal: vi.fn(() => OK),
-        repair: vi.fn(() => OK)
+        repair: vi.fn(() => OK),
+        store: {
+          getUsedCapacity: vi.fn(() => 1000)
+        }
       } as unknown as StructureTower;
 
       const damagedCreep: Creep = {
@@ -176,7 +185,10 @@ describe("TowerManager", () => {
         } as unknown as RoomPosition,
         attack: vi.fn(() => OK),
         heal: vi.fn(() => OK),
-        repair: vi.fn(() => OK)
+        repair: vi.fn(() => OK),
+        store: {
+          getUsedCapacity: vi.fn(() => 1000)
+        }
       } as unknown as StructureTower;
 
       const damagedRoad: Structure = {
@@ -231,7 +243,10 @@ describe("TowerManager", () => {
         } as unknown as RoomPosition,
         attack: vi.fn(() => OK),
         heal: vi.fn(() => OK),
-        repair: vi.fn(() => OK)
+        repair: vi.fn(() => OK),
+        store: {
+          getUsedCapacity: vi.fn(() => 1000)
+        }
       } as unknown as StructureTower;
 
       const wall: Structure = {
@@ -379,7 +394,10 @@ describe("TowerManager", () => {
         } as unknown as RoomPosition,
         attack: vi.fn(() => OK),
         heal: vi.fn(() => OK),
-        repair: vi.fn(() => OK)
+        repair: vi.fn(() => OK),
+        store: {
+          getUsedCapacity: vi.fn(() => 1000)
+        }
       } as unknown as StructureTower;
 
       const wallAtTarget: StructureWall = {
@@ -427,7 +445,10 @@ describe("TowerManager", () => {
         } as unknown as RoomPosition,
         attack: vi.fn(() => OK),
         heal: vi.fn(() => OK),
-        repair: vi.fn(() => OK)
+        repair: vi.fn(() => OK),
+        store: {
+          getUsedCapacity: vi.fn(() => 1000)
+        }
       } as unknown as StructureTower;
 
       const wallBelowTarget: StructureWall = {
@@ -475,7 +496,10 @@ describe("TowerManager", () => {
         } as unknown as RoomPosition,
         attack: vi.fn(() => OK),
         heal: vi.fn(() => OK),
-        repair: vi.fn(() => OK)
+        repair: vi.fn(() => OK),
+        store: {
+          getUsedCapacity: vi.fn(() => 1000)
+        }
       } as unknown as StructureTower;
 
       const rampartAboveTarget: StructureRampart = {
@@ -523,7 +547,10 @@ describe("TowerManager", () => {
         } as unknown as RoomPosition,
         attack: vi.fn(() => OK),
         heal: vi.fn(() => OK),
-        repair: vi.fn(() => OK)
+        repair: vi.fn(() => OK),
+        store: {
+          getUsedCapacity: vi.fn(() => 1000)
+        }
       } as unknown as StructureTower;
 
       const wall: StructureWall = {

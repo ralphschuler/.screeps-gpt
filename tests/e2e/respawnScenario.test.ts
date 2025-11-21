@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { Kernel } from "@runtime/bootstrap/kernel";
+import { Kernel } from "@ralphschuler/screeps-kernel";
 import type { GameContext } from "@runtime/types/GameContext";
 
 const TEST_REALM = process.env.SCREEPS_TEST_REALM ?? "PTR";

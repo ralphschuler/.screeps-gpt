@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { Kernel } from "@runtime/bootstrap/kernel";
+import { Kernel } from "@ralphschuler/screeps-kernel";
 import { BehaviorController } from "@runtime/behavior/BehaviorController";
 import type { CreepLike, GameContext, RoomLike } from "@runtime/types/GameContext";
 
