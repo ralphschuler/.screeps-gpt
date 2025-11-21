@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import { Kernel } from "@ralphschuler/screeps-kernel";
-import { BehaviorController } from "@runtime/behavior/BehaviorController";
 import type { CreepLike, GameContext, RoomLike } from "@runtime/types/GameContext";
+
+// Import processes to trigger @process decorator registration
+import "@runtime/processes";
 
 function createCreep(role: string, room: RoomLike, store: { free: number; used: number }): CreepLike {
   return {
@@ -65,7 +67,6 @@ describe("BehaviorController role integration", () => {
 
     const memory = { creeps: {}, roles: {} } as unknown as Memory;
     const kernel = new Kernel({
-      behavior: new BehaviorController({}),
       logger: { log: vi.fn(), warn: vi.fn() }
     });
 

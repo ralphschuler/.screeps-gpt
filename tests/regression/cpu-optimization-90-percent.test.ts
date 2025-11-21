@@ -4,6 +4,9 @@ import { PerformanceTracker } from "@runtime/metrics/PerformanceTracker";
 import { Kernel } from "@ralphschuler/screeps-kernel";
 import type { GameContext, CreepLike, RoomLike } from "@runtime/types/GameContext";
 
+// Import processes to trigger @process decorator registration
+import "@runtime/processes";
+
 /**
  * Regression test for CPU optimization to maintain below 90% threshold
  *
@@ -281,7 +284,7 @@ describe("CPU optimization regression - 90% threshold", () => {
 
       kernel.run(game, memory);
 
-      expect(warn).toHaveBeenCalledWith(expect.stringMatching(/Emergency CPU threshold exceeded.*aborting tick/));
+      expect(warn).toHaveBeenCalledWith(expect.stringMatching(/CPU threshold exceeded.*skipping remaining processes/));
     });
 
     it("should process normally at 85% CPU (below 90% emergency threshold)", () => {
@@ -322,7 +325,7 @@ describe("CPU optimization regression - 90% threshold", () => {
       kernel.run(game, memory);
 
       // Should not trigger emergency CPU warning
-      expect(warn).not.toHaveBeenCalledWith(expect.stringMatching(/Emergency CPU threshold exceeded/));
+      expect(warn).not.toHaveBeenCalledWith(expect.stringMatching(/CPU threshold exceeded/));
 
       // Should complete processing
       expect(memory.systemReport).toBeDefined();

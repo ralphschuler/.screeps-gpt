@@ -45,10 +45,19 @@ export class MetricsProcess {
       const repository = this.repositorySignalProvider?.();
       // Create minimal snapshot without performance tracking
       const minimalSnapshot = {
+        tick: gameContext.time,
         cpuUsed: gameContext.cpu.getUsed(),
-        processedCreeps: 0,
-        spawnedCreeps: [],
-        tasksExecuted: {}
+        cpuLimit: gameContext.cpu.limit,
+        cpuBucket: gameContext.cpu.bucket,
+        creepCount: Object.keys(gameContext.creeps).length,
+        roomCount: Object.keys(gameContext.rooms).length,
+        spawnOrders: 0,
+        warnings: [],
+        execution: {
+          processedCreeps: 0,
+          spawnedCreeps: [],
+          tasksExecuted: {}
+        }
       };
       this.statsCollector.collect(gameContext, memory, minimalSnapshot);
       this.evaluator.evaluateAndStore(memory, minimalSnapshot, repository);
@@ -66,10 +75,15 @@ export class MetricsProcess {
 
     // Create performance snapshot by measuring CPU used during the entire tick
     const snapshot = {
+      tick: gameContext.time,
       cpuUsed: gameContext.cpu.getUsed(),
-      processedCreeps: behaviorSummary.processedCreeps,
-      spawnedCreeps: behaviorSummary.spawnedCreeps,
-      tasksExecuted: behaviorSummary.tasksExecuted
+      cpuLimit: gameContext.cpu.limit,
+      cpuBucket: gameContext.cpu.bucket,
+      creepCount: Object.keys(gameContext.creeps).length,
+      roomCount: Object.keys(gameContext.rooms).length,
+      spawnOrders: behaviorSummary.spawnedCreeps.length,
+      warnings: [],
+      execution: behaviorSummary
     };
 
     // Collect stats for monitoring
