@@ -83,7 +83,7 @@ export class ScoutingProcess {
 
     const [, ewDir, ewNum, nsDir, nsNum] = match;
     const x = (ewDir === "W" ? -1 : 1) * parseInt(ewNum);
-    const y = (nsDir === "N" ? -1 : 1) * parseInt(nsNum);
+    const y = (nsDir === "S" ? -1 : 1) * parseInt(nsNum);
 
     // Generate adjacent room names (8 directions)
     const adjacentRooms: string[] = [];
@@ -95,7 +95,7 @@ export class ScoutingProcess {
         const adjY = y + dy;
 
         const adjEwDir = adjX < 0 ? "W" : "E";
-        const adjNsDir = adjY < 0 ? "N" : "S";
+        const adjNsDir = adjY < 0 ? "S" : "N";
         const adjRoomName = `${adjEwDir}${Math.abs(adjX)}${adjNsDir}${Math.abs(adjY)}`;
 
         adjacentRooms.push(adjRoomName);

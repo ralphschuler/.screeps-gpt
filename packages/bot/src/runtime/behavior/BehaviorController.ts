@@ -76,9 +76,21 @@ const DISMANTLER_DISMANTLE_TASK = "dismantle" as const;
 const CLAIMER_CLAIM_TASK = "claim" as const;
 
 // Constants for remote operations
+/**
+ * X coordinate of room center (rooms are 50x50, center is at 25,25).
+ * Used as a waypoint for inter-room navigation.
+ */
 const ROOM_CENTER_X = 25;
+/**
+ * Y coordinate of room center (rooms are 50x50, center is at 25,25).
+ * Used as a waypoint for inter-room navigation.
+ */
 const ROOM_CENTER_Y = 25;
-const MIN_DROPPED_ENERGY_AMOUNT = 50;
+/**
+ * Minimum amount of dropped energy to pick up (in energy units).
+ * Lower values might be considered for early-game remote mining.
+ */
+const MIN_DROPPED_ENERGY_AMOUNT = 20;
 
 type HarvesterTask = typeof HARVEST_TASK | typeof DELIVER_TASK | typeof UPGRADE_TASK;
 type UpgraderTask = typeof RECHARGE_TASK | typeof UPGRADE_TASK;
@@ -912,18 +924,30 @@ export class BehaviorController {
    * Get suitable remote mining targets from scout data
    */
   private getRemoteMiningTargets(homeRoom: string): string[] {
+    // Ensure Memory.scout and Memory.scout.rooms are initialized to avoid timing dependency
+    if (!Memory.scout) {
+      Memory.scout = {} as any;
+    }
+    if (!Memory.scout.rooms) {
+      Memory.scout.rooms = {};
+    }
+    
     // This will be populated by Memory.scout from ScoutingProcess
-    if (!Memory.scout?.rooms) {
+    if (Object.keys(Memory.scout.rooms).length === 0) {
       return [];
     }
 
     const scoutedRooms = Object.values(Memory.scout.rooms);
+    
+    // Get my username dynamically instead of hardcoding
+    const myUsername = Game.spawns[Object.keys(Game.spawns)[0]]?.owner?.username;
+    
     const suitableRooms = scoutedRooms.filter(room => {
       // Must have sources
       if (room.sourceCount === 0) return false;
       
       // Must not be owned by another player
-      if (room.owned && room.owner !== "ralphschuler") return false;
+      if (room.owned && room.owner !== myUsername) return false;
       
       // Must not be SK room
       if (room.isSourceKeeper) return false;
@@ -1159,45 +1183,54 @@ export class BehaviorController {
       // Assign remote mining targets for remoteMiner creeps
       if (role === "remoteMiner" && room) {
         const targets = this.getRemoteMiningTargets(room.name);
-        if (targets.length > 0) {
-          // Assign target room based on existing remote miner count
-          const existingRemoteMiners = Object.values(game.creeps).filter(
-            c => c.memory.role === "remoteMiner"
-          ) as Array<{ memory: RemoteMinerMemory }>;
-          
-          // Distribute miners across target rooms
-          const targetIndex = existingRemoteMiners.length % targets.length;
-          const targetRoom = targets[targetIndex];
-          
-          (creepMemory as RemoteMinerMemory).homeRoom = room.name;
-          (creepMemory as RemoteMinerMemory).targetRoom = targetRoom;
-          
+        if (targets.length === 0) {
+          // No valid remote mining targets, abort spawn
           this.logger.log?.(
-            `[BehaviorController] Assigned ${name} to remote mine ${targetRoom} from ${room.name}`
+            `[BehaviorController] Aborting spawn of ${name} in ${room.name}: no remote mining targets available`
           );
+          continue; // Skip this spawn and move to next role
         }
+        // Assign target room based on existing remote miner count
+        const existingRemoteMiners = Object.values(game.creeps).filter(
+          c => c.memory.role === "remoteMiner"
+        ) as Array<{ memory: RemoteMinerMemory }>;
+        
+        // Distribute miners across target rooms
+        const targetIndex = existingRemoteMiners.length % targets.length;
+        const targetRoom = targets[targetIndex];
+        
+        (creepMemory as RemoteMinerMemory).homeRoom = room.name;
+        (creepMemory as RemoteMinerMemory).targetRoom = targetRoom;
+        
+        this.logger.log?.(
+          `[BehaviorController] Assigned ${name} to remote mine ${targetRoom} from ${room.name}`
+        );
       }
 
       // Assign remote hauling targets for remoteHauler creeps
       if (role === "remoteHauler" && room) {
         const targets = this.getRemoteMiningTargets(room.name);
-        if (targets.length > 0) {
-          // Assign target room based on existing remote hauler count
-          const existingRemoteHaulers = Object.values(game.creeps).filter(
-            c => c.memory.role === "remoteHauler"
-          ) as Array<{ memory: RemoteHaulerMemory }>;
-          
-          // Distribute haulers across target rooms
-          const targetIndex = existingRemoteHaulers.length % targets.length;
-          const targetRoom = targets[targetIndex];
-          
-          (creepMemory as RemoteHaulerMemory).homeRoom = room.name;
-          (creepMemory as RemoteHaulerMemory).targetRoom = targetRoom;
-          
-          this.logger.log?.(
-            `[BehaviorController] Assigned ${name} to haul from ${targetRoom} to ${room.name}`
+        if (targets.length === 0) {
+          this.logger.warn?.(
+            `[BehaviorController] WARNING: Attempted to spawn remoteHauler ${name} in ${room.name}, but no remote mining targets are available. Spawn aborted.`
           );
+          continue; // Skip this spawn and move to next role
         }
+        // Assign target room based on existing remote hauler count
+        const existingRemoteHaulers = Object.values(game.creeps).filter(
+          c => c.memory.role === "remoteHauler"
+        ) as Array<{ memory: RemoteHaulerMemory }>;
+        
+        // Distribute haulers across target rooms
+        const targetIndex = existingRemoteHaulers.length % targets.length;
+        const targetRoom = targets[targetIndex];
+        
+        (creepMemory as RemoteHaulerMemory).homeRoom = room.name;
+        (creepMemory as RemoteHaulerMemory).targetRoom = targetRoom;
+        
+        this.logger.log?.(
+          `[BehaviorController] Assigned ${name} to haul from ${targetRoom} to ${room.name}`
+        );
       }
 
       const result = spawn.spawnCreep(body, name, { memory: creepMemory });
@@ -1955,6 +1988,15 @@ function ensureRemoteHaulerTask(memory: RemoteHaulerMemory, creep: CreepLike): R
  * Remote haulers transport energy from remote rooms back to the home room.
  * They pick up energy from containers or dropped resources in remote rooms,
  * then deliver it to storage/containers in the home room.
+ *
+ * @remarks
+ * State machine flow:
+ * - `travel`: Creep travels to the target (remote) room.
+ * - `pickup`: When the creep reaches the target room, it picks up energy from containers or dropped resources.
+ * - `return`: When the creep is full or there is no energy to pick up, it returns to the home room to deliver energy.
+ * - `travel`: When the creep is empty and back in the home room, it travels again to the target room.
+ *
+ * State flow: travel → pickup (when reaches target room) → return (when full or no energy) → travel (when empty at home)
  *
  * @param creep - The ManagedCreep instance representing the remote hauler
  * @returns The current task string for the remote hauler
