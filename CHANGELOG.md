@@ -5,6 +5,32 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Changed
+
+- **Workflow Architecture Refactoring**: Simplified monitoring and CI automation workflows
+  - **Monitoring Workflow**: Removed copilot-exec strategic analysis step from `screeps-monitoring.yml`
+    - Workflow now focuses purely on data collection (PTR stats, bot snapshots, telemetry, profiler data)
+    - Eliminates unnecessary AI analysis complexity from data pipeline
+    - All data collection steps remain intact and functional
+  - **CI Automation**: Replaced `copilot-ci-autofix.yml` with `ci-auto-issue.yml`
+    - New workflow creates GitHub issues for failed CI runs instead of attempting automatic fixes
+    - Preserves circuit breaker pattern (3 consecutive failures, 15-minute backoff)
+    - Issues include workflow details, failed jobs, and links to run logs
+    - Applies labels: `automation`, `ci-failure`, `type/bug`, `priority/high`, `state/pending`
+    - Escalation issues created when circuit breaker trips
+    - More predictable and transparent than automatic fixing
+  - Removed `copilot-ci-autofix-agent` action and `ci-autofix` prompt
+  - Updated test suites to reflect new workflow structure
+  - Updated documentation (AGENTS.md, README.md) to describe new approach
+
+### Rationale
+
+This refactoring improves maintainability and predictability:
+- **Separation of concerns**: Data collection vs. analysis
+- **Predictability**: Issue creation is more predictable than auto-fixing
+- **Transparency**: Issues provide visible tracking of CI problems
+- **Maintainability**: Simpler workflows are easier to debug
+
 ## [0.125.1] - 2025-11-20
 
 ### Changed

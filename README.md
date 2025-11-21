@@ -49,9 +49,8 @@ GitHub Actions workflows that orchestrate specialized Copilot agents for differe
 - **Issue Triage Agent**: Reformulates and labels incoming issues
 - **Todo Agent**: Implements features from issue specifications
 - **Review Agent**: Performs scheduled repository audits
-- **CI Autofix Agent**: Automatically fixes failing workflows
-- **Stats Monitor Agent**: Analyzes PTR performance and creates monitoring issues
-- **Autonomous Monitor Agent**: Daily strategic analysis combining bot performance and repository health
+- **CI Auto Issue Agent**: Creates tracking issues for failing workflows
+- **Stats Monitor Agent**: Collects PTR performance data and bot telemetry
 - **Spec-Kit Agent**: Generates detailed implementation plans from requirements
 
 See [Automation Overview](docs/automation/overview.md) for complete workflow documentation.
@@ -185,13 +184,13 @@ Multiple specialized Copilot agents collaborate on different aspects of developm
 - **Screeps Deployment**: Push to Screeps servers on new releases with automatic spawn status verification
 - **Spawn Monitoring**: Scheduled checks every 30 minutes ensure bot stays active between deployments
 - **Auto-Respawn**: Automatic respawn when all spawns are lost, with intelligent room selection and spawn placement
-- **CI Autofix**: Agents automatically fix failing workflows
+- **CI Issue Tracking**: Automatic issue creation for failing workflows with circuit breaker protection
 
 ### 📊 Self-Evaluation & Improvement
 
 - **Runtime Evaluation**: Bot analyzes its own performance and generates improvement recommendations
 - **Resilient PTR Monitoring**: Multi-source telemetry collection (Stats API + Console fallback) eliminates monitoring blackouts
-- **Autonomous Strategic Analysis**: Combined bot performance and repository health monitoring every 30 minutes
+- **Data Collection Pipeline**: Automated bot performance monitoring every 30 minutes collecting snapshots, stats, and profiler data
 - **Data-Driven Baselines**: Automatic statistical baseline establishment from 48+ hours of performance data for intelligent anomaly detection
 - **30-Day Analytics**: Automated collection and visualization of bot performance metrics with interactive charts
 - **Performance Benchmarking**: Private Screeps server testing with bot-vs-bot competitive simulation
@@ -279,8 +278,8 @@ The repository uses 14 GitHub Actions workflows orchestrating the agent swarm:
 - **Post-Merge Release** - Semantic versioning and automated releases (triggers deployment and blog generation)
 - **Deploy** - Automatic deployment to Screeps triggered by post-merge-release completion, with post-deployment spawn status checking
 - **Blog Generation** - Automated changelog-to-blog conversion triggered by post-merge-release completion
-- **Copilot Agents** - Issue triage, Todo automation, code review, CI autofix
-- **PTR Monitor** - Continuous bot performance monitoring
+- **Copilot Agents** - Issue triage, Todo automation, code review, CI issue tracking
+- **PTR Monitor** - Continuous bot data collection (snapshots, stats, telemetry, profiler data)
 - **Spec-Kit** - Specification-driven development workflow
 - **Stale Issue Management** - Automated cleanup of inactive issues (60-day inactivity threshold)
 
