@@ -24,6 +24,17 @@ type TowerAction = "attack" | "heal" | "repair";
  */
 @profile
 export class TowerManager {
+  // Constants for repair priority thresholds
+  private static readonly HIGH_PRIORITY_THRESHOLD = 0.5; // 50% health for high-priority structures
+  private static readonly WALL_REPAIR_THRESHOLD = 0.8; // 80% for walls/ramparts
+  private static readonly HEALTH_DIFFERENCE_THRESHOLD = 0.05; // 5% health difference for sorting
+
+  // Constants for distance-based efficiency
+  private static readonly FULL_EFFICIENCY_RANGE = 10; // Full repair power within 10 tiles
+  private static readonly MAX_EFFICIENCY_RANGE = 30; // Max range for reasonable efficiency
+  private static readonly MIN_EFFICIENCY = 0.1; // Minimum efficiency for very far structures
+  private static readonly EFFICIENCY_DECAY_FACTOR = 20; // Linear decay factor from 10-30 tiles
+
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly repairThreshold: number;
   private readonly criticalRepairThreshold: number;
@@ -243,7 +254,7 @@ export class TowerManager {
         return b.priority - a.priority;
       }
       // Secondary: Health percent (lower first)
-      if (Math.abs(a.healthPercent - b.healthPercent) > 0.05) {
+      if (Math.abs(a.healthPercent - b.healthPercent) > TowerManager.HEALTH_DIFFERENCE_THRESHOLD) {
         return a.healthPercent - b.healthPercent;
       }
       // Tertiary: Efficiency (higher first for same priority and similar health)
@@ -264,7 +275,7 @@ export class TowerManager {
 
     // High: Spawn, extensions, storage, containers <50%
     if (
-      healthPercent < 0.5 &&
+      healthPercent < TowerManager.HIGH_PRIORITY_THRESHOLD &&
       (structure.structureType === STRUCTURE_SPAWN ||
         structure.structureType === STRUCTURE_EXTENSION ||
         structure.structureType === STRUCTURE_STORAGE ||
@@ -273,11 +284,11 @@ export class TowerManager {
       return RepairPriority.HIGH;
     }
 
-    // Medium: Roads <50%, walls/ramparts below target
+    // Medium: Roads <50%, walls/ramparts <80%
     if (
-      (structure.structureType === STRUCTURE_ROAD && healthPercent < 0.5) ||
-      (structure.structureType === STRUCTURE_WALL && healthPercent < 0.8) ||
-      (structure.structureType === STRUCTURE_RAMPART && healthPercent < 0.8)
+      (structure.structureType === STRUCTURE_ROAD && healthPercent < TowerManager.HIGH_PRIORITY_THRESHOLD) ||
+      (structure.structureType === STRUCTURE_WALL && healthPercent < TowerManager.WALL_REPAIR_THRESHOLD) ||
+      (structure.structureType === STRUCTURE_RAMPART && healthPercent < TowerManager.WALL_REPAIR_THRESHOLD)
     ) {
       return RepairPriority.MEDIUM;
     }
@@ -291,18 +302,19 @@ export class TowerManager {
    * Towers have full repair power (800) within 10 tiles, decreasing to 200 at 30+ tiles
    */
   private calculateRepairEfficiency(distance: number): number {
-    // Full efficiency within 10 tiles
-    if (distance <= 10) {
+    // Full efficiency within FULL_EFFICIENCY_RANGE tiles
+    if (distance <= TowerManager.FULL_EFFICIENCY_RANGE) {
       return 1.0;
     }
 
-    // Decreasing efficiency 10-30 tiles
-    if (distance <= 30) {
-      return 1.0 - ((distance - 10) / 20) * 0.75; // Linear decrease from 1.0 to 0.25
+    // Decreasing efficiency between FULL_EFFICIENCY_RANGE and MAX_EFFICIENCY_RANGE
+    if (distance <= TowerManager.MAX_EFFICIENCY_RANGE) {
+      const distanceBeyondFull = distance - TowerManager.FULL_EFFICIENCY_RANGE;
+      return 1.0 - (distanceBeyondFull / TowerManager.EFFICIENCY_DECAY_FACTOR) * 0.75; // Linear decrease from 1.0 to 0.25
     }
 
-    // Very low efficiency beyond 30 tiles - deprioritize
-    return 0.1;
+    // Very low efficiency beyond MAX_EFFICIENCY_RANGE - deprioritize
+    return TowerManager.MIN_EFFICIENCY;
   }
 
   /**

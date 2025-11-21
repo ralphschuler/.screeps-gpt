@@ -2,6 +2,19 @@ import { describe, expect, it, vi } from "vitest";
 import { TowerManager } from "@runtime/defense/TowerManager";
 import type { RoomLike } from "@runtime/types/GameContext";
 
+// Test constants for structure health values
+const CONTAINER_HITS = 100000;
+const CONTAINER_MAX_HITS = 250000;
+const SPAWN_CRITICAL_HITS = 150;
+const SPAWN_MAX_HITS = 1000;
+const ROAD_HITS = 2000;
+const ROAD_MAX_HITS = 5000;
+const TOWER_HITS = 2100;
+const TOWER_MAX_HITS = 3000;
+const TOWER_ENERGY_THRESHOLD = 500;
+const TOWER_ENERGY_ABOVE_THRESHOLD = 600;
+const TOWER_ENERGY_BELOW_THRESHOLD = 400;
+
 describe("Tower Repair Priority System", () => {
   it("should prioritize critical structures (<20% health) first", () => {
     const towerManager = new TowerManager({ log: vi.fn(), warn: vi.fn() });
@@ -21,7 +34,7 @@ describe("Tower Repair Priority System", () => {
         findClosestByRange: vi.fn()
       } as unknown as RoomPosition,
       store: {
-        getUsedCapacity: vi.fn(() => 600) // Above 500 threshold
+        getUsedCapacity: vi.fn(() => TOWER_ENERGY_ABOVE_THRESHOLD)
       } as unknown as StoreDefinition,
       attack: vi.fn(() => OK),
       heal: vi.fn(() => OK),
@@ -33,8 +46,8 @@ describe("Tower Repair Priority System", () => {
       id: "spawn1" as Id<StructureSpawn>,
       structureType: STRUCTURE_SPAWN,
       pos: { x: 20, y: 20 } as RoomPosition,
-      hits: 150,
-      hitsMax: 1000,
+      hits: SPAWN_CRITICAL_HITS,
+      hitsMax: SPAWN_MAX_HITS,
       my: true
     } as unknown as StructureSpawn;
 
@@ -43,8 +56,8 @@ describe("Tower Repair Priority System", () => {
       id: "road1" as Id<StructureRoad>,
       structureType: STRUCTURE_ROAD,
       pos: { x: 30, y: 30 } as RoomPosition,
-      hits: 2000,
-      hitsMax: 5000
+      hits: ROAD_HITS,
+      hitsMax: ROAD_MAX_HITS
     } as unknown as StructureRoad;
 
     const mockRoom: RoomLike = {
@@ -92,7 +105,7 @@ describe("Tower Repair Priority System", () => {
         findClosestByRange: vi.fn()
       } as unknown as RoomPosition,
       store: {
-        getUsedCapacity: vi.fn(() => 400) // Below 500 threshold
+        getUsedCapacity: vi.fn(() => TOWER_ENERGY_BELOW_THRESHOLD) // Below 500 threshold
       } as unknown as StoreDefinition,
       attack: vi.fn(() => OK),
       heal: vi.fn(() => OK),
@@ -103,8 +116,8 @@ describe("Tower Repair Priority System", () => {
       id: "road1" as Id<StructureRoad>,
       structureType: STRUCTURE_ROAD,
       pos: { x: 20, y: 20 } as RoomPosition,
-      hits: 1000,
-      hitsMax: 5000
+      hits: ROAD_HITS,
+      hitsMax: ROAD_MAX_HITS
     } as unknown as StructureRoad;
 
     const mockRoom: RoomLike = {
@@ -152,7 +165,7 @@ describe("Tower Repair Priority System", () => {
         findClosestByRange: vi.fn()
       } as unknown as RoomPosition,
       store: {
-        getUsedCapacity: vi.fn(() => 600)
+        getUsedCapacity: vi.fn(() => TOWER_ENERGY_ABOVE_THRESHOLD)
       } as unknown as StoreDefinition,
       attack: vi.fn(() => OK),
       heal: vi.fn(() => OK),
@@ -164,8 +177,8 @@ describe("Tower Repair Priority System", () => {
       id: "container1" as Id<StructureContainer>,
       structureType: STRUCTURE_CONTAINER,
       pos: { x: 20, y: 20 } as RoomPosition,
-      hits: 100000,
-      hitsMax: 250000
+      hits: CONTAINER_HITS,
+      hitsMax: CONTAINER_MAX_HITS
     } as unknown as StructureContainer;
 
     // Low: tower at 70% health
@@ -173,8 +186,8 @@ describe("Tower Repair Priority System", () => {
       id: "tower2" as Id<StructureTower>,
       structureType: STRUCTURE_TOWER,
       pos: { x: 30, y: 30 } as RoomPosition,
-      hits: 2100,
-      hitsMax: 3000
+      hits: TOWER_HITS,
+      hitsMax: TOWER_MAX_HITS
     } as unknown as StructureTower;
 
     const mockRoom: RoomLike = {
@@ -227,7 +240,7 @@ describe("Tower Repair Priority System", () => {
         findClosestByRange: vi.fn()
       } as unknown as RoomPosition,
       store: {
-        getUsedCapacity: vi.fn(() => 600)
+        getUsedCapacity: vi.fn(() => TOWER_ENERGY_ABOVE_THRESHOLD)
       } as unknown as StoreDefinition,
       attack: vi.fn(() => OK),
       heal: vi.fn(() => OK),
@@ -240,7 +253,7 @@ describe("Tower Repair Priority System", () => {
       structureType: STRUCTURE_ROAD,
       pos: { x: 20, y: 20 } as RoomPosition,
       hits: 2000,
-      hitsMax: 5000
+      hitsMax: ROAD_MAX_HITS
     } as unknown as StructureRoad;
 
     // Same priority, far target (>30 tiles)
@@ -249,7 +262,7 @@ describe("Tower Repair Priority System", () => {
       structureType: STRUCTURE_ROAD,
       pos: { x: 40, y: 40 } as RoomPosition,
       hits: 2000,
-      hitsMax: 5000
+      hitsMax: ROAD_MAX_HITS
     } as unknown as StructureRoad;
 
     const mockRoom: RoomLike = {
@@ -297,7 +310,7 @@ describe("Tower Repair Priority System", () => {
         findClosestByRange: vi.fn()
       } as unknown as RoomPosition,
       store: {
-        getUsedCapacity: vi.fn(() => 600)
+        getUsedCapacity: vi.fn(() => TOWER_ENERGY_ABOVE_THRESHOLD)
       } as unknown as StoreDefinition,
       attack: vi.fn(() => OK),
       heal: vi.fn(() => OK),
@@ -309,7 +322,7 @@ describe("Tower Repair Priority System", () => {
       structureType: STRUCTURE_ROAD,
       pos: { x: 20, y: 20 } as RoomPosition,
       hits: 2000, // 40% health
-      hitsMax: 5000
+      hitsMax: ROAD_MAX_HITS
     } as unknown as StructureRoad;
 
     const mockRoom: RoomLike = {
@@ -357,7 +370,7 @@ describe("Tower Repair Priority System", () => {
         findClosestByRange: vi.fn()
       } as unknown as RoomPosition,
       store: {
-        getUsedCapacity: vi.fn(() => 600)
+        getUsedCapacity: vi.fn(() => TOWER_ENERGY_ABOVE_THRESHOLD)
       } as unknown as StoreDefinition,
       attack: vi.fn(() => OK),
       heal: vi.fn(() => OK),
