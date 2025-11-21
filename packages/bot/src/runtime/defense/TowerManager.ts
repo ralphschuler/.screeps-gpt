@@ -1,6 +1,7 @@
 import type { RoomLike } from "@runtime/types/GameContext";
 import { profile } from "@ralphschuler/screeps-profiler";
 import { WallUpgradeManager } from "./WallUpgradeManager";
+import { RepairPriority, type RepairTarget } from "@shared/contracts";
 
 /**
  * Threat assessment for hostile creeps
@@ -23,21 +24,35 @@ type TowerAction = "attack" | "heal" | "repair";
  */
 @profile
 export class TowerManager {
+  // Constants for repair priority thresholds
+  private static readonly HIGH_PRIORITY_THRESHOLD = 0.5; // 50% health for high-priority structures
+  private static readonly WALL_REPAIR_THRESHOLD = 0.8; // 80% for walls/ramparts
+  private static readonly HEALTH_DIFFERENCE_THRESHOLD = 0.05; // 5% health difference for sorting
+
+  // Constants for distance-based efficiency
+  private static readonly FULL_EFFICIENCY_RANGE = 10; // Full repair power within 10 tiles
+  private static readonly MAX_EFFICIENCY_RANGE = 30; // Max range for reasonable efficiency
+  private static readonly MIN_EFFICIENCY = 0.1; // Minimum efficiency for very far structures
+  private static readonly EFFICIENCY_DECAY_FACTOR = 20; // Linear decay factor from 10-30 tiles
+
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly repairThreshold: number;
   private readonly criticalRepairThreshold: number;
   private readonly wallUpgradeManager: WallUpgradeManager;
+  private readonly minEnergyForRepair: number;
 
   public constructor(
     logger: Pick<Console, "log" | "warn"> = console,
     repairThreshold: number = 0.8, // Repair structures below 80% health
-    criticalRepairThreshold: number = 0.3, // Critical repair below 30%
-    wallUpgradeManager?: WallUpgradeManager
+    criticalRepairThreshold: number = 0.2, // Critical repair below 20%
+    wallUpgradeManager?: WallUpgradeManager,
+    minEnergyForRepair: number = 500 // Reserve energy for defense
   ) {
     this.logger = logger;
     this.repairThreshold = repairThreshold;
     this.criticalRepairThreshold = criticalRepairThreshold;
     this.wallUpgradeManager = wallUpgradeManager ?? new WallUpgradeManager();
+    this.minEnergyForRepair = minEnergyForRepair;
   }
 
   /**
@@ -199,26 +214,107 @@ export class TowerManager {
   }
 
   /**
-   * Select the best structure to repair
+   * Select the best structure to repair using priority-based targeting
    */
   private selectRepairTarget(tower: StructureTower, structures: Structure[]): Structure | null {
     if (structures.length === 0) {
       return null;
     }
 
-    // Prioritize critical structures
-    const critical = structures.filter(s => {
-      const healthPercent = s.hits / s.hitsMax;
-      return healthPercent < this.criticalRepairThreshold;
-    });
-
-    if (critical.length > 0) {
-      // Repair most damaged critical structure
-      return critical.sort((a, b) => a.hits / a.hitsMax - b.hits / b.hitsMax)[0];
+    // Check if tower has enough energy for repairs (reserve for defense)
+    if (tower.store.getUsedCapacity(RESOURCE_ENERGY) < this.minEnergyForRepair) {
+      return null;
     }
 
-    // Otherwise repair closest damaged structure
-    return tower.pos.findClosestByRange(structures) ?? structures[0];
+    // Build repair targets with priority and efficiency
+    const targets: RepairTarget[] = structures.map(structure => {
+      const distance = tower.pos.getRangeTo(structure.pos);
+      const healthPercent = structure.hits / structure.hitsMax;
+
+      return {
+        structure,
+        priority: this.calculateRepairPriority(structure, healthPercent),
+        healthPercent,
+        distance,
+        efficiency: this.calculateRepairEfficiency(distance)
+      };
+    });
+
+    // Filter to only viable targets (efficiency > 0)
+    const viableTargets = targets.filter(t => t.efficiency > 0);
+
+    if (viableTargets.length === 0) {
+      return null;
+    }
+
+    // Sort by priority (descending), then by health percent (ascending), then by efficiency (descending)
+    viableTargets.sort((a, b) => {
+      // Primary: Priority (higher first)
+      if (a.priority !== b.priority) {
+        return b.priority - a.priority;
+      }
+      // Secondary: Health percent (lower first)
+      if (Math.abs(a.healthPercent - b.healthPercent) > TowerManager.HEALTH_DIFFERENCE_THRESHOLD) {
+        return a.healthPercent - b.healthPercent;
+      }
+      // Tertiary: Efficiency (higher first for same priority and similar health)
+      return b.efficiency - a.efficiency;
+    });
+
+    return viableTargets[0].structure;
+  }
+
+  /**
+   * Calculate repair priority tier for a structure
+   */
+  private calculateRepairPriority(structure: Structure, healthPercent: number): RepairPriority {
+    // Critical: <20% health - prevent destruction
+    if (healthPercent < this.criticalRepairThreshold) {
+      return RepairPriority.CRITICAL;
+    }
+
+    // High: Spawn, extensions, storage, containers <50%
+    if (
+      healthPercent < TowerManager.HIGH_PRIORITY_THRESHOLD &&
+      (structure.structureType === STRUCTURE_SPAWN ||
+        structure.structureType === STRUCTURE_EXTENSION ||
+        structure.structureType === STRUCTURE_STORAGE ||
+        structure.structureType === STRUCTURE_CONTAINER)
+    ) {
+      return RepairPriority.HIGH;
+    }
+
+    // Medium: Roads <50%, walls/ramparts <80%
+    if (
+      (structure.structureType === STRUCTURE_ROAD && healthPercent < TowerManager.HIGH_PRIORITY_THRESHOLD) ||
+      (structure.structureType === STRUCTURE_WALL && healthPercent < TowerManager.WALL_REPAIR_THRESHOLD) ||
+      (structure.structureType === STRUCTURE_RAMPART && healthPercent < TowerManager.WALL_REPAIR_THRESHOLD)
+    ) {
+      return RepairPriority.MEDIUM;
+    }
+
+    // Low: Everything else needing maintenance
+    return RepairPriority.LOW;
+  }
+
+  /**
+   * Calculate repair efficiency based on distance
+   * Towers have full repair power (800) within 10 tiles, decreasing to 200 at 30+ tiles
+   */
+  private calculateRepairEfficiency(distance: number): number {
+    // Full efficiency within FULL_EFFICIENCY_RANGE tiles
+    if (distance <= TowerManager.FULL_EFFICIENCY_RANGE) {
+      return 1.0;
+    }
+
+    // Decreasing efficiency between FULL_EFFICIENCY_RANGE and MAX_EFFICIENCY_RANGE
+    if (distance <= TowerManager.MAX_EFFICIENCY_RANGE) {
+      const distanceBeyondFull = distance - TowerManager.FULL_EFFICIENCY_RANGE;
+      return 1.0 - (distanceBeyondFull / TowerManager.EFFICIENCY_DECAY_FACTOR) * 0.75; // Linear decrease from 1.0 to 0.25
+    }
+
+    // Very low efficiency beyond MAX_EFFICIENCY_RANGE - deprioritize
+    return TowerManager.MIN_EFFICIENCY;
   }
 
   /**

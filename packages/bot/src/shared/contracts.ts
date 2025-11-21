@@ -68,6 +68,27 @@ export enum TaskPriority {
 export type TaskStatus = "PENDING" | "INPROCESS" | "COMPLETE" | "FAILED";
 
 /**
+ * Repair priority tiers for tower repair targeting
+ */
+export enum RepairPriority {
+  CRITICAL = 4, // <20% health - prevent destruction
+  HIGH = 3, // Spawn/extensions/containers <50%
+  MEDIUM = 2, // Roads <50%, walls/ramparts <80% of target
+  LOW = 1 // Full health maintenance
+}
+
+/**
+ * Enhanced repair target with priority and efficiency scoring
+ */
+export interface RepairTarget {
+  structure: Structure;
+  priority: RepairPriority;
+  healthPercent: number;
+  distance: number;
+  efficiency: number; // Repair power efficiency based on distance
+}
+
+/**
  * Base interface for all task types in the task system.
  * Tasks represent discrete units of work that can be assigned to creeps.
  */
