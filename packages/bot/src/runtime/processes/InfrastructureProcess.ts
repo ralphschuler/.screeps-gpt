@@ -58,7 +58,7 @@ export class InfrastructureProcess {
     }
 
     // Handle road planning if triggered by BootstrapProcess
-    const roadPlanningStatus = memory.roadPlanningStatus;
+    const roadPlanningStatus = memory.roadPlanningStatus as { shouldPlan: boolean; roomName: string; reason: string } | undefined;
     if (roadPlanningStatus?.shouldPlan && roadPlanningStatus.roomName) {
       this.logger.log?.(
         `[InfrastructureProcess] Road planning triggered for ${roadPlanningStatus.roomName}: ${roadPlanningStatus.reason}`
@@ -80,14 +80,11 @@ export class InfrastructureProcess {
           );
         }
 
-        // Mark roads as planned (need to import BootstrapPhaseManager method or use memory directly)
-        if (!memory.bootstrap) {
-          memory.bootstrap = { rooms: {} };
-        }
-        if (!memory.bootstrap.rooms[roadPlanningStatus.roomName]) {
-          memory.bootstrap.rooms[roadPlanningStatus.roomName] = { phase: "phase1", startTick: gameContext.time };
-        }
-        memory.bootstrap.rooms[roadPlanningStatus.roomName].roadsPlanned = true;
+        // Mark roads as planned
+        memory.bootstrap ??= { rooms: {} };
+        const bootstrapRooms = (memory.bootstrap as { rooms: Record<string, { phase: string; startTick: number; roadsPlanned?: boolean }> }).rooms;
+        bootstrapRooms[roadPlanningStatus.roomName] ??= { phase: "phase1", startTick: gameContext.time };
+        bootstrapRooms[roadPlanningStatus.roomName].roadsPlanned = true;
       }
 
       // Clear road planning status

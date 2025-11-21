@@ -66,7 +66,13 @@ export class MetricsProcess {
     }
 
     // Get behavior summary from memory (set by BehaviorProcess)
-    const behaviorSummary = memory.behaviorSummary ?? {
+    const behaviorSummaryFromMemory = memory.behaviorSummary as {
+      processedCreeps: number;
+      spawnedCreeps: string[];
+      tasksExecuted: Record<string, number>;
+    } | undefined;
+    
+    const behaviorSummary = behaviorSummaryFromMemory ?? {
       processedCreeps: 0,
       spawnedCreeps: [],
       tasksExecuted: {}
@@ -88,7 +94,11 @@ export class MetricsProcess {
 
     // Evaluate system health and store report
     const repository = this.repositorySignalProvider?.();
-    const memoryUtilization = memory.memoryUtilization;
+    const memoryUtilization = memory.memoryUtilization as {
+      used: number;
+      limit: number;
+      percent: number;
+    } | undefined;
     const result = this.evaluator.evaluateAndStore(memory, snapshot, repository, memoryUtilization);
 
     // Generate pixel if bucket is full

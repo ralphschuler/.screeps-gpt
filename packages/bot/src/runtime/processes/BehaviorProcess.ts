@@ -50,7 +50,7 @@ export class BehaviorProcess {
     const roleCounts = memory.roles ?? {};
 
     // Get bootstrap role minimums if bootstrap is active
-    const bootstrapStatus = memory.bootstrapStatus;
+    const bootstrapStatus = memory.bootstrapStatus as { isActive: boolean } | undefined;
     const bootstrapMinimums = bootstrapStatus?.isActive
       ? {
           harvester: 2,
