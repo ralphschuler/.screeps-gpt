@@ -13,7 +13,7 @@ import { SystemEvaluator } from "@runtime/evaluation/SystemEvaluator";
  * - Stats collection for monitoring
  * - Pixel generation when bucket is full
  * - System evaluation and health reports
- * 
+ *
  * Priority: 10 (lowest) - Run last to capture complete tick metrics
  */
 @registerProcess({ name: "MetricsProcess", priority: 10, singleton: true })
@@ -57,7 +57,7 @@ export class MetricsProcess {
 
     // Get behavior summary from memory (set by BehaviorProcess)
     const behaviorSummaryFromMemory = memory.behaviorSummary as BehaviorSummary | undefined;
-    
+
     const behaviorSummary: BehaviorSummary = behaviorSummaryFromMemory ?? {
       processedCreeps: 0,
       spawnedCreeps: [],

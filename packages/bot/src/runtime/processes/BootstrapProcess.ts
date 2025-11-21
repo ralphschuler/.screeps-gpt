@@ -9,7 +9,7 @@ import { BootstrapPhaseManager } from "@runtime/bootstrap/BootstrapPhaseManager"
  * - RCL phase transitions
  * - Road planning for Phase 1 completion
  * - Storage status checking for Phase 2
- * 
+ *
  * Priority: 80 (high) - Must run before infrastructure and behavior
  */
 @registerProcess({ name: "BootstrapProcess", priority: 80, singleton: true })
@@ -72,7 +72,7 @@ export class BootstrapProcess {
 
     // Check if road planning is needed for Phase 1 completion
     const roadPlanningStatus = this.bootstrapManager.checkRoadPlanningNeeded(gameContext, memory);
-    
+
     // Store road planning status for InfrastructureProcess to handle
     memory.roadPlanningStatus = roadPlanningStatus;
   }

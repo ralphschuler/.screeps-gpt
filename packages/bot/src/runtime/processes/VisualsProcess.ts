@@ -8,7 +8,7 @@ import { RoomVisualManager } from "@runtime/visuals/RoomVisualManager";
  * - Rendering room visuals
  * - Displaying creep states and tasks
  * - Showing resource flows and priorities
- * 
+ *
  * Priority: 20 (low) - Non-critical, run late to preserve CPU for gameplay
  */
 @registerProcess({ name: "VisualsProcess", priority: 20, singleton: true })

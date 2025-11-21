@@ -12,7 +12,7 @@ import { CombatManager, type CombatManagerMemory } from "@runtime/defense/Combat
  * - Tower management and targeting
  * - Combat coordination and squad management
  * - Defensive posture management
- * 
+ *
  * Priority: 90 (high) - Must run early to respond to threats
  */
 @registerProcess({ name: "DefenseProcess", priority: 90, singleton: true })

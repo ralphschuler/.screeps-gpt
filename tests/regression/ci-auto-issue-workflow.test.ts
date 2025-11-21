@@ -196,7 +196,7 @@ describe("CI Auto Issue Workflow", () => {
     const workflow = yaml.parse(content);
 
     const monitoredWorkflows = workflow.on.workflow_run.workflows;
-    
+
     // Should monitor important workflows
     expect(monitoredWorkflows).toContain("Deploy Screeps AI");
     expect(monitoredWorkflows).toContain("Guard - Build");

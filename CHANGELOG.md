@@ -26,6 +26,7 @@ All notable changes to this project are documented here. This changelog now main
 ### Rationale
 
 This refactoring improves maintainability and predictability:
+
 - **Separation of concerns**: Data collection vs. analysis
 - **Predictability**: Issue creation is more predictable than auto-fixing
 - **Transparency**: Issues provide visible tracking of CI problems

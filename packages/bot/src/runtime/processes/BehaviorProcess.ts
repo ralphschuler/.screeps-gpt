@@ -10,7 +10,7 @@ import { BehaviorController } from "@runtime/behavior/BehaviorController";
  * - Executing creep behavior (harvesting, upgrading, building, etc.)
  * - Managing creep tasks and state
  * - CPU budget management for creep operations
- * 
+ *
  * Priority: 50 (standard) - Main gameplay process
  */
 @registerProcess({ name: "BehaviorProcess", priority: 50, singleton: true })
@@ -21,10 +21,13 @@ export class BehaviorProcess {
 
   public constructor() {
     this.logger = console;
-    this.behavior = new BehaviorController({
-      cpuSafetyMargin: 0.8,
-      maxCpuPerCreep: 1.5
-    }, this.logger);
+    this.behavior = new BehaviorController(
+      {
+        cpuSafetyMargin: 0.8,
+        maxCpuPerCreep: 1.5
+      },
+      this.logger
+    );
     this.cpuEmergencyThreshold = 0.9;
   }
 
@@ -60,12 +63,7 @@ export class BehaviorProcess {
       : {};
 
     // Execute behavior (spawning and creep control)
-    const behaviorSummary: BehaviorSummary = this.behavior.execute(
-      gameContext,
-      memory,
-      roleCounts,
-      bootstrapMinimums
-    );
+    const behaviorSummary: BehaviorSummary = this.behavior.execute(gameContext, memory, roleCounts, bootstrapMinimums);
 
     // Store behavior summary in memory for metrics process
     memory.behaviorSummary = behaviorSummary;

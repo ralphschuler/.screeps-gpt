@@ -48,7 +48,7 @@ Integrated Copilot workflows update project status automatically:
 - On completion: Status → "Under Review", Automation State → "PR Created"
 - Tracks automated implementation from start to PR creation
 
-**Note**: CI AutoFix and Repository Audit workflows do not currently update project status due to GitHub Projects limitation - workflow runs cannot be tracked as project items (only issues, PRs, and discussions are supported).
+**Note**: CI Auto Issue and Repository Audit workflows do not currently update project status due to GitHub Projects limitation - workflow runs cannot be tracked as project items (only issues, PRs, and discussions are supported). However, CI Auto Issue creates tracking issues which can be added to projects.
 
 ### Project Board Configuration
 
@@ -129,7 +129,7 @@ The `copilot-exec` action includes several performance optimizations to reduce w
 4. **Result Caching**: Caches Copilot CLI output based on prompt SHA and model to avoid redundant AI calls for identical inputs
 5. **Timing Measurements**: Provides detailed execution timing in verbose mode for performance monitoring
 
-These optimizations significantly reduce workflow execution time, particularly for workflows that run frequently like issue triage and CI autofix.
+These optimizations significantly reduce workflow execution time, particularly for workflows that run frequently like issue triage and monitoring.
 
 ### Workflow Caching Strategy
 
@@ -283,17 +283,6 @@ All specialized agents are located in `.github/actions/copilot-*-agent/` directo
 - **Required Inputs**: `copilot-token`, `issue-number`, `issue-title`, `issue-url`, `issue-author`
 - **Used By**: `copilot-todo-pr.yml`
 
-**copilot-ci-autofix-agent** (`.github/actions/copilot-ci-autofix-agent/`):
-
-- **Purpose**: CI failure resolution and automated fixes
-- **Key Features**:
-  - Intelligent failure classification (lint, format, compilation, etc.)
-  - Specialized fix strategies per failure type
-  - Context-aware branch strategy (PR vs main vs feature)
-  - Manual review escalation for complex issues
-- **Required Inputs**: `copilot-token`, `workflow-name`, `run-id`, `run-url`, `trigger-event`
-- **Used By**: `copilot-ci-autofix.yml`
-
 ### Usage Examples
 
 **Using the Triage Agent:**
@@ -308,19 +297,6 @@ All specialized agents are located in `.github/actions/copilot-*-agent/` directo
     issue-body: ${{ toJSON(github.event.issue.body || '') }}
     issue-url: ${{ toJSON(github.event.issue.html_url) }}
     issue-author: ${{ toJSON(github.event.issue.user.login) }}
-```
-
-**Using the CI AutoFix Agent:**
-
-```yaml
-- name: Auto-fix CI failure
-  uses: ./.github/actions/copilot-ci-autofix-agent
-  with:
-    copilot-token: ${{ secrets.COPILOT_TOKEN }}
-    workflow-name: ${{ toJSON(github.event.workflow_run.name) }}
-    run-id: ${{ github.event.workflow_run.id }}
-    run-url: ${{ toJSON(github.event.workflow_run.html_url) }}
-    trigger-event: ${{ toJSON(github.event.workflow_run.event) }}
 ```
 
 **Using the Audit Agent:**
@@ -587,14 +563,13 @@ This architecture allows guards to fail fast individually while the summary prov
   - Extracting the changelog section for the specified version
   - Using Copilot to generate a detailed blog post with design rationale and implementation context
   - Creating proper front matter (title, date, categories, tags) based on release content
-  - Writing blog post to `packages/docs/source/_posts/release-{version-slug}.md`
+  - Writing blog post to `source/_posts/release-{version-slug}.md`
   - Including technical deep-dives that explain WHY decisions were made, not just WHAT changed
   - Referencing specific files, functions, and modules with architectural context
   - Connecting features to broader project goals (autonomous development, workflow automation)
 - Integration: Works seamlessly with the release process - `post-merge-release.yml` creates version tags which automatically trigger blog post generation.
 - Output: Blog posts are committed directly to the repository, triggering `docs-pages.yml` to rebuild and deploy the documentation site.
 - Manual Execution: Use workflow_dispatch with version parameter (e.g., "0.12.0") to generate blog posts for existing releases.
-- Bulk Generation: Use `bun run docs:generate-blog-posts` script to generate blog posts for all missing releases at once.
 - Validation: Checks if blog post already exists before generation to avoid duplicates.
 - Content Style: Technical but accessible, targeting developers interested in Screeps automation and AI-driven development.
 - Target Length: 800-1500 words depending on release complexity.
@@ -852,30 +827,23 @@ Potential improvements for report storage infrastructure:
 - Trigger: Manual dispatch or pushes to `main`.
 - Behaviour: Ensures the repository's labels match `.github/labels.yml`.
 
-## Copilot CI AutoFix (`copilot-ci-autofix.yml`)
+## CI Auto Issue (`ci-auto-issue.yml`)
 
-- Trigger: Failed runs of any workflow except `Copilot CI AutoFix` itself (to prevent infinite loops).
-- Behaviour: Copilot downloads the failing logs, analyzes the workflow context (PR vs non-PR trigger), clones the affected branch, applies the fix with changelog/docs/tests updates, and pushes the result based on context-aware decision logic.
-- Context Awareness: The workflow passes `TRIGGER_EVENT` and event payload to enable intelligent decision-making about fix application strategy.
-- Timeout & Logging: Configured with 45-minute timeout and verbose logging enabled for comprehensive debugging and performance monitoring.
-- **Enhanced Failure Classification**: Autofix now categorizes failures into specific types (linting, formatting, compilation, dependency, documentation, version sync) with specialized fix strategies for each category.
-- **Improved Error Context Gathering**: Downloads full logs, extracts error indicators with surrounding context, identifies affected files, and checks for related failures across recent workflow runs.
-- **Specialized Fix Strategies**:
-  - **Linting Failures**: Auto-runs `bun run lint:fix` for ESLint/YAML violations
-  - **Formatting Failures**: Auto-runs `bun run format:write` for Prettier inconsistencies
-  - **Version Index Sync**: Auto-runs `bun run versions:update` for changelog misalignment
-  - **Simple Compilation Errors**: Fixes missing imports, typos, and type mismatches
-  - **Documentation Failures**: Fixes broken links and outdated examples
-  - **Dependency Conflicts**: Updates lockfiles and resolves version incompatibilities
-- **Manual Review Escalation**: Complex failures (test logic errors, security issues, performance regressions, workflow config errors) automatically create issues with `help-wanted` and `state/pending` labels instead of attempting risky automatic fixes.
-- Fix Application Strategy:
-  - **PR-triggered failures**: Commits directly to the PR branch for fast iteration
-  - **Main branch failures**: Creates new PR (`copilot/autofix-{run_id}`) to avoid direct commits to protected branches
-  - **Feature branch failures**: Commits directly to the feature branch
-  - **Scheduled/manual triggers**: Creates new PR for review and validation
-- Branch Protection: Never pushes directly to `main` or production branches - always creates a PR to maintain audit trail and review process.
-- **Output Metrics**: JSON output includes failure_type, fix_strategy, validation_commands, and files_changed for performance tracking and improvement analysis.
-- Action Enforcement: Mandatory root cause analysis, failure classification, minimal targeted fixes with validation, explicit criteria for fix appropriateness, and comprehensive failure handling for complex issues.
+- Trigger: Failed runs of any workflow except `CI Auto Issue` itself (to prevent infinite loops).
+- Behaviour: Automatically creates GitHub issues to track CI failures for manual review and resolution.
+- **Circuit Breaker Pattern**: Implements intelligent throttling to prevent alert fatigue:
+  - Tracks consecutive failures (max: 3)
+  - 15-minute backoff period after threshold
+  - Creates escalation issues when circuit breaker trips
+- **Issue Creation**:
+  - Checks for existing issues to avoid duplicates
+  - Includes workflow details, failed jobs, commit info, and run URLs
+  - Applies labels: `automation`, `ci-failure`, `type/bug`, `priority/high`, `state/pending`
+  - Updates existing issues with new failure information
+- **Workflow Details**: Fetches run information and lists all failed jobs for context
+- **Escalation Issues**: Created when circuit breaker trips with `priority/critical` and `ci-escalation` labels
+- **Email Notifications**: Sends high-priority email alerts for CI failures
+- **Design Philosophy**: Issue creation is more predictable and transparent than automatic fixes, providing visible tracking and manual control
 
 ## Stale Issue Management (`stale-issue-management.yml`)
 
@@ -960,7 +928,6 @@ Standardized naming conventions for clarity:
 
 - `issue-triage` - GitHub issue triage and reformulation
 - `todo-automation` - Automated issue implementation (renamed from `todo-issue`)
-- `ci-autofix` - Continuous integration failure remediation
 - `repository-review` - Comprehensive repository auditing (renamed from `repository-audit`)
 - `email-triage` - Email to GitHub issue conversion
 - `stats-analysis` - Screeps telemetry monitoring and anomaly detection
@@ -969,18 +936,6 @@ Standardized naming conventions for clarity:
 ### Action Appropriateness Criteria
 
 Each prompt includes explicit criteria for when automatic actions are appropriate versus when manual intervention is required. This prevents inappropriate automation and ensures quality outcomes.
-
-For example, CI autofix only attempts repairs for:
-
-- ✅ Linting/formatting violations
-- ✅ Simple compilation errors
-- ✅ Broken tests due to trivial changes
-
-But creates issues for manual review when encountering:
-
-- ❌ Complex logic errors requiring design decisions
-- ❌ Security vulnerabilities needing careful review
-- ❌ Breaking changes affecting public APIs
 
 ---
 

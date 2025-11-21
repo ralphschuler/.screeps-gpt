@@ -9,7 +9,7 @@ import { EmpireManager } from "@runtime/empire";
  * - Remote mining coordination
  * - Room expansion planning
  * - Inter-room logistics
- * 
+ *
  * Priority: 65 (medium-high) - Must run before behavior but after infrastructure
  */
 @registerProcess({ name: "EmpireProcess", priority: 65, singleton: true })

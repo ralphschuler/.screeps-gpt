@@ -180,14 +180,16 @@ jobs:
               run_id: context.payload.workflow_run.id
             });
 
-            const { data: jobs } = await github.rest.actions.listJobsForWorkflowRun({
+            const jobsParams = {
               owner: context.repo.owner,
               repo: context.repo.repo,
               run_id: context.payload.workflow_run.id
-            });
+            };
+            const { data: jobs } =
+              await github.rest.actions.listJobsForWorkflowRun(jobsParams);
 
-            const failedJobs = jobs.jobs.filter(job => job.conclusion === 'failure');
-            
+            const failedJobs =
+              jobs.jobs.filter(job => job.conclusion === 'failure');
             core.setOutput('run-details', JSON.stringify({
               workflow: run.name,
               branch: run.head_branch,
@@ -203,7 +205,9 @@ jobs:
             const workflowName = '${{ github.event.workflow_run.name }}';
             const runUrl = '${{ github.event.workflow_run.html_url }}';
             const branch = '${{ github.event.workflow_run.head_branch }}';
-            const runDetails = JSON.parse('${{ steps.workflow-details.outputs.run-details }}');
+            const runDetailsOutput =
+              '${{ steps.workflow-details.outputs.run-details }}';
+            const runDetails = JSON.parse(runDetailsOutput);
 
             // Check for existing open issue with same workflow and branch
             const listParams = {
@@ -295,11 +299,13 @@ jobs:
               '',
               '### Additional Information',
               '',
-              'This issue was automatically created by the CI Auto Issue workflow.',
-              'The workflow monitors CI/CD failures and creates issues for manual review.',
+              'This issue was automatically created by the',
+              'CI Auto Issue workflow. The workflow monitors CI/CD failures',
+              'and creates issues for manual review.',
               '',
-              'If this failure is related to a known issue or is transient,',
-              'you may close this issue with a comment explaining the situation.',
+              'If this failure is related to a known issue or is',
+              'transient, you may close this issue with a comment',
+              'explaining the situation.',
               '',
               '---',
               '*Automatically created by CI Auto Issue workflow.*'
