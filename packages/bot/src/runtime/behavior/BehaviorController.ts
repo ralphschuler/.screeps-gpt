@@ -6,6 +6,7 @@ import { EnergyPriorityManager, DEFAULT_ENERGY_CONFIG } from "@runtime/energy";
 import { BodyComposer } from "./BodyComposer";
 import { WallUpgradeManager } from "@runtime/defense/WallUpgradeManager";
 import { isCreepDying, handleDyingCreepEnergyDrop } from "./creepHelpers";
+import { ScoutManager } from "@runtime/scouting/ScoutManager";
 
 type RoleName =
   | "harvester"
