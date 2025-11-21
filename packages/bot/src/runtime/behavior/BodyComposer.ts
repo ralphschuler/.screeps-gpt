@@ -69,6 +69,14 @@ export class BodyComposer {
         pattern: [WORK, MOVE]
       },
 
+      // Remote Hauler: Carry-heavy for long-distance energy transport
+      // Base: 4 CARRY, 4 MOVE (400 energy)
+      // Pattern: 2 CARRY, 1 MOVE (prioritize carry capacity for remote hauling)
+      remoteHauler: {
+        base: [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE],
+        pattern: [CARRY, CARRY, MOVE]
+      },
+
       // Stationary Harvester: Maximum work parts for container harvesting
       // Base: 5 WORK, 1 MOVE (550 energy)
       // Pattern: 1 WORK (maximize harvesting efficiency)

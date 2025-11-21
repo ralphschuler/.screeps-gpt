@@ -6,12 +6,14 @@ import { EnergyPriorityManager, DEFAULT_ENERGY_CONFIG } from "@runtime/energy";
 import { BodyComposer } from "./BodyComposer";
 import { WallUpgradeManager } from "@runtime/defense/WallUpgradeManager";
 import { isCreepDying, handleDyingCreepEnergyDrop } from "./creepHelpers";
+import { ScoutManager } from "@runtime/scouting/ScoutManager";
 
 type RoleName =
   | "harvester"
   | "upgrader"
   | "builder"
   | "remoteMiner"
+  | "remoteHauler"
   | "stationaryHarvester"
   | "hauler"
   | "repairer"
@@ -41,6 +43,7 @@ const HARVESTER_VERSION = 1;
 const UPGRADER_VERSION = 1;
 const BUILDER_VERSION = 1;
 const REMOTE_MINER_VERSION = 1;
+const REMOTE_HAULER_VERSION = 1;
 const STATIONARY_HARVESTER_VERSION = 1;
 const HAULER_VERSION = 1;
 const REPAIRER_VERSION = 1;
@@ -59,6 +62,9 @@ const BUILDER_MAINTAIN_TASK = "maintain" as const;
 const REMOTE_TRAVEL_TASK = "travel" as const;
 const REMOTE_MINE_TASK = "mine" as const;
 const REMOTE_RETURN_TASK = "return" as const;
+const REMOTE_HAULER_TRAVEL_TASK = "remoteTravel" as const;
+const REMOTE_HAULER_PICKUP_TASK = "remotePickup" as const;
+const REMOTE_HAULER_RETURN_TASK = "remoteReturn" as const;
 const STATIONARY_HARVEST_TASK = "stationaryHarvest" as const;
 const HAULER_PICKUP_TASK = "pickup" as const;
 const HAULER_DELIVER_TASK = "haulerDeliver" as const;
@@ -69,10 +75,28 @@ const HEALER_HEAL_TASK = "heal" as const;
 const DISMANTLER_DISMANTLE_TASK = "dismantle" as const;
 const CLAIMER_CLAIM_TASK = "claim" as const;
 
+// Constants for remote operations
+/**
+ * X coordinate of room center (rooms are 50x50, center is at 25,25).
+ * Used as a waypoint for inter-room navigation.
+ */
+const ROOM_CENTER_X = 25;
+/**
+ * Y coordinate of room center (rooms are 50x50, center is at 25,25).
+ * Used as a waypoint for inter-room navigation.
+ */
+const ROOM_CENTER_Y = 25;
+/**
+ * Minimum amount of dropped energy to pick up (in energy units).
+ * Lower values might be considered for early-game remote mining.
+ */
+const MIN_DROPPED_ENERGY_AMOUNT = 20;
+
 type HarvesterTask = typeof HARVEST_TASK | typeof DELIVER_TASK | typeof UPGRADE_TASK;
 type UpgraderTask = typeof RECHARGE_TASK | typeof UPGRADE_TASK;
 type BuilderTask = typeof BUILDER_GATHER_TASK | typeof BUILDER_BUILD_TASK | typeof BUILDER_MAINTAIN_TASK;
 type RemoteMinerTask = typeof REMOTE_TRAVEL_TASK | typeof REMOTE_MINE_TASK | typeof REMOTE_RETURN_TASK;
+type RemoteHaulerTask = typeof REMOTE_HAULER_TRAVEL_TASK | typeof REMOTE_HAULER_PICKUP_TASK | typeof REMOTE_HAULER_RETURN_TASK;
 type StationaryHarvesterTask = typeof STATIONARY_HARVEST_TASK;
 type HaulerTask = typeof HAULER_PICKUP_TASK | typeof HAULER_DELIVER_TASK;
 type RepairerTask = typeof REPAIRER_GATHER_TASK | typeof REPAIRER_REPAIR_TASK;
@@ -98,6 +122,12 @@ interface RemoteMinerMemory extends BaseCreepMemory {
   homeRoom: string;
   targetRoom: string;
   sourceId?: Id<Source>;
+}
+
+interface RemoteHaulerMemory extends BaseCreepMemory {
+  task: RemoteHaulerTask;
+  homeRoom: string;
+  targetRoom: string;
 }
 
 interface StationaryHarvesterMemory extends BaseCreepMemory {
@@ -209,6 +239,19 @@ const ROLE_DEFINITIONS: Record<RoleName, RoleDefinition> = {
       }) satisfies RemoteMinerMemory,
     run: (creep: ManagedCreep) => runRemoteMiner(creep)
   },
+  remoteHauler: {
+    minimum: 0,
+    body: [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE],
+    memory: () =>
+      ({
+        role: "remoteHauler",
+        task: REMOTE_HAULER_TRAVEL_TASK,
+        version: REMOTE_HAULER_VERSION,
+        homeRoom: "",
+        targetRoom: ""
+      }) satisfies RemoteHaulerMemory,
+    run: (creep: ManagedCreep) => runRemoteHauler(creep)
+  },
   stationaryHarvester: {
     minimum: 0,
     body: [WORK, WORK, WORK, WORK, WORK, MOVE],
@@ -317,6 +360,7 @@ export class BehaviorController {
   private readonly energyPriorityManager: EnergyPriorityManager;
   private readonly bodyComposer: BodyComposer;
   private readonly wallUpgradeManager: WallUpgradeManager;
+  private readonly scoutManager: ScoutManager;
 
   public constructor(options: BehaviorControllerOptions = {}, logger: Pick<Console, "log" | "warn"> = console) {
     this.logger = logger;
@@ -332,6 +376,7 @@ export class BehaviorController {
     this.bodyComposer = new BodyComposer();
     this.wallUpgradeManager = new WallUpgradeManager();
     wallUpgradeManager = this.wallUpgradeManager;
+    this.scoutManager = new ScoutManager(this.logger);
   }
 
   /**
@@ -837,7 +882,102 @@ export class BehaviorController {
       }
     }
 
+    // Remote mining activation based on RCL and scout data
+    // Only activate remote mining when:
+    // - Room has reached RCL 4+ (stable economy with containers/storage)
+    // - Scout data exists with suitable remote rooms
+    // - Energy surplus allows for additional creep investment
+    for (const room of Object.values(game.rooms)) {
+      if (!room.controller?.my) {
+        continue;
+      }
+
+      const rcl = room.controller.level;
+      
+      // Remote mining requires RCL 4+ for sustainable economy
+      if (rcl >= 4) {
+        // Check for available remote mining targets from scout data
+        const remoteTargets = this.getRemoteMiningTargets(room.name);
+        
+        if (remoteTargets.length > 0) {
+          // Spawn 1 remote miner per remote source (max 2 remote rooms to start)
+          const maxRemoteMiners = Math.min(remoteTargets.length * 2, 4);
+          adjustedMinimums.remoteMiner = maxRemoteMiners;
+          
+          // Spawn 1 remote hauler per remote room for energy transport
+          // Remote haulers are essential for efficient remote mining operations
+          const maxRemoteHaulers = Math.min(remoteTargets.length, 2);
+          adjustedMinimums.remoteHauler = maxRemoteHaulers;
+          
+          this.logger.log?.(
+            `[BehaviorController] Remote mining activated for ${room.name}: ` +
+              `${remoteTargets.length} target rooms, ${maxRemoteMiners} miners, ${maxRemoteHaulers} haulers`
+          );
+        }
+      }
+    }
+
     return adjustedMinimums;
+  }
+
+  /**
+   * Get suitable remote mining targets from scout data
+   */
+  private getRemoteMiningTargets(homeRoom: string): string[] {
+    // Ensure Memory.scout and Memory.scout.rooms are initialized to avoid timing dependency
+    if (!Memory.scout) {
+      Memory.scout = {} as any;
+    }
+    if (!Memory.scout.rooms) {
+      Memory.scout.rooms = {};
+    }
+    
+    // This will be populated by Memory.scout from ScoutingProcess
+    if (Object.keys(Memory.scout.rooms).length === 0) {
+      return [];
+    }
+
+    const scoutedRooms = Object.values(Memory.scout.rooms);
+    
+    // Get my username dynamically instead of hardcoding
+    const myUsername = Game.spawns[Object.keys(Game.spawns)[0]]?.owner?.username;
+    
+    const suitableRooms = scoutedRooms.filter(room => {
+      // Must have sources
+      if (room.sourceCount === 0) return false;
+      
+      // Must not be owned by another player
+      if (room.owned && room.owner !== myUsername) return false;
+      
+      // Must not be SK room
+      if (room.isSourceKeeper) return false;
+      
+      // Must not have hostiles
+      if (room.hostileCount > 0) return false;
+      
+      // Prefer rooms with reasonable path distance (within 3 rooms)
+      if (room.pathDistance && room.pathDistance > 3) return false;
+      
+      // Data must be recent (within 1000 ticks)
+      if (Game.time - room.lastScouted > 1000) return false;
+      
+      return true;
+    });
+
+    // Sort by path distance (closest first) and source count (more is better)
+    suitableRooms.sort((a, b) => {
+      const distA = a.pathDistance ?? 999;
+      const distB = b.pathDistance ?? 999;
+      
+      if (distA !== distB) {
+        return distA - distB;
+      }
+      
+      return b.sourceCount - a.sourceCount;
+    });
+
+    // Return top 2 rooms for remote mining
+    return suitableRooms.slice(0, 2).map(r => r.roomName);
   }
 
   private ensureRoleMinimums(
@@ -906,6 +1046,7 @@ export class BehaviorController {
         "stationaryHarvester",
         "repairer",
         "remoteMiner",
+        "remoteHauler",
         "dismantler",
         "claimer"
       ];
@@ -919,6 +1060,7 @@ export class BehaviorController {
         "stationaryHarvester",
         "repairer",
         "remoteMiner",
+        "remoteHauler",
         "attacker",
         "healer",
         "dismantler",
@@ -934,6 +1076,7 @@ export class BehaviorController {
         "hauler",
         "repairer",
         "remoteMiner",
+        "remoteHauler",
         "attacker",
         "healer",
         "dismantler",
@@ -1035,6 +1178,59 @@ export class BehaviorController {
       const creepMemory = definition.memory();
       if (isEmergency || harvesterCount === 0) {
         (creepMemory as BaseCreepMemory & { emergency?: boolean }).emergency = true;
+      }
+
+      // Assign remote mining targets for remoteMiner creeps
+      if (role === "remoteMiner" && room) {
+        const targets = this.getRemoteMiningTargets(room.name);
+        if (targets.length === 0) {
+          // No valid remote mining targets, abort spawn
+          this.logger.log?.(
+            `[BehaviorController] Aborting spawn of ${name} in ${room.name}: no remote mining targets available`
+          );
+          continue; // Skip this spawn and move to next role
+        }
+        // Assign target room based on existing remote miner count
+        const existingRemoteMiners = Object.values(game.creeps).filter(
+          c => c.memory.role === "remoteMiner"
+        ) as Array<{ memory: RemoteMinerMemory }>;
+        
+        // Distribute miners across target rooms
+        const targetIndex = existingRemoteMiners.length % targets.length;
+        const targetRoom = targets[targetIndex];
+        
+        (creepMemory as RemoteMinerMemory).homeRoom = room.name;
+        (creepMemory as RemoteMinerMemory).targetRoom = targetRoom;
+        
+        this.logger.log?.(
+          `[BehaviorController] Assigned ${name} to remote mine ${targetRoom} from ${room.name}`
+        );
+      }
+
+      // Assign remote hauling targets for remoteHauler creeps
+      if (role === "remoteHauler" && room) {
+        const targets = this.getRemoteMiningTargets(room.name);
+        if (targets.length === 0) {
+          this.logger.warn?.(
+            `[BehaviorController] WARNING: Attempted to spawn remoteHauler ${name} in ${room.name}, but no remote mining targets are available. Spawn aborted.`
+          );
+          continue; // Skip this spawn and move to next role
+        }
+        // Assign target room based on existing remote hauler count
+        const existingRemoteHaulers = Object.values(game.creeps).filter(
+          c => c.memory.role === "remoteHauler"
+        ) as Array<{ memory: RemoteHaulerMemory }>;
+        
+        // Distribute haulers across target rooms
+        const targetIndex = existingRemoteHaulers.length % targets.length;
+        const targetRoom = targets[targetIndex];
+        
+        (creepMemory as RemoteHaulerMemory).homeRoom = room.name;
+        (creepMemory as RemoteHaulerMemory).targetRoom = targetRoom;
+        
+        this.logger.log?.(
+          `[BehaviorController] Assigned ${name} to haul from ${targetRoom} to ${room.name}`
+        );
       }
 
       const result = spawn.spawnCreep(body, name, { memory: creepMemory });
@@ -1676,7 +1872,7 @@ function runRemoteMiner(creep: ManagedCreep): string {
 
     if (memory.targetRoom && creep.room.name !== memory.targetRoom) {
       creep.moveTo(
-        { pos: { x: 25, y: 25, roomName: memory.targetRoom } as unknown as RoomPosition },
+        { pos: { x: ROOM_CENTER_X, y: ROOM_CENTER_Y, roomName: memory.targetRoom } as unknown as RoomPosition },
         { reusePath: 50 }
       );
       return REMOTE_TRAVEL_TASK;
@@ -1713,7 +1909,7 @@ function runRemoteMiner(creep: ManagedCreep): string {
   comm?.say(creep, "deliver");
 
   if (memory.homeRoom && creep.room.name !== memory.homeRoom) {
-    creep.moveTo({ pos: { x: 25, y: 25, roomName: memory.homeRoom } as unknown as RoomPosition }, { reusePath: 50 });
+    creep.moveTo({ pos: { x: ROOM_CENTER_X, y: ROOM_CENTER_Y, roomName: memory.homeRoom } as unknown as RoomPosition }, { reusePath: 50 });
     return REMOTE_RETURN_TASK;
   }
 
@@ -1751,6 +1947,157 @@ function runRemoteMiner(creep: ManagedCreep): string {
   }
 
   return REMOTE_RETURN_TASK;
+}
+
+/**
+ * Ensure RemoteHauler task is valid and transitions properly
+ */
+function ensureRemoteHaulerTask(memory: RemoteHaulerMemory, creep: CreepLike): RemoteHaulerTask {
+  if (
+    memory.task !== REMOTE_HAULER_TRAVEL_TASK &&
+    memory.task !== REMOTE_HAULER_PICKUP_TASK &&
+    memory.task !== REMOTE_HAULER_RETURN_TASK
+  ) {
+    memory.task = REMOTE_HAULER_TRAVEL_TASK;
+    return memory.task;
+  }
+
+  // Transition from travel to pickup when in target room
+  if (memory.task === REMOTE_HAULER_TRAVEL_TASK && creep.room.name === memory.targetRoom) {
+    memory.task = REMOTE_HAULER_PICKUP_TASK;
+  }
+  // Transition from pickup to return when full
+  else if (memory.task === REMOTE_HAULER_PICKUP_TASK && creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+    memory.task = REMOTE_HAULER_RETURN_TASK;
+  }
+  // Transition from return to travel when empty and back home
+  else if (
+    memory.task === REMOTE_HAULER_RETURN_TASK &&
+    creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0 &&
+    creep.room.name === memory.homeRoom
+  ) {
+    memory.task = REMOTE_HAULER_TRAVEL_TASK;
+  }
+
+  return memory.task;
+}
+
+/**
+ * Executes the behavior for a remote hauler creep.
+ *
+ * Remote haulers transport energy from remote rooms back to the home room.
+ * They pick up energy from containers or dropped resources in remote rooms,
+ * then deliver it to storage/containers in the home room.
+ *
+ * @remarks
+ * State machine flow:
+ * - `travel`: Creep travels to the target (remote) room.
+ * - `pickup`: When the creep reaches the target room, it picks up energy from containers or dropped resources.
+ * - `return`: When the creep is full or there is no energy to pick up, it returns to the home room to deliver energy.
+ * - `travel`: When the creep is empty and back in the home room, it travels again to the target room.
+ *
+ * State flow: travel → pickup (when reaches target room) → return (when full or no energy) → travel (when empty at home)
+ *
+ * @param creep - The ManagedCreep instance representing the remote hauler
+ * @returns The current task string for the remote hauler
+ */
+function runRemoteHauler(creep: ManagedCreep): string {
+  const memory = creep.memory as RemoteHaulerMemory;
+  const task = ensureRemoteHaulerTask(memory, creep);
+  const comm = getComm();
+
+  // Ensure home and target room are set
+  if (!memory.homeRoom) {
+    memory.homeRoom = creep.room.name;
+  }
+  if (!memory.targetRoom) {
+    memory.targetRoom = memory.homeRoom;
+  }
+
+  if (task === REMOTE_HAULER_TRAVEL_TASK) {
+    comm?.say(creep, "➡️");
+
+    // Travel to target room
+    if (creep.room.name !== memory.targetRoom) {
+      creep.moveTo(
+        { pos: { x: ROOM_CENTER_X, y: ROOM_CENTER_Y, roomName: memory.targetRoom } as unknown as RoomPosition },
+        { reusePath: 50 }
+      );
+    }
+    return REMOTE_HAULER_TRAVEL_TASK;
+  }
+
+  if (task === REMOTE_HAULER_PICKUP_TASK) {
+    comm?.say(creep, "🔄");
+
+    // Pick up dropped energy first (highest priority)
+    const droppedEnergy = creep.room.find(FIND_DROPPED_RESOURCES, {
+      filter: r => r.resourceType === RESOURCE_ENERGY && r.amount >= MIN_DROPPED_ENERGY_AMOUNT
+    }) as Resource[];
+
+    if (droppedEnergy.length > 0) {
+      const closest = creep.pos.findClosestByPath(droppedEnergy) ?? droppedEnergy[0];
+      const result = creep.pickup(closest);
+      if (result === ERR_NOT_IN_RANGE) {
+        creep.moveTo(closest, { range: 1, reusePath: 10 });
+      }
+      return REMOTE_HAULER_PICKUP_TASK;
+    }
+
+    // Pick up from containers
+    const containers = creep.room.find(FIND_STRUCTURES, {
+      filter: s => s.structureType === STRUCTURE_CONTAINER && (s as StructureContainer).store.getUsedCapacity(RESOURCE_ENERGY) > 0
+    }) as StructureContainer[];
+
+    if (containers.length > 0) {
+      const closest = creep.pos.findClosestByPath(containers) ?? containers[0];
+      const result = creep.withdraw(closest, RESOURCE_ENERGY);
+      if (result === ERR_NOT_IN_RANGE) {
+        creep.moveTo(closest, { range: 1, reusePath: 30 });
+      }
+      return REMOTE_HAULER_PICKUP_TASK;
+    }
+
+    // No energy available - return home even if not full
+    memory.task = REMOTE_HAULER_RETURN_TASK;
+    return REMOTE_HAULER_RETURN_TASK;
+  }
+
+  // REMOTE_HAULER_RETURN_TASK
+  comm?.say(creep, "⬅️");
+
+  // Travel back to home room
+  if (creep.room.name !== memory.homeRoom) {
+    creep.moveTo({ pos: { x: ROOM_CENTER_X, y: ROOM_CENTER_Y, roomName: memory.homeRoom } as unknown as RoomPosition }, { reusePath: 50 });
+    return REMOTE_HAULER_RETURN_TASK;
+  }
+
+  // Deliver to storage first, then containers
+  const depositTargets = creep.room.find(FIND_STRUCTURES, {
+    filter: (structure: AnyStructure) =>
+      (structure.structureType === STRUCTURE_STORAGE || structure.structureType === STRUCTURE_CONTAINER) &&
+      (structure as AnyStoreStructure).store.getFreeCapacity(RESOURCE_ENERGY) > 0
+  }) as AnyStoreStructure[];
+
+  if (depositTargets.length > 0) {
+    const target = creep.pos.findClosestByPath(depositTargets) ?? depositTargets[0];
+    const result = creep.transfer(target, RESOURCE_ENERGY);
+    if (result === ERR_NOT_IN_RANGE) {
+      creep.moveTo(target, { range: 1, reusePath: 30 });
+    }
+    return REMOTE_HAULER_RETURN_TASK;
+  }
+
+  // Fallback: upgrade controller if no storage available
+  const controller = creep.room.controller;
+  if (controller && creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
+    const result = creep.upgradeController(controller);
+    if (result === ERR_NOT_IN_RANGE) {
+      creep.moveTo(controller, { range: 3, reusePath: 30 });
+    }
+  }
+
+  return REMOTE_HAULER_RETURN_TASK;
 }
 
 /**
