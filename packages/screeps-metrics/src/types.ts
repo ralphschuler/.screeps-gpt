@@ -38,11 +38,7 @@ export interface HeapMetrics {
   peakMallocedMemory: number;
   /** Does ZAP garbage value */
   doesZapGarbage: number;
-  /** Number of native contexts */
-  numberOfNativeContexts?: number;
-  /** Number of detached contexts */
-  numberOfDetachedContexts?: number;
-  /** External memory in bytes */
+  /** External memory in bytes (Screeps-specific) */
   externalMemory?: number;
 }
 

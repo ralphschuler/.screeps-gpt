@@ -21,8 +21,6 @@ const mockHeapStats = {
   malloced_memory: 10000000,
   peak_malloced_memory: 15000000,
   does_zap_garbage: 0,
-  number_of_native_contexts: 1,
-  number_of_detached_contexts: 0,
   externally_allocated_size: 1000000
 };
 
@@ -212,8 +210,6 @@ describe("MetricsCollector", () => {
       expect(heapMetrics.heapSizeLimit).toBe(52428800);
       expect(heapMetrics.mallocedMemory).toBe(10000000);
       expect(heapMetrics.peakMallocedMemory).toBe(15000000);
-      expect(heapMetrics.numberOfNativeContexts).toBe(1);
-      expect(heapMetrics.numberOfDetachedContexts).toBe(0);
       expect(heapMetrics.externalMemory).toBe(1000000);
     });
 
