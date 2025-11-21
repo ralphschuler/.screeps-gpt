@@ -140,11 +140,7 @@ export class TowerManager {
           },
           "TowerManager"
         );
-      } else if (
-        tower.store &&
-        tower.store.energy > this.minEnergyForRepair &&
-        Memory.towerState[tower.id]?.depleted
-      ) {
+      } else if (tower.store && tower.store.energy > this.minEnergyForRepair && Memory.towerState[tower.id]?.depleted) {
         // Tower has been refilled with sufficient energy, emit restoration event
         delete Memory.towerState[tower.id];
         if (this.eventBus) {
