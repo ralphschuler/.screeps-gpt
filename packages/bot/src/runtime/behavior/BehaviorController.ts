@@ -7,6 +7,8 @@ import { BodyComposer } from "./BodyComposer";
 import { WallUpgradeManager } from "@runtime/defense/WallUpgradeManager";
 import { isCreepDying, handleDyingCreepEnergyDrop } from "./creepHelpers";
 import { ScoutManager } from "@runtime/scouting/ScoutManager";
+import { RoleTaskQueueManager } from "./RoleTaskQueue";
+import * as TaskDiscovery from "./TaskDiscovery";
 
 type RoleName =
   | "harvester"
@@ -351,6 +353,9 @@ let energyPriorityManager: EnergyPriorityManager | null = null;
 // Global wall upgrade manager instance for role functions to access
 let wallUpgradeManager: WallUpgradeManager | null = null;
 
+// Global task queue manager instance for role functions to access
+let taskQueueManager: RoleTaskQueueManager | null = null;
+
 /**
  * Coordinates spawning and per-tick behaviour execution for every registered role.
  * Uses role-based behavior system with individual role handlers.
@@ -364,6 +369,7 @@ export class BehaviorController {
   private readonly bodyComposer: BodyComposer;
   private readonly wallUpgradeManager: WallUpgradeManager;
   private readonly scoutManager: ScoutManager;
+  private readonly taskQueueManager: RoleTaskQueueManager;
 
   public constructor(options: BehaviorControllerOptions = {}, logger: Pick<Console, "log" | "warn"> = console) {
     this.logger = logger;
@@ -380,6 +386,8 @@ export class BehaviorController {
     this.wallUpgradeManager = new WallUpgradeManager();
     wallUpgradeManager = this.wallUpgradeManager;
     this.scoutManager = new ScoutManager(this.logger);
+    this.taskQueueManager = new RoleTaskQueueManager(this.logger);
+    taskQueueManager = this.taskQueueManager;
   }
 
   /**
@@ -414,6 +422,12 @@ export class BehaviorController {
     const spawned: string[] = [];
     this.ensureRoleMinimums(game, memory, roleCounts, spawned, bootstrapRoleMinimums ?? {});
 
+    // Clean up dead creep tasks first to release assignments before new task discovery
+    this.taskQueueManager.cleanupDeadCreepTasks(memory, game);
+
+    // Task Discovery Phase: Populate task queues before creep execution
+    this.discoverTasks(game, memory);
+
     // Execute role-based system
     const result = this.executeWithRoleSystem(game, memory);
 
@@ -424,6 +438,69 @@ export class BehaviorController {
       spawnedCreeps: spawned,
       tasksExecuted: result.tasksExecuted
     };
+  }
+
+  /**
+   * Discover and populate task queues for all roles.
+   * This phase identifies available work targets in owned rooms and converts them
+   * into task queue entries for role-based coordination.
+   */
+  private discoverTasks(game: GameContext, memory: Memory): void {
+    const currentTick = game.time;
+
+    // Process each owned room to discover tasks
+    for (const room of Object.values(game.rooms)) {
+      if (!room.controller?.my) {
+        continue;
+      }
+
+      // Get target HP for repair tasks from wall upgrade manager
+      const targetHits = this.wallUpgradeManager.getTargetHits(room);
+
+      // Discover tasks for each role type
+      const harvesterTasks = TaskDiscovery.discoverHarvestTasks(room, currentTick);
+      const builderBuildTasks = TaskDiscovery.discoverBuildTasks(room, currentTick);
+      const builderRepairTasks = TaskDiscovery.discoverRepairTasks(room, currentTick, targetHits);
+      const haulerPickupTasks = TaskDiscovery.discoverPickupTasks(room, currentTick);
+      const haulerDeliveryTasks = TaskDiscovery.discoverDeliveryTasks(room, currentTick);
+      const upgraderTasks = TaskDiscovery.discoverUpgradeTasks(room, currentTick);
+      const stationaryHarvestTasks = TaskDiscovery.discoverStationaryHarvestTasks(room, currentTick);
+      const repairerTasks = TaskDiscovery.discoverRepairTasks(room, currentTick, targetHits);
+
+      // Add tasks to respective role queues
+      for (const task of harvesterTasks) {
+        this.taskQueueManager.addTask(memory, "harvester", task);
+      }
+
+      for (const task of [...builderBuildTasks, ...builderRepairTasks]) {
+        this.taskQueueManager.addTask(memory, "builder", task);
+      }
+
+      for (const task of [...haulerPickupTasks, ...haulerDeliveryTasks]) {
+        this.taskQueueManager.addTask(memory, "hauler", task);
+      }
+
+      for (const task of upgraderTasks) {
+        this.taskQueueManager.addTask(memory, "upgrader", task);
+      }
+
+      for (const task of stationaryHarvestTasks) {
+        this.taskQueueManager.addTask(memory, "stationaryHarvester", task);
+      }
+
+      for (const task of repairerTasks) {
+        this.taskQueueManager.addTask(memory, "repairer", task);
+      }
+    }
+
+    // Clean up expired tasks for all roles that have queues
+    // Use Object.keys to dynamically discover which roles have tasks
+    const taskQueue = memory.taskQueue as { [role: string]: unknown[] } | undefined;
+    if (taskQueue) {
+      for (const role of Object.keys(taskQueue)) {
+        this.taskQueueManager.cleanupExpiredTasks(memory, role, currentTick);
+      }
+    }
   }
 
   /**
@@ -1359,6 +1436,13 @@ function getComm(): CreepCommunicationManager | null {
  */
 function getEnergyManager(): EnergyPriorityManager | null {
   return energyPriorityManager;
+}
+
+/**
+ * Helper to get task queue manager instance
+ */
+function getTaskQueue(): RoleTaskQueueManager | null {
+  return taskQueueManager;
 }
 
 /**

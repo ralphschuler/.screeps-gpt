@@ -239,9 +239,7 @@ describe("CPU timeout prevention regression", () => {
       kernel.run(game, memory);
 
       // Should have warned about emergency CPU threshold
-      expect(warn).toHaveBeenCalledWith(
-        expect.stringMatching(/CPU threshold exceeded.*skipping remaining processes/)
-      );
+      expect(warn).toHaveBeenCalledWith(expect.stringMatching(/CPU threshold exceeded.*skipping remaining processes/));
 
       // When CPU threshold is exceeded, lower-priority processes (like MetricsProcess)
       // may be skipped, so systemReport may not be generated

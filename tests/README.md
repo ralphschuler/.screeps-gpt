@@ -27,15 +27,16 @@ describe("My Kernel Test", () => {
     const kernel = new Kernel({ logger: console });
     const game = createMockGame();
     const memory = {} as Memory;
-    
+
     kernel.run(game, memory);
-    
+
     // Processes will now be registered and executed
   });
 });
 ```
 
 **Why?** The `@process` decorator is executed when the module is imported. Without importing `@runtime/processes`, no processes are registered with the Kernel, resulting in:
+
 - No spawning behavior
 - No stats collection
 - No respawn detection
@@ -63,7 +64,7 @@ Tests should initialize Memory.stats the same way if they expect stats to always
 ```typescript
 beforeEach(() => {
   memory = {} as Memory;
-  
+
   // Defensive initialization (matches main.ts)
   memory.stats = {
     time: 0,
@@ -80,19 +81,19 @@ beforeEach(() => {
 
 Processes are executed in priority order (higher priority = earlier execution):
 
-| Priority | Process | Purpose |
-|----------|---------|---------|
-| 95 | MemoryProcess | Memory validation and migration |
-| 85 | RespawnProcess | Respawn detection |
-| 80 | BootstrapProcess | Bootstrap phase management |
-| 70 | InfrastructureProcess | Structure management |
-| 60 | DefenseProcess | Tower defense |
-| 50 | BehaviorProcess | Creep behavior and spawning |
-| 40 | ConstructionProcess | Construction sites |
-| 30 | ScoutingProcess | Room exploration |
-| 25 | EmpireProcess | Multi-room coordination |
-| 20 | VisualsProcess | Room visuals |
-| 10 | MetricsProcess | Stats collection and evaluation |
+| Priority | Process               | Purpose                         |
+| -------- | --------------------- | ------------------------------- |
+| 95       | MemoryProcess         | Memory validation and migration |
+| 85       | RespawnProcess        | Respawn detection               |
+| 80       | BootstrapProcess      | Bootstrap phase management      |
+| 70       | InfrastructureProcess | Structure management            |
+| 60       | DefenseProcess        | Tower defense                   |
+| 50       | BehaviorProcess       | Creep behavior and spawning     |
+| 40       | ConstructionProcess   | Construction sites              |
+| 30       | ScoutingProcess       | Room exploration                |
+| 25       | EmpireProcess         | Multi-room coordination         |
+| 20       | VisualsProcess        | Room visuals                    |
+| 10       | MetricsProcess        | Stats collection and evaluation |
 
 **Important:** If CPU threshold is exceeded, processes are skipped starting from the lowest priority. This means MetricsProcess may not run in high-CPU scenarios.
 
@@ -122,18 +123,18 @@ describe("My Test Suite", () => {
       spawns: {},
       rooms: {}
     };
-    
+
     // Initialize memory
     const memory = {} as Memory;
-    
+
     // Create kernel with logger
     const kernel = new Kernel({
       logger: { log: vi.fn(), warn: vi.fn() }
     });
-    
+
     // Run kernel
     kernel.run(game, memory);
-    
+
     // Assert results
     expect(memory.stats).toBeDefined();
   });
@@ -148,9 +149,9 @@ const spawn = {
   name: "Spawn1",
   spawning: null,
   spawnCreep,
-  store: { 
-    getFreeCapacity: () => 300, 
-    getUsedCapacity: () => 0 
+  store: {
+    getFreeCapacity: () => 300,
+    getUsedCapacity: () => 0
   },
   room: mockRoom
 } as unknown as StructureSpawn;
@@ -177,7 +178,7 @@ function createCreep(role: string, room: RoomLike): CreepLike {
       getUsedCapacity: vi.fn(() => 50)
     },
     pos: {
-      findClosestByPath: vi.fn((objects) => objects[0] ?? null)
+      findClosestByPath: vi.fn(objects => objects[0] ?? null)
     },
     harvest: vi.fn(() => OK),
     transfer: vi.fn(() => OK),
@@ -195,6 +196,7 @@ function createCreep(role: string, room: RoomLike): CreepLike {
 ### Problem: Spawning not working in tests
 
 **Symptoms:**
+
 - `expect(spawnCreep).toHaveBeenCalled()` fails
 - No creeps being spawned despite proper mocks
 
@@ -204,10 +206,12 @@ Add `import "@runtime/processes"` to your test file. BehaviorProcess handles spa
 ### Problem: Memory.stats is undefined
 
 **Symptoms:**
+
 - `expect(memory.stats).toBeDefined()` fails
 - Stats not being collected
 
 **Solutions:**
+
 1. Add `import "@runtime/processes"` to register MetricsProcess
 2. Initialize Memory.stats defensively in beforeEach (see Memory Initialization section)
 3. Check CPU threshold - if exceeded, MetricsProcess may be skipped
@@ -215,6 +219,7 @@ Add `import "@runtime/processes"` to your test file. BehaviorProcess handles spa
 ### Problem: Memory.respawn is undefined
 
 **Symptoms:**
+
 - `expect(memory.respawn).toBeDefined()` fails
 - Respawn detection not working
 
@@ -224,17 +229,20 @@ Add `import "@runtime/processes"` to register RespawnProcess.
 ### Problem: Tests expect log messages that aren't being captured
 
 **Symptoms:**
+
 - `expect(logger.warn).toHaveBeenCalledWith(...)` fails
 - Log messages appear in stderr but not captured by mock
 
 **Solution:**
 Processes use `console` as their logger (hardcoded), not the kernel's logger. Tests should:
+
 1. Check Memory state instead of log messages, OR
 2. Mock `console.log` and `console.warn` globally in test setup
 
 ### Problem: Test passes locally but fails in CI
 
 **Possible Causes:**
+
 1. Missing process import
 2. Race conditions in async operations
 3. Different Node.js versions
