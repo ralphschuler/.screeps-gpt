@@ -85,7 +85,7 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
           CURRENT_DATE: ${{ github.event.created_at || github.run_started_at }}
         with:
-          copilot-token: ${{ secrets.GITHUB_TOKEN }}
+          copilot-token: ${{ secrets.COPILOT_TOKEN }}
           prompt-path: .github/copilot/prompts/changelog-to-blog
           output-path: >-
             reports/copilot/changelog-to-blog-${{
