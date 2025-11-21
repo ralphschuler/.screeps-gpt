@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 import { TowerManager } from "@runtime/defense/TowerManager";
-import { RepairPriority } from "@shared/contracts";
 import type { RoomLike } from "@runtime/types/GameContext";
 
 describe("Tower Repair Priority System", () => {
