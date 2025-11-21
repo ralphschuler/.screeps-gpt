@@ -35,13 +35,22 @@ const mockGame = {
   rooms: {}
 };
 
-// Mock Memory global
+/**
+ * Mock Memory global for testing profiler auto-start behavior.
+ * Mimics the structure of Screeps Memory object with profiler and stats properties.
+ * Properties are optional to simulate various Memory states (uninitialized, reset, partial).
+ */
 let mockMemory: {
+  /** Profiler memory structure - optional to simulate Memory resets */
   profiler?: {
+    /** Profiler data by function name */
     data: Record<string, { calls: number; time: number }>;
+    /** Tick when profiler started - undefined when stopped */
     start?: number;
+    /** Total ticks profiled across all sessions */
     total: number;
   };
+  /** Stats memory structure - optional to test independent initialization */
   stats?: unknown;
 };
 
@@ -62,20 +71,27 @@ describe("Profiler auto-start functionality", () => {
     mockGame.time = 1000;
   });
 
+  /**
+   * Helper function that simulates the ensureProfilerRunning logic from main.ts.
+   * This is the function under test - extracted here to avoid duplication across test cases.
+   */
+  const createEnsureProfilerRunning = () => {
+    return () => {
+      mockMemory.profiler ??= {
+        data: {},
+        total: 0
+      };
+
+      if (mockMemory.profiler.start === undefined) {
+        mockProfilerInstance.start();
+        mockConsole.log(`[Profiler] Auto-started profiler data collection (tick: ${mockGame.time})`);
+      }
+    };
+  };
+
   describe("ensureProfilerRunning function behavior", () => {
     it("should initialize Memory.profiler if not present", () => {
-      // Simulate the ensureProfilerRunning logic
-      const ensureProfilerRunning = () => {
-        mockMemory.profiler ??= {
-          data: {},
-          total: 0
-        };
-
-        if (mockMemory.profiler.start === undefined) {
-          mockProfilerInstance.start();
-          mockConsole.log(`[Profiler] Auto-started profiler data collection (tick: ${mockGame.time})`);
-        }
-      };
+      const ensureProfilerRunning = createEnsureProfilerRunning();
 
       ensureProfilerRunning();
 
@@ -83,9 +99,7 @@ describe("Profiler auto-start functionality", () => {
       expect(mockMemory.profiler?.data).toEqual({});
       expect(mockMemory.profiler?.total).toBe(0);
       expect(mockProfilerInstance.start).toHaveBeenCalledTimes(1);
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        "[Profiler] Auto-started profiler data collection (tick: 1000)"
-      );
+      expect(mockConsole.log).toHaveBeenCalledWith("[Profiler] Auto-started profiler data collection (tick: 1000)");
     });
 
     it("should start profiler if Memory.profiler exists but is not running", () => {
@@ -95,24 +109,12 @@ describe("Profiler auto-start functionality", () => {
         total: 0
       };
 
-      const ensureProfilerRunning = () => {
-        mockMemory.profiler ??= {
-          data: {},
-          total: 0
-        };
-
-        if (mockMemory.profiler.start === undefined) {
-          mockProfilerInstance.start();
-          mockConsole.log(`[Profiler] Auto-started profiler data collection (tick: ${mockGame.time})`);
-        }
-      };
+      const ensureProfilerRunning = createEnsureProfilerRunning();
 
       ensureProfilerRunning();
 
       expect(mockProfilerInstance.start).toHaveBeenCalledTimes(1);
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        "[Profiler] Auto-started profiler data collection (tick: 1000)"
-      );
+      expect(mockConsole.log).toHaveBeenCalledWith("[Profiler] Auto-started profiler data collection (tick: 1000)");
     });
 
     it("should not start profiler if already running", () => {
@@ -123,17 +125,7 @@ describe("Profiler auto-start functionality", () => {
         start: 950 // Already started at tick 950
       };
 
-      const ensureProfilerRunning = () => {
-        mockMemory.profiler ??= {
-          data: {},
-          total: 0
-        };
-
-        if (mockMemory.profiler.start === undefined) {
-          mockProfilerInstance.start();
-          mockConsole.log(`[Profiler] Auto-started profiler data collection (tick: ${mockGame.time})`);
-        }
-      };
+      const ensureProfilerRunning = createEnsureProfilerRunning();
 
       ensureProfilerRunning();
 
@@ -142,17 +134,7 @@ describe("Profiler auto-start functionality", () => {
     });
 
     it("should be idempotent when called multiple times", () => {
-      const ensureProfilerRunning = () => {
-        mockMemory.profiler ??= {
-          data: {},
-          total: 0
-        };
-
-        if (mockMemory.profiler.start === undefined) {
-          mockProfilerInstance.start();
-          mockConsole.log(`[Profiler] Auto-started profiler data collection (tick: ${mockGame.time})`);
-        }
-      };
+      const ensureProfilerRunning = createEnsureProfilerRunning();
 
       // First call - should start profiler
       ensureProfilerRunning();
@@ -181,17 +163,7 @@ describe("Profiler auto-start functionality", () => {
         start: 950
       };
 
-      const ensureProfilerRunning = () => {
-        mockMemory.profiler ??= {
-          data: {},
-          total: 0
-        };
-
-        if (mockMemory.profiler.start === undefined) {
-          mockProfilerInstance.start();
-          mockConsole.log(`[Profiler] Auto-started profiler data collection (tick: ${mockGame.time})`);
-        }
-      };
+      const ensureProfilerRunning = createEnsureProfilerRunning();
 
       ensureProfilerRunning();
 
@@ -206,9 +178,7 @@ describe("Profiler auto-start functionality", () => {
 
       expect(mockMemory.profiler).toBeDefined();
       expect(mockProfilerInstance.start).toHaveBeenCalledTimes(1);
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        "[Profiler] Auto-started profiler data collection (tick: 1100)"
-      );
+      expect(mockConsole.log).toHaveBeenCalledWith("[Profiler] Auto-started profiler data collection (tick: 1100)");
     });
 
     it("should restart profiler if start tick is cleared but data exists", () => {
@@ -222,17 +192,7 @@ describe("Profiler auto-start functionality", () => {
         // Note: start is undefined
       };
 
-      const ensureProfilerRunning = () => {
-        mockMemory.profiler ??= {
-          data: {},
-          total: 0
-        };
-
-        if (mockMemory.profiler.start === undefined) {
-          mockProfilerInstance.start();
-          mockConsole.log(`[Profiler] Auto-started profiler data collection (tick: ${mockGame.time})`);
-        }
-      };
+      const ensureProfilerRunning = createEnsureProfilerRunning();
 
       ensureProfilerRunning();
 
@@ -242,17 +202,7 @@ describe("Profiler auto-start functionality", () => {
     });
 
     it("should handle rapid successive calls efficiently", () => {
-      const ensureProfilerRunning = () => {
-        mockMemory.profiler ??= {
-          data: {},
-          total: 0
-        };
-
-        if (mockMemory.profiler.start === undefined) {
-          mockProfilerInstance.start();
-          mockConsole.log(`[Profiler] Auto-started profiler data collection (tick: ${mockGame.time})`);
-        }
-      };
+      const ensureProfilerRunning = createEnsureProfilerRunning();
 
       // First call
       ensureProfilerRunning();
@@ -273,17 +223,7 @@ describe("Profiler auto-start functionality", () => {
 
   describe("Integration with Memory.stats initialization", () => {
     it("should initialize both Memory.profiler and Memory.stats", () => {
-      const ensureProfilerRunning = () => {
-        mockMemory.profiler ??= {
-          data: {},
-          total: 0
-        };
-
-        if (mockMemory.profiler.start === undefined) {
-          mockProfilerInstance.start();
-          mockConsole.log(`[Profiler] Auto-started profiler data collection (tick: ${mockGame.time})`);
-        }
-      };
+      const ensureProfilerRunning = createEnsureProfilerRunning();
 
       const initializeMemoryStats = () => {
         mockMemory.stats ??= {

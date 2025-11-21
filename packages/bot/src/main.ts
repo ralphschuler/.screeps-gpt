@@ -66,7 +66,7 @@ function ensureProfilerRunning(): void {
   // Check every tick to handle Memory resets gracefully
   if (Memory.profiler.start === undefined) {
     profilerInstance.start();
-    console.log("[Profiler] Auto-started profiler data collection (tick: " + Game.time + ")");
+    console.log(`[Profiler] Auto-started profiler data collection (tick: ${Game.time})`);
   }
 }
 
