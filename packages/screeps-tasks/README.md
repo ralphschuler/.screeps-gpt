@@ -279,6 +279,6 @@ MIT
 
 ## Related
 
-- **Task System**: `packages/bot/src/runtime/behavior/`
+- **Task System**: [`../../bot/src/runtime/behavior/`](../../bot/src/runtime/behavior/)
 - **ADR-002**: Role-to-task migration strategy
 - **Issue #625**: creep-tasks library research

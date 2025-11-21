@@ -48,7 +48,11 @@ export interface ITaskNode {
   createdAt: number;
   /** Game tick when task expires if not started */
   expiresAt: number;
-  /** Name of creep assigned to this task (undefined if unassigned) */
+  /**
+   * Name of creep assigned to this task (undefined if unassigned)
+   * Note: The explicit '| undefined' is required for TypeScript's
+   * exactOptionalPropertyTypes: true to allow setting this.assignedCreep = undefined
+   */
   assignedCreep?: string | undefined;
 }
 
