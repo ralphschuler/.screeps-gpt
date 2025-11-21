@@ -1,5 +1,5 @@
 ---
-name: Copilot CI AutoFix
+name: CI Auto Issue
 
 on:
   workflow_run:
@@ -32,19 +32,17 @@ on:
 
 permissions:
   actions: read
-  contents: write
   issues: write
-  pull-requests: write
 
 concurrency:
-  group: ci-autofix-${{ github.event.workflow_run.id }}
+  group: ci-auto-issue-${{ github.event.workflow_run.id }}
   cancel-in-progress: false
 
 jobs:
   check-circuit-breaker:
     if: >-
       ${{ github.event.workflow_run.conclusion == 'failure'
-      && github.event.workflow_run.name != 'Copilot CI AutoFix' }}
+      && github.event.workflow_run.name != 'CI Auto Issue' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -74,21 +72,21 @@ jobs:
               `Branch: ${context.payload.workflow_run.head_branch}`
             );
 
-            // Query recent autofix runs
+            // Query recent ci-auto-issue runs
             const params = {
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: 'copilot-ci-autofix.yml',
+              workflow_id: 'ci-auto-issue.yml',
               per_page: 20
             };
-            const { data: autofixRuns } =
+            const { data: autoIssueRuns } =
               await github.rest.actions.listWorkflowRuns(params);
 
             // Count consecutive failures
             let consecutiveFailures = 0;
             let lastFailureTime = null;
 
-            for (const run of autofixRuns.workflow_runs) {
+            for (const run of autoIssueRuns.workflow_runs) {
               if (run.status !== 'completed') continue;
 
               // Count action_required or failure conclusions
@@ -135,7 +133,7 @@ jobs:
 
                 const retry = [
                   `⚠️ Circuit breaker backoff expired.`,
-                  `Attempting fix after`,
+                  `Attempting issue creation after`,
                   `${elapsed.toFixed(1)} minutes.`
                 ].join(' ');
                 core.info(retry);
@@ -144,7 +142,7 @@ jobs:
 
             const allowed = [
               `✅ Circuit breaker CLOSED:`,
-              `Allowing autofix`,
+              `Allowing issue creation`,
               `(${consecutiveFailures}/${MAX_CONSECUTIVE_FAILURES})`,
             ].join(' ');
             core.info(allowed);
@@ -152,18 +150,18 @@ jobs:
             core.setOutput('consecutive-failures', consecutiveFailures);
             core.setOutput('failure-key', failureKey);
 
-  autofix:
+  create-issue:
     needs: check-circuit-breaker
     if: needs.check-circuit-breaker.outputs.should-run == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 10
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
 
       - name: Log circuit breaker status
         run: |
-          echo "🔄 CI Autofix Attempt"
+          echo "🔄 CI Auto Issue Creation"
           echo "Consecutive failures: \
           ${{ needs.check-circuit-breaker.outputs.consecutive-failures }}/3"
           echo "Failure context: \
@@ -171,31 +169,170 @@ jobs:
           echo "Failed workflow: ${{ github.event.workflow_run.name }}"
           echo "Run ID: ${{ github.event.workflow_run.id }}"
 
-      - name: Run Copilot CI auto-fix
-        uses: ./.github/actions/copilot-ci-autofix-agent
+      - name: Get workflow run details
+        id: workflow-details
+        uses: actions/github-script@v8
         with:
-          copilot-token: ${{ secrets.COPILOT_TOKEN }}
-          workflow-name: ${{ toJSON(github.event.workflow_run.name) }}
-          run-id: ${{ github.event.workflow_run.id }}
-          run-url: >-
-            ${{ toJSON(github.event.workflow_run.html_url ||
-            format('https://github.com/{0}/actions/runs/{1}',
-            github.repository, github.event.workflow_run.id)) }}
-          trigger-event: >-
-            ${{ toJSON(github.event.workflow_run.event) }}
+          script: |
+            const { data: run } = await github.rest.actions.getWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.payload.workflow_run.id
+            });
+
+            const jobsParams = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.payload.workflow_run.id
+            };
+            const { data: jobs } =
+              await github.rest.actions.listJobsForWorkflowRun(jobsParams);
+
+            const failedJobs =
+              jobs.jobs.filter(job => job.conclusion === 'failure');
+            core.setOutput('run-details', JSON.stringify({
+              workflow: run.name,
+              branch: run.head_branch,
+              commit: run.head_sha.substring(0, 7),
+              actor: run.actor.login,
+              failed_jobs: failedJobs.map(job => job.name)
+            }));
+
+      - name: Create failure issue
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const workflowName = '${{ github.event.workflow_run.name }}';
+            const runUrl = '${{ github.event.workflow_run.html_url }}';
+            const branch = '${{ github.event.workflow_run.head_branch }}';
+            const runDetailsOutput =
+              '${{ steps.workflow-details.outputs.run-details }}';
+            const runDetails = JSON.parse(runDetailsOutput);
+
+            // Check for existing open issue with same workflow and branch
+            const listParams = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'automation,type/bug',
+              per_page: 20
+            };
+            const { data: existingIssues } =
+              await github.rest.issues.listForRepo(listParams);
+
+            // Look for issue with same workflow and branch
+            const existingIssue = existingIssues.find(issue =>
+              issue.title.includes(workflowName) &&
+              issue.title.includes(branch) &&
+              issue.labels.some(label => label.name === 'ci-failure')
+            );
+
+            if (existingIssue) {
+              core.info(
+                `Issue already exists: ${existingIssue.html_url}`
+              );
+
+              // Add comment to existing issue
+              const comment = {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existingIssue.number,
+                body: [
+                  '## Failure Update',
+                  '',
+                  'The workflow continues to fail.',
+                  '',
+                  `**Latest Run:** ${runUrl}`,
+                  `**Commit:** ${runDetails.commit}`,
+                  `**Failed Jobs:**`,
+                  ...runDetails.failed_jobs.map(job => `  - ${job}`),
+                  `**Timestamp:** ${new Date().toISOString()}`,
+                  '',
+                  'Manual intervention is required to resolve this issue.'
+                ].join('\n')
+              };
+              await github.rest.issues.createComment(comment);
+
+              return;
+            }
+
+            // Create new issue
+            const title = [
+              'fix(ci):',
+              workflowName,
+              'failure on',
+              branch
+            ].join(' ');
+
+            const labels = [
+              'automation',
+              'ci-failure',
+              'type/bug',
+              'priority/high',
+              'state/pending'
+            ];
+
+            const body = [
+              '## CI Workflow Failure',
+              '',
+              'A CI/CD workflow has failed and requires manual review.',
+              '',
+              '### Failure Details',
+              '',
+              `- **Workflow:** ${workflowName}`,
+              `- **Branch:** ${branch}`,
+              `- **Commit:** ${runDetails.commit}`,
+              `- **Triggered By:** ${runDetails.actor}`,
+              `- **Run URL:** ${runUrl}`,
+              '',
+              '### Failed Jobs',
+              '',
+              ...runDetails.failed_jobs.map(job => `- ${job}`),
+              '',
+              '### Required Actions',
+              '',
+              `1. **Review logs:** ${runUrl}`,
+              '2. **Identify root cause** of the failure',
+              '3. **Apply fix** to resolve the issue',
+              '4. **Verify fix** by re-running the workflow',
+              '5. **Close issue** once problem is resolved',
+              '',
+              '### Additional Information',
+              '',
+              'This issue was automatically created by the',
+              'CI Auto Issue workflow. The workflow monitors CI/CD failures',
+              'and creates issues for manual review.',
+              '',
+              'If this failure is related to a known issue or is',
+              'transient, you may close this issue with a comment',
+              'explaining the situation.',
+              '',
+              '---',
+              '*Automatically created by CI Auto Issue workflow.*'
+            ].join('\n');
+
+            const createParams = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              labels,
+              body
+            };
+            const { data: issue } =
+              await github.rest.issues.create(createParams);
+
+            core.info(`Created failure issue: ${issue.html_url}`);
 
   escalate-to-manual:
     needs: check-circuit-breaker
     if: needs.check-circuit-breaker.outputs.should-run == 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    permissions:
-      issues: write
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
 
-      - name: Create manual review issue
+      - name: Create escalation issue
         uses: actions/github-script@v8
         with:
           script: |
@@ -214,7 +351,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               state: 'open',
-              labels: 'automation,ci-autofix-escalation',
+              labels: 'automation,ci-escalation',
               per_page: 10
             };
             const { data: existingIssues } =
@@ -239,7 +376,7 @@ jobs:
                 body: [
                   '## Circuit Breaker Update',
                   '',
-                  'The CI autofix workflow continues to be blocked.',
+                  'The CI Auto Issue workflow continues to be blocked.',
                   '',
                   `**Status:** ${consecutiveFailures} failures`,
                   `**Latest Run:** ${runUrl}`,
@@ -263,16 +400,16 @@ jobs:
 
             const labels = [
               'automation',
-              'ci-autofix-escalation',
+              'ci-escalation',
               'type/bug',
-              'priority/high',
+              'priority/critical',
               'state/pending'
             ];
 
             const body = [
-              '## CI Autofix Circuit Breaker Triggered',
+              '## CI Auto Issue Circuit Breaker Triggered',
               '',
-              'The automated CI fix workflow has been blocked',
+              'The automated CI failure tracking workflow has been blocked',
               `after **${consecutiveFailures}** consecutive failures.`,
               '',
               '### Failure Details',
@@ -284,41 +421,39 @@ jobs:
               '',
               '### Circuit Breaker Status',
               '',
-              '⛔ **OPEN** - Autofix attempts are throttled.',
+              '⛔ **OPEN** - Issue creation attempts are throttled.',
               '',
               'The circuit breaker will:',
-              '- Block autofix for 15 minutes after last failure',
+              '- Block issue creation for 15 minutes after last failure',
               '- Allow one retry after backoff period',
               '- Reopen circuit if retry fails',
               '',
               '### Required Actions',
               '',
               `1. **Review logs:** ${runUrl}`,
-              '2. **Identify root cause** of the failure',
-              '3. **Apply manual fix** if cannot auto-correct',
+              '2. **Identify root cause** of the repeated failures',
+              '3. **Apply manual fix** to resolve the issue',
               '4. **Close issue** once problem is resolved',
               '',
               '### Context',
               '',
-              'The CI autofix workflow automatically resolves',
-              'common CI failures (linting, formatting, etc).',
-              'When it cannot resolve a failure, it retries up',
-              'to 3 times before triggering this breaker.',
+              'The CI Auto Issue workflow automatically creates issues',
+              'for CI failures to enable tracking and resolution.',
+              'When the workflow itself fails repeatedly, it triggers',
+              'this breaker to prevent alert fatigue.',
               '',
               'This escalation indicates:',
-              '- Failure is too complex for auto-resolution, OR',
-              '- Autofix logic needs update for this type, OR',
-              '- Systemic issue prevents fix application',
+              '- Persistent systemic issue preventing issue creation, OR',
+              '- GitHub API rate limiting or permissions issues, OR',
+              '- Workflow configuration needs update',
               '',
               '### Documentation',
               '',
-              '- [CI Autofix Workflow]' +
-                '(.github/workflows/copilot-ci-autofix.yml)',
-              '- [Autofix Agent Configuration]' +
-                '(.github/copilot/prompts/ci-autofix)',
+              '- [CI Auto Issue Workflow]' +
+                '(.github/workflows/ci-auto-issue.yml)',
               '',
               '---',
-              '*Automatically created by CI autofix breaker.*'
+              '*Automatically created by CI Auto Issue circuit breaker.*'
             ].join('\n');
 
             const createParams = {
@@ -334,8 +469,8 @@ jobs:
             core.info(`Created escalation issue: ${issue.html_url}`);
 
   notify-failure:
-    needs: [check-circuit-breaker, autofix]
-    if: always() && needs.autofix.result != 'skipped'
+    needs: [check-circuit-breaker, create-issue]
+    if: always() && needs.create-issue.result != 'skipped'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -364,8 +499,8 @@ jobs:
             Run ID: ${{ github.event.workflow_run.id }}
             Trigger Event: ${{ github.event.workflow_run.event }}
 
-            The CI/CD workflow has failed and the auto-fix process
-            has been triggered.
+            A CI/CD workflow has failed and an issue has been created
+            for tracking and resolution.
 
             View Details: ${{ github.event.workflow_run.html_url }}
 

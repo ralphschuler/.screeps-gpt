@@ -11,7 +11,7 @@ This repository manages an autonomous Screeps AI and the automation surrounding 
 3. **Copilot Todo Automation** - Automated issue resolution via draft pull requests with visible implementation progress
 4. **Copilot Issue Triage** - Automatic issue reformulation and labeling
 5. **Copilot Stats Monitor** - PTR telemetry analysis and anomaly detection
-6. **Copilot CI AutoFix** - Automated fixing of CI failures
+6. **CI Auto Issue** - Automated issue creation for CI failures with circuit breaker pattern
 7. **Copilot Email Triage** - Email-to-issue conversion and triage
 
 ### Operational Boundaries
@@ -256,17 +256,15 @@ Do not edit labels manually in the UI—update the YAML file instead. Legacy lab
 
 - Issues labelled `Todo` trigger automated resolution via `copilot-todo-pr.yml`.
 - New issues are automatically triaged and reformulated by `copilot-issue-triage.yml`.
-- CI failures trigger automated fixes via `copilot-ci-autofix.yml`.
+- CI failures trigger automatic issue creation via `ci-auto-issue.yml` for tracking and manual review.
 - Dependabot PRs are auto-merged for non-major updates after checks pass.
 
 ### PTR Monitoring
 
-- Stats and strategic analysis performed every 30 minutes via `screeps-monitoring.yml`.
-- Combines autonomous bot performance monitoring with PTR telemetry anomaly detection.
-- PTR anomalies result in labelled issues with `monitoring`, `copilot`, `type/bug`, `state/pending`, and appropriate priority labels (prefixed with `PTR:`).
-- Strategic findings result in issues prefixed with `[Autonomous Monitor]`.
-- Duplicates are avoided by searching existing issues before filing new ones.
-- Uses MCP servers (github, screeps-mcp, screeps-api) for comprehensive analysis.
+- Data collection performed every 30 minutes via `screeps-monitoring.yml`.
+- Collects bot snapshots, PTR stats, telemetry, and profiler data.
+- Pure data pipeline focused on collecting and storing bot performance data.
+- PTR anomalies can be detected by separate analysis workflows.
 - Use `SCREEPS_STATS_TOKEN` or fallback to `SCREEPS_TOKEN`.
 
 ## Required Secrets
