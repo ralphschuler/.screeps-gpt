@@ -1,3 +1,4 @@
+---
 name: CI Auto Issue
 
 on:
@@ -55,13 +56,16 @@ jobs:
             const run = context.payload.workflow_run;
 
             // Get jobs for this run
-            const { data: jobs } = await github.rest.actions.listJobsForWorkflowRun({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              run_id: run.id,
-            });
+            const { data: jobs } =
+              await github.rest.actions.listJobsForWorkflowRun({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: run.id,
+              });
 
-            const failedJobs = jobs.jobs.filter(job => job.conclusion === 'failure');
+            const failedJobs = jobs.jobs.filter(
+              job => job.conclusion === 'failure'
+            );
             const failedJobNames = failedJobs.map(job => job.name);
 
             // Collect failing steps for more specific "error" context
@@ -71,7 +75,8 @@ jobs:
                 .map(step => `Job "${job.name}" – Step "${step.name}"`)
             );
 
-            // Use the first failing step (or fallback) as the "error" in the title
+            // Use the first failing step (or fallback)
+            // as the "error" in the title
             const errorContext =
               failedJobSteps[0] ||
               (failedJobNames[0] ? `Job "${failedJobNames[0]}"` : run.name);
@@ -102,10 +107,12 @@ jobs:
               '',
               '### Additional Information',
               '',
-              'For full error details and stack traces, open the workflow run URL above and inspect the logs of the failing job(s).',
+              'For full error details and stack traces, open the workflow',
+              'run URL above and inspect the logs of the failing job(s).',
               '',
               '---',
-              '*This issue was automatically created by the CI Auto Issue workflow.*',
+              '*This issue was automatically created by the',
+              'CI Auto Issue workflow.*',
             ];
 
             const { data: issue } = await github.rest.issues.create({
