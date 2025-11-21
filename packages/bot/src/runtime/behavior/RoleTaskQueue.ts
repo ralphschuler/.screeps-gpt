@@ -55,7 +55,7 @@ export interface RoleTaskQueueMemory {
 export class RoleTaskQueueManager {
   private readonly logger: Pick<Console, "log" | "warn">;
 
-  constructor(logger: Pick<Console, "log" | "warn"> = console) {
+  public constructor(logger: Pick<Console, "log" | "warn"> = console) {
     this.logger = logger;
   }
 
@@ -63,9 +63,7 @@ export class RoleTaskQueueManager {
    * Initialize task queue memory structure
    */
   private ensureMemory(memory: Memory): RoleTaskQueueMemory {
-    if (!memory.taskQueue) {
-      memory.taskQueue = {} as RoleTaskQueueMemory;
-    }
+    memory.taskQueue ??= {} as RoleTaskQueueMemory;
     return memory.taskQueue as RoleTaskQueueMemory;
   }
 
@@ -74,9 +72,7 @@ export class RoleTaskQueueManager {
    */
   private getRoleQueue(memory: Memory, role: string): TaskQueueEntry[] {
     const taskQueue = this.ensureMemory(memory);
-    if (!taskQueue[role]) {
-      taskQueue[role] = [];
-    }
+    taskQueue[role] ??= [];
     return taskQueue[role];
   }
 
