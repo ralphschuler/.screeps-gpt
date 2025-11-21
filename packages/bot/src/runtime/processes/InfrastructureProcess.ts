@@ -11,7 +11,7 @@ import { BootstrapPhaseManager } from "@runtime/bootstrap/BootstrapPhaseManager"
  * - Traffic management
  * - Link network energy transfers (RCL 5+)
  * - Phase 1 road planning coordination with BootstrapProcess
- * 
+ *
  * Priority: 70 (medium-high) - Must run before behavior but after bootstrap
  */
 @registerProcess({ name: "InfrastructureProcess", priority: 70, singleton: true })
@@ -58,7 +58,9 @@ export class InfrastructureProcess {
     }
 
     // Handle road planning if triggered by BootstrapProcess
-    const roadPlanningStatus = memory.roadPlanningStatus as { shouldPlan: boolean; roomName: string; reason: string } | undefined;
+    const roadPlanningStatus = memory.roadPlanningStatus as
+      | { shouldPlan: boolean; roomName: string; reason: string }
+      | undefined;
     if (roadPlanningStatus?.shouldPlan && roadPlanningStatus.roomName) {
       this.logger.log?.(
         `[InfrastructureProcess] Road planning triggered for ${roadPlanningStatus.roomName}: ${roadPlanningStatus.reason}`
@@ -103,7 +105,9 @@ export class InfrastructureProcess {
       }
     }
     if (totalLinkTransfers > 0) {
-      this.logger.log?.(`[InfrastructureProcess] Link network: ${totalLinkTransfers} transfers, ${totalEnergyMoved} energy moved`);
+      this.logger.log?.(
+        `[InfrastructureProcess] Link network: ${totalLinkTransfers} transfers, ${totalEnergyMoved} energy moved`
+      );
     }
   }
 }

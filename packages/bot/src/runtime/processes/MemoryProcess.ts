@@ -16,7 +16,7 @@ import {
  * - Garbage collection of stale data
  * - Memory utilization monitoring
  * - Pruning of missing creeps and role bookkeeping
- * 
+ *
  * Priority: 100 (highest) - Must run first to ensure memory integrity
  */
 @registerProcess({ name: "MemoryProcess", priority: 100, singleton: true })
@@ -56,7 +56,7 @@ export class MemoryProcess {
         this.logger.warn?.("[MemoryProcess] Memory corruption detected. Performing emergency reset.");
         this.selfHealer.emergencyReset(memory);
         this.logger.warn?.("[MemoryProcess] Emergency reset complete. Other processes should skip this tick.");
-        
+
         // Store emergency reset flag in memory for other processes to check
         memory.emergencyReset = true;
         return;
@@ -77,7 +77,9 @@ export class MemoryProcess {
             `[MemoryProcess] Applied ${migrationResult.migrationsApplied} migration(s) to v${migrationResult.toVersion}`
           );
         } else {
-          this.logger.warn?.(`[MemoryProcess] Migration failed and was rolled back: ${migrationResult.errors.join(", ")}`);
+          this.logger.warn?.(
+            `[MemoryProcess] Migration failed and was rolled back: ${migrationResult.errors.join(", ")}`
+          );
         }
       }
     } catch (error) {
@@ -96,7 +98,7 @@ export class MemoryProcess {
     // Prune missing creeps and update role bookkeeping
     this.memoryManager.pruneMissingCreeps(memory, gameContext.creeps);
     const roleCounts = this.memoryManager.updateRoleBookkeeping(memory, gameContext.creeps);
-    
+
     // Store role counts in memory for other processes to use
     memory.roles = roleCounts;
 

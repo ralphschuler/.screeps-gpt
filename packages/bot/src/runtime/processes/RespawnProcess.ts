@@ -8,7 +8,7 @@ import { RespawnManager } from "@runtime/respawn/RespawnManager";
  * - Detecting respawn conditions
  * - Setting respawn flags in memory
  * - Logging respawn events
- * 
+ *
  * Priority: 85 (high) - Must check early to prevent wasted CPU on dead colony
  */
 @registerProcess({ name: "RespawnProcess", priority: 85, singleton: true })

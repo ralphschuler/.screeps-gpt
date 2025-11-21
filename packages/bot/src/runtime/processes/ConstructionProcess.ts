@@ -8,7 +8,7 @@ import { ConstructionManager } from "@runtime/planning/ConstructionManager";
  * - Planning construction sites for new structures
  * - Room layout management
  * - Structure placement optimization
- * 
+ *
  * Priority: 60 (medium) - Must run before behavior to ensure sites are available
  */
 @registerProcess({ name: "ConstructionProcess", priority: 60, singleton: true })
