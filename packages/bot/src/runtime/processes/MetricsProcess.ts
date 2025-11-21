@@ -1,6 +1,7 @@
 import { process as registerProcess, type ProcessContext } from "@ralphschuler/screeps-kernel";
 import type { GameContext } from "@runtime/types/GameContext";
-import type { RepositorySignal } from "@shared/contracts";
+import type { RepositorySignal, BehaviorSummary } from "@shared/contracts";
+import type { MemoryUtilization } from "@runtime/memory";
 import { StatsCollector } from "@runtime/metrics/StatsCollector";
 import { PixelGenerator } from "@runtime/metrics/PixelGenerator";
 import { SystemEvaluator } from "@runtime/evaluation/SystemEvaluator";
@@ -55,13 +56,9 @@ export class MetricsProcess {
     }
 
     // Get behavior summary from memory (set by BehaviorProcess)
-    const behaviorSummaryFromMemory = memory.behaviorSummary as {
-      processedCreeps: number;
-      spawnedCreeps: string[];
-      tasksExecuted: Record<string, number>;
-    } | undefined;
+    const behaviorSummaryFromMemory = memory.behaviorSummary as BehaviorSummary | undefined;
     
-    const behaviorSummary = behaviorSummaryFromMemory ?? {
+    const behaviorSummary: BehaviorSummary = behaviorSummaryFromMemory ?? {
       processedCreeps: 0,
       spawnedCreeps: [],
       tasksExecuted: {}
@@ -88,11 +85,7 @@ export class MetricsProcess {
 
     // Evaluate system health and store report
     const repository = this.repositorySignalProvider?.();
-    const memoryUtilization = memory.memoryUtilization as {
-      used: number;
-      limit: number;
-      percent: number;
-    } | undefined;
+    const memoryUtilization = memory.memoryUtilization as MemoryUtilization | undefined;
     const result = this.evaluator.evaluateAndStore(memory, snapshot, repository, memoryUtilization);
 
     // Generate pixel if bucket is full

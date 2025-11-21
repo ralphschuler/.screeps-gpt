@@ -2,6 +2,7 @@ import { process as registerProcess, type ProcessContext } from "@ralphschuler/s
 import type { GameContext } from "@runtime/types/GameContext";
 import { InfrastructureManager, type InfrastructureMemory } from "@runtime/infrastructure/InfrastructureManager";
 import { LinkManager } from "@runtime/infrastructure/LinkManager";
+import { BootstrapPhaseManager } from "@runtime/bootstrap/BootstrapPhaseManager";
 
 /**
  * Infrastructure management process that handles roads, traffic, and links.
@@ -17,6 +18,7 @@ import { LinkManager } from "@runtime/infrastructure/LinkManager";
 export class InfrastructureProcess {
   private readonly infrastructureManager: InfrastructureManager;
   private readonly linkManager: LinkManager;
+  private readonly bootstrapManager: BootstrapPhaseManager;
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly cpuEmergencyThreshold: number;
 
@@ -34,6 +36,7 @@ export class InfrastructureProcess {
     this.linkManager = new LinkManager({
       logger: this.logger
     });
+    this.bootstrapManager = new BootstrapPhaseManager({}, this.logger);
   }
 
   public run(ctx: ProcessContext<Memory>): void {
@@ -77,11 +80,8 @@ export class InfrastructureProcess {
           );
         }
 
-        // Mark roads as planned
-        memory.bootstrap ??= { rooms: {} };
-        const bootstrapRooms = (memory.bootstrap as { rooms: Record<string, { phase: string; startTick: number; roadsPlanned?: boolean }> }).rooms;
-        bootstrapRooms[roadPlanningStatus.roomName] ??= { phase: "phase1", startTick: gameContext.time };
-        bootstrapRooms[roadPlanningStatus.roomName].roadsPlanned = true;
+        // Mark roads as planned using BootstrapPhaseManager
+        this.bootstrapManager.markRoadsPlanned(memory, roadPlanningStatus.roomName);
       }
 
       // Clear road planning status
