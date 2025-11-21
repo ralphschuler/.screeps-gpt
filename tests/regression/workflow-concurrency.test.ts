@@ -24,7 +24,7 @@ describe("Workflow concurrency controls", () => {
     "guard-yaml-lint.yml",
     // Copilot automation workflows
     "copilot-changelog-to-blog.yml",
-    "copilot-ci-autofix.yml",
+    "ci-auto-issue.yml",
     "copilot-email-triage.yml",
     "copilot-issue-triage.yml",
     "copilot-review.yml",
@@ -134,8 +134,8 @@ describe("Workflow concurrency controls", () => {
   });
 
   describe("Copilot workflow-triggered workflows", () => {
-    it("copilot-ci-autofix.yml should use per-workflow-run concurrency without cancellation", () => {
-      const workflowPath = join(workflowsDir, "copilot-ci-autofix.yml");
+    it("ci-auto-issue.yml should use per-workflow-run concurrency without cancellation", () => {
+      const workflowPath = join(workflowsDir, "ci-auto-issue.yml");
       const content = readFileSync(workflowPath, "utf8");
       const parsed = yaml.parse(content) as {
         concurrency: {
