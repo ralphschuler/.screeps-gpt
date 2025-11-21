@@ -143,8 +143,7 @@ export function discoverPickupTasks(room: Room, currentTick: number, minAmount: 
 
   // Find containers with energy
   const containers = room.find(FIND_STRUCTURES, {
-    filter: s =>
-      s.structureType === STRUCTURE_CONTAINER && (s).store.getUsedCapacity(RESOURCE_ENERGY) > 0
+    filter: s => s.structureType === STRUCTURE_CONTAINER && s.store.getUsedCapacity(RESOURCE_ENERGY) > 0
   });
 
   for (const container of containers) {
@@ -184,8 +183,7 @@ export function discoverDeliveryTasks(room: Room, currentTick: number): TaskQueu
   // High: towers needing energy
   const towers = room.find(FIND_STRUCTURES, {
     filter: (structure: AnyStructure) =>
-      structure.structureType === STRUCTURE_TOWER &&
-      (structure).store.getFreeCapacity(RESOURCE_ENERGY) > 0
+      structure.structureType === STRUCTURE_TOWER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
   });
 
   for (const tower of towers) {

@@ -2,6 +2,7 @@ import type { RoomLike } from "@runtime/types/GameContext";
 import { profile } from "@ralphschuler/screeps-profiler";
 import { WallUpgradeManager } from "./WallUpgradeManager";
 import { RepairPriority, type RepairTarget } from "@shared/contracts";
+import { EventBus, EventTypes } from "@ralphschuler/screeps-events";
 
 /**
  * Threat assessment for hostile creeps
@@ -17,6 +18,18 @@ interface ThreatAssessment {
  * Tower action type
  */
 type TowerAction = "attack" | "heal" | "repair";
+
+/**
+ * Configuration options for TowerManager
+ */
+export interface TowerManagerOptions {
+  logger?: Pick<Console, "log" | "warn">;
+  repairThreshold?: number;
+  criticalRepairThreshold?: number;
+  wallUpgradeManager?: WallUpgradeManager;
+  minEnergyForRepair?: number;
+  eventBus?: EventBus;
+}
 
 /**
  * Manages tower automation with threat-based targeting and repair logic.
@@ -40,19 +53,15 @@ export class TowerManager {
   private readonly criticalRepairThreshold: number;
   private readonly wallUpgradeManager: WallUpgradeManager;
   private readonly minEnergyForRepair: number;
+  private readonly eventBus?: EventBus;
 
-  public constructor(
-    logger: Pick<Console, "log" | "warn"> = console,
-    repairThreshold: number = 0.8, // Repair structures below 80% health
-    criticalRepairThreshold: number = 0.2, // Critical repair below 20%
-    wallUpgradeManager?: WallUpgradeManager,
-    minEnergyForRepair: number = 500 // Reserve energy for defense
-  ) {
-    this.logger = logger;
-    this.repairThreshold = repairThreshold;
-    this.criticalRepairThreshold = criticalRepairThreshold;
-    this.wallUpgradeManager = wallUpgradeManager ?? new WallUpgradeManager();
-    this.minEnergyForRepair = minEnergyForRepair;
+  public constructor(options: TowerManagerOptions = {}) {
+    this.logger = options.logger ?? console;
+    this.repairThreshold = options.repairThreshold ?? 0.8; // Repair structures below 80% health
+    this.criticalRepairThreshold = options.criticalRepairThreshold ?? 0.2; // Critical repair below 20%
+    this.wallUpgradeManager = options.wallUpgradeManager ?? new WallUpgradeManager();
+    this.minEnergyForRepair = options.minEnergyForRepair ?? 500; // Reserve energy for defense
+    this.eventBus = options.eventBus;
   }
 
   /**
@@ -75,6 +84,20 @@ export class TowerManager {
 
     // Get all hostiles in room
     const hostiles = room.find(FIND_HOSTILE_CREEPS) as Creep[];
+
+    // Emit hostile detection event if EventBus is available
+    if (this.eventBus && hostiles.length > 0) {
+      const hostileUsernames = [...new Set(hostiles.map(h => h.owner.username))];
+      this.eventBus.emit(
+        EventTypes.HOSTILE_DETECTED,
+        {
+          roomName: room.name,
+          hostileCount: hostiles.length,
+          hostileUsernames
+        },
+        "TowerManager"
+      );
+    }
 
     // Get damaged friendlies
     const damagedFriendlies = room.find(FIND_MY_CREEPS, {
@@ -100,8 +123,44 @@ export class TowerManager {
       }
     }) as Structure[];
 
+    // Initialize Memory.towerState if needed for tracking energy depletion
+    Memory.towerState ??= {};
+
     // Process each tower
     for (const tower of towers) {
+      // Emit energy depletion event if tower energy reaches zero
+      if (this.eventBus && tower.store?.energy === 0 && !Memory.towerState[tower.id]) {
+        Memory.towerState[tower.id] = { depleted: true };
+        this.eventBus.emit(
+          EventTypes.ENERGY_DEPLETED,
+          {
+            roomName: room.name,
+            structureType: STRUCTURE_TOWER,
+            structureId: tower.id
+          },
+          "TowerManager"
+        );
+      } else if (
+        tower.store &&
+        tower.store.energy > this.minEnergyForRepair &&
+        Memory.towerState[tower.id]?.depleted
+      ) {
+        // Tower has been refilled with sufficient energy, emit restoration event
+        delete Memory.towerState[tower.id];
+        if (this.eventBus) {
+          this.eventBus.emit(
+            EventTypes.ENERGY_RESTORED,
+            {
+              roomName: room.name,
+              structureType: STRUCTURE_TOWER,
+              structureId: tower.id,
+              energyAmount: tower.store.energy
+            },
+            "TowerManager"
+          );
+        }
+      }
+
       // Priority 1: Attack hostiles
       if (hostiles.length > 0) {
         const target = this.selectAttackTarget(tower, hostiles);

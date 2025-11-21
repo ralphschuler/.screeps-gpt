@@ -2,6 +2,8 @@ import { Kernel } from "@ralphschuler/screeps-kernel";
 import type { GameContext } from "@runtime/types/GameContext";
 import { init as initProfiler } from "@ralphschuler/screeps-profiler";
 import { Diagnostics } from "@runtime/utils/Diagnostics";
+import { EventTypes } from "@ralphschuler/screeps-events";
+import { globalEventBus } from "@runtime/events/globalEventBus";
 
 // Import process modules to trigger @process decorator registration
 import "@runtime/processes";
@@ -12,14 +14,40 @@ const kernel = new Kernel({
   cpuEmergencyThreshold: 0.9
 });
 
+// Subscribe to runtime events for monitoring and debugging
+// These subscriptions are only active when profiler is enabled to minimize CPU overhead
+if (__PROFILER_ENABLED__ === "true") {
+  globalEventBus.subscribe(EventTypes.HOSTILE_DETECTED, event => {
+    console.log(
+      `[EventBus] Hostiles detected in ${event.data.roomName}: ` +
+        `${event.data.hostileCount} hostiles from [${event.data.hostileUsernames.join(", ")}]`
+    );
+  });
+
+  globalEventBus.subscribe(EventTypes.ENERGY_DEPLETED, event => {
+    console.log(
+      `[EventBus] Energy depleted in ${event.data.roomName}: ` + `${event.data.structureType} ${event.data.structureId}`
+    );
+  });
+
+  globalEventBus.subscribe(EventTypes.ENERGY_RESTORED, event => {
+    console.log(
+      `[EventBus] Energy restored in ${event.data.roomName}: ` +
+        `${event.data.structureType} ${event.data.structureId} (${event.data.energyAmount} energy)`
+    );
+  });
+}
+
 // Initialize profiler and expose it globally for console access
 const profilerInstance = initProfiler();
 if (typeof global !== "undefined") {
   global.Profiler = profilerInstance;
   global.Diagnostics = Diagnostics;
+  global.EventBus = globalEventBus;
 } else if (typeof window !== "undefined") {
   window.Profiler = profilerInstance;
   window.Diagnostics = Diagnostics;
+  window.EventBus = globalEventBus;
 }
 
 /**

@@ -1144,6 +1144,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@ralphschuler/screeps-events@workspace:*, @ralphschuler/screeps-events@workspace:packages/screeps-events":
+  version: 0.0.0-use.local
+  resolution: "@ralphschuler/screeps-events@workspace:packages/screeps-events"
+  dependencies:
+    "@types/node": "npm:^24.9.1"
+    "@types/screeps": "npm:^3.3.8"
+    typescript: "npm:^5.4.3"
+    vitest: "npm:^4.0.12"
+  languageName: unknown
+  linkType: soft
+
 "@ralphschuler/screeps-gpt-actions@workspace:packages/actions":
   version: 0.0.0-use.local
   resolution: "@ralphschuler/screeps-gpt-actions@workspace:packages/actions"
@@ -1155,6 +1166,7 @@ __metadata:
   resolution: "@ralphschuler/screeps-gpt-bot@workspace:packages/bot"
   dependencies:
     "@ralphschuler/screeps-cache": "workspace:*"
+    "@ralphschuler/screeps-events": "workspace:*"
     "@ralphschuler/screeps-kernel": "workspace:*"
     "@ralphschuler/screeps-logger": "workspace:*"
     "@ralphschuler/screeps-perf": "workspace:*"

@@ -1003,14 +1003,14 @@ export class BehaviorController {
   /**
    * Get suitable remote mining targets from scout data
    */
-  private getRemoteMiningTargets(homeRoom: string): string[] {
+  private getRemoteMiningTargets(_homeRoom: string): string[] {
     // Ensure Memory.scout and Memory.scout.rooms are initialized to avoid timing dependency
-    if (!Memory.scout) {
-      Memory.scout = {} as any;
-    }
-    if (!Memory.scout.rooms) {
-      Memory.scout.rooms = {};
-    }
+    Memory.scout ??= {
+      rooms: {},
+      lastUpdate: 0,
+      activeScouts: {}
+    };
+    Memory.scout.rooms ??= {};
 
     // This will be populated by Memory.scout from ScoutingProcess
     if (Object.keys(Memory.scout.rooms).length === 0) {
@@ -1020,7 +1020,14 @@ export class BehaviorController {
     const scoutedRooms = Object.values(Memory.scout.rooms);
 
     // Get my username dynamically instead of hardcoding
-    const myUsername = Game.spawns[Object.keys(Game.spawns)[0]]?.owner?.username;
+    const firstSpawnName = Object.keys(Game.spawns)[0];
+    if (!firstSpawnName) {
+      return [];
+    }
+    const myUsername = Game.spawns[firstSpawnName]?.owner?.username;
+    if (!myUsername) {
+      return [];
+    }
 
     const suitableRooms = scoutedRooms.filter(room => {
       // Must have sources
@@ -1046,8 +1053,8 @@ export class BehaviorController {
 
     // Sort by path distance (closest first) and source count (more is better)
     suitableRooms.sort((a, b) => {
-      const distA = a.pathDistance ?? 999;
-      const distB = b.pathDistance ?? 999;
+      const distA = (a.pathDistance as number | undefined) ?? 999;
+      const distB = (b.pathDistance as number | undefined) ?? 999;
 
       if (distA !== distB) {
         return distA - distB;
@@ -1057,7 +1064,10 @@ export class BehaviorController {
     });
 
     // Return top 2 rooms for remote mining
-    return suitableRooms.slice(0, 2).map(r => r.roomName);
+    return suitableRooms
+      .slice(0, 2)
+      .map(r => r.roomName as string)
+      .filter((name): name is string => typeof name === "string");
   }
 
   private ensureRoleMinimums(
@@ -1440,7 +1450,9 @@ function getEnergyManager(): EnergyPriorityManager | null {
 
 /**
  * Helper to get task queue manager instance
+ * @deprecated This function is unused and will be removed in a future version
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getTaskQueue(): RoleTaskQueueManager | null {
   return taskQueueManager;
 }

@@ -4,6 +4,7 @@ import { ThreatDetector, type ThreatMemory } from "@runtime/defense/ThreatDetect
 import { DefenseCoordinator, type DefenseMemory } from "@runtime/defense/DefenseCoordinator";
 import { TowerManager } from "@runtime/defense/TowerManager";
 import { CombatManager, type CombatManagerMemory } from "@runtime/defense/CombatManager";
+import { globalEventBus } from "@runtime/events/globalEventBus";
 
 /**
  * Defense coordination process that handles threat detection and defensive responses.
@@ -35,7 +36,7 @@ export class DefenseProcess {
     const combatMemory: CombatManagerMemory | undefined = Memory.combat;
 
     const threatDetector = new ThreatDetector(this.logger, threatMemory);
-    const towerManager = new TowerManager(this.logger);
+    const towerManager = new TowerManager({ logger: this.logger, eventBus: globalEventBus });
     const combatManager = new CombatManager({ logger: this.logger, memory: combatMemory });
 
     this.defenseCoordinator = new DefenseCoordinator(

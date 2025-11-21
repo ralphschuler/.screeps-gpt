@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@ralphschuler/screeps-cache": "workspace:*",
+    "@ralphschuler/screeps-events": "workspace:*",
     "@ralphschuler/screeps-kernel": "workspace:*",
     "@ralphschuler/screeps-logger": "workspace:*",
     "@ralphschuler/screeps-perf": "workspace:*",
