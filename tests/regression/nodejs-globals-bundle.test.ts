@@ -76,7 +76,8 @@ describe.sequential("Node.js Globals Bundle Regression (#488)", () => {
 
     // Allow up to 3 matches from decorator metadata (one per process file that uses the decorator)
     // Any more than this likely indicates actual process global usage
-    expect(processMatches === null || processMatches.length <= 3).toBe(true);
+    const MAX_DECORATOR_PROCESS_REFERENCES = 3;
+    expect(processMatches?.length || 0).toBeLessThanOrEqual(MAX_DECORATOR_PROCESS_REFERENCES);
   });
 
   it("should not contain require() calls", async () => {
