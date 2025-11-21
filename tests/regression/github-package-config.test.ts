@@ -43,9 +43,9 @@ describe("GitHub Packages Configuration", () => {
     expect(packageJson.scripts.prepublishOnly).toContain("build");
   });
 
-  it("should not have private field set to true (blocks npm publish)", () => {
-    // Package must not be private to allow publishing to GitHub Packages
-    // See: https://github.com/ralphschuler/.screeps-gpt/issues/XXX
-    expect(packageJson.private).not.toBe(true);
+  it("should have private field set to true (workspace package)", () => {
+    // Package is set to private as it's a workspace root with subpackages
+    // Individual packages can still be published from packages/*/
+    expect(packageJson.private).toBe(true);
   });
 });

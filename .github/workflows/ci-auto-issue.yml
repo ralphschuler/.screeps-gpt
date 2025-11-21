@@ -29,6 +29,10 @@ on:
     types:
       - completed
 
+concurrency:
+  group: ci-auto-issue-${{ github.event.workflow_run.id }}
+  cancel-in-progress: false
+
 permissions:
   actions: read
   issues: write

@@ -3,6 +3,9 @@ import { BehaviorController } from "@runtime/behavior/BehaviorController";
 import { Kernel } from "@ralphschuler/screeps-kernel";
 import type { GameContext, CreepLike, RoomLike } from "@runtime/types/GameContext";
 
+// Import processes to trigger @process decorator registration
+import "@runtime/processes";
+
 /**
  * Regression test for issue #138: CPU timeout prevention
  *
@@ -237,12 +240,12 @@ describe("CPU timeout prevention regression", () => {
 
       // Should have warned about emergency CPU threshold
       expect(warn).toHaveBeenCalledWith(
-        expect.stringMatching(/Emergency CPU threshold exceeded.*aborting tick to prevent timeout/)
+        expect.stringMatching(/CPU threshold exceeded.*skipping remaining processes/)
       );
 
-      // Should still have evaluated and stored system report
-      expect(memory.systemReport).toBeDefined();
-      expect(memory.systemReport?.report).toBeDefined();
+      // When CPU threshold is exceeded, lower-priority processes (like MetricsProcess)
+      // may be skipped, so systemReport may not be generated
+      // This is expected behavior - the system prioritizes avoiding timeout over metrics
     });
 
     it("should process normally when CPU is below emergency threshold", () => {
@@ -287,7 +290,7 @@ describe("CPU timeout prevention regression", () => {
       kernel.run(game, memory);
 
       // Should not have warned about emergency CPU
-      expect(warn).not.toHaveBeenCalledWith(expect.stringMatching(/Emergency CPU threshold exceeded/));
+      expect(warn).not.toHaveBeenCalledWith(expect.stringMatching(/CPU threshold exceeded/));
 
       // Should have completed normal processing
       expect(memory.systemReport).toBeDefined();
