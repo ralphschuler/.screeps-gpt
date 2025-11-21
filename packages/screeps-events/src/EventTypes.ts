@@ -21,8 +21,10 @@ export interface CreepDiedEvent {
  */
 export interface EnergyDepletedEvent {
   roomName: string;
-  structureType: string;
-  structureId: string;
+  /** Structure type constant (e.g., STRUCTURE_TOWER, STRUCTURE_SPAWN) */
+  structureType: StructureConstant;
+  /** Structure ID */
+  structureId: Id<Structure>;
 }
 
 /**
@@ -30,8 +32,10 @@ export interface EnergyDepletedEvent {
  */
 export interface EnergyRestoredEvent {
   roomName: string;
-  structureType: string;
-  structureId: string;
+  /** Structure type constant (e.g., STRUCTURE_TOWER, STRUCTURE_SPAWN) */
+  structureType: StructureConstant;
+  /** Structure ID */
+  structureId: Id<Structure>;
   energyAmount: number;
 }
 
@@ -58,8 +62,10 @@ export interface ControllerUpgradeEvent {
  */
 export interface ConstructionStartedEvent {
   roomName: string;
-  structureType: string;
-  siteId: string;
+  /** Buildable structure type constant */
+  structureType: BuildableStructureConstant;
+  /** Construction site ID */
+  siteId: Id<ConstructionSite>;
 }
 
 /**
@@ -67,8 +73,10 @@ export interface ConstructionStartedEvent {
  */
 export interface ConstructionCompletedEvent {
   roomName: string;
-  structureType: string;
-  structureId: string;
+  /** Buildable structure type constant */
+  structureType: BuildableStructureConstant;
+  /** Structure ID */
+  structureId: Id<Structure>;
 }
 
 /**

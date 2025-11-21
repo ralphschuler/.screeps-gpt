@@ -175,6 +175,12 @@ declare global {
     threats?: ThreatMemory;
     defense?: DefenseMemory;
     combat?: CombatManagerMemory;
+    /**
+     * Tower energy state tracking for event emission.
+     * Tracks which towers have emitted energy depletion events.
+     * @see src/runtime/defense/TowerManager.ts
+     */
+    towerState?: Record<string, { depleted: boolean }>;
   }
 
   interface CreepMemory {

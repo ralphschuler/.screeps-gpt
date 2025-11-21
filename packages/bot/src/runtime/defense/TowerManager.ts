@@ -20,6 +20,18 @@ interface ThreatAssessment {
 type TowerAction = "attack" | "heal" | "repair";
 
 /**
+ * Configuration options for TowerManager
+ */
+export interface TowerManagerOptions {
+  logger?: Pick<Console, "log" | "warn">;
+  repairThreshold?: number;
+  criticalRepairThreshold?: number;
+  wallUpgradeManager?: WallUpgradeManager;
+  minEnergyForRepair?: number;
+  eventBus?: EventBus;
+}
+
+/**
  * Manages tower automation with threat-based targeting and repair logic.
  * Implements intelligent prioritization for defense, healing, and maintenance.
  */
@@ -42,22 +54,14 @@ export class TowerManager {
   private readonly wallUpgradeManager: WallUpgradeManager;
   private readonly minEnergyForRepair: number;
   private readonly eventBus?: EventBus;
-  private depletedTowers: Set<Id<StructureTower>> = new Set();
 
-  public constructor(
-    logger: Pick<Console, "log" | "warn"> = console,
-    repairThreshold: number = 0.8, // Repair structures below 80% health
-    criticalRepairThreshold: number = 0.2, // Critical repair below 20%
-    wallUpgradeManager?: WallUpgradeManager,
-    minEnergyForRepair: number = 500, // Reserve energy for defense
-    eventBus?: EventBus
-  ) {
-    this.logger = logger;
-    this.repairThreshold = repairThreshold;
-    this.criticalRepairThreshold = criticalRepairThreshold;
-    this.wallUpgradeManager = wallUpgradeManager ?? new WallUpgradeManager();
-    this.minEnergyForRepair = minEnergyForRepair;
-    this.eventBus = eventBus;
+  public constructor(options: TowerManagerOptions = {}) {
+    this.logger = options.logger ?? console;
+    this.repairThreshold = options.repairThreshold ?? 0.8; // Repair structures below 80% health
+    this.criticalRepairThreshold = options.criticalRepairThreshold ?? 0.2; // Critical repair below 20%
+    this.wallUpgradeManager = options.wallUpgradeManager ?? new WallUpgradeManager();
+    this.minEnergyForRepair = options.minEnergyForRepair ?? 500; // Reserve energy for defense
+    this.eventBus = options.eventBus;
   }
 
   /**
@@ -119,11 +123,14 @@ export class TowerManager {
       }
     }) as Structure[];
 
+    // Initialize Memory.towerState if needed for tracking energy depletion
+    Memory.towerState ??= {};
+
     // Process each tower
     for (const tower of towers) {
       // Emit energy depletion event if tower energy reaches zero
-      if (this.eventBus && tower.store.energy === 0 && !this.depletedTowers.has(tower.id)) {
-        this.depletedTowers.add(tower.id);
+      if (this.eventBus && tower.store.energy === 0 && !Memory.towerState[tower.id]) {
+        Memory.towerState[tower.id] = { depleted: true };
         this.eventBus.emit(
           EventTypes.ENERGY_DEPLETED,
           {
@@ -133,9 +140,9 @@ export class TowerManager {
           },
           "TowerManager"
         );
-      } else if (tower.store.energy > 0 && this.depletedTowers.has(tower.id)) {
-        // Tower has been refilled, remove from depleted set
-        this.depletedTowers.delete(tower.id);
+      } else if (tower.store.energy > this.minEnergyForRepair && Memory.towerState[tower.id]?.depleted) {
+        // Tower has been refilled with sufficient energy, emit restoration event
+        delete Memory.towerState[tower.id];
         if (this.eventBus) {
           this.eventBus.emit(
             EventTypes.ENERGY_RESTORED,

@@ -2,7 +2,8 @@ import { Kernel } from "@ralphschuler/screeps-kernel";
 import type { GameContext } from "@runtime/types/GameContext";
 import { init as initProfiler } from "@ralphschuler/screeps-profiler";
 import { Diagnostics } from "@runtime/utils/Diagnostics";
-import { EventBus, EventTypes } from "@ralphschuler/screeps-events";
+import { EventTypes } from "@ralphschuler/screeps-events";
+import { globalEventBus } from "@runtime/events/globalEventBus";
 
 // Import process modules to trigger @process decorator registration
 import "@runtime/processes";
@@ -13,30 +14,29 @@ const kernel = new Kernel({
   cpuEmergencyThreshold: 0.9
 });
 
-// Create global EventBus instance for inter-component communication
-export const globalEventBus = new EventBus();
+// Subscribe to runtime events for monitoring and debugging
+// These subscriptions are only active when profiler is enabled to minimize CPU overhead
+if (__PROFILER_ENABLED__ === "true") {
+  globalEventBus.subscribe(EventTypes.HOSTILE_DETECTED, event => {
+    console.log(
+      `[EventBus] Hostiles detected in ${event.data.roomName}: ` +
+        `${event.data.hostileCount} hostiles from [${event.data.hostileUsernames.join(", ")}]`
+    );
+  });
 
-// Subscribe to events for logging (example integration)
+  globalEventBus.subscribe(EventTypes.ENERGY_DEPLETED, event => {
+    console.log(
+      `[EventBus] Energy depleted in ${event.data.roomName}: ` + `${event.data.structureType} ${event.data.structureId}`
+    );
+  });
 
-globalEventBus.subscribe(EventTypes.HOSTILE_DETECTED, event => {
-  console.log(
-    `[EventBus] Hostiles detected in ${event.data.roomName}: ` +
-      `${event.data.hostileCount} hostiles from [${event.data.hostileUsernames.join(", ")}]`
-  );
-});
-
-globalEventBus.subscribe(EventTypes.ENERGY_DEPLETED, event => {
-  console.log(
-    `[EventBus] Energy depleted in ${event.data.roomName}: ` + `${event.data.structureType} ${event.data.structureId}`
-  );
-});
-
-globalEventBus.subscribe(EventTypes.ENERGY_RESTORED, event => {
-  console.log(
-    `[EventBus] Energy restored in ${event.data.roomName}: ` +
-      `${event.data.structureType} ${event.data.structureId} (${event.data.energyAmount} energy)`
-  );
-});
+  globalEventBus.subscribe(EventTypes.ENERGY_RESTORED, event => {
+    console.log(
+      `[EventBus] Energy restored in ${event.data.roomName}: ` +
+        `${event.data.structureType} ${event.data.structureId} (${event.data.energyAmount} energy)`
+    );
+  });
+}
 
 // Initialize profiler and expose it globally for console access
 const profilerInstance = initProfiler();
