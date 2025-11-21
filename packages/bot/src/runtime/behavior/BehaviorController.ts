@@ -13,6 +13,7 @@ type RoleName =
   | "upgrader"
   | "builder"
   | "remoteMiner"
+  | "remoteHauler"
   | "stationaryHarvester"
   | "hauler"
   | "repairer"
@@ -42,6 +43,7 @@ const HARVESTER_VERSION = 1;
 const UPGRADER_VERSION = 1;
 const BUILDER_VERSION = 1;
 const REMOTE_MINER_VERSION = 1;
+const REMOTE_HAULER_VERSION = 1;
 const STATIONARY_HARVESTER_VERSION = 1;
 const HAULER_VERSION = 1;
 const REPAIRER_VERSION = 1;
@@ -60,6 +62,9 @@ const BUILDER_MAINTAIN_TASK = "maintain" as const;
 const REMOTE_TRAVEL_TASK = "travel" as const;
 const REMOTE_MINE_TASK = "mine" as const;
 const REMOTE_RETURN_TASK = "return" as const;
+const REMOTE_HAULER_TRAVEL_TASK = "remoteTravel" as const;
+const REMOTE_HAULER_PICKUP_TASK = "remotePickup" as const;
+const REMOTE_HAULER_RETURN_TASK = "remoteReturn" as const;
 const STATIONARY_HARVEST_TASK = "stationaryHarvest" as const;
 const HAULER_PICKUP_TASK = "pickup" as const;
 const HAULER_DELIVER_TASK = "haulerDeliver" as const;
@@ -74,6 +79,7 @@ type HarvesterTask = typeof HARVEST_TASK | typeof DELIVER_TASK | typeof UPGRADE_
 type UpgraderTask = typeof RECHARGE_TASK | typeof UPGRADE_TASK;
 type BuilderTask = typeof BUILDER_GATHER_TASK | typeof BUILDER_BUILD_TASK | typeof BUILDER_MAINTAIN_TASK;
 type RemoteMinerTask = typeof REMOTE_TRAVEL_TASK | typeof REMOTE_MINE_TASK | typeof REMOTE_RETURN_TASK;
+type RemoteHaulerTask = typeof REMOTE_HAULER_TRAVEL_TASK | typeof REMOTE_HAULER_PICKUP_TASK | typeof REMOTE_HAULER_RETURN_TASK;
 type StationaryHarvesterTask = typeof STATIONARY_HARVEST_TASK;
 type HaulerTask = typeof HAULER_PICKUP_TASK | typeof HAULER_DELIVER_TASK;
 type RepairerTask = typeof REPAIRER_GATHER_TASK | typeof REPAIRER_REPAIR_TASK;
@@ -99,6 +105,12 @@ interface RemoteMinerMemory extends BaseCreepMemory {
   homeRoom: string;
   targetRoom: string;
   sourceId?: Id<Source>;
+}
+
+interface RemoteHaulerMemory extends BaseCreepMemory {
+  task: RemoteHaulerTask;
+  homeRoom: string;
+  targetRoom: string;
 }
 
 interface StationaryHarvesterMemory extends BaseCreepMemory {
