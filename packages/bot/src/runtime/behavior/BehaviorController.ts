@@ -422,11 +422,11 @@ export class BehaviorController {
     const spawned: string[] = [];
     this.ensureRoleMinimums(game, memory, roleCounts, spawned, bootstrapRoleMinimums ?? {});
 
+    // Clean up dead creep tasks first to release assignments before new task discovery
+    this.taskQueueManager.cleanupDeadCreepTasks(memory, game);
+
     // Task Discovery Phase: Populate task queues before creep execution
     this.discoverTasks(game, memory);
-
-    // Clean up dead creep tasks
-    this.taskQueueManager.cleanupDeadCreepTasks(memory, game);
 
     // Execute role-based system
     const result = this.executeWithRoleSystem(game, memory);
@@ -493,18 +493,13 @@ export class BehaviorController {
       }
     }
 
-    // Clean up expired tasks for all roles
-    const roles: RoleName[] = [
-      "harvester",
-      "upgrader",
-      "builder",
-      "hauler",
-      "repairer",
-      "stationaryHarvester"
-    ];
-
-    for (const role of roles) {
-      this.taskQueueManager.cleanupExpiredTasks(memory, role, currentTick);
+    // Clean up expired tasks for all roles that have queues
+    // Use Object.keys to dynamically discover which roles have tasks
+    const taskQueue = memory.taskQueue as { [role: string]: unknown[] } | undefined;
+    if (taskQueue) {
+      for (const role of Object.keys(taskQueue)) {
+        this.taskQueueManager.cleanupExpiredTasks(memory, role, currentTick);
+      }
     }
   }
 

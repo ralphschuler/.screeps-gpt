@@ -242,7 +242,7 @@ export function discoverStationaryHarvestTasks(room: Room, currentTick: number):
 
   for (const source of sources) {
     // Check if there's a container near this source
-    // Safety check for test mocks
+    // Safety check: source.pos may be undefined in edge cases (e.g., RoomPosition deserialization issues)
     if (!source.pos || typeof source.pos.findInRange !== "function") {
       continue;
     }
