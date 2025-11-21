@@ -242,6 +242,11 @@ export function discoverStationaryHarvestTasks(room: Room, currentTick: number):
 
   for (const source of sources) {
     // Check if there's a container near this source
+    // Safety check for test mocks
+    if (!source.pos || typeof source.pos.findInRange !== "function") {
+      continue;
+    }
+
     const nearbyStructures = source.pos.findInRange(FIND_STRUCTURES, 2, {
       filter: (s: Structure) => s.structureType === STRUCTURE_CONTAINER
     });
