@@ -1144,7 +1144,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@ralphschuler/screeps-events@workspace:packages/screeps-events":
+"@ralphschuler/screeps-events@workspace:*, @ralphschuler/screeps-events@workspace:packages/screeps-events":
   version: 0.0.0-use.local
   resolution: "@ralphschuler/screeps-events@workspace:packages/screeps-events"
   dependencies:
@@ -1166,6 +1166,7 @@ __metadata:
   resolution: "@ralphschuler/screeps-gpt-bot@workspace:packages/bot"
   dependencies:
     "@ralphschuler/screeps-cache": "workspace:*"
+    "@ralphschuler/screeps-events": "workspace:*"
     "@ralphschuler/screeps-kernel": "workspace:*"
     "@ralphschuler/screeps-logger": "workspace:*"
     "@ralphschuler/screeps-perf": "workspace:*"

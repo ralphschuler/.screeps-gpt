@@ -2,6 +2,7 @@ import type { RoomLike } from "@runtime/types/GameContext";
 import { profile } from "@ralphschuler/screeps-profiler";
 import { WallUpgradeManager } from "./WallUpgradeManager";
 import { RepairPriority, type RepairTarget } from "@shared/contracts";
+import { EventBus, EventTypes } from "@ralphschuler/screeps-events";
 
 /**
  * Threat assessment for hostile creeps
@@ -40,19 +41,23 @@ export class TowerManager {
   private readonly criticalRepairThreshold: number;
   private readonly wallUpgradeManager: WallUpgradeManager;
   private readonly minEnergyForRepair: number;
+  private readonly eventBus?: EventBus;
+  private depletedTowers: Set<Id<StructureTower>> = new Set();
 
   public constructor(
     logger: Pick<Console, "log" | "warn"> = console,
     repairThreshold: number = 0.8, // Repair structures below 80% health
     criticalRepairThreshold: number = 0.2, // Critical repair below 20%
     wallUpgradeManager?: WallUpgradeManager,
-    minEnergyForRepair: number = 500 // Reserve energy for defense
+    minEnergyForRepair: number = 500, // Reserve energy for defense
+    eventBus?: EventBus
   ) {
     this.logger = logger;
     this.repairThreshold = repairThreshold;
     this.criticalRepairThreshold = criticalRepairThreshold;
     this.wallUpgradeManager = wallUpgradeManager ?? new WallUpgradeManager();
     this.minEnergyForRepair = minEnergyForRepair;
+    this.eventBus = eventBus;
   }
 
   /**
@@ -75,6 +80,20 @@ export class TowerManager {
 
     // Get all hostiles in room
     const hostiles = room.find(FIND_HOSTILE_CREEPS) as Creep[];
+
+    // Emit hostile detection event if EventBus is available
+    if (this.eventBus && hostiles.length > 0) {
+      const hostileUsernames = [...new Set(hostiles.map(h => h.owner.username))];
+      this.eventBus.emit(
+        EventTypes.HOSTILE_DETECTED,
+        {
+          roomName: room.name,
+          hostileCount: hostiles.length,
+          hostileUsernames
+        },
+        "TowerManager"
+      );
+    }
 
     // Get damaged friendlies
     const damagedFriendlies = room.find(FIND_MY_CREEPS, {
@@ -102,6 +121,35 @@ export class TowerManager {
 
     // Process each tower
     for (const tower of towers) {
+      // Emit energy depletion event if tower energy reaches zero
+      if (this.eventBus && tower.store.energy === 0 && !this.depletedTowers.has(tower.id)) {
+        this.depletedTowers.add(tower.id);
+        this.eventBus.emit(
+          EventTypes.ENERGY_DEPLETED,
+          {
+            roomName: room.name,
+            structureType: STRUCTURE_TOWER,
+            structureId: tower.id
+          },
+          "TowerManager"
+        );
+      } else if (tower.store.energy > 0 && this.depletedTowers.has(tower.id)) {
+        // Tower has been refilled, remove from depleted set
+        this.depletedTowers.delete(tower.id);
+        if (this.eventBus) {
+          this.eventBus.emit(
+            EventTypes.ENERGY_RESTORED,
+            {
+              roomName: room.name,
+              structureType: STRUCTURE_TOWER,
+              structureId: tower.id,
+              energyAmount: tower.store.energy
+            },
+            "TowerManager"
+          );
+        }
+      }
+
       // Priority 1: Attack hostiles
       if (hostiles.length > 0) {
         const target = this.selectAttackTarget(tower, hostiles);

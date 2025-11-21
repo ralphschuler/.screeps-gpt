@@ -15,6 +15,14 @@ declare global {
   const __PROFILER_ENABLED__: "true" | "false";
   const __ROOM_VISUALS_ENABLED__: string;
 
+  /**
+   * Global EventBus instance for inter-component communication.
+   * Available in console and for debugging.
+   * @see src/main.ts
+   */
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  var EventBus: import("@ralphschuler/screeps-events").EventBus;
+
   interface Memory {
     /**
      * Memory schema version for migration tracking.
