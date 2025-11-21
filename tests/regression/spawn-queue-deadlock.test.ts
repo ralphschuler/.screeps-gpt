@@ -43,7 +43,7 @@ describe("Spawn Queue Deadlock Prevention (Issue #575)", () => {
         log: (msg: string) => logMessages.push(msg)
       };
 
-      const controller = new BehaviorController({ }, mockLogger);
+      const controller = new BehaviorController({}, mockLogger);
 
       const mockRoom = {
         name: "W1N1",
@@ -105,7 +105,7 @@ describe("Spawn Queue Deadlock Prevention (Issue #575)", () => {
         log: (msg: string) => logMessages.push(msg)
       };
 
-      const controller = new BehaviorController({ }, mockLogger);
+      const controller = new BehaviorController({}, mockLogger);
 
       const mockRoom = {
         name: "W1N1",
@@ -161,7 +161,7 @@ describe("Spawn Queue Deadlock Prevention (Issue #575)", () => {
     });
 
     it("should clear stuck state when spawn becomes available", () => {
-      const controller = new BehaviorController({ });
+      const controller = new BehaviorController({});
 
       const mockRoom = {
         name: "W1N1",
@@ -207,7 +207,7 @@ describe("Spawn Queue Deadlock Prevention (Issue #575)", () => {
         log: (msg: string) => logMessages.push(msg)
       };
 
-      const controller = new BehaviorController({ }, mockLogger);
+      const controller = new BehaviorController({}, mockLogger);
 
       const mockRoom = {
         name: "W1N1",
@@ -250,7 +250,7 @@ describe("Spawn Queue Deadlock Prevention (Issue #575)", () => {
 
   describe("Energy Validation", () => {
     it("should skip spawning when insufficient energy", () => {
-      const controller = new BehaviorController({ });
+      const controller = new BehaviorController({});
 
       const mockRoom = {
         name: "W1N1",
@@ -278,7 +278,7 @@ describe("Spawn Queue Deadlock Prevention (Issue #575)", () => {
     });
 
     it("should spawn when sufficient energy is available", () => {
-      const controller = new BehaviorController({ });
+      const controller = new BehaviorController({});
 
       const mockRoom = {
         name: "W1N1",
@@ -312,7 +312,7 @@ describe("Spawn Queue Deadlock Prevention (Issue #575)", () => {
 
   describe("Memory Initialization", () => {
     it("should initialize spawnHealth in Memory", () => {
-      const controller = new BehaviorController({ });
+      const controller = new BehaviorController({});
 
       const mockRoom = {
         name: "W1N1",
