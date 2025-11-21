@@ -22,10 +22,6 @@ if (typeof global !== "undefined") {
   window.Diagnostics = Diagnostics;
 }
 
-// Auto-start profiler if __PROFILER_ENABLED__ is true and not already running
-// This ensures profiler data collection begins automatically on deployment
-let profilerAutoStarted = false;
-
 /**
  * Validates Game object at runtime to ensure it conforms to GameContext interface.
  * Replaces unsafe type casting with explicit runtime validation.
@@ -50,27 +46,35 @@ function validateGameContext(game: Game): GameContext {
   return game as GameContext;
 }
 
+/**
+ * Ensures profiler is running if enabled at build time.
+ * This function is idempotent and safe to call on every tick.
+ * It handles Memory resets and code reloads gracefully.
+ */
+function ensureProfilerRunning(): void {
+  if (!__PROFILER_ENABLED__) {
+    return;
+  }
+
+  // Initialize Memory.profiler if not present (handles Memory resets)
+  Memory.profiler ??= {
+    data: {},
+    total: 0
+  };
+
+  // Auto-start profiler if not already running
+  // Check every tick to handle Memory resets gracefully
+  if (Memory.profiler.start === undefined) {
+    profilerInstance.start();
+    console.log(`[Profiler] Auto-started profiler data collection (tick: ${Game.time})`);
+  }
+}
+
 export const loop = (): void => {
   try {
-    // Ensure Memory.profiler is initialized on first tick
-    // This must happen inside loop() as Memory is not available at module load time
-    if (__PROFILER_ENABLED__ && !profilerAutoStarted) {
-      // Initialize Memory.profiler if not present using nullish coalescing assignment
-      Memory.profiler ??= {
-        data: {},
-        total: 0
-      };
-
-      // Auto-start profiler if not already running
-      if (Memory.profiler.start === undefined) {
-        profilerInstance.start();
-        console.log("[Profiler] Auto-started profiler data collection");
-        profilerAutoStarted = true;
-      } else {
-        // Already running, no need to check again
-        profilerAutoStarted = true;
-      }
-    }
+    // Ensure profiler is running on every tick
+    // This handles Memory resets and ensures continuous data collection
+    ensureProfilerRunning();
 
     // Defensive initialization of Memory.stats to prevent telemetry blackout
     // This ensures stats structure exists on every tick, even if Memory is reset
