@@ -1,0 +1,40 @@
+{
+  "name": "@ralphschuler/screeps-events",
+  "version": "1.0.0",
+  "description": "Event propagation system for inter-component communication in Screeps",
+  "license": "MIT",
+  "author": "OpenAI Automations",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "keywords": [
+    "screeps",
+    "events",
+    "event-bus",
+    "communication"
+  ],
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "scripts": {
+    "build": "tsc",
+    "postinstall": "npm run build",
+    "prepublishOnly": "npm run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.1",
+    "@types/screeps": "^3.3.8",
+    "typescript": "^5.4.3",
+    "vitest": "^4.0.12"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
