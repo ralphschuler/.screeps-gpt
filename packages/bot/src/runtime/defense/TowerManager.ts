@@ -129,7 +129,7 @@ export class TowerManager {
     // Process each tower
     for (const tower of towers) {
       // Emit energy depletion event if tower energy reaches zero
-      if (this.eventBus && tower.store.energy === 0 && !Memory.towerState[tower.id]) {
+      if (this.eventBus && tower.store?.energy === 0 && !Memory.towerState[tower.id]) {
         Memory.towerState[tower.id] = { depleted: true };
         this.eventBus.emit(
           EventTypes.ENERGY_DEPLETED,
@@ -140,7 +140,11 @@ export class TowerManager {
           },
           "TowerManager"
         );
-      } else if (tower.store.energy > this.minEnergyForRepair && Memory.towerState[tower.id]?.depleted) {
+      } else if (
+        tower.store &&
+        tower.store.energy > this.minEnergyForRepair &&
+        Memory.towerState[tower.id]?.depleted
+      ) {
         // Tower has been refilled with sufficient energy, emit restoration event
         delete Memory.towerState[tower.id];
         if (this.eventBus) {
