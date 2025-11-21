@@ -30,11 +30,11 @@ The role-specific task queue system prevents duplicate task assignment by coordi
 
 ```typescript
 interface TaskQueueEntry {
-  taskId: string;        // Stable identifier (e.g., "harvest-source-5bbcae9f9099fc012e63b52e")
-  targetId: string;      // ID of the target object
+  taskId: string; // Stable identifier (e.g., "harvest-source-5bbcae9f9099fc012e63b52e")
+  targetId: string; // ID of the target object
   assignedCreep?: string; // Name of assigned creep (undefined if unassigned)
   priority: TaskPriority; // CRITICAL, HIGH, NORMAL, or LOW
-  expiresAt: number;     // Game tick when task expires
+  expiresAt: number; // Game tick when task expires
 }
 ```
 
@@ -43,9 +43,9 @@ interface TaskQueueEntry {
 ```typescript
 enum TaskPriority {
   CRITICAL = 1, // Emergency tasks (spawn energy, defense)
-  HIGH = 2,     // Important tasks (construction, harvesting)
-  NORMAL = 3,   // Regular tasks (upgrading, maintenance)
-  LOW = 4       // Optional tasks (exploration, optimization)
+  HIGH = 2, // Important tasks (construction, harvesting)
+  NORMAL = 3, // Regular tasks (upgrading, maintenance)
+  LOW = 4 // Optional tasks (exploration, optimization)
 }
 ```
 
@@ -56,12 +56,14 @@ Task discovery runs once per tick before creep execution. It identifies availabl
 ### Discovered Tasks by Role
 
 #### Harvesters
+
 - **Task Type**: Harvest from energy sources
 - **Priority**: HIGH
 - **Task ID Format**: `harvest-source-<sourceId>`
 - **Expiration**: 100 ticks
 
 #### Builders
+
 - **Task Types**: Construction sites (priority-based), repair tasks
 - **Priorities**:
   - CRITICAL: Spawns, Extensions
@@ -72,6 +74,7 @@ Task discovery runs once per tick before creep execution. It identifies availabl
 - **Expiration**: 200 ticks (build), 150 ticks (repair)
 
 #### Haulers
+
 - **Task Types**: Pickup (dropped energy, containers), delivery (spawns, extensions, towers, storage)
 - **Priorities**:
   - CRITICAL: Spawn/extension delivery
@@ -81,6 +84,7 @@ Task discovery runs once per tick before creep execution. It identifies availabl
 - **Expiration**: 50 ticks (pickup), 100 ticks (delivery)
 
 #### Upgraders
+
 - **Task Type**: Controller upgrade
 - **Priority**: NORMAL
 - **Task ID Format**: `upgrade-<controllerId>`
@@ -88,12 +92,14 @@ Task discovery runs once per tick before creep execution. It identifies availabl
 - **Note**: Multiple upgraders can work on same controller, but queue tracks work availability
 
 #### Stationary Harvesters
+
 - **Task Type**: Harvest from sources with adjacent containers
 - **Priority**: HIGH
 - **Task ID Format**: `stationary-harvest-<sourceId>`
 - **Expiration**: 100 ticks
 
 #### Repairers
+
 - **Task Type**: Structure repair
 - **Priorities**:
   - CRITICAL: Spawns, Towers
@@ -112,19 +118,19 @@ To integrate task queue with a role handler:
 function runHarvester(creep: ManagedCreep): string {
   const memory = creep.memory as HarvesterMemory;
   const taskQueue = getTaskQueue();
-  
+
   // Check if creep already has an assigned task
   let task = taskQueue?.getCreepTask(Memory, creep.name);
-  
+
   // If no task, try to assign one from the queue
   if (!task) {
     task = taskQueue?.assignTask(Memory, "harvester", creep.name, Game.time);
   }
-  
+
   // If we have a task from queue, try to execute it
   if (task) {
     const target = Game.getObjectById(task.targetId as Id<Source>);
-    
+
     if (target) {
       // Execute task
       const result = creep.harvest(target);
@@ -142,7 +148,7 @@ function runHarvester(creep: ManagedCreep): string {
       task = null;
     }
   }
-  
+
   // Fallback to original behavior if no queue task available
   // ... existing creep logic here ...
 }
@@ -204,7 +210,7 @@ Memory.taskQueue = {
     }
   ]
   // ... other roles
-}
+};
 ```
 
 ## Monitoring
@@ -271,30 +277,39 @@ Run tests with: `yarn test:unit`
 ### RoleTaskQueueManager
 
 #### `assignTask(memory, role, creepName, currentTick): TaskQueueEntry | null`
+
 Assigns an available task to a creep. Returns null if no tasks available.
 
 #### `releaseTask(memory, taskId, creepName): void`
+
 Releases a task assignment (on completion or failure).
 
 #### `addTask(memory, role, task): void`
+
 Adds a new task to the queue (prevents duplicates).
 
 #### `getAvailableTasks(memory, role, currentTick): TaskQueueEntry[]`
+
 Returns all unassigned tasks for a role.
 
 #### `cleanupExpiredTasks(memory, role, currentTick): void`
+
 Removes expired tasks from a role's queue.
 
 #### `cleanupDeadCreepTasks(memory, game): void`
+
 Releases tasks assigned to dead creeps.
 
 #### `getCreepTask(memory, creepName): TaskQueueEntry | null`
+
 Gets the current task assigned to a creep.
 
 #### `clearRoleQueue(memory, role): void`
+
 Removes all tasks for a role (for testing/reset).
 
 #### `getQueueStats(memory): Record<string, { total, assigned, available }>`
+
 Returns queue statistics by role.
 
 ### TaskDiscovery Functions

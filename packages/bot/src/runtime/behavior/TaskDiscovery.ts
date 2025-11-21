@@ -144,7 +144,7 @@ export function discoverPickupTasks(room: Room, currentTick: number, minAmount: 
   // Find containers with energy
   const containers = room.find(FIND_STRUCTURES, {
     filter: s =>
-      s.structureType === STRUCTURE_CONTAINER && (s as StructureContainer).store.getUsedCapacity(RESOURCE_ENERGY) > 0
+      s.structureType === STRUCTURE_CONTAINER && (s).store.getUsedCapacity(RESOURCE_ENERGY) > 0
   });
 
   for (const container of containers) {
@@ -185,7 +185,7 @@ export function discoverDeliveryTasks(room: Room, currentTick: number): TaskQueu
   const towers = room.find(FIND_STRUCTURES, {
     filter: (structure: AnyStructure) =>
       structure.structureType === STRUCTURE_TOWER &&
-      (structure as StructureTower).store.getFreeCapacity(RESOURCE_ENERGY) > 0
+      (structure).store.getFreeCapacity(RESOURCE_ENERGY) > 0
   });
 
   for (const tower of towers) {
@@ -198,7 +198,13 @@ export function discoverDeliveryTasks(room: Room, currentTick: number): TaskQueu
   }
 
   // Normal: storage
-  if (room.storage && room.storage.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+  // Safety check: storage.store may not have getFreeCapacity in test mocks
+  if (
+    room.storage &&
+    room.storage.store &&
+    typeof room.storage.store.getFreeCapacity === "function" &&
+    room.storage.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+  ) {
     tasks.push({
       taskId: `deliver-${room.storage.id}`,
       targetId: room.storage.id,

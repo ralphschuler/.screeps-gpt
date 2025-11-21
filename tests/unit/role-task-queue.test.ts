@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { RoleTaskQueueManager, TaskPriority, type TaskQueueEntry } from "../../packages/bot/src/runtime/behavior/RoleTaskQueue";
+import {
+  RoleTaskQueueManager,
+  TaskPriority,
+  type TaskQueueEntry
+} from "../../packages/bot/src/runtime/behavior/RoleTaskQueue";
 
 /**
  * Unit tests for RoleTaskQueue system
