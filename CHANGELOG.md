@@ -5,6 +5,9 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.125.7] - 2025-11-21
+
+
 ### Changed
 
 - **Workflow Architecture Refactoring**: Simplified monitoring and CI automation workflows
@@ -31,6 +34,7 @@ This refactoring improves maintainability and predictability:
 - **Predictability**: Issue creation is more predictable than auto-fixing
 - **Transparency**: Issues provide visible tracking of CI problems
 - **Maintainability**: Simpler workflows are easier to debug
+
 
 ## [0.125.1] - 2025-11-20
 
