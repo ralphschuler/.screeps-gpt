@@ -49,7 +49,7 @@ export interface ITaskNode {
   /** Game tick when task expires if not started */
   expiresAt: number;
   /** Name of creep assigned to this task (undefined if unassigned) */
-  assignedCreep?: string;
+  assignedCreep?: string | undefined;
 }
 
 /**

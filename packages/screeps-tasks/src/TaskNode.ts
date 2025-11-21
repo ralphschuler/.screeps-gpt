@@ -18,7 +18,7 @@ export class TaskNode implements ITaskNode {
   public dependents: string[];
   public createdAt: number;
   public expiresAt: number;
-  public assignedCreep?: string;
+  public assignedCreep?: string | undefined;
 
   public constructor(config: {
     id: string;
