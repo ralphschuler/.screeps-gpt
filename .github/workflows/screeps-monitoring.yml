@@ -31,32 +31,6 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v5
 
-      - name: Run autonomous strategic monitoring with PTR analysis
-        uses: ./.github/actions/copilot-exec
-        env:
-          REPO_NAME: "${{ github.repository }}"
-          RUN_ID: "${{ github.run_id }}"
-          RUN_URL: >-
-            https://github.com/${{ github.repository }}/actions/runs/${{
-            github.run_id }}
-          SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
-          SCREEPS_HOST: ${{ secrets.SCREEPS_HOST }}
-          SCREEPS_SHARD: ${{ secrets.SCREEPS_SHARD }}
-          SCREEPS_PORT: ${{ secrets.SCREEPS_PORT }}
-          SCREEPS_PROTOCOL: ${{ secrets.SCREEPS_PROTOCOL }}
-          SCREEPS_STATS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
-          SCREEPS_STATS_HOST: ${{ secrets.SCREEPS_HOST }}
-          SCREEPS_STATS_API: ${{ secrets.SCREEPS_API }}
-        with:
-          copilot-token: ${{ secrets.COPILOT_TOKEN }}
-          prompt-path: .github/copilot/prompts/screeps-monitor
-          output-path: >-
-            reports/copilot/screeps-monitor-${{ github.run_id }}.log
-          additional-mcp-config: >-
-            @.github/mcp/screeps-mcp.json
-          timeout: "40"
-          verbose: "true"
-
       - name: Collect PTR stats with resilient telemetry
         id: collect_ptr_stats
         if: success()
@@ -201,7 +175,6 @@ jobs:
         with:
           name: screeps-monitor-report-${{ github.run_id }}
           path: |
-            reports/copilot/screeps-monitor-${{ github.run_id }}.log
             reports/copilot/ptr-stats.json
             reports/profiler/latest.json
             reports/screeps-stats/latest.json
