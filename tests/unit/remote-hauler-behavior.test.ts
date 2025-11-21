@@ -11,7 +11,14 @@ describe("RemoteHauler Behavior", () => {
       controller: null,
       find: (type: FindConstant) => {
         if (type === FIND_DROPPED_RESOURCES) {
-          return [{ resourceType: RESOURCE_ENERGY, amount: 100, pickup: vi.fn(() => OK) }];
+          return [
+            {
+              id: "dropped-energy-1" as Id<Resource>,
+              resourceType: RESOURCE_ENERGY,
+              amount: 100,
+              pos: { x: 25, y: 25 }
+            }
+          ];
         }
         if (type === FIND_STRUCTURES) {
           return [];

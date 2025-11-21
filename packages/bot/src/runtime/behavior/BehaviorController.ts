@@ -75,6 +75,11 @@ const HEALER_HEAL_TASK = "heal" as const;
 const DISMANTLER_DISMANTLE_TASK = "dismantle" as const;
 const CLAIMER_CLAIM_TASK = "claim" as const;
 
+// Constants for remote operations
+const ROOM_CENTER_X = 25;
+const ROOM_CENTER_Y = 25;
+const MIN_DROPPED_ENERGY_AMOUNT = 50;
+
 type HarvesterTask = typeof HARVEST_TASK | typeof DELIVER_TASK | typeof UPGRADE_TASK;
 type UpgraderTask = typeof RECHARGE_TASK | typeof UPGRADE_TASK;
 type BuilderTask = typeof BUILDER_GATHER_TASK | typeof BUILDER_BUILD_TASK | typeof BUILDER_MAINTAIN_TASK;
@@ -1834,7 +1839,7 @@ function runRemoteMiner(creep: ManagedCreep): string {
 
     if (memory.targetRoom && creep.room.name !== memory.targetRoom) {
       creep.moveTo(
-        { pos: { x: 25, y: 25, roomName: memory.targetRoom } as unknown as RoomPosition },
+        { pos: { x: ROOM_CENTER_X, y: ROOM_CENTER_Y, roomName: memory.targetRoom } as unknown as RoomPosition },
         { reusePath: 50 }
       );
       return REMOTE_TRAVEL_TASK;
@@ -1871,7 +1876,7 @@ function runRemoteMiner(creep: ManagedCreep): string {
   comm?.say(creep, "deliver");
 
   if (memory.homeRoom && creep.room.name !== memory.homeRoom) {
-    creep.moveTo({ pos: { x: 25, y: 25, roomName: memory.homeRoom } as unknown as RoomPosition }, { reusePath: 50 });
+    creep.moveTo({ pos: { x: ROOM_CENTER_X, y: ROOM_CENTER_Y, roomName: memory.homeRoom } as unknown as RoomPosition }, { reusePath: 50 });
     return REMOTE_RETURN_TASK;
   }
 
@@ -1973,7 +1978,7 @@ function runRemoteHauler(creep: ManagedCreep): string {
     // Travel to target room
     if (creep.room.name !== memory.targetRoom) {
       creep.moveTo(
-        { pos: { x: 25, y: 25, roomName: memory.targetRoom } as unknown as RoomPosition },
+        { pos: { x: ROOM_CENTER_X, y: ROOM_CENTER_Y, roomName: memory.targetRoom } as unknown as RoomPosition },
         { reusePath: 50 }
       );
     }
@@ -1985,7 +1990,7 @@ function runRemoteHauler(creep: ManagedCreep): string {
 
     // Pick up dropped energy first (highest priority)
     const droppedEnergy = creep.room.find(FIND_DROPPED_RESOURCES, {
-      filter: r => r.resourceType === RESOURCE_ENERGY && r.amount >= 50
+      filter: r => r.resourceType === RESOURCE_ENERGY && r.amount >= MIN_DROPPED_ENERGY_AMOUNT
     }) as Resource[];
 
     if (droppedEnergy.length > 0) {
@@ -2021,7 +2026,7 @@ function runRemoteHauler(creep: ManagedCreep): string {
 
   // Travel back to home room
   if (creep.room.name !== memory.homeRoom) {
-    creep.moveTo({ pos: { x: 25, y: 25, roomName: memory.homeRoom } as unknown as RoomPosition }, { reusePath: 50 });
+    creep.moveTo({ pos: { x: ROOM_CENTER_X, y: ROOM_CENTER_Y, roomName: memory.homeRoom } as unknown as RoomPosition }, { reusePath: 50 });
     return REMOTE_HAULER_RETURN_TASK;
   }
 
