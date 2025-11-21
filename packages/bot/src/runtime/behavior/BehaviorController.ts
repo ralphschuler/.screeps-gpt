@@ -318,6 +318,7 @@ export class BehaviorController {
   private readonly energyPriorityManager: EnergyPriorityManager;
   private readonly bodyComposer: BodyComposer;
   private readonly wallUpgradeManager: WallUpgradeManager;
+  private readonly scoutManager: ScoutManager;
 
   public constructor(options: BehaviorControllerOptions = {}, logger: Pick<Console, "log" | "warn"> = console) {
     this.logger = logger;
@@ -333,6 +334,7 @@ export class BehaviorController {
     this.bodyComposer = new BodyComposer();
     this.wallUpgradeManager = new WallUpgradeManager();
     wallUpgradeManager = this.wallUpgradeManager;
+    this.scoutManager = new ScoutManager(this.logger);
   }
 
   /**
@@ -838,7 +840,85 @@ export class BehaviorController {
       }
     }
 
+    // Remote mining activation based on RCL and scout data
+    // Only activate remote mining when:
+    // - Room has reached RCL 4+ (stable economy with containers/storage)
+    // - Scout data exists with suitable remote rooms
+    // - Energy surplus allows for additional creep investment
+    for (const room of Object.values(game.rooms)) {
+      if (!room.controller?.my) {
+        continue;
+      }
+
+      const rcl = room.controller.level;
+      
+      // Remote mining requires RCL 4+ for sustainable economy
+      if (rcl >= 4) {
+        // Check for available remote mining targets from scout data
+        const remoteTargets = this.getRemoteMiningTargets(room.name);
+        
+        if (remoteTargets.length > 0) {
+          // Spawn 1 remote miner per remote source (max 2 remote rooms to start)
+          const maxRemoteMiners = Math.min(remoteTargets.length * 2, 4);
+          adjustedMinimums.remoteMiner = maxRemoteMiners;
+          
+          this.logger.log?.(
+            `[BehaviorController] Remote mining activated for ${room.name}: ` +
+              `${remoteTargets.length} target rooms, ${maxRemoteMiners} miners`
+          );
+        }
+      }
+    }
+
     return adjustedMinimums;
+  }
+
+  /**
+   * Get suitable remote mining targets from scout data
+   */
+  private getRemoteMiningTargets(homeRoom: string): string[] {
+    // This will be populated by Memory.scout from ScoutingProcess
+    if (!Memory.scout?.rooms) {
+      return [];
+    }
+
+    const scoutedRooms = Object.values(Memory.scout.rooms);
+    const suitableRooms = scoutedRooms.filter(room => {
+      // Must have sources
+      if (room.sourceCount === 0) return false;
+      
+      // Must not be owned by another player
+      if (room.owned && room.owner !== "ralphschuler") return false;
+      
+      // Must not be SK room
+      if (room.isSourceKeeper) return false;
+      
+      // Must not have hostiles
+      if (room.hostileCount > 0) return false;
+      
+      // Prefer rooms with reasonable path distance (within 3 rooms)
+      if (room.pathDistance && room.pathDistance > 3) return false;
+      
+      // Data must be recent (within 1000 ticks)
+      if (Game.time - room.lastScouted > 1000) return false;
+      
+      return true;
+    });
+
+    // Sort by path distance (closest first) and source count (more is better)
+    suitableRooms.sort((a, b) => {
+      const distA = a.pathDistance ?? 999;
+      const distB = b.pathDistance ?? 999;
+      
+      if (distA !== distB) {
+        return distA - distB;
+      }
+      
+      return b.sourceCount - a.sourceCount;
+    });
+
+    // Return top 2 rooms for remote mining
+    return suitableRooms.slice(0, 2).map(r => r.roomName);
   }
 
   private ensureRoleMinimums(
@@ -1036,6 +1116,28 @@ export class BehaviorController {
       const creepMemory = definition.memory();
       if (isEmergency || harvesterCount === 0) {
         (creepMemory as BaseCreepMemory & { emergency?: boolean }).emergency = true;
+      }
+
+      // Assign remote mining targets for remoteMiner creeps
+      if (role === "remoteMiner" && room) {
+        const targets = this.getRemoteMiningTargets(room.name);
+        if (targets.length > 0) {
+          // Assign target room based on existing remote miner count
+          const existingRemoteMiners = Object.values(game.creeps).filter(
+            c => c.memory.role === "remoteMiner"
+          ) as Array<{ memory: RemoteMinerMemory }>;
+          
+          // Distribute miners across target rooms
+          const targetIndex = existingRemoteMiners.length % targets.length;
+          const targetRoom = targets[targetIndex];
+          
+          (creepMemory as RemoteMinerMemory).homeRoom = room.name;
+          (creepMemory as RemoteMinerMemory).targetRoom = targetRoom;
+          
+          this.logger.log?.(
+            `[BehaviorController] Assigned ${name} to remote mine ${targetRoom} from ${room.name}`
+          );
+        }
       }
 
       const result = spawn.spawnCreep(body, name, { memory: creepMemory });
