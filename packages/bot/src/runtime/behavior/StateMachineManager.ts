@@ -285,18 +285,3 @@ export class StateMachineManager {
     }
   }
 }
-
-// Extend CreepMemory to include state machine
-declare global {
-  interface CreepMemory {
-    stateMachine?: {
-      state: string;
-      context: unknown;
-    };
-    homeRoom?: string;
-    targetRoom?: string;
-    sourceId?: Id<Source>;
-    containerId?: Id<StructureContainer>;
-    squadId?: string;
-  }
-}

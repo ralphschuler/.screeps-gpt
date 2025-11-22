@@ -192,6 +192,8 @@ declare global {
     targetRoom?: string;
     sourceId?: Id<Source>;
     stateMachine?: SerializedMachine;
+    containerId?: Id<StructureContainer>;
+    squadId?: string;
   }
 }
 
