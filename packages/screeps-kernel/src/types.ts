@@ -36,8 +36,9 @@ export interface ProcessDescriptor<TMemory = any> {
 /**
  * Generic type-safe execution context passed to processes.
  * TMemory allows compile-time type checking for memory structures.
+ * TProtocol allows compile-time type checking for protocol methods.
  */
-export interface ProcessContext<TMemory = any> {
+export interface ProcessContext<TMemory = any, TProtocol = any> {
   /** Game state interface */
   game: GameContext;
   /** Type-safe memory reference */
@@ -46,6 +47,8 @@ export interface ProcessContext<TMemory = any> {
   logger: Logger;
   /** Metrics collector for performance tracking */
   metrics: MetricsCollector;
+  /** Type-safe protocol interface for inter-process communication */
+  protocol: TProtocol;
 }
 
 /**
@@ -93,13 +96,34 @@ export interface MetricsCollector {
 /**
  * Process interface that all decorated processes must implement.
  * Generic TMemory allows type-safe memory access.
+ * Generic TProtocol allows type-safe protocol access.
  */
-export interface Process<TMemory = any> {
+export interface Process<TMemory = any, TProtocol = any> {
   /**
    * Execute the process for one tick.
    * @param ctx Type-safe execution context
    */
-  run(ctx: ProcessContext<TMemory>): void;
+  run(ctx: ProcessContext<TMemory, TProtocol>): void;
+}
+
+/**
+ * Configuration for a protocol registered via @protocol decorator.
+ */
+export interface ProtocolConfig {
+  /** Unique name for the protocol */
+  name: string;
+}
+
+/**
+ * Internal descriptor for a registered protocol.
+ */
+export interface ProtocolDescriptor {
+  /** Unique name for the protocol */
+  name: string;
+  /** Constructor function for the protocol */
+  constructor: new () => any;
+  /** Cached singleton instance */
+  instance?: any;
 }
 
 /**
