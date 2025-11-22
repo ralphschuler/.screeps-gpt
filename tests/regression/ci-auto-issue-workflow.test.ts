@@ -74,8 +74,6 @@ describe("CI Auto Issue Workflow", () => {
     expect(content).toContain("type/bug");
   });
 
-
-
   it("should collect failing steps for error context", () => {
     const content = fs.readFileSync(workflowPath, "utf-8");
 
