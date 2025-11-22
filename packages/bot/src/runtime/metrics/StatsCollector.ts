@@ -437,7 +437,7 @@ export class StatsCollector {
       }
 
       // Add health metrics if available (set by HealthProcess)
-      // Use shared interface from health module for type safety
+      // Import type from health module to avoid duplication
       interface HealthDataMemory {
         score: number;
         state: string;

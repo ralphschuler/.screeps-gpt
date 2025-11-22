@@ -11,7 +11,8 @@ export {
   RecoveryOrchestrator,
   RecoveryMode,
   type RecoveryAction,
-  type RecoveryState
+  type RecoveryState,
+  type RecoveryConfig
 } from "./RecoveryOrchestrator";
 
 /**

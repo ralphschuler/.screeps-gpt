@@ -32,6 +32,16 @@ export interface RecoveryState {
 }
 
 /**
+ * Configuration for recovery orchestration thresholds
+ */
+export interface RecoveryConfig {
+  /** Minimum harvesters before boosting spawn priority (default: 2) */
+  minHarvesters?: number;
+  /** CPU bucket threshold for reducing operations (default: 1000) */
+  lowCpuBucketThreshold?: number;
+}
+
+/**
  * Orchestrates autonomous recovery responses based on health state.
  * 
  * Recovery escalation:
@@ -47,10 +57,15 @@ export interface RecoveryState {
  */
 export class RecoveryOrchestrator {
   private readonly logger: Pick<Console, "log" | "warn">;
+  private readonly config: Required<RecoveryConfig>;
   private currentMode: RecoveryMode = RecoveryMode.NORMAL;
   private recoveryStartTick?: number;
 
-  public constructor(logger: Pick<Console, "log" | "warn"> = console) {
+  public constructor(config: RecoveryConfig = {}, logger: Pick<Console, "log" | "warn"> = console) {
+    this.config = {
+      minHarvesters: config.minHarvesters ?? 2,
+      lowCpuBucketThreshold: config.lowCpuBucketThreshold ?? 1000
+    };
     this.logger = logger;
   }
 
@@ -225,7 +240,7 @@ export class RecoveryOrchestrator {
       }
     }
 
-    if (harvesterCount < 2) {
+    if (harvesterCount < this.config.minHarvesters) {
       actions.push({
         type: "BOOST_HARVESTER_SPAWN",
         description: `Low harvester count (${harvesterCount}) - boosting spawn priority`,
@@ -234,7 +249,7 @@ export class RecoveryOrchestrator {
     }
 
     // Disable non-essential tasks based on CPU availability
-    if (game.cpu.bucket < 1000) {
+    if (game.cpu.bucket < this.config.lowCpuBucketThreshold) {
       actions.push({
         type: "REDUCE_CPU_USAGE",
         description: "Low CPU bucket - reducing non-essential tasks",

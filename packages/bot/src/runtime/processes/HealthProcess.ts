@@ -2,7 +2,7 @@ import { process as registerProcess, type ProcessContext } from "@ralphschuler/s
 import type { GameContext } from "@runtime/types/GameContext";
 import { HealthMonitor } from "@runtime/health/HealthMonitor";
 import { WarningDetector } from "@runtime/health/WarningDetector";
-import { RecoveryOrchestrator } from "@runtime/health/RecoveryOrchestrator";
+import { RecoveryOrchestrator, RecoveryMode } from "@runtime/health/RecoveryOrchestrator";
 
 /**
  * Health monitoring and autonomous recovery process.
@@ -88,7 +88,7 @@ export class HealthProcess {
       };
 
       // Log health status periodically (every 100 ticks) or when entering recovery
-      const isInRecovery = String(recoveryState.mode) !== "NORMAL";
+      const isInRecovery = String(recoveryState.mode) !== String(RecoveryMode.NORMAL);
       if (gameContext.time % 100 === 0 || isInRecovery) {
         this.logger.log?.(
           `[HealthProcess] ${this.healthMonitor.getStatusMessage(healthStatus)} - ` +

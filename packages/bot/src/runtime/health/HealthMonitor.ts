@@ -38,8 +38,6 @@ export interface HealthConfig {
   targetCreepCount?: number;
   /** Energy threshold for full health (default: 1000) */
   energyTarget?: number;
-  /** Minimum harvesters for safe operation (default: 2) */
-  minHarvesters?: number;
 }
 
 /**
@@ -65,8 +63,7 @@ export class HealthMonitor {
   public constructor(config: HealthConfig = {}, logger: Pick<Console, "log" | "warn"> = console) {
     this.config = {
       targetCreepCount: config.targetCreepCount ?? 10,
-      energyTarget: config.energyTarget ?? 1000,
-      minHarvesters: config.minHarvesters ?? 2
+      energyTarget: config.energyTarget ?? 1000
     };
     this.logger = logger;
   }
@@ -129,8 +126,7 @@ export class HealthMonitor {
       if (room.controller?.my) {
         totalEnergy += room.energyAvailable;
         // Add storage energy if available
-        // Cast to number as FIND_MY_STRUCTURES constant value
-        const structures = room.find?.(FIND_MY_STRUCTURES as 107);
+        const structures = room.find?.(FIND_MY_STRUCTURES);
         if (structures) {
           for (const structure of structures) {
             if ((structure as StructureStorage).structureType === STRUCTURE_STORAGE) {
@@ -161,21 +157,9 @@ export class HealthMonitor {
       return 0;
     }
 
-    // All spawns operational = full health
-    // Spawns being used efficiently is good, so we count them as healthy
-    let operationalSpawns = 0;
-    for (const spawn of spawns) {
-      // Spawn is operational if it exists and is not destroyed
-      if (spawn?.spawning) {
-        // Spawning is good - means we're producing workforce
-        operationalSpawns++;
-      } else if (spawn) {
-        operationalSpawns++;
-      }
-    }
-
-    const ratio = operationalSpawns / spawns.length;
-    return ratio * 20;
+    // All existing spawns contribute to health (existence check only)
+    // Having spawns available is what matters for recovery, not utilization
+    return 20;
   }
 
   /**
