@@ -69,7 +69,7 @@ export class ColonyManager {
   private readonly expansionQueue: ExpansionRequest[] = [];
   private readonly claimedRooms: Set<string> = new Set();
   private readonly shardMessages: InterShardMessage[] = [];
-  private readonly memoryRef?: ColonyManagerMemory;
+  private memoryRef?: ColonyManagerMemory;
   private lastExpansionCheck: number = 0;
 
   public constructor(config: ColonyManagerConfig = {}) {

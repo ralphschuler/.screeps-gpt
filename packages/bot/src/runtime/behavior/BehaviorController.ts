@@ -1385,9 +1385,7 @@ export class BehaviorController {
       lastExpansionCheck: 0
     };
 
-    const colonyMemory = memory.colony as {
-      expansionQueue: Array<{ targetRoom: string; status: string; priority: number }>;
-    };
+    const colonyMemory = memory.colony as import("@runtime/planning/ColonyManager").ColonyManagerMemory;
 
     // Check if there are any pending expansion requests
     const pendingExpansions = colonyMemory.expansionQueue.filter(req => req.status === "pending");

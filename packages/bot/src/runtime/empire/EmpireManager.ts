@@ -4,6 +4,12 @@ import { ScoutManager } from "@runtime/scouting/ScoutManager";
 import { profile } from "@ralphschuler/screeps-profiler";
 
 /**
+ * Player username for identifying owned rooms.
+ * TODO: Make this configurable via Memory or environment variable
+ */
+const PLAYER_USERNAME = "ralphschuler";
+
+/**
  * Room threat assessment
  */
 export interface RoomThreat {
@@ -382,7 +388,7 @@ export class EmpireManager {
       return (
         report.owned &&
         report.owner !== undefined &&
-        report.owner !== "ralphschuler" && // Not our own rooms
+        report.owner !== PLAYER_USERNAME && // Not our own rooms
         report.sourceCount >= 1 &&
         report.controllerLevel !== undefined &&
         report.controllerLevel > 0
