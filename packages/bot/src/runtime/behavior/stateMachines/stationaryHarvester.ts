@@ -25,7 +25,9 @@ export const stationaryHarvesterStates: Record<string, StateConfig<StationaryHar
         target: "harvesting",
         actions: [
           (ctx, event) => {
-            ctx.sourceId = event.sourceId;
+            if (event.type === "ASSIGN_SOURCE") {
+              ctx.sourceId = event.sourceId;
+            }
           }
         ]
       },
@@ -33,7 +35,9 @@ export const stationaryHarvesterStates: Record<string, StateConfig<StationaryHar
         target: "harvesting",
         actions: [
           (ctx, event) => {
-            ctx.containerId = event.containerId;
+            if (event.type === "ASSIGN_CONTAINER") {
+              ctx.containerId = event.containerId;
+            }
           }
         ]
       }

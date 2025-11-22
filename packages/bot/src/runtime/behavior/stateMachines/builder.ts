@@ -36,7 +36,9 @@ export const builderStates: Record<string, StateConfig<BuilderContext, BuilderEv
         target: "build",
         actions: [
           (ctx, event) => {
-            ctx.targetId = event.targetId;
+            if (event.type === "START_BUILD") {
+              ctx.targetId = event.targetId;
+            }
           }
         ]
       },
@@ -66,7 +68,9 @@ export const builderStates: Record<string, StateConfig<BuilderContext, BuilderEv
         target: "maintain",
         actions: [
           (ctx, event) => {
-            ctx.targetId = event.targetId;
+            if (event.type === "START_MAINTAIN") {
+              ctx.targetId = event.targetId;
+            }
           }
         ]
       },

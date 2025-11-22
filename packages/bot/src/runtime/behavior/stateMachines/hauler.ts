@@ -26,7 +26,9 @@ export const haulerStates: Record<string, StateConfig<HaulerContext, HaulerEvent
         target: "pickup",
         actions: [
           (ctx, event) => {
-            ctx.pickupTargetId = event.targetId;
+            if (event.type === "START_PICKUP") {
+              ctx.pickupTargetId = event.targetId;
+            }
           }
         ]
       },
@@ -48,7 +50,9 @@ export const haulerStates: Record<string, StateConfig<HaulerContext, HaulerEvent
         target: "deliver",
         actions: [
           (ctx, event) => {
-            ctx.deliveryTargetId = event.targetId;
+            if (event.type === "START_DELIVER") {
+              ctx.deliveryTargetId = event.targetId;
+            }
           }
         ]
       },

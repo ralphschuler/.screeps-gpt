@@ -37,7 +37,9 @@ export const remoteMinerStates: Record<string, StateConfig<RemoteMinerContext, R
         target: "mine",
         actions: [
           (ctx, event) => {
-            ctx.sourceId = event.sourceId;
+            if (event.type === "START_MINING") {
+              ctx.sourceId = event.sourceId;
+            }
           }
         ]
       },

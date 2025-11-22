@@ -35,7 +35,9 @@ export const harvesterStates: Record<string, StateConfig<HarvesterContext, Harve
         target: "harvesting",
         actions: [
           (ctx, event) => {
-            ctx.sourceId = event.sourceId;
+            if (event.type === "START_HARVEST") {
+              ctx.sourceId = event.sourceId;
+            }
           }
         ]
       }
@@ -65,7 +67,9 @@ export const harvesterStates: Record<string, StateConfig<HarvesterContext, Harve
         target: "delivering",
         actions: [
           (ctx, event) => {
-            ctx.targetId = event.targetId;
+            if (event.type === "START_DELIVER") {
+              ctx.targetId = event.targetId;
+            }
           }
         ]
       },

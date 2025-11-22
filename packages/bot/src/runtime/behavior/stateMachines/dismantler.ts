@@ -35,7 +35,9 @@ export const dismantlerStates: Record<string, StateConfig<DismantlerContext, Dis
         target: "dismantle",
         actions: [
           (ctx, event) => {
-            ctx.targetId = event.targetId;
+            if (event.type === "DISMANTLE") {
+              ctx.targetId = event.targetId;
+            }
           }
         ]
       },

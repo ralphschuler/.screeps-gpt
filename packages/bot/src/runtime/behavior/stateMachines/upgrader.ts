@@ -25,7 +25,7 @@ export const upgraderStates: Record<string, StateConfig<UpgraderContext, Upgrade
         target: "recharge",
         actions: [
           (ctx, event) => {
-            if (event.sourceId) {
+            if (event.type === "START_RECHARGE" && event.sourceId) {
               ctx.sourceId = event.sourceId;
             }
           }

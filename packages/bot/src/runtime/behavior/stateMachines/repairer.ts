@@ -34,7 +34,9 @@ export const repairerStates: Record<string, StateConfig<RepairerContext, Repaire
         target: "repair",
         actions: [
           (ctx, event) => {
-            ctx.targetId = event.targetId;
+            if (event.type === "START_REPAIR") {
+              ctx.targetId = event.targetId;
+            }
           }
         ]
       },

@@ -35,7 +35,9 @@ export const healerStates: Record<string, StateConfig<HealerContext, HealerEvent
         target: "heal",
         actions: [
           (ctx, event) => {
-            ctx.targetId = event.targetId;
+            if (event.type === "HEAL") {
+              ctx.targetId = event.targetId;
+            }
           }
         ]
       },

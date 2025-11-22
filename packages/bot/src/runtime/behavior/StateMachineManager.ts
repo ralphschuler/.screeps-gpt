@@ -148,10 +148,9 @@ export class StateMachineManager {
 
       // Restore from memory or create new machine
       if (creep.memory.stateMachine) {
-        const machine = restore<CreepContext, CreepEvent>(
-          creep.memory.stateMachine as SerializedMachine<CreepContext>,
-          config.states
-        );
+        // Type assertion is safe here - CreepMemory.stateMachine matches SerializedMachine structure
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        const machine = restore<CreepContext, CreepEvent>(creep.memory.stateMachine as SerializedMachine<CreepContext>, config.states);
         // Update creep reference (it's a new Game object each tick)
         machine.getContext().creep = creep;
         this.machines.set(name, machine);
@@ -213,22 +212,22 @@ export class StateMachineManager {
       case "remoteMiner":
         return {
           ...baseContext,
-          homeRoom: creep.memory.homeRoom || creep.room.name,
-          targetRoom: creep.memory.targetRoom || creep.room.name
+          homeRoom: creep.memory.homeRoom ?? creep.room.name,
+          targetRoom: creep.memory.targetRoom ?? creep.room.name
         } as RemoteMinerContext;
 
       case "remoteHauler":
         return {
           ...baseContext,
-          homeRoom: creep.memory.homeRoom || creep.room.name,
-          targetRoom: creep.memory.targetRoom || creep.room.name
+          homeRoom: creep.memory.homeRoom ?? creep.room.name,
+          targetRoom: creep.memory.targetRoom ?? creep.room.name
         } as RemoteHaulerContext;
 
       case "claimer":
         return {
           ...baseContext,
-          homeRoom: creep.memory.homeRoom || creep.room.name,
-          targetRoom: creep.memory.targetRoom || ""
+          homeRoom: creep.memory.homeRoom ?? creep.room.name,
+          targetRoom: creep.memory.targetRoom ?? ""
         } as ClaimerContext;
 
       case "attacker":
@@ -256,7 +255,10 @@ export class StateMachineManager {
 // Extend CreepMemory to include state machine
 declare global {
   interface CreepMemory {
-    stateMachine?: SerializedMachine<CreepContext>;
+    stateMachine?: {
+      state: string;
+      context: unknown;
+    };
     homeRoom?: string;
     targetRoom?: string;
     sourceId?: Id<Source>;

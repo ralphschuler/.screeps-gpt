@@ -35,7 +35,9 @@ export const attackerStates: Record<string, StateConfig<AttackerContext, Attacke
         target: "attack",
         actions: [
           (ctx, event) => {
-            ctx.targetId = event.targetId;
+            if (event.type === "ENGAGE") {
+              ctx.targetId = event.targetId;
+            }
           }
         ]
       },
