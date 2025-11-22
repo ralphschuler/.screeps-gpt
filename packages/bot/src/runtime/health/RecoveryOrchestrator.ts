@@ -43,13 +43,13 @@ export interface RecoveryConfig {
 
 /**
  * Orchestrates autonomous recovery responses based on health state.
- * 
+ *
  * Recovery escalation:
  * - HEALTHY: Normal operations, no recovery needed
  * - DEGRADED: Monitor closely, disable non-essential tasks
  * - CRITICAL: Active recovery, emergency spawn priority for harvesters
  * - EMERGENCY: Full recovery protocol, only essential creeps
- * 
+ *
  * The orchestrator coordinates with existing recovery mechanisms:
  * - RespawnManager: Handles total colony loss scenarios
  * - Emergency spawn protection (future): Prevents spawn queue starvation
@@ -80,7 +80,7 @@ export class RecoveryOrchestrator {
   ): RecoveryState {
     const previousMode = this.currentMode;
     const newMode = this.determineRecoveryMode(healthStatus);
-    
+
     // Track mode transitions
     if (newMode !== previousMode) {
       this.handleModeTransition(game, previousMode, newMode, healthStatus);
@@ -105,7 +105,7 @@ export class RecoveryOrchestrator {
 
     // Execute recovery actions based on current mode
     const actions: RecoveryAction[] = [];
-    
+
     switch (newMode) {
       case RecoveryMode.EMERGENCY:
         actions.push(...this.executeEmergencyRecovery(game, memory, healthStatus));

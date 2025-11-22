@@ -36,7 +36,7 @@ export interface WarningConfig {
 
 /**
  * Detects early warning signs of bot health degradation.
- * 
+ *
  * Warning detection includes:
  * - Workforce depletion (harvester count trending to zero)
  * - Energy starvation (storage + available < spawn cost)

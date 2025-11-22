@@ -1,6 +1,6 @@
 /**
  * Health monitoring and autonomous recovery system.
- * 
+ *
  * This module provides comprehensive bot health self-diagnostic capabilities
  * with autonomous recovery orchestration to prevent death spirals.
  */

@@ -1,10 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { HealthMonitor, HealthState } from "../../packages/bot/src/runtime/health/HealthMonitor";
 import { WarningDetector, WarningType } from "../../packages/bot/src/runtime/health/WarningDetector";
-import {
-  RecoveryOrchestrator,
-  RecoveryMode
-} from "../../packages/bot/src/runtime/health/RecoveryOrchestrator";
+import { RecoveryOrchestrator, RecoveryMode } from "../../packages/bot/src/runtime/health/RecoveryOrchestrator";
 import type { GameContext } from "../../packages/bot/src/runtime/types/GameContext";
 
 describe("HealthMonitor", () => {

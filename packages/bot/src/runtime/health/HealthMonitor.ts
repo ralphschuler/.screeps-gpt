@@ -42,13 +42,13 @@ export interface HealthConfig {
 
 /**
  * Monitors bot health across multiple dimensions and calculates health scores.
- * 
+ *
  * Health scoring algorithm:
  * - workforceHealth: min(creepCount / targetCount, 1.0) * 40
  * - energyHealth: min(availableEnergy / energyTarget, 1.0) * 30
  * - spawnHealth: (activeSpawns / totalSpawns) * 20
  * - infrastructureHealth: (criticalStructures / required) * 10
- * 
+ *
  * State transitions:
  * - HEALTHY (80-100): Normal operations
  * - DEGRADED (60-79): Early warning, non-essential tasks paused
@@ -84,13 +84,21 @@ export class HealthMonitor {
 
     // Log state transitions
     if (this.lastHealthScore >= 80 && score < 80) {
-      this.logger.warn?.(`[HealthMonitor] Health degraded: ${this.lastHealthScore.toFixed(1)} -> ${score.toFixed(1)} (${state})`);
+      this.logger.warn?.(
+        `[HealthMonitor] Health degraded: ${this.lastHealthScore.toFixed(1)} -> ${score.toFixed(1)} (${state})`
+      );
     } else if (this.lastHealthScore >= 60 && score < 60) {
-      this.logger.warn?.(`[HealthMonitor] Health critical: ${this.lastHealthScore.toFixed(1)} -> ${score.toFixed(1)} (${state})`);
+      this.logger.warn?.(
+        `[HealthMonitor] Health critical: ${this.lastHealthScore.toFixed(1)} -> ${score.toFixed(1)} (${state})`
+      );
     } else if (this.lastHealthScore >= 40 && score < 40) {
-      this.logger.warn?.(`[HealthMonitor] Health emergency: ${this.lastHealthScore.toFixed(1)} -> ${score.toFixed(1)} (${state})`);
+      this.logger.warn?.(
+        `[HealthMonitor] Health emergency: ${this.lastHealthScore.toFixed(1)} -> ${score.toFixed(1)} (${state})`
+      );
     } else if (this.lastHealthScore < 80 && score >= 80) {
-      this.logger.log?.(`[HealthMonitor] Health restored: ${this.lastHealthScore.toFixed(1)} -> ${score.toFixed(1)} (${state})`);
+      this.logger.log?.(
+        `[HealthMonitor] Health restored: ${this.lastHealthScore.toFixed(1)} -> ${score.toFixed(1)} (${state})`
+      );
     }
 
     this.lastHealthScore = score;
@@ -176,11 +184,11 @@ export class HealthMonitor {
         roomCount++;
         // Controller level contributes to infrastructure health
         const controllerHealth = (room.controller.level / 8) * 5;
-        
+
         // Check for critical structures (spawns)
         const spawns = Object.values(game.spawns).filter(s => s.room?.name === roomName);
         const spawnHealth = spawns.length > 0 ? 5 : 0;
-        
+
         totalHealth += controllerHealth + spawnHealth;
       }
     }
@@ -190,7 +198,7 @@ export class HealthMonitor {
     }
 
     // Average across all rooms, max 10 points
-    return Math.min((totalHealth / roomCount), 10);
+    return Math.min(totalHealth / roomCount, 10);
   }
 
   /**

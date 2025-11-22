@@ -5,13 +5,13 @@ import type { ProcessContext } from "@ralphschuler/screeps-kernel";
 
 /**
  * Regression tests for bot health monitoring and autonomous recovery system.
- * 
+ *
  * These tests validate:
  * - Health monitoring detects degraded states early (100-500 ticks before failure)
  * - Recovery orchestration activates appropriate responses
  * - Health metrics are exported to Memory.stats for external monitoring
  * - System recovers autonomously from simulated failure scenarios
- * 
+ *
  * Historical context:
  * - Issue #1218: Death spiral Nov 21 (RCL 2, 0 creeps)
  * - Issue #1145: Previous death spiral required manual intervention

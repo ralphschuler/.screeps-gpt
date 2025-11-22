@@ -6,13 +6,13 @@ import { RecoveryOrchestrator, RecoveryMode } from "@runtime/health/RecoveryOrch
 
 /**
  * Health monitoring and autonomous recovery process.
- * 
+ *
  * Responsibilities:
  * - Calculate bot health score every tick
  * - Detect early warning signs of degradation
  * - Orchestrate autonomous recovery responses
  * - Store health metrics for monitoring
- * 
+ *
  * Priority: 15 (early) - Must run before behavior to inform spawn decisions
  */
 @registerProcess({ name: "HealthProcess", priority: 15, singleton: true })
@@ -63,12 +63,7 @@ export class HealthProcess {
       }
 
       // Orchestrate recovery if needed
-      const recoveryState = this.recoveryOrchestrator.orchestrateRecovery(
-        gameContext,
-        memory,
-        healthStatus,
-        warnings
-      );
+      const recoveryState = this.recoveryOrchestrator.orchestrateRecovery(gameContext, memory, healthStatus, warnings);
 
       // Store health data in memory for external monitoring and other processes
       memory.health = {
