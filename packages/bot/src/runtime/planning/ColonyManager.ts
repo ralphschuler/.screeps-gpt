@@ -69,7 +69,7 @@ export class ColonyManager {
   private readonly expansionQueue: ExpansionRequest[] = [];
   private readonly claimedRooms: Set<string> = new Set();
   private readonly shardMessages: InterShardMessage[] = [];
-  private readonly memoryRef?: ColonyManagerMemory;
+  private memoryRef?: ColonyManagerMemory;
   private lastExpansionCheck: number = 0;
 
   public constructor(config: ColonyManagerConfig = {}) {
@@ -99,6 +99,14 @@ export class ColonyManager {
       this.shardMessages.push(...this.memoryRef.shardMessages);
     }
     this.lastExpansionCheck = this.memoryRef.lastExpansionCheck;
+  }
+
+  /**
+   * Set memory reference at runtime (allows late binding after Memory initialization)
+   */
+  public setMemoryReference(memory: ColonyManagerMemory): void {
+    this.memoryRef = memory;
+    this.loadFromMemory();
   }
 
   /**

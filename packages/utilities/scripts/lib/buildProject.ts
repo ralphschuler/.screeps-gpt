@@ -45,10 +45,12 @@ export function validateProfilerEnabled(): boolean {
  * Default values:
  * - __PROFILER_ENABLED__: "true" (enabled by default, accepts "true" or "false")
  * - __ROOM_VISUALS_ENABLED__: "false" (disabled by default for performance)
+ * - __PLAYER_USERNAME__: "ralphschuler" (default player username)
  */
 const RUNTIME_DEFINES = {
   __PROFILER_ENABLED__: validateProfilerEnabled() ? "true" : "false",
-  __ROOM_VISUALS_ENABLED__: JSON.stringify(process.env.ROOM_VISUALS_ENABLED ?? "false")
+  __ROOM_VISUALS_ENABLED__: JSON.stringify(process.env.ROOM_VISUALS_ENABLED ?? "false"),
+  __PLAYER_USERNAME__: JSON.stringify(process.env.PLAYER_USERNAME ?? "ralphschuler")
 } as const;
 
 async function prepare() {

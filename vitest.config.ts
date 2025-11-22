@@ -33,7 +33,8 @@ export default defineConfig({
   define: {
     __PROFILER_ENABLED__: false,
     __ROOM_VISUALS_ENABLED__: false,
-    __TASK_SYSTEM_ENABLED__: false
+    __TASK_SYSTEM_ENABLED__: false,
+    __PLAYER_USERNAME__: JSON.stringify("ralphschuler")
   },
   test: {
     globals: true,
