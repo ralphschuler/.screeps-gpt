@@ -20,6 +20,10 @@ export type RemoteHaulerEvent =
   | { type: "ARRIVED_AT_HOME" }
   | { type: "ENERGY_EMPTY" };
 
+// Guard: Check if arrived home and empty
+const isHomeAndEmpty = (ctx: RemoteHaulerContext): boolean =>
+  ctx.creep.room.name === ctx.homeRoom && ctx.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0;
+
 export const remoteHaulerStates: Record<string, StateConfig<RemoteHaulerContext, RemoteHaulerEvent>> = {
   travel: {
     on: {
@@ -46,11 +50,11 @@ export const remoteHaulerStates: Record<string, StateConfig<RemoteHaulerContext,
     on: {
       ARRIVED_AT_HOME: {
         target: "travel",
-        guard: ctx => ctx.creep.room.name === ctx.homeRoom && ctx.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0
+        guard: isHomeAndEmpty
       },
       ENERGY_EMPTY: {
         target: "travel",
-        guard: ctx => ctx.creep.room.name === ctx.homeRoom && ctx.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0
+        guard: isHomeAndEmpty
       }
     }
   }

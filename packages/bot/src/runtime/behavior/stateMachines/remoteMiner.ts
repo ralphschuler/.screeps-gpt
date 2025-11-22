@@ -21,6 +21,10 @@ export type RemoteMinerEvent =
   | { type: "ARRIVED_AT_HOME" }
   | { type: "ENERGY_EMPTY" };
 
+// Guard: Check if arrived home and empty
+const isHomeAndEmpty = (ctx: RemoteMinerContext): boolean =>
+  ctx.creep.room.name === ctx.homeRoom && ctx.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0;
+
 export const remoteMinerStates: Record<string, StateConfig<RemoteMinerContext, RemoteMinerEvent>> = {
   travel: {
     on: {
@@ -54,7 +58,7 @@ export const remoteMinerStates: Record<string, StateConfig<RemoteMinerContext, R
     on: {
       ARRIVED_AT_HOME: {
         target: "travel",
-        guard: ctx => ctx.creep.room.name === ctx.homeRoom && ctx.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0,
+        guard: isHomeAndEmpty,
         actions: [
           ctx => {
             ctx.sourceId = undefined;
@@ -63,7 +67,7 @@ export const remoteMinerStates: Record<string, StateConfig<RemoteMinerContext, R
       },
       ENERGY_EMPTY: {
         target: "travel",
-        guard: ctx => ctx.creep.room.name === ctx.homeRoom && ctx.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0,
+        guard: isHomeAndEmpty,
         actions: [
           ctx => {
             ctx.sourceId = undefined;
