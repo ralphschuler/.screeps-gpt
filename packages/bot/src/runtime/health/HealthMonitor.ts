@@ -129,6 +129,7 @@ export class HealthMonitor {
       if (room.controller?.my) {
         totalEnergy += room.energyAvailable;
         // Add storage energy if available
+        // Cast to number as FIND_MY_STRUCTURES constant value
         const structures = room.find?.(FIND_MY_STRUCTURES as 107);
         if (structures) {
           for (const structure of structures) {

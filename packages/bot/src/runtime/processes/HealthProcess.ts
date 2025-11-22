@@ -25,6 +25,7 @@ export class HealthProcess {
 
   public constructor() {
     this.logger = console;
+    // Use default configurations for health monitoring components
     this.healthMonitor = new HealthMonitor({}, this.logger);
     this.warningDetector = new WarningDetector({}, this.logger);
     this.recoveryOrchestrator = new RecoveryOrchestrator(this.logger);

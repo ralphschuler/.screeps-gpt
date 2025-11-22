@@ -437,15 +437,15 @@ export class StatsCollector {
       }
 
       // Add health metrics if available (set by HealthProcess)
-      const healthData = memory.health as
-        | {
-            score: number;
-            state: string;
-            metrics: { workforce: number; energy: number; spawn: number; infrastructure: number };
-            warnings?: unknown[];
-            recovery?: { mode: string };
-          }
-        | undefined;
+      // Use shared interface from health module for type safety
+      interface HealthDataMemory {
+        score: number;
+        state: string;
+        metrics: { workforce: number; energy: number; spawn: number; infrastructure: number };
+        warnings?: unknown[];
+        recovery?: { mode: string };
+      }
+      const healthData = memory.health as HealthDataMemory | undefined;
 
       if (healthData) {
         stats.health = {

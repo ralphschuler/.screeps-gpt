@@ -79,8 +79,13 @@ export class RecoveryOrchestrator {
       actions: []
     };
 
-    // Update recovery state
-    const recoveryState = memory.recoveryState as { mode: string; actions: RecoveryAction[]; lastActionAt?: number };
+    // Update recovery state - cast to internal type for type safety
+    interface RecoveryStateMemory {
+      mode: string;
+      actions: RecoveryAction[];
+      lastActionAt?: number;
+    }
+    const recoveryState = memory.recoveryState as RecoveryStateMemory;
     recoveryState.mode = newMode;
 
     // Execute recovery actions based on current mode
