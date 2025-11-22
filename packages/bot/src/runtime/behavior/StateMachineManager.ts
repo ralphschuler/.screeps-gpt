@@ -6,7 +6,7 @@
  */
 
 import { StateMachine, serialize, restore } from "@ralphschuler/screeps-xstate";
-import type { StateConfig, SerializedMachine } from "@ralphschuler/screeps-xstate";
+import type { StateConfig } from "@ralphschuler/screeps-xstate";
 import {
   harvesterStates,
   HARVESTER_INITIAL_STATE,
@@ -184,10 +184,8 @@ export class StateMachineManager {
 
       // Restore from memory or create new machine
       if (creep.memory.stateMachine) {
-        // Type assertion is safe here - CreepMemory.stateMachine matches SerializedMachine structure
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const machine = restore<CreepContext, CreepEvent>(
-          creep.memory.stateMachine as SerializedMachine<CreepContext>,
+          creep.memory.stateMachine,
           config.states
         );
         // Update creep reference (it's a new Game object each tick)
