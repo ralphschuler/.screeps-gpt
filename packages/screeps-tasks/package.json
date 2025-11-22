@@ -1,0 +1,43 @@
+{
+  "name": "@ralphschuler/screeps-tasks",
+  "version": "0.1.0",
+  "description": "Hierarchical task dependency system for Screeps AI",
+  "license": "MIT",
+  "author": "OpenAI Automations",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "keywords": [
+    "screeps",
+    "tasks",
+    "dependencies",
+    "task-management",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ralphschuler/.screeps-gpt.git",
+    "directory": "packages/screeps-tasks"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "scripts": {
+    "build": "tsc",
+    "postinstall": "yarn build",
+    "prepublishOnly": "yarn build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.1",
+    "typescript": "^5.4.3",
+    "vitest": "^4.0.12"
+  }
+}

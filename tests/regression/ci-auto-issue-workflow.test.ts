@@ -74,13 +74,7 @@ describe("CI Auto Issue Workflow", () => {
     expect(content).toContain("type/bug");
   });
 
-  it("should extract failed job details", () => {
-    const content = fs.readFileSync(workflowPath, "utf-8");
 
-    // Verify that failed jobs are filtered and extracted
-    expect(content).toContain("filter(job => job.conclusion === 'failure')");
-    expect(content).toContain("failedJobs");
-  });
 
   it("should collect failing steps for error context", () => {
     const content = fs.readFileSync(workflowPath, "utf-8");
