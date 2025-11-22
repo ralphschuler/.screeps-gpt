@@ -86,6 +86,7 @@ export class EmpireManager {
   private readonly logger: Pick<Console, "log" | "warn">;
 
   public constructor(config: EmpireManagerConfig = {}) {
+    // Initialize colony manager without memory - will be set in run()
     this.colonyManager = new ColonyManager({ logger: config.logger });
     this.scoutManager = new ScoutManager(config.logger);
     this.targetCpuPerRoom = config.targetCpuPerRoom ?? 10;
@@ -104,6 +105,14 @@ export class EmpireManager {
       threats: [],
       transferHistory: []
     } as EmpireMemory;
+
+    // Initialize colony memory for expansion queue
+    memory.colony ??= {
+      expansionQueue: [],
+      claimedRooms: [],
+      shardMessages: [],
+      lastExpansionCheck: 0
+    };
   }
 
   /**
@@ -112,6 +121,10 @@ export class EmpireManager {
   public run(game: GameContext, memory: Memory): void {
     this.initializeMemory(memory);
     this.scoutManager.initializeMemory(memory);
+
+    // Set colony memory reference for expansion queue persistence
+    const colonyMemory = memory.colony as import("@runtime/planning/ColonyManager").ColonyManagerMemory;
+    this.colonyManager.setMemoryReference(colonyMemory);
 
     const rooms = this.getManagedRooms(game);
 

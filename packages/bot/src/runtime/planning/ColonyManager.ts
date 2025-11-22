@@ -102,6 +102,14 @@ export class ColonyManager {
   }
 
   /**
+   * Set memory reference at runtime (allows late binding after Memory initialization)
+   */
+  public setMemoryReference(memory: ColonyManagerMemory): void {
+    this.memoryRef = memory;
+    this.loadFromMemory();
+  }
+
+  /**
    * Save state to Memory
    */
   public saveToMemory(): void {

@@ -422,6 +422,9 @@ export class BehaviorController {
     const spawned: string[] = [];
     this.ensureRoleMinimums(game, memory, roleCounts, spawned, bootstrapRoleMinimums ?? {});
 
+    // Check expansion queue and spawn claimers if needed
+    this.spawnClaimersForExpansion(game, memory, roleCounts, spawned);
+
     // Clean up dead creep tasks first to release assignments before new task discovery
     this.taskQueueManager.cleanupDeadCreepTasks(memory, game);
 
@@ -1361,6 +1364,101 @@ export class BehaviorController {
       } else {
         this.logger.warn?.(`Failed to spawn ${role}: ${result}`);
       }
+    }
+  }
+
+  /**
+   * Check expansion queue and spawn claimer creeps for pending expansion requests.
+   * This connects the ColonyManager expansion queue to actual claimer spawning.
+   */
+  private spawnClaimersForExpansion(
+    game: GameContext,
+    memory: Memory,
+    roleCounts: Record<string, number>,
+    spawned: string[]
+  ): void {
+    // Initialize colony memory if needed
+    memory.colony ??= {
+      expansionQueue: [],
+      claimedRooms: [],
+      shardMessages: [],
+      lastExpansionCheck: 0
+    };
+
+    const colonyMemory = memory.colony as {
+      expansionQueue: Array<{ targetRoom: string; status: string; priority: number }>;
+    };
+
+    // Check if there are any pending expansion requests
+    const pendingExpansions = colonyMemory.expansionQueue.filter(req => req.status === "pending");
+    if (pendingExpansions.length === 0) {
+      return;
+    }
+
+    // Get existing claimer count
+    const claimerCount = roleCounts["claimer"] ?? 0;
+
+    // Check if we already have a claimer for each pending expansion
+    const existingClaimers = Object.values(game.creeps).filter(c => c.memory.role === "claimer") as Array<{
+      memory: ClaimerMemory;
+    }>;
+
+    // Get expansion targets that don't have a claimer assigned
+    const targetRoomsWithClaimers = new Set(existingClaimers.map(c => c.memory.targetRoom));
+    const expansionsNeedingClaimers = pendingExpansions.filter(exp => !targetRoomsWithClaimers.has(exp.targetRoom));
+
+    if (expansionsNeedingClaimers.length === 0) {
+      return;
+    }
+
+    // Find available spawn
+    const spawn = this.findAvailableSpawn(game.spawns);
+    if (!spawn) {
+      return;
+    }
+
+    const room = spawn.room as Room | undefined;
+    if (!room) {
+      return;
+    }
+
+    // Get highest priority expansion request
+    const expansionRequest = expansionsNeedingClaimers.sort((a, b) => b.priority - a.priority)[0];
+
+    // Generate claimer body (CLAIM + MOVE parts)
+    const body = this.bodyComposer.generateBody("claimer", room.energyCapacityAvailable, room);
+    if (body.length === 0) {
+      this.logger.log?.(`[BehaviorController] Not enough energy to spawn claimer for ${expansionRequest.targetRoom}`);
+      return;
+    }
+
+    const spawnCost = this.bodyComposer.calculateBodyCost(body);
+    if (room.energyAvailable < spawnCost) {
+      return;
+    }
+
+    // Create claimer memory with target room
+    const name = `claimer-${game.time}-${memory.creepCounter}`;
+    memory.creepCounter += 1;
+
+    const claimerMemory: ClaimerMemory = {
+      role: "claimer",
+      task: CLAIMER_CLAIM_TASK,
+      version: CLAIMER_VERSION,
+      targetRoom: expansionRequest.targetRoom,
+      homeRoom: room.name
+    };
+
+    const result = spawn.spawnCreep(body, name, { memory: claimerMemory });
+    if (result === OK) {
+      spawned.push(name);
+      roleCounts["claimer"] = claimerCount + 1;
+      this.logger.log?.(
+        `[BehaviorController] 🏴 Spawned claimer ${name} for expansion to ${expansionRequest.targetRoom} ` +
+          `(priority: ${expansionRequest.priority})`
+      );
+    } else {
+      this.logger.warn?.(`[BehaviorController] Failed to spawn claimer for ${expansionRequest.targetRoom}: ${result}`);
     }
   }
 
