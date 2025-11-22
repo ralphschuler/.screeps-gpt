@@ -171,12 +171,20 @@ export class CounterProtocol {
   }
 }
 
-// Process can access all protocol methods
+// Define combined interface for type safety
+interface ICombinedProtocol {
+  log(message: string): void;
+  getLogs(): string[];
+  increment(): void;
+  getCount(): number;
+}
+
+// Process can access all protocol methods with type safety
 @process({ name: "MultiProtocolProcess", priority: 100 })
 export class MultiProtocolProcess {
-  run(ctx: ProcessContext): void {
-    (ctx.protocol as any).log("Processing...");
-    (ctx.protocol as any).increment();
+  run(ctx: ProcessContext<Memory, ICombinedProtocol>): void {
+    ctx.protocol.log("Processing...");
+    ctx.protocol.increment();
   }
 }
 ```
