@@ -2,6 +2,7 @@
 import "./MemoryProcess";
 import "./DefenseProcess";
 import "./RespawnProcess";
+import "./HealthProcess";
 import "./BootstrapProcess";
 import "./InfrastructureProcess";
 import "./EmpireProcess";
@@ -15,6 +16,7 @@ import "./MetricsProcess";
 export { MemoryProcess } from "./MemoryProcess";
 export { DefenseProcess } from "./DefenseProcess";
 export { RespawnProcess } from "./RespawnProcess";
+export { HealthProcess } from "./HealthProcess";
 export { BootstrapProcess } from "./BootstrapProcess";
 export { InfrastructureProcess } from "./InfrastructureProcess";
 export { EmpireProcess } from "./EmpireProcess";

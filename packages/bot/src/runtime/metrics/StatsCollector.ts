@@ -55,6 +55,16 @@ interface StatsData {
   };
   spawns?: number;
   activeSpawns?: number;
+  health?: {
+    score: number;
+    state: string;
+    workforce: number;
+    energy: number;
+    spawn: number;
+    infrastructure: number;
+    warningCount: number;
+    recoveryMode: string;
+  };
 }
 
 interface CreepLike {
@@ -423,6 +433,30 @@ export class StatsCollector {
       if (snapshot.spawnOrders > 0) {
         stats.spawn = {
           orders: snapshot.spawnOrders
+        };
+      }
+
+      // Add health metrics if available (set by HealthProcess)
+      // Import type from health module to avoid duplication
+      interface HealthDataMemory {
+        score: number;
+        state: string;
+        metrics: { workforce: number; energy: number; spawn: number; infrastructure: number };
+        warnings?: unknown[];
+        recovery?: { mode: string };
+      }
+      const healthData = memory.health as HealthDataMemory | undefined;
+
+      if (healthData) {
+        stats.health = {
+          score: healthData.score,
+          state: healthData.state,
+          workforce: healthData.metrics.workforce,
+          energy: healthData.metrics.energy,
+          spawn: healthData.metrics.spawn,
+          infrastructure: healthData.metrics.infrastructure,
+          warningCount: healthData.warnings?.length ?? 0,
+          recoveryMode: healthData.recovery?.mode ?? "NORMAL"
         };
       }
 

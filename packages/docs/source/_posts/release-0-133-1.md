@@ -172,3 +172,7 @@ For developers interested in the implementation details, the complete state mach
 **Word Count**: ~1,320 words
 
 This release represents a significant step forward in code quality and architectural maturity for the Screeps GPT project. By embracing declarative state machines, we've established a solid foundation for building increasingly sophisticated autonomous behaviors while maintaining code that's easier to understand, test, and modify.
+
+---
+
+**Full Changelog**: [0.133.1 on GitHub](https://github.com/ralphschuler/.screeps-gpt/releases/tag/v0.133.1)
