@@ -15,8 +15,7 @@ export interface StationaryHarvesterContext {
 
 export type StationaryHarvesterEvent =
   | { type: "ASSIGN_SOURCE"; sourceId: Id<Source> }
-  | { type: "ASSIGN_CONTAINER"; containerId: Id<StructureContainer> }
-  | { type: "START_HARVEST" };
+  | { type: "ASSIGN_CONTAINER"; containerId: Id<StructureContainer> };
 
 export const stationaryHarvesterStates: Record<string, StateConfig<StationaryHarvesterContext, StationaryHarvesterEvent>> = {
   harvesting: {

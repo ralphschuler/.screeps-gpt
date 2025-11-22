@@ -13,7 +13,6 @@ export interface BuilderContext {
 }
 
 export type BuilderEvent =
-  | { type: "START_GATHER" }
   | { type: "ENERGY_FULL" }
   | { type: "START_BUILD"; targetId: Id<ConstructionSite> }
   | { type: "NO_CONSTRUCTION" }

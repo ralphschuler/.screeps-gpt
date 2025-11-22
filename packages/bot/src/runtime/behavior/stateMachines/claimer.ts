@@ -30,9 +30,13 @@ export const claimerStates: Record<string, StateConfig<ClaimerContext, ClaimerEv
   claim: {
     on: {
       CLAIM_COMPLETE: {
-        target: "claim"
+        target: "idle"
       }
     }
+  },
+
+  idle: {
+    // Claimer has completed its task. No transitions from idle by default.
   }
 };
 

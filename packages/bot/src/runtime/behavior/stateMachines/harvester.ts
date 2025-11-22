@@ -75,13 +75,7 @@ export const harvesterStates: Record<string, StateConfig<HarvesterContext, Harve
       },
       ENERGY_EMPTY: {
         target: "idle",
-        guard: ctx => ctx.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0,
-        actions: [
-          ctx => {
-            ctx.sourceId = undefined;
-            ctx.targetId = undefined;
-          }
-        ]
+        guard: ctx => ctx.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0
       },
       TARGET_FULL: {
         target: "upgrading",
@@ -106,13 +100,7 @@ export const harvesterStates: Record<string, StateConfig<HarvesterContext, Harve
     on: {
       ENERGY_EMPTY: {
         target: "idle",
-        guard: ctx => ctx.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0,
-        actions: [
-          ctx => {
-            ctx.sourceId = undefined;
-            ctx.targetId = undefined;
-          }
-        ]
+        guard: ctx => ctx.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0
       }
     }
   }

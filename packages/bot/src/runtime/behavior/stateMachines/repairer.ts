@@ -13,7 +13,6 @@ export interface RepairerContext {
 }
 
 export type RepairerEvent =
-  | { type: "START_GATHER" }
   | { type: "ENERGY_FULL" }
   | { type: "START_REPAIR"; targetId: Id<Structure> }
   | { type: "ENERGY_EMPTY" };

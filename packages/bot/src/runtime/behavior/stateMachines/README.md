@@ -139,7 +139,7 @@ The state machine definitions are complete and ready for use. However, they are 
 The `screeps-xstate` library is optimized for Screeps:
 
 - Minimal bundle size (<5KB minified)
-- Zero CPU overhead (simple transitions with no interpreter)
+- Minimal CPU overhead (simple transitions with no interpreter)
 - Built-in serialization for Memory storage
 - ~0.01 CPU per transition
 - ~0.02 CPU for serialization per machine
