@@ -81,7 +81,7 @@ Executes the claiming:
 - Body: CLAIM + MOVE parts (scales with energy)
 - Minimum cost: 650 energy (1 CLAIM + 1 MOVE)
 
-## Configuration
+## Runtime Configuration
 
 ### EmpireManager Settings
 

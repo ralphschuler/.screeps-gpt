@@ -1,6 +1,6 @@
 import type { GameContext, RoomLike } from "@runtime/types/GameContext";
-import { ColonyManager } from "@runtime/planning/ColonyManager";
-import { ScoutManager } from "@runtime/scouting/ScoutManager";
+import { ColonyManager, type ColonyManagerMemory } from "@runtime/planning/ColonyManager";
+import { ScoutManager, type RemoteRoomData } from "@runtime/scouting/ScoutManager";
 import { profile } from "@ralphschuler/screeps-profiler";
 
 /**
@@ -129,7 +129,7 @@ export class EmpireManager {
     this.scoutManager.initializeMemory(memory);
 
     // Set colony memory reference for expansion queue persistence
-    const colonyMemory = memory.colony as import("@runtime/planning/ColonyManager").ColonyManagerMemory;
+    const colonyMemory = memory.colony as ColonyManagerMemory;
     this.colonyManager.setMemoryReference(colonyMemory);
 
     const rooms = this.getManagedRooms(game);
@@ -439,9 +439,7 @@ export class EmpireManager {
   /**
    * Calculate priority for room takeover based on strategic value and difficulty
    */
-  private calculateTakeoverPriority(
-    room: import("@runtime/scouting/ScoutManager").RemoteRoomData
-  ): number {
+  private calculateTakeoverPriority(room: RemoteRoomData): number {
     let priority = 50; // Base priority
 
     // Increase priority for valuable rooms
