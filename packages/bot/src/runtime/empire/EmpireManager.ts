@@ -151,6 +151,9 @@ export class EmpireManager {
     // Manage expansion
     this.manageExpansion(rooms, game, memory);
 
+    // Identify occupied rooms for takeover planning
+    this.identifyTakeoverTargets(memory);
+
     // Run colony manager
     this.colonyManager.run(game.rooms, game.time);
     this.colonyManager.saveToMemory();
@@ -357,14 +360,117 @@ export class EmpireManager {
   private identifyExpansionTarget(memory: Memory, rooms: RoomLike[]): string | null {
     const scouts = this.scoutManager.getAllRooms(memory);
 
+    // Filter for unowned rooms with at least 1 source
     const candidates = scouts.filter(report => {
-      return !report.owned && report.sourceCount >= 2 && (report.controllerLevel ?? 0) === 0 && !report.hasHostiles;
+      return !report.owned && report.sourceCount >= 1 && (report.controllerLevel ?? 0) === 0 && !report.hasHostiles;
     });
 
     if (candidates.length === 0) return null;
 
     // Prefer rooms closer to existing empire
     return this.selectClosestRoom(candidates, rooms);
+  }
+
+  /**
+   * Identify occupied rooms for takeover planning
+   */
+  private identifyTakeoverTargets(memory: Memory): void {
+    const scouts = this.scoutManager.getAllRooms(memory);
+
+    // Find owned rooms by other players
+    const occupiedRooms = scouts.filter(report => {
+      return (
+        report.owned &&
+        report.owner !== undefined &&
+        report.owner !== "ralphschuler" && // Not our own rooms
+        report.sourceCount >= 1 &&
+        report.controllerLevel !== undefined &&
+        report.controllerLevel > 0
+      );
+    });
+
+    if (occupiedRooms.length === 0) return;
+
+    // Initialize takeover planning memory
+    memory.takeover ??= {
+      targets: [],
+      lastUpdate: 0
+    };
+
+    // Update takeover targets list
+    for (const room of occupiedRooms) {
+      // Check if already in takeover list
+      const existing = (memory.takeover.targets as Array<{ roomName: string }>).find(
+        t => t.roomName === room.roomName
+      );
+
+      if (!existing) {
+        const target = {
+          roomName: room.roomName,
+          owner: room.owner,
+          controllerLevel: room.controllerLevel,
+          sourceCount: room.sourceCount,
+          threatLevel: room.threatLevel ?? "unknown",
+          hostileStructures: room.hostileStructures,
+          hostileCreeps: room.hostileCreeps,
+          discoveredAt: (typeof Game !== "undefined" ? Game.time : 0),
+          status: "identified" as const,
+          priority: this.calculateTakeoverPriority(room)
+        };
+
+        (memory.takeover.targets as Array<typeof target>).push(target);
+
+        this.logger.log?.(
+          `[EmpireManager] 🎯 Identified takeover target: ${room.roomName} ` +
+            `(Owner: ${room.owner}, RCL: ${room.controllerLevel}, Threat: ${room.threatLevel}, Priority: ${target.priority})`
+        );
+      }
+    }
+
+    memory.takeover.lastUpdate = typeof Game !== "undefined" ? Game.time : 0;
+  }
+
+  /**
+   * Calculate priority for room takeover based on strategic value and difficulty
+   */
+  private calculateTakeoverPriority(
+    room: import("@runtime/scouting/ScoutManager").RemoteRoomData
+  ): number {
+    let priority = 50; // Base priority
+
+    // Increase priority for valuable rooms
+    if (room.sourceCount >= 2) {
+      priority += 20;
+    }
+
+    // Decrease priority for high-level rooms (harder to take)
+    const rcl = room.controllerLevel ?? 0;
+    priority -= rcl * 5;
+
+    // Decrease priority based on threat level
+    switch (room.threatLevel) {
+      case "low":
+        priority -= 5;
+        break;
+      case "medium":
+        priority -= 15;
+        break;
+      case "high":
+        priority -= 30;
+        break;
+      case "extreme":
+        priority -= 50;
+        break;
+    }
+
+    // Decrease priority for heavy defenses
+    if (room.hostileStructures) {
+      priority -= room.hostileStructures.towers * 10;
+      priority -= room.hostileStructures.spawns * 5;
+    }
+
+    // Ensure priority is reasonable
+    return Math.max(0, Math.min(100, priority));
   }
 
   /**

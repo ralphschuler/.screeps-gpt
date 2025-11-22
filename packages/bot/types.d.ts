@@ -99,6 +99,42 @@ declare global {
     };
     colony?: ColonyManagerMemory;
     /**
+     * Takeover planning memory for occupied room conquest.
+     * Tracks identified enemy rooms and takeover strategies.
+     * @see src/runtime/empire/EmpireManager.ts
+     */
+    takeover?: {
+      targets: Array<{
+        roomName: string;
+        owner?: string;
+        controllerLevel?: number;
+        sourceCount: number;
+        threatLevel: string;
+        hostileStructures?: {
+          towers: number;
+          ramparts: number;
+          walls: number;
+          spawns: number;
+        };
+        hostileCreeps?: {
+          defenders: number;
+          healers: number;
+          totalBodyParts: {
+            attack: number;
+            rangedAttack: number;
+            heal: number;
+            tough: number;
+            work: number;
+          };
+        };
+        discoveredAt: number;
+        status: "identified" | "analyzing" | "planning" | "executing" | "conquered" | "abandoned";
+        priority: number;
+        strategy?: string;
+      }>;
+      lastUpdate: number;
+    };
+    /**
      * Profiler performance data collection.
      * Populated when profiler is enabled and started.
      * @see src/profiler/Profiler.ts
