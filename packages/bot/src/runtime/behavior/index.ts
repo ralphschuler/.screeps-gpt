@@ -1,3 +1,4 @@
+// Core behavior system
 export { BehaviorController } from "./BehaviorController";
 export { CreepCommunicationManager } from "./CreepCommunicationManager";
 export type { CreepCommunicationConfig, CommunicationVerbosity, CreepAction } from "./CreepCommunicationManager";
@@ -7,3 +8,8 @@ export { EnergyBalanceCalculator } from "./EnergyBalanceCalculator";
 export type { EnergyBalance } from "./EnergyBalanceCalculator";
 export { RoleTaskQueueManager, TaskPriority } from "./RoleTaskQueue";
 export type { TaskQueueEntry, RoleTaskQueueMemory } from "./RoleTaskQueue";
+
+// State machine-based behavior system
+export { StateMachineManager } from "./StateMachineManager";
+export * from "./stateMachines";
+export * from "./roleExecutors";
