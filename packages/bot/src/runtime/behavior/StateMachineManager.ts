@@ -184,10 +184,7 @@ export class StateMachineManager {
 
       // Restore from memory or create new machine
       if (creep.memory.stateMachine) {
-        const machine = restore<CreepContext, CreepEvent>(
-          creep.memory.stateMachine,
-          config.states
-        );
+        const machine = restore<CreepContext, CreepEvent>(creep.memory.stateMachine, config.states);
         // Update creep reference (it's a new Game object each tick)
         machine.getContext().creep = creep;
         this.machines.set(name, machine);
