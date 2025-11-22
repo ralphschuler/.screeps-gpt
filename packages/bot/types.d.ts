@@ -6,6 +6,7 @@ import type { InfrastructureMemory } from "./src/runtime/infrastructure/Infrastr
 import type { ThreatMemory } from "./src/runtime/defense/ThreatDetector";
 import type { DefenseMemory } from "./src/runtime/defense/DefenseCoordinator";
 import type { CombatManagerMemory } from "./src/runtime/defense/CombatManager";
+import type { SerializedMachine } from "@ralphschuler/screeps-xstate";
 
 declare global {
   /**
@@ -190,6 +191,9 @@ declare global {
     homeRoom?: string;
     targetRoom?: string;
     sourceId?: Id<Source>;
+    stateMachine?: SerializedMachine;
+    containerId?: Id<StructureContainer>;
+    squadId?: string;
   }
 }
 
