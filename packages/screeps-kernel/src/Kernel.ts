@@ -7,6 +7,7 @@
 
 import type { KernelConfig, GameContext, Logger, MetricsCollector, Process } from "./types.js";
 import { ProcessRegistry } from "./ProcessRegistry.js";
+import { ProtocolRegistry } from "./ProtocolRegistry.js";
 import { createProcessContext, NoOpLogger, NoOpMetricsCollector } from "./ProcessContext.js";
 
 /**
@@ -18,6 +19,8 @@ export class Kernel {
   private readonly metrics: MetricsCollector;
   private readonly cpuEmergencyThreshold: number;
   private readonly registry: ProcessRegistry;
+  private readonly protocolRegistry: ProtocolRegistry;
+  private combinedProtocol: Record<string, unknown> | null = null;
 
   /**
    * Create a new kernel instance.
@@ -28,6 +31,7 @@ export class Kernel {
     this.metrics = config.metrics ?? new NoOpMetricsCollector();
     this.cpuEmergencyThreshold = config.cpuEmergencyThreshold ?? 0.9;
     this.registry = ProcessRegistry.getInstance();
+    this.protocolRegistry = ProtocolRegistry.getInstance();
   }
 
   /**
@@ -45,8 +49,17 @@ export class Kernel {
       return;
     }
 
-    // Create execution context
-    const context = createProcessContext(game, memory, this.logger, this.metrics);
+    // Initialize protocols on first run (lazy initialization)
+    if (this.combinedProtocol === null) {
+      this.combinedProtocol = this.protocolRegistry.combineProtocols();
+      const protocolCount = this.protocolRegistry.size();
+      if (protocolCount > 0) {
+        this.logger.log?.(`[Kernel] Initialized ${protocolCount} protocol(s)`);
+      }
+    }
+
+    // Create execution context with combined protocol
+    const context = createProcessContext(game, memory, this.logger, this.metrics, this.combinedProtocol);
 
     // Track execution metrics
     let processesRun = 0;

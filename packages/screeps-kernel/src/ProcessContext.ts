@@ -31,18 +31,21 @@ export class NoOpMetricsCollector implements MetricsCollector {
  * @param memory Memory reference (typed via generics)
  * @param logger Logger instance (optional, defaults to no-op)
  * @param metrics Metrics collector instance (optional, defaults to no-op)
+ * @param protocol Protocol interface (optional, defaults to empty object)
  * @returns Type-safe process context
  */
-export function createProcessContext<TMemory = any>(
+export function createProcessContext<TMemory = any, TProtocol = any>(
   game: GameContext,
   memory: TMemory,
   logger?: Logger,
-  metrics?: MetricsCollector
-): ProcessContext<TMemory> {
+  metrics?: MetricsCollector,
+  protocol?: TProtocol
+): ProcessContext<TMemory, TProtocol> {
   return {
     game,
     memory,
     logger: logger ?? new NoOpLogger(),
-    metrics: metrics ?? new NoOpMetricsCollector()
+    metrics: metrics ?? new NoOpMetricsCollector(),
+    protocol: protocol ?? ({} as TProtocol)
   };
 }

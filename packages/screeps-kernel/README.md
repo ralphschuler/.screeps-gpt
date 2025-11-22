@@ -4,8 +4,10 @@ Custom TypeScript kernel with decorator-based API for Screeps AI automation. Ins
 
 ## Features
 
-- **Decorator-Based Registration**: Use `@process` decorator for automatic process registration
-- **Type-Safe Contexts**: Generic `ProcessContext<TMemory>` ensures compile-time memory type checking
+- **Decorator-Based Registration**: Use `@process` and `@protocol` decorators for automatic registration
+- **Type-Safe Contexts**: Generic `ProcessContext<TMemory, TProtocol>` ensures compile-time type checking
+- **Inter-Process Communication**: Protocol system enables type-safe communication between processes
+- **Protocol Mixins**: Combine multiple protocols into a unified interface
 - **Priority-Based Scheduling**: Processes execute in priority order (highest first)
 - **CPU Budget Protection**: Automatic CPU threshold enforcement prevents script timeouts
 - **Singleton Support**: Choose between singleton or per-tick instance creation
@@ -74,6 +76,111 @@ export class StatsCollector {
 }
 ```
 
+## Inter-Process Communication with Protocols
+
+The protocol system enables type-safe inter-process communication using the `@protocol` decorator:
+
+```typescript
+import { protocol, process, ProcessContext } from "screeps-kernel";
+
+// Define a protocol interface for type safety
+interface IMessageProtocol {
+  sendMessage(target: string, message: string): void;
+  getMessages(target: string): string[];
+}
+
+// Implement the protocol
+@protocol({ name: "MessageProtocol" })
+export class MessageProtocol implements IMessageProtocol {
+  private messages: Map<string, string[]> = new Map();
+
+  sendMessage(target: string, message: string): void {
+    if (!this.messages.has(target)) {
+      this.messages.set(target, []);
+    }
+    this.messages.get(target)!.push(message);
+  }
+
+  getMessages(target: string): string[] {
+    return this.messages.get(target) ?? [];
+  }
+}
+
+// Process 1: Send messages
+@process({ name: "SenderProcess", priority: 100, singleton: true })
+export class SenderProcess {
+  run(ctx: ProcessContext<Memory, IMessageProtocol>): void {
+    ctx.protocol.sendMessage("room1", "Attack incoming!");
+  }
+}
+
+// Process 2: Receive messages
+@process({ name: "ReceiverProcess", priority: 50, singleton: true })
+export class ReceiverProcess {
+  run(ctx: ProcessContext<Memory, IMessageProtocol>): void {
+    const messages = ctx.protocol.getMessages("room1");
+    messages.forEach(msg => ctx.logger.log(msg));
+  }
+}
+
+// Bootstrap - import protocols before kernel
+import "./MessageProtocol";
+import "./SenderProcess";
+import "./ReceiverProcess";
+
+const kernel = new Kernel({ logger: console });
+export const loop = () => kernel.run(Game, Memory);
+```
+
+### Protocol Benefits
+
+- **Type Safety**: Define interfaces for your protocols to catch errors at compile time
+- **Clear Separation**: Isolate communication logic from business logic
+- **Mixin Pattern**: Combine multiple protocols into a unified interface
+- **State Persistence**: Protocol instances maintain state across ticks
+- **No Memory Overhead**: Protocols don't use Memory, reducing serialization costs
+
+### Multiple Protocols
+
+You can register multiple protocols that will be combined into one interface:
+
+```typescript
+@protocol({ name: "LoggingProtocol" })
+export class LoggingProtocol {
+  private logs: string[] = [];
+  
+  log(message: string): void {
+    this.logs.push(message);
+  }
+  
+  getLogs(): string[] {
+    return this.logs;
+  }
+}
+
+@protocol({ name: "CounterProtocol" })
+export class CounterProtocol {
+  private count = 0;
+  
+  increment(): void {
+    this.count++;
+  }
+  
+  getCount(): number {
+    return this.count;
+  }
+}
+
+// Process can access all protocol methods
+@process({ name: "MultiProtocolProcess", priority: 100 })
+export class MultiProtocolProcess {
+  run(ctx: ProcessContext): void {
+    (ctx.protocol as any).log("Processing...");
+    (ctx.protocol as any).increment();
+  }
+}
+```
+
 ## Configuration
 
 ### Process Configuration
@@ -89,6 +196,18 @@ export class StatsCollector {
   singleton: true
 })
 ```
+
+### Protocol Configuration
+
+- **name** (required): Unique identifier for the protocol
+
+```typescript
+@protocol({
+  name: 'MyProtocol'
+})
+```
+
+Protocols are always singleton - they maintain state across all ticks and are shared by all processes.
 
 ### Kernel Configuration
 

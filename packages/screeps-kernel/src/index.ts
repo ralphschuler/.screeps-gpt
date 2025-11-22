@@ -26,10 +26,11 @@
 export { Kernel } from "./Kernel.js";
 
 // Decorators
-export { process } from "./decorators.js";
+export { process, protocol } from "./decorators.js";
 
 // Registry
 export { ProcessRegistry } from "./ProcessRegistry.js";
+export { ProtocolRegistry } from "./ProtocolRegistry.js";
 
 // Context utilities
 export { createProcessContext, NoOpLogger, NoOpMetricsCollector } from "./ProcessContext.js";
@@ -40,6 +41,8 @@ export type {
   ProcessDescriptor,
   ProcessContext,
   Process,
+  ProtocolConfig,
+  ProtocolDescriptor,
   GameContext,
   Logger,
   MetricsCollector,
