@@ -148,11 +148,11 @@ You can register multiple protocols that will be combined into one interface:
 @protocol({ name: "LoggingProtocol" })
 export class LoggingProtocol {
   private logs: string[] = [];
-  
+
   log(message: string): void {
     this.logs.push(message);
   }
-  
+
   getLogs(): string[] {
     return this.logs;
   }
@@ -161,11 +161,11 @@ export class LoggingProtocol {
 @protocol({ name: "CounterProtocol" })
 export class CounterProtocol {
   private count = 0;
-  
+
   increment(): void {
     this.count++;
   }
-  
+
   getCount(): number {
     return this.count;
   }

@@ -95,11 +95,9 @@ export class ProtocolRegistry {
       // Copy all methods and properties from the protocol instance
       const instance = descriptor.instance;
       const prototype = Object.getPrototypeOf(instance);
-      
+
       // Get all property names from the prototype chain (except constructor)
-      const propertyNames = Object.getOwnPropertyNames(prototype).filter(
-        name => name !== "constructor"
-      );
+      const propertyNames = Object.getOwnPropertyNames(prototype).filter(name => name !== "constructor");
 
       // Copy methods to combined object
       for (const propName of propertyNames) {
