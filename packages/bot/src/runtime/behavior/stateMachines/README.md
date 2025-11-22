@@ -66,50 +66,62 @@ export function loop() {
 ## State Machine Definitions
 
 ### Harvester
+
 **States**: idle → harvesting → delivering → upgrading
 **Purpose**: Collect energy from sources and deliver to spawns/extensions
 
 ### Upgrader
+
 **States**: recharge ⇄ upgrading
 **Purpose**: Collect energy and upgrade room controller
 
 ### Builder
+
 **States**: gather → build → maintain
 **Purpose**: Collect energy, construct buildings, repair structures
 
 ### Hauler
+
 **States**: pickup ⇄ deliver
 **Purpose**: Transport energy from containers to spawns/extensions/towers
 
 ### Stationary Harvester
+
 **States**: harvesting (continuous)
 **Purpose**: Harvest energy at a fixed position near a source
 
 ### Repairer
+
 **States**: gather ⇄ repair
 **Purpose**: Collect energy and repair damaged structures
 
 ### Remote Miner
+
 **States**: travel → mine → return
 **Purpose**: Mine energy from remote rooms and return to home room
 
 ### Remote Hauler
+
 **States**: travel → pickup → return
 **Purpose**: Haul energy from remote rooms back to home room
 
 ### Attacker
+
 **States**: travel → attack
 **Purpose**: Engage hostile creeps and structures in combat
 
 ### Healer
+
 **States**: travel → heal
 **Purpose**: Support combat by healing wounded friendly creeps
 
 ### Dismantler
+
 **States**: travel → dismantle
 **Purpose**: Destroy hostile structures
 
 ### Claimer
+
 **States**: travel → claim
 **Purpose**: Claim controllers in target rooms
 
@@ -120,6 +132,7 @@ The state machine definitions are complete and ready for use. However, they are 
 **Current Status**: ✅ State machines defined | ⚠️ Integration pending
 
 **Next Steps**:
+
 1. Implement role executors that use the state machines (see `../roleExecutors/`)
 2. Update `BehaviorController` to optionally use state machine-based execution
 3. Migrate role handlers one at a time to state machine approach

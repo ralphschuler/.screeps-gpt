@@ -17,7 +17,10 @@ export type StationaryHarvesterEvent =
   | { type: "ASSIGN_SOURCE"; sourceId: Id<Source> }
   | { type: "ASSIGN_CONTAINER"; containerId: Id<StructureContainer> };
 
-export const stationaryHarvesterStates: Record<string, StateConfig<StationaryHarvesterContext, StationaryHarvesterEvent>> = {
+export const stationaryHarvesterStates: Record<
+  string,
+  StateConfig<StationaryHarvesterContext, StationaryHarvesterEvent>
+> = {
   harvesting: {
     on: {
       ASSIGN_SOURCE: {
