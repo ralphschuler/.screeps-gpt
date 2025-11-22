@@ -16,7 +16,7 @@ services:
       MONGO_HOST: mongo
       MONGO_URI: mongodb://root:password@mongo:27017/screeps
       REDIS_HOST: redis
-      STEAM_KEY: 3549B638D775FAD046D54C82DD917330
+      STEAM_KEY:
     ports:
       - "21025:21025/tcp"
     restart: unless-stopped
