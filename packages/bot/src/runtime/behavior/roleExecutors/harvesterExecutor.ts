@@ -12,10 +12,7 @@ import type { HarvesterContext, HarvesterEvent } from "../stateMachines/harveste
  * Execute harvester behavior using state machine.
  * Returns the task name for backward compatibility.
  */
-export function executeHarvester(
-  creep: Creep,
-  machine: StateMachine<HarvesterContext, HarvesterEvent>
-): string {
+export function executeHarvester(creep: Creep, machine: StateMachine<HarvesterContext, HarvesterEvent>): string {
   const ctx = machine.getContext();
   const currentState = machine.getState();
 

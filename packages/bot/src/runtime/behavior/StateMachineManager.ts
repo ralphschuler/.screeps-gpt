@@ -110,18 +110,54 @@ interface RoleConfig {
 }
 
 const ROLE_CONFIGS: Record<RoleName, RoleConfig> = {
-  harvester: { states: harvesterStates as Record<string, StateConfig<CreepContext, CreepEvent>>, initialState: HARVESTER_INITIAL_STATE },
-  upgrader: { states: upgraderStates as Record<string, StateConfig<CreepContext, CreepEvent>>, initialState: UPGRADER_INITIAL_STATE },
-  builder: { states: builderStates as Record<string, StateConfig<CreepContext, CreepEvent>>, initialState: BUILDER_INITIAL_STATE },
-  hauler: { states: haulerStates as Record<string, StateConfig<CreepContext, CreepEvent>>, initialState: HAULER_INITIAL_STATE },
-  stationaryHarvester: { states: stationaryHarvesterStates as Record<string, StateConfig<CreepContext, CreepEvent>>, initialState: STATIONARY_HARVESTER_INITIAL_STATE },
-  repairer: { states: repairerStates as Record<string, StateConfig<CreepContext, CreepEvent>>, initialState: REPAIRER_INITIAL_STATE },
-  remoteMiner: { states: remoteMinerStates as Record<string, StateConfig<CreepContext, CreepEvent>>, initialState: REMOTE_MINER_INITIAL_STATE },
-  remoteHauler: { states: remoteHaulerStates as Record<string, StateConfig<CreepContext, CreepEvent>>, initialState: REMOTE_HAULER_INITIAL_STATE },
-  attacker: { states: attackerStates as Record<string, StateConfig<CreepContext, CreepEvent>>, initialState: ATTACKER_INITIAL_STATE },
-  healer: { states: healerStates as Record<string, StateConfig<CreepContext, CreepEvent>>, initialState: HEALER_INITIAL_STATE },
-  dismantler: { states: dismantlerStates as Record<string, StateConfig<CreepContext, CreepEvent>>, initialState: DISMANTLER_INITIAL_STATE },
-  claimer: { states: claimerStates as Record<string, StateConfig<CreepContext, CreepEvent>>, initialState: CLAIMER_INITIAL_STATE }
+  harvester: {
+    states: harvesterStates as Record<string, StateConfig<CreepContext, CreepEvent>>,
+    initialState: HARVESTER_INITIAL_STATE
+  },
+  upgrader: {
+    states: upgraderStates as Record<string, StateConfig<CreepContext, CreepEvent>>,
+    initialState: UPGRADER_INITIAL_STATE
+  },
+  builder: {
+    states: builderStates as Record<string, StateConfig<CreepContext, CreepEvent>>,
+    initialState: BUILDER_INITIAL_STATE
+  },
+  hauler: {
+    states: haulerStates as Record<string, StateConfig<CreepContext, CreepEvent>>,
+    initialState: HAULER_INITIAL_STATE
+  },
+  stationaryHarvester: {
+    states: stationaryHarvesterStates as Record<string, StateConfig<CreepContext, CreepEvent>>,
+    initialState: STATIONARY_HARVESTER_INITIAL_STATE
+  },
+  repairer: {
+    states: repairerStates as Record<string, StateConfig<CreepContext, CreepEvent>>,
+    initialState: REPAIRER_INITIAL_STATE
+  },
+  remoteMiner: {
+    states: remoteMinerStates as Record<string, StateConfig<CreepContext, CreepEvent>>,
+    initialState: REMOTE_MINER_INITIAL_STATE
+  },
+  remoteHauler: {
+    states: remoteHaulerStates as Record<string, StateConfig<CreepContext, CreepEvent>>,
+    initialState: REMOTE_HAULER_INITIAL_STATE
+  },
+  attacker: {
+    states: attackerStates as Record<string, StateConfig<CreepContext, CreepEvent>>,
+    initialState: ATTACKER_INITIAL_STATE
+  },
+  healer: {
+    states: healerStates as Record<string, StateConfig<CreepContext, CreepEvent>>,
+    initialState: HEALER_INITIAL_STATE
+  },
+  dismantler: {
+    states: dismantlerStates as Record<string, StateConfig<CreepContext, CreepEvent>>,
+    initialState: DISMANTLER_INITIAL_STATE
+  },
+  claimer: {
+    states: claimerStates as Record<string, StateConfig<CreepContext, CreepEvent>>,
+    initialState: CLAIMER_INITIAL_STATE
+  }
 };
 
 /**
@@ -150,7 +186,10 @@ export class StateMachineManager {
       if (creep.memory.stateMachine) {
         // Type assertion is safe here - CreepMemory.stateMachine matches SerializedMachine structure
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        const machine = restore<CreepContext, CreepEvent>(creep.memory.stateMachine as SerializedMachine<CreepContext>, config.states);
+        const machine = restore<CreepContext, CreepEvent>(
+          creep.memory.stateMachine as SerializedMachine<CreepContext>,
+          config.states
+        );
         // Update creep reference (it's a new Game object each tick)
         machine.getContext().creep = creep;
         this.machines.set(name, machine);

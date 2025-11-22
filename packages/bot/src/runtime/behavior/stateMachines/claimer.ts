@@ -13,9 +13,7 @@ export interface ClaimerContext {
   homeRoom: string;
 }
 
-export type ClaimerEvent =
-  | { type: "ARRIVED_AT_TARGET" }
-  | { type: "CLAIM_COMPLETE" };
+export type ClaimerEvent = { type: "ARRIVED_AT_TARGET" } | { type: "CLAIM_COMPLETE" };
 
 export const claimerStates: Record<string, StateConfig<ClaimerContext, ClaimerEvent>> = {
   travel: {
