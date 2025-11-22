@@ -14,6 +14,7 @@ declare global {
    */
   const __PROFILER_ENABLED__: "true" | "false";
   const __ROOM_VISUALS_ENABLED__: string;
+  const __PLAYER_USERNAME__: string;
 
   /**
    * Global EventBus instance for inter-component communication.

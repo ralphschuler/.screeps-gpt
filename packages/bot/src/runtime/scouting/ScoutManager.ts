@@ -3,9 +3,9 @@ import { profile } from "@ralphschuler/screeps-profiler";
 
 /**
  * Player username for identifying owned rooms.
- * TODO: Make this configurable via Memory or environment variable
+ * Injected at build time from PLAYER_USERNAME environment variable.
  */
-const PLAYER_USERNAME = "ralphschuler";
+const PLAYER_USERNAME = __PLAYER_USERNAME__;
 
 /**
  * Body part count for threat assessment

@@ -2,6 +2,25 @@
 
 The room expansion system enables the AI to automatically expand to additional rooms when conditions are favorable. This system integrates scouting, empire management, colony planning, and behavior control to seamlessly claim new territory.
 
+## Configuration
+
+### Build-Time Configuration
+
+The system uses the `PLAYER_USERNAME` environment variable to identify your rooms vs. enemy rooms:
+
+```bash
+# Default build (uses "ralphschuler")
+yarn build
+
+# Build with custom username
+PLAYER_USERNAME="yourname" yarn build
+
+# In GitHub Actions (use repository variable)
+PLAYER_USERNAME=${{ vars.PLAYER_USERNAME }} yarn build
+```
+
+The player username is injected at build time as `__PLAYER_USERNAME__` and cannot be changed at runtime.
+
 ## Overview
 
 The expansion system operates through a coordinated pipeline:
