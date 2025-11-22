@@ -1171,6 +1171,7 @@ __metadata:
     "@ralphschuler/screeps-logger": "workspace:*"
     "@ralphschuler/screeps-perf": "workspace:*"
     "@ralphschuler/screeps-profiler": "workspace:*"
+    "@ralphschuler/screeps-xstate": "workspace:*"
     "@types/screeps": "npm:^3.3.8"
     esbuild: "npm:^0.25.11"
     screeps-cartographer: "npm:^1.8.13"
@@ -1334,7 +1335,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@ralphschuler/screeps-xstate@workspace:packages/screeps-xstate":
+"@ralphschuler/screeps-xstate@workspace:*, @ralphschuler/screeps-xstate@workspace:packages/screeps-xstate":
   version: 0.0.0-use.local
   resolution: "@ralphschuler/screeps-xstate@workspace:packages/screeps-xstate"
   dependencies:

@@ -7,3 +7,5 @@ export { EnergyBalanceCalculator } from "./EnergyBalanceCalculator";
 export type { EnergyBalance } from "./EnergyBalanceCalculator";
 export { RoleTaskQueueManager, TaskPriority } from "./RoleTaskQueue";
 export type { TaskQueueEntry, RoleTaskQueueMemory } from "./RoleTaskQueue";
+export { StateMachineManager } from "./StateMachineManager";
+export * from "./stateMachines";
