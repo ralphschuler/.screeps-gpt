@@ -62,7 +62,7 @@ export function process(config: ProcessConfig) {
  *   sendMessage(target: string, message: string): void {
  *     // Protocol logic for sending messages
  *   }
- *   
+ *
  *   getMessages(target: string): string[] {
  *     // Protocol logic for retrieving messages
  *   }

@@ -83,9 +83,9 @@ Import protocols before the kernel initialization:
 
 ```typescript
 import { Kernel } from "screeps-kernel";
-import "./MessageProtocol";  // Triggers @protocol decorator
-import "./SenderProcess";     // Triggers @process decorator
-import "./ReceiverProcess";   // Triggers @process decorator
+import "./MessageProtocol"; // Triggers @protocol decorator
+import "./SenderProcess"; // Triggers @process decorator
+import "./ReceiverProcess"; // Triggers @process decorator
 
 const kernel = new Kernel({ logger: console });
 export const loop = () => kernel.run(Game, Memory);
@@ -116,11 +116,11 @@ interface ICombinedProtocol extends ILoggingProtocol, IStatsProtocol {}
 @protocol({ name: "LoggingProtocol" })
 export class LoggingProtocol implements ILoggingProtocol {
   private logs: string[] = [];
-  
+
   log(message: string): void {
     this.logs.push(message);
   }
-  
+
   getLogs(): string[] {
     return this.logs;
   }
@@ -129,11 +129,11 @@ export class LoggingProtocol implements ILoggingProtocol {
 @protocol({ name: "StatsProtocol" })
 export class StatsProtocol implements IStatsProtocol {
   private stats = new Map<string, number>();
-  
+
   recordStat(name: string, value: number): void {
     this.stats.set(name, value);
   }
-  
+
   getStat(name: string): number | undefined {
     return this.stats.get(name);
   }
@@ -159,15 +159,15 @@ Protocol instances are singletons that persist across ticks. Use this to maintai
 @protocol({ name: "CounterProtocol" })
 export class CounterProtocol {
   private tickCount = 0;
-  
+
   incrementTick(): void {
     this.tickCount++;
   }
-  
+
   getTickCount(): number {
     return this.tickCount;
   }
-  
+
   reset(): void {
     this.tickCount = 0;
   }
@@ -189,16 +189,16 @@ interface ITaskProtocol {
 export class TaskProtocol implements ITaskProtocol {
   private requests = new Map<string, string>();
   private assignments = new Map<string, Task>();
-  
+
   requestTask(processName: string, taskType: string): void {
     this.requests.set(processName, taskType);
   }
-  
+
   assignTask(processName: string, task: Task): void {
     this.assignments.set(processName, task);
     this.requests.delete(processName);
   }
-  
+
   getAssignedTask(processName: string): Task | undefined {
     return this.assignments.get(processName);
   }
@@ -213,21 +213,21 @@ export class TaskProtocol implements ITaskProtocol {
 interface IEventProtocol {
   subscribe(event: string, subscriber: string): void;
   publish(event: string, data: any): void;
-  getEvents(subscriber: string): Array<{event: string, data: any}>;
+  getEvents(subscriber: string): Array<{ event: string; data: any }>;
 }
 
 @protocol({ name: "EventProtocol" })
 export class EventProtocol implements IEventProtocol {
   private subscriptions = new Map<string, Set<string>>();
-  private events = new Map<string, Array<{event: string, data: any}>>();
-  
+  private events = new Map<string, Array<{ event: string; data: any }>>();
+
   subscribe(event: string, subscriber: string): void {
     if (!this.subscriptions.has(event)) {
       this.subscriptions.set(event, new Set());
     }
     this.subscriptions.get(event)!.add(subscriber);
   }
-  
+
   publish(event: string, data: any): void {
     const subscribers = this.subscriptions.get(event) ?? new Set();
     for (const subscriber of subscribers) {
@@ -237,8 +237,8 @@ export class EventProtocol implements IEventProtocol {
       this.events.get(subscriber)!.push({ event, data });
     }
   }
-  
-  getEvents(subscriber: string): Array<{event: string, data: any}> {
+
+  getEvents(subscriber: string): Array<{ event: string; data: any }> {
     const events = this.events.get(subscriber) ?? [];
     this.events.delete(subscriber); // Clear after reading
     return events;
@@ -258,15 +258,15 @@ interface IServiceProtocol {
 @protocol({ name: "ServiceProtocol" })
 export class ServiceProtocol implements IServiceProtocol {
   private services = new Map<string, any>();
-  
+
   registerService<T>(name: string, service: T): void {
     this.services.set(name, service);
   }
-  
+
   getService<T>(name: string): T | undefined {
     return this.services.get(name);
   }
-  
+
   hasService(name: string): boolean {
     return this.services.has(name);
   }
@@ -287,13 +287,13 @@ interface IMyProtocol {
 
 @protocol({ name: "MyProtocol" })
 export class MyProtocol implements IMyProtocol {
-  doSomething(param: string): void { }
+  doSomething(param: string): void {}
 }
 
 // ❌ Bad: No type safety
 @protocol({ name: "MyProtocol" })
 export class MyProtocol {
-  doSomething(param: string): void { }
+  doSomething(param: string): void {}
 }
 ```
 
@@ -323,13 +323,13 @@ Protocol and method names should clearly indicate their purpose:
 // ✅ Good: Clear intent
 @protocol({ name: "CreepTaskCoordinationProtocol" })
 export class CreepTaskCoordinationProtocol {
-  assignTaskToCreep(creepName: string, task: Task): void { }
+  assignTaskToCreep(creepName: string, task: Task): void {}
 }
 
 // ❌ Bad: Unclear
 @protocol({ name: "Protocol1" })
 export class Protocol1 {
-  do(x: string, y: any): void { }
+  do(x: string, y: any): void {}
 }
 ```
 
@@ -341,12 +341,12 @@ Always handle missing data and edge cases:
 @protocol({ name: "DataProtocol" })
 export class DataProtocol {
   private data = new Map<string, string>();
-  
+
   getData(key: string): string | undefined {
     // ✅ Return undefined for missing keys
     return this.data.get(key);
   }
-  
+
   getDataOrDefault(key: string, defaultValue: string): string {
     // ✅ Provide default values
     return this.data.get(key) ?? defaultValue;
@@ -362,10 +362,10 @@ While protocols don't use Memory, they still use heap memory:
 @protocol({ name: "HistoryProtocol" })
 export class HistoryProtocol {
   private history: string[] = [];
-  
+
   addHistory(entry: string): void {
     this.history.push(entry);
-    
+
     // ✅ Limit history size to prevent unbounded growth
     if (this.history.length > 1000) {
       this.history.shift();
@@ -379,6 +379,7 @@ export class HistoryProtocol {
 ### From Memory-Based Communication
 
 **Before:**
+
 ```typescript
 @process({ name: "ProducerProcess", priority: 100 })
 export class ProducerProcess {
@@ -400,15 +401,16 @@ export class ConsumerProcess {
 ```
 
 **After:**
+
 ```typescript
 @protocol({ name: "MessageProtocol" })
 export class MessageProtocol {
   private messages = new Map<string, string[]>();
-  
+
   sendMessages(channel: string, messages: string[]): void {
     this.messages.set(channel, messages);
   }
-  
+
   getMessages(channel: string): string[] {
     return this.messages.get(channel) ?? [];
   }
@@ -431,6 +433,7 @@ export class ConsumerProcess {
 ```
 
 **Benefits:**
+
 - No Memory serialization overhead
 - Type-safe at compile time
 - Clear separation of concerns
@@ -446,21 +449,21 @@ import { MessageProtocol } from "./MessageProtocol";
 
 describe("MessageProtocol", () => {
   let protocol: MessageProtocol;
-  
+
   beforeEach(() => {
     protocol = new MessageProtocol();
   });
-  
+
   it("should send and receive messages", () => {
     protocol.sendMessage("defense", "Enemy spotted!");
     const messages = protocol.getMessages("defense");
     expect(messages).toEqual(["Enemy spotted!"]);
   });
-  
+
   it("should support multiple channels", () => {
     protocol.sendMessage("defense", "Message 1");
     protocol.sendMessage("economy", "Message 2");
-    
+
     expect(protocol.getMessages("defense")).toEqual(["Message 1"]);
     expect(protocol.getMessages("economy")).toEqual(["Message 2"]);
   });
@@ -476,7 +479,7 @@ describe("MessageProtocol", () => {
 **Solution:** Ensure the protocol is imported before kernel initialization:
 
 ```typescript
-import "./MyProtocol";  // Must be before kernel.run()
+import "./MyProtocol"; // Must be before kernel.run()
 ```
 
 ### Type Errors
@@ -502,6 +505,7 @@ run(ctx: ProcessContext<Memory, IMessageProtocol>): void {
 **Problem:** Protocol state resets each tick
 
 **Cause:** Protocol instances are singleton by design. If state is resetting, check for:
+
 1. Accidental re-registration with different name
 2. Clearing the ProtocolRegistry in production code
 
@@ -514,20 +518,21 @@ run(ctx: ProcessContext<Memory, IMessageProtocol>): void {
 ```
 
 **Config:**
+
 - `name` (string, required): Unique identifier for the protocol
 
 ### ProtocolRegistry
 
 ```typescript
 class ProtocolRegistry {
-  static getInstance(): ProtocolRegistry
-  register(descriptor: ProtocolDescriptor): void
-  unregister(name: string): boolean
-  get(name: string): ProtocolDescriptor | undefined
-  getAll(): ProtocolDescriptor[]
-  clear(): void
-  size(): number
-  combineProtocols(): Record<string, unknown>
+  static getInstance(): ProtocolRegistry;
+  register(descriptor: ProtocolDescriptor): void;
+  unregister(name: string): boolean;
+  get(name: string): ProtocolDescriptor | undefined;
+  getAll(): ProtocolDescriptor[];
+  clear(): void;
+  size(): number;
+  combineProtocols(): Record<string, unknown>;
 }
 ```
 
@@ -539,7 +544,7 @@ interface ProcessContext<TMemory = any, TProtocol = any> {
   memory: TMemory;
   logger: Logger;
   metrics: MetricsCollector;
-  protocol: TProtocol;  // Combined protocol interface
+  protocol: TProtocol; // Combined protocol interface
 }
 ```
 

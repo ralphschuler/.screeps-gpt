@@ -1,6 +1,6 @@
 /**
  * Example demonstrating the protocol system for inter-process communication.
- * 
+ *
  * This example shows how to:
  * 1. Define a protocol interface for type safety
  * 2. Implement the protocol with the @protocol decorator
@@ -109,11 +109,11 @@ export class ProducerProcess {
 export class DefenseProcess {
   public run(ctx: ProcessContext<Memory, ICombinedProtocol>): void {
     const messages = ctx.protocol.getMessages("defense");
-    
+
     if (messages.length > 0) {
       ctx.logger.log?.("[DefenseProcess] Received messages:");
       messages.forEach(msg => ctx.logger.log?.(`  - ${msg}`));
-      
+
       // Clear processed messages
       ctx.protocol.clearMessages("defense");
     }
@@ -128,11 +128,11 @@ export class DefenseProcess {
 export class EconomyProcess {
   public run(ctx: ProcessContext<Memory, ICombinedProtocol>): void {
     const messages = ctx.protocol.getMessages("economy");
-    
+
     if (messages.length > 0) {
       ctx.logger.log?.("[EconomyProcess] Received messages:");
       messages.forEach(msg => ctx.logger.log?.(`  - ${msg}`));
-      
+
       // Clear processed messages
       ctx.protocol.clearMessages("economy");
     }
@@ -147,7 +147,7 @@ export class EconomyProcess {
 export class ReporterProcess {
   public run(ctx: ProcessContext<Memory, ICombinedProtocol>): void {
     const stats = ctx.protocol.getAllStats();
-    
+
     ctx.logger.log?.("[ReporterProcess] Statistics:");
     Object.entries(stats).forEach(([name, value]) => {
       ctx.logger.log?.(`  ${name}: ${value}`);
