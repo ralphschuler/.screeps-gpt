@@ -36,6 +36,7 @@ The expansion system operates through a coordinated pipeline:
 ### ScoutManager (`packages/bot/src/runtime/scouting/ScoutManager.ts`)
 
 Discovers and analyzes adjacent rooms:
+
 - Runs every 100 ticks via ScoutingProcess
 - Scans 8 adjacent rooms around each owned room
 - Collects intelligence: sources, minerals, ownership, threats
@@ -46,6 +47,7 @@ Discovers and analyzes adjacent rooms:
 ### EmpireManager (`packages/bot/src/runtime/empire/EmpireManager.ts`)
 
 Coordinates empire-wide expansion decisions:
+
 - Checks expansion conditions every tick
 - Evaluates GCL capacity (activeRooms < gcl.level)
 - Monitors CPU bucket (>= 5000)
@@ -58,6 +60,7 @@ Coordinates empire-wide expansion decisions:
 ### ColonyManager (`packages/bot/src/runtime/planning/ColonyManager.ts`)
 
 Maintains the expansion queue:
+
 - Stores expansion requests in Memory.colony.expansionQueue
 - Priority-based queue (higher priority first)
 - Prevents duplicate requests for same room
@@ -67,6 +70,7 @@ Maintains the expansion queue:
 ### BehaviorController (`packages/bot/src/runtime/behavior/BehaviorController.ts`)
 
 Spawns claimer creeps for expansion:
+
 - Checks expansion queue after role minimum spawning
 - Identifies expansions without assigned claimers
 - Prioritizes by expansion request priority
@@ -76,6 +80,7 @@ Spawns claimer creeps for expansion:
 ### Claimer Creep (`packages/bot/src/runtime/behavior/stateMachines/claimer.ts`)
 
 Executes the claiming:
+
 - Travels to target room
 - Finds and claims the controller
 - Body: CLAIM + MOVE parts (scales with energy)
@@ -105,6 +110,7 @@ Executes the claiming:
 ### Expansion Criteria
 
 **Rooms eligible for claiming:**
+
 - Not owned by another player
 - At least 1 source (changed from 2)
 - No controller level or level 0
@@ -115,6 +121,7 @@ Executes the claiming:
 ### Step 1: Discovery
 
 ScoutingProcess runs every 100 ticks:
+
 ```
 For each owned room:
   - Calculate 8 adjacent room coordinates
@@ -128,6 +135,7 @@ For each owned room:
 ### Step 2: Evaluation
 
 EmpireManager checks conditions every tick:
+
 ```
 shouldExpand():
   - Check: activeRooms < gcl.level
@@ -139,6 +147,7 @@ shouldExpand():
 ### Step 3: Target Selection
 
 EmpireManager identifies best target:
+
 ```
 identifyExpansionTarget():
   - Get all scouted rooms
@@ -150,6 +159,7 @@ identifyExpansionTarget():
 ### Step 4: Takeover Identification (NEW)
 
 EmpireManager identifies occupied rooms:
+
 ```
 identifyTakeoverTargets():
   - Get all scouted rooms
@@ -165,6 +175,7 @@ identifyTakeoverTargets():
 ### Step 5: Request Creation
 
 EmpireManager requests expansion:
+
 ```
 initiateExpansion(targetRoom):
   - Call: colonyManager.requestExpansion()
@@ -175,6 +186,7 @@ initiateExpansion(targetRoom):
 ### Step 6: Queue Management
 
 ColonyManager maintains queue:
+
 ```
 requestExpansion(targetRoom, reason, tick, priority):
   - Check: not already claimed
@@ -187,6 +199,7 @@ requestExpansion(targetRoom, reason, tick, priority):
 ### Step 7: Claimer Spawning
 
 BehaviorController spawns claimer:
+
 ```
 spawnClaimersForExpansion():
   - Get: pending expansion requests
@@ -202,6 +215,7 @@ spawnClaimersForExpansion():
 ### Step 8: Claiming
 
 Claimer creep executes:
+
 ```
 runClaimer(creep):
   - If not in target room:
@@ -319,10 +333,12 @@ runClaimer(creep):
 The system calculates takeover priority (0-100) based on:
 
 **Positive Factors:**
+
 - Base priority: 50
 - 2+ sources: +20
 
 **Negative Factors:**
+
 - High RCL: -5 per level
 - Threat level:
   - Low: -5
@@ -334,6 +350,7 @@ The system calculates takeover priority (0-100) based on:
   - Spawns: -5 per spawn
 
 **Example:**
+
 ```
 Room W3N2:
 - Base: 50
@@ -350,23 +367,25 @@ Room W3N2:
 ### Console Commands
 
 Check expansion status:
+
 ```javascript
 // View expansion queue
-Memory.colony.expansionQueue
+Memory.colony.expansionQueue;
 
 // View takeover targets (NEW)
-Memory.takeover.targets
+Memory.takeover.targets;
 
 // View scouted rooms
-Memory.scout.rooms
+Memory.scout.rooms;
 
 // View active claimers
-Object.values(Game.creeps).filter(c => c.memory.role === 'claimer')
+Object.values(Game.creeps).filter(c => c.memory.role === "claimer");
 ```
 
 ### Log Messages
 
 The system logs key events:
+
 ```
 [ScoutManager] Scouted W2N1: 1 sources, owned=false, SK=false, hostiles=0
 [EmpireManager] Initiating expansion to W2N1
@@ -380,6 +399,7 @@ The system logs key events:
 ### Expansion Not Triggering
 
 Check conditions:
+
 1. **GCL Limit**: Verify `Game.gcl.level > owned rooms count`
 2. **CPU Bucket**: Verify `Game.cpu.bucket >= 5000`
 3. **Room Stability**: Verify all rooms are RCL 3+
@@ -389,6 +409,7 @@ Check conditions:
 ### No Takeover Targets
 
 Check scouting:
+
 1. **Visibility**: Verify rooms with other players are visible
 2. **Scout Data**: Check `Memory.scout.rooms` for owned rooms
 3. **Takeover Memory**: Check `Memory.takeover.targets`
@@ -396,6 +417,7 @@ Check scouting:
 ### No Claimer Spawning
 
 Check queue:
+
 1. **Expansion Queue**: Verify `Memory.colony.expansionQueue` has pending requests
 2. **Existing Claimers**: Check if claimer already exists for target
 3. **Energy**: Verify room has at least 650 energy for claimer
@@ -404,6 +426,7 @@ Check queue:
 ### Claimer Not Claiming
 
 Check creep:
+
 1. **Target Room**: Verify `creep.memory.targetRoom` is set
 2. **Path**: Verify path exists to target room
 3. **Controller**: Verify target room has unclaimed controller
@@ -412,12 +435,14 @@ Check creep:
 ## Changes in This Version
 
 ### Room Expansion Criteria Update
+
 - **Before**: Only rooms with 2+ sources were considered for expansion
 - **After**: Rooms with 1+ sources are now eligible for claiming
 - **Impact**: Enables expansion to more rooms, including single-source rooms
 - **Rationale**: Even single-source rooms provide strategic value and GCL progression
 
 ### Takeover Planning System (NEW)
+
 - **Feature**: Identifies occupied rooms owned by other players
 - **Analysis**: Evaluates threat level, defenses, and strategic value
 - **Priority**: Calculates conquest priority (0-100) based on difficulty
@@ -428,6 +453,7 @@ Check creep:
 ## Future Enhancements
 
 ### Expansion System
+
 - Remote room evaluation (mineral types, strategic value)
 - Power bank targeting for GCL boost
 - Automatic room abandonment if unprofitable
@@ -435,6 +461,7 @@ Check creep:
 - Defensive claiming (blocking opponents)
 
 ### Takeover System (Planned)
+
 - **Phase 1** (Current): Identify and track occupied rooms ✅
 - **Phase 2**: Analyze attack requirements (creep composition, spawn timing)
 - **Phase 3**: Generate conquest strategies (siege, rush, economic warfare)
@@ -442,6 +469,7 @@ Check creep:
 - **Phase 5**: Post-conquest stabilization (defense, rebuilding)
 
 ### Conquest Strategies (Future)
+
 - **Siege Strategy**: Wear down defenses over time
 - **Rush Strategy**: Overwhelming force for quick takeover
 - **Economic Warfare**: Cut off resources and wait

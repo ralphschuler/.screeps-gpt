@@ -406,9 +406,7 @@ export class EmpireManager {
     // Update takeover targets list
     for (const room of occupiedRooms) {
       // Check if already in takeover list
-      const existing = (memory.takeover.targets as Array<{ roomName: string }>).find(
-        t => t.roomName === room.roomName
-      );
+      const existing = (memory.takeover.targets as Array<{ roomName: string }>).find(t => t.roomName === room.roomName);
 
       if (!existing) {
         const target = {
@@ -419,7 +417,7 @@ export class EmpireManager {
           threatLevel: room.threatLevel ?? "unknown",
           hostileStructures: room.hostileStructures,
           hostileCreeps: room.hostileCreeps,
-          discoveredAt: (typeof Game !== "undefined" ? Game.time : 0),
+          discoveredAt: typeof Game !== "undefined" ? Game.time : 0,
           status: "identified" as const,
           priority: this.calculateTakeoverPriority(room)
         };
