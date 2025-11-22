@@ -2,6 +2,12 @@ import type { GameContext, RoomLike } from "@runtime/types/GameContext";
 import { profile } from "@ralphschuler/screeps-profiler";
 
 /**
+ * Player username for identifying owned rooms.
+ * Injected at build time from PLAYER_USERNAME environment variable.
+ */
+const PLAYER_USERNAME = __PLAYER_USERNAME__;
+
+/**
  * Body part count for threat assessment
  */
 export interface BodyPartCount {
@@ -201,7 +207,7 @@ export class ScoutManager {
     data.isSourceKeeper = keeperLairs.length > 0;
 
     // Collect hostile intelligence for combat assessment
-    if (data.owned && data.owner && data.owner !== "ralphschuler") {
+    if (data.owned && data.owner && data.owner !== PLAYER_USERNAME) {
       data.hostileStructures = this.analyzeHostileStructures(room);
       data.hostileCreeps = this.analyzeHostileCreeps(hostiles);
       data.threatLevel = this.calculateThreatLevel(data.hostileStructures, data.hostileCreeps);
@@ -260,7 +266,7 @@ export class ScoutManager {
       }
 
       // Skip owned rooms (unless it's our own)
-      if (room.owned && room.owner !== "ralphschuler") {
+      if (room.owned && room.owner !== PLAYER_USERNAME) {
         return false;
       }
 
@@ -383,7 +389,7 @@ export class ScoutManager {
 
     for (const structure of allStructures) {
       // Only count structures owned by other players (not owned by us)
-      if ("owner" in structure && structure.owner && structure.owner.username !== "ralphschuler") {
+      if ("owner" in structure && structure.owner && structure.owner.username !== PLAYER_USERNAME) {
         switch (structure.structureType) {
           case STRUCTURE_TOWER:
             analysis.towers++;
