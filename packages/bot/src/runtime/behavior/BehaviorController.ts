@@ -9,6 +9,7 @@ import { isCreepDying, handleDyingCreepEnergyDrop } from "./creepHelpers";
 import { ScoutManager } from "@runtime/scouting/ScoutManager";
 import { RoleTaskQueueManager } from "./RoleTaskQueue";
 import * as TaskDiscovery from "./TaskDiscovery";
+import { SPAWN_THRESHOLDS } from "./constants";
 
 type RoleName =
   | "harvester"
@@ -397,7 +398,7 @@ export class BehaviorController {
   public constructor(options: BehaviorControllerOptions = {}, logger: Pick<Console, "log" | "warn"> = console) {
     this.logger = logger;
     this.options = {
-      cpuSafetyMargin: options.cpuSafetyMargin ?? 0.85,
+      cpuSafetyMargin: options.cpuSafetyMargin ?? SPAWN_THRESHOLDS.CPU_SAFETY_MARGIN,
       maxCpuPerCreep: options.maxCpuPerCreep ?? 1.5,
       enableCreepCommunication: options.enableCreepCommunication ?? true
     };
@@ -715,7 +716,10 @@ export class BehaviorController {
     }
 
     // Calculate reserve threshold (20% of capacity, minimum 50 energy)
-    const reserveThreshold = Math.max(50, energyCapacity * 0.2);
+    const reserveThreshold = Math.max(
+      SPAWN_THRESHOLDS.MIN_ENERGY_RESERVE,
+      energyCapacity * SPAWN_THRESHOLDS.ENERGY_RESERVE_RATIO
+    );
 
     // Essential Roles Bypass: Allow spawning essential infrastructure roles even when
     // reserve threshold would block it. This is critical at low RCL where energy capacity
@@ -957,23 +961,29 @@ export class BehaviorController {
       // RCL 4+ with energy surplus: increase upgraders for faster progression
       if (rcl >= 4) {
         // High energy surplus: 5 upgraders (storage >50% or consistently full extensions)
-        if ((hasStorage && storageRatio > 0.5) || energyRatio > 0.9) {
+        if (
+          (hasStorage && storageRatio > SPAWN_THRESHOLDS.STORAGE_HIGH_THRESHOLD) ||
+          energyRatio > SPAWN_THRESHOLDS.ENERGY_HIGH_THRESHOLD
+        ) {
           upgraderCount = 5;
         }
         // Medium energy surplus: 4 upgraders (storage >30% or extensions >75%)
-        else if ((hasStorage && storageRatio > 0.3) || energyRatio > 0.75) {
+        else if (
+          (hasStorage && storageRatio > SPAWN_THRESHOLDS.STORAGE_MEDIUM_THRESHOLD) ||
+          energyRatio > SPAWN_THRESHOLDS.ENERGY_MEDIUM_THRESHOLD
+        ) {
           upgraderCount = 4;
         }
         // Default: keep minimum of 3 upgraders
       }
       // RCL 3 with good energy: 4 upgraders to accelerate to RCL4
-      else if (rcl === 3 && energyRatio > 0.8) {
+      else if (rcl === 3 && energyRatio > SPAWN_THRESHOLDS.ENERGY_EARLY_GAME_THRESHOLD) {
         upgraderCount = 4;
       }
       // RCL 1-2 with high energy: 4 upgraders to accelerate early progression
       // This prevents spawn idle when energy is maxed but minimums are met
       // Threshold lowered to 0.8 (80%) to prevent spawn idle at healthy energy levels (Issue #1105)
-      else if (rcl <= 2 && energyRatio >= 0.8) {
+      else if (rcl <= 2 && energyRatio >= SPAWN_THRESHOLDS.ENERGY_EARLY_GAME_THRESHOLD) {
         upgraderCount = 4;
       }
 
