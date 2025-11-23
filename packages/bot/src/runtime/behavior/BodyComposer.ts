@@ -133,9 +133,10 @@ export class BodyComposer {
    * @param role - The creep role (harvester, upgrader, builder, etc.)
    * @param energyCapacity - Room's total energy capacity (room.energyCapacityAvailable)
    * @param room - Optional room context for source-based capacity adjustment
+   * @param roomCreepCount - Optional pre-calculated count of creeps in the room (overrides automatic counting)
    * @returns Optimized body part array, or empty array if insufficient energy
    */
-  public generateBody(role: string, energyCapacity: number, room?: Room): BodyPartConstant[] {
+  public generateBody(role: string, energyCapacity: number, room?: Room, roomCreepCount?: number): BodyPartConstant[] {
     const pattern = this.patterns[role];
     if (!pattern) {
       // Unknown role - return minimal emergency body if possible
@@ -148,7 +149,8 @@ export class BodyComposer {
     // Apply budget constraints only when room context is provided (actual spawning scenario)
     if (room) {
       // Check if we're in early game/bootstrap scenario
-      const creepCount = this.countRoomCreeps(room);
+      // Use provided count if available, otherwise fallback to counting
+      const creepCount = roomCreepCount ?? this.countRoomCreeps(room);
       const isEarlyGame = creepCount < 5;
 
       // Enforce 50% energy budget constraint to maintain spawn throughput
