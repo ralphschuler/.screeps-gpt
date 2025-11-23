@@ -5,6 +5,9 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.137.9] - 2025-11-23
+
+
 ### Removed
 
 - **Breaking**: Removed deprecated GitHub labels (`bug`, `enhancement`, `severity/*`)
@@ -21,6 +24,7 @@ All notable changes to this project are documented here. This changelog now main
   - Removed legacy label migration sections from label-system.md
   - Updated AGENTS.md to remove references to deprecated labels
   - Updated .github/copilot-instructions.md to remove backward compatibility notes
+
 
 ## [0.137.3] - 2025-11-23
 
