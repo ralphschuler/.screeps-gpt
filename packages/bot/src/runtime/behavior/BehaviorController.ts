@@ -3284,8 +3284,9 @@ function runScout(creep: ManagedCreep): string {
       memory.lastRoomSwitchTick ??= creep.ticksToLive ?? 1500;
 
       // Move to next room after 5 ticks at center
-      const ticksAtCenter: number = (creep.ticksToLive ?? 1500) - (memory.lastRoomSwitchTick ?? 1500);
-      if (Math.abs(ticksAtCenter) >= 5) {
+      // Since ticksToLive decreases, subtract current from stored to get elapsed time
+      const ticksAtCenter: number = (memory.lastRoomSwitchTick ?? 1500) - (creep.ticksToLive ?? 1500);
+      if (ticksAtCenter >= 5) {
         memory.currentTargetIndex = (memory.currentTargetIndex + 1) % memory.targetRooms.length;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         memory.lastRoomSwitchTick = creep.ticksToLive ?? 1500;
