@@ -22,13 +22,6 @@ bots:
     gcl: 1
     log_console: false
 
-  - username: simplebot
-    botName: simplebot
-    position: 17,37,W19N21 # Westen des Rings
-    cpu: 200
-    gcl: 1
-    log_console: false
-
   - username: screeps-gpt
     botName: screeps-gpt
     position: 17,37,W19N23 # Nordwest-Ecke des Rings
