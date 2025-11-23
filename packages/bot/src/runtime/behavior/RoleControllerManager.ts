@@ -387,22 +387,12 @@ export class RoleControllerManager {
         continue; // No available spawns
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      const room = spawn.room;
-      
-      // Get energy values based on emergency mode
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      const roomEnergyAvailable = room.energyAvailable ?? 300;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      const roomEnergyCapacity = room.energyCapacityAvailable ?? 300;
-      
-      // EMERGENCY MODE: Use actual available energy instead of capacity
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const energyToUse =
-        isEmergency || harvesterCount === 0 ? roomEnergyAvailable : roomEnergyCapacity;
+      // Get spawn energy details using helper to avoid type casting issues
+      const spawnEnergy = this.getSpawnEnergyDetails(spawn, isEmergency || harvesterCount === 0);
+      const energyToUse = spawnEnergy.energyToUse;
 
       // Generate body based on energy
-      const body = this.bodyComposer.generateBody(role, energyToUse as number, room as Room | undefined);
+      const body = this.bodyComposer.generateBody(role, energyToUse, spawnEnergy.room);
 
       if (body.length === 0) {
         // Not enough energy for minimum body
@@ -411,7 +401,7 @@ export class RoleControllerManager {
 
       // Validate sufficient energy before spawning
       const spawnCost = this.bodyComposer.calculateBodyCost(body);
-      if ((roomEnergyAvailable as number) < spawnCost) {
+      if (spawnEnergy.energyAvailable < spawnCost) {
         continue; // Not enough energy yet
       }
 
@@ -420,8 +410,7 @@ export class RoleControllerManager {
 
       const creepMemory = controller.createMemory();
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      const result = spawn.spawnCreep(body, name, { memory: creepMemory });
+      const result = this.spawnCreepSafely(spawn, body, name, creepMemory);
       if (result === OK) {
         spawned.push(name);
         this.logger.log?.(`[RoleControllerManager] Spawned ${name} (${body.length} parts, ${spawnCost} energy)`);
@@ -441,5 +430,47 @@ export class RoleControllerManager {
       }
     }
     return undefined;
+  }
+
+  /**
+   * Helper method to extract energy details from spawn in a type-safe way.
+   * Centralizes all type casting for spawns to a single location.
+   */
+  private getSpawnEnergyDetails(
+    spawn: SpawnLike,
+    isEmergencyMode: boolean
+  ): { energyAvailable: number; energyCapacity: number; energyToUse: number; room: Room | undefined } {
+    // Type guard to safely access room properties
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+    const room = spawn.room;
+    
+    // Extract energy values with fallback defaults
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const energyAvailable = (room.energyAvailable as number | undefined) ?? 300;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const energyCapacity = (room.energyCapacityAvailable as number | undefined) ?? 300;
+    
+    // EMERGENCY MODE: Use actual available energy instead of capacity
+    const energyToUse = isEmergencyMode ? energyAvailable : energyCapacity;
+    
+    return {
+      energyAvailable,
+      energyCapacity,
+      energyToUse,
+      room: room as Room | undefined
+    };
+  }
+
+  /**
+   * Helper method to safely spawn a creep, handling type casting in one place.
+   */
+  private spawnCreepSafely(
+    spawn: SpawnLike,
+    body: BodyPartConstant[],
+    name: string,
+    memory: CreepMemory
+  ): ScreepsReturnCode {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    return spawn.spawnCreep(body, name, { memory });
   }
 }
