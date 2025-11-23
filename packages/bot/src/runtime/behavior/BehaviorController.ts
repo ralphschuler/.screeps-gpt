@@ -22,7 +22,8 @@ type RoleName =
   | "attacker"
   | "healer"
   | "dismantler"
-  | "claimer";
+  | "claimer"
+  | "scout";
 
 interface BaseCreepMemory extends CreepMemory {
   role: RoleName;
@@ -53,6 +54,7 @@ const ATTACKER_VERSION = 1;
 const HEALER_VERSION = 1;
 const DISMANTLER_VERSION = 1;
 const CLAIMER_VERSION = 1;
+const SCOUT_VERSION = 1;
 
 const HARVEST_TASK = "harvest" as const;
 const DELIVER_TASK = "deliver" as const;
@@ -76,6 +78,7 @@ const ATTACKER_ATTACK_TASK = "attack" as const;
 const HEALER_HEAL_TASK = "heal" as const;
 const DISMANTLER_DISMANTLE_TASK = "dismantle" as const;
 const CLAIMER_CLAIM_TASK = "claim" as const;
+const SCOUT_TASK = "scout" as const;
 
 // Constants for remote operations
 /**
@@ -109,6 +112,7 @@ type AttackerTask = typeof ATTACKER_ATTACK_TASK;
 type HealerTask = typeof HEALER_HEAL_TASK;
 type DismantlerTask = typeof DISMANTLER_DISMANTLE_TASK;
 type ClaimerTask = typeof CLAIMER_CLAIM_TASK;
+type ScoutTask = typeof SCOUT_TASK;
 
 interface HarvesterMemory extends BaseCreepMemory {
   task: HarvesterTask;
@@ -171,6 +175,13 @@ interface ClaimerMemory extends BaseCreepMemory {
   task: ClaimerTask;
   targetRoom: string;
   homeRoom: string;
+}
+
+interface ScoutMemory extends BaseCreepMemory {
+  task: ScoutTask;
+  homeRoom: string;
+  targetRooms: string[];
+  currentTargetIndex: number;
 }
 
 /**
@@ -335,6 +346,20 @@ const ROLE_DEFINITIONS: Record<RoleName, RoleDefinition> = {
         homeRoom: ""
       }) satisfies ClaimerMemory,
     run: (creep: ManagedCreep) => runClaimer(creep)
+  },
+  scout: {
+    minimum: 0,
+    body: [MOVE],
+    memory: () =>
+      ({
+        role: "scout",
+        task: SCOUT_TASK,
+        version: SCOUT_VERSION,
+        homeRoom: "",
+        targetRooms: [],
+        currentTargetIndex: 0
+      }) satisfies ScoutMemory,
+    run: (creep: ManagedCreep) => runScout(creep)
   }
 };
 
@@ -1000,6 +1025,22 @@ export class BehaviorController {
       }
     }
 
+    // Scout activation based on RCL
+    // Spawn scouts starting at RCL 2 to explore adjacent rooms for expansion/remote mining
+    for (const room of Object.values(game.rooms)) {
+      if (!room.controller?.my) {
+        continue;
+      }
+
+      const rcl = room.controller.level;
+
+      // Start scouting at RCL 2 when the room has basic infrastructure
+      if (rcl >= 2) {
+        // Spawn 1 scout per owned room to continuously explore adjacent rooms
+        adjustedMinimums.scout = (adjustedMinimums.scout ?? 0) + 1;
+      }
+    }
+
     return adjustedMinimums;
   }
 
@@ -1140,6 +1181,7 @@ export class BehaviorController {
         "repairer",
         "remoteMiner",
         "remoteHauler",
+        "scout",
         "dismantler",
         "claimer"
       ];
@@ -1154,6 +1196,7 @@ export class BehaviorController {
         "repairer",
         "remoteMiner",
         "remoteHauler",
+        "scout",
         "attacker",
         "healer",
         "dismantler",
@@ -1170,6 +1213,7 @@ export class BehaviorController {
         "repairer",
         "remoteMiner",
         "remoteHauler",
+        "scout",
         "attacker",
         "healer",
         "dismantler",
@@ -3149,4 +3193,105 @@ function runClaimer(creep: ManagedCreep): string {
   }
 
   return CLAIMER_CLAIM_TASK;
+}
+
+/**
+ * Helper function to get adjacent room names from a given room
+ */
+function getAdjacentRooms(roomName: string): string[] {
+  const match = roomName.match(/^([WE])(\d+)([NS])(\d+)$/);
+  if (!match) {
+    return [];
+  }
+
+  const [, ewDir, ewNum, nsDir, nsNum] = match;
+  const x = (ewDir === "W" ? -1 : 1) * parseInt(ewNum);
+  const y = (nsDir === "S" ? -1 : 1) * parseInt(nsNum);
+
+  const adjacentRooms: string[] = [];
+  for (let dx = -1; dx <= 1; dx++) {
+    for (let dy = -1; dy <= 1; dy++) {
+      if (dx === 0 && dy === 0) continue; // Skip home room
+
+      const adjX = x + dx;
+      const adjY = y + dy;
+
+      const adjEwDir = adjX < 0 ? "W" : "E";
+      const adjNsDir = adjY < 0 ? "S" : "N";
+      const adjRoomName = `${adjEwDir}${Math.abs(adjX)}${adjNsDir}${Math.abs(adjY)}`;
+
+      adjacentRooms.push(adjRoomName);
+    }
+  }
+
+  return adjacentRooms;
+}
+
+/**
+ * Executes the behavior logic for a scout creep.
+ *
+ * Scouts move through adjacent rooms to provide visibility for the ScoutingProcess.
+ * They cycle through all adjacent rooms, spending time in each to ensure the room
+ * is properly scouted by the ScoutingProcess, then return to the home room.
+ *
+ * @param creep - The scout creep to run behavior for.
+ * @returns The current scout task ("scout") as a string.
+ */
+function runScout(creep: ManagedCreep): string {
+  const memory = creep.memory as ScoutMemory;
+  const comm = getComm();
+
+  // Initialize home room if not set
+  if (!memory.homeRoom) {
+    memory.homeRoom = creep.room.name;
+  }
+
+  // Initialize target rooms list if empty
+  if (!memory.targetRooms || memory.targetRooms.length === 0) {
+    memory.targetRooms = getAdjacentRooms(memory.homeRoom);
+    memory.currentTargetIndex = 0;
+  }
+
+  // Get current target room
+  const currentTarget = memory.targetRooms[memory.currentTargetIndex];
+
+  // If we're not in the target room, move there
+  if (currentTarget && creep.room.name !== currentTarget) {
+    comm?.say(creep, "🔍");
+
+    // Move to room center for better path finding
+    creep.moveTo(
+      { pos: { x: ROOM_CENTER_X, y: ROOM_CENTER_Y, roomName: currentTarget } as unknown as RoomPosition },
+      { reusePath: 50 }
+    );
+    return SCOUT_TASK;
+  }
+
+  // We're in the target room - spend a few ticks here for scouting
+  // Move to next room after brief stay (every 5 ticks when at room center)
+  if (creep.room.name === currentTarget) {
+    comm?.say(creep, "👁️");
+
+    // Move to center of room for complete visibility
+    const centerPos = new RoomPosition(ROOM_CENTER_X, ROOM_CENTER_Y, creep.room.name);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    const distanceToCenter = creep.pos.getRangeTo(centerPos) as number;
+    if (distanceToCenter > 3) {
+      creep.moveTo(centerPos, { reusePath: 20 });
+    } else {
+      // We're near center, move to next room after short delay
+      if (Game.time % 5 === 0) {
+        memory.currentTargetIndex = (memory.currentTargetIndex + 1) % memory.targetRooms.length;
+      }
+    }
+    return SCOUT_TASK;
+  }
+
+  // Fallback: if we're in home room and no target, move to first target
+  if (creep.room.name === memory.homeRoom) {
+    memory.currentTargetIndex = 0;
+    comm?.say(creep, "🏠");
+  }
+
+  return SCOUT_TASK;
 }
