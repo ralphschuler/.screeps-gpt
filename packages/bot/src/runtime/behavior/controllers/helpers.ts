@@ -5,6 +5,19 @@
 import type { CreepLike } from "@runtime/types/GameContext";
 
 /**
+ * Type constraint for objects with room positions
+ */
+interface _HasRoomPosition {
+  pos: RoomPosition;
+}
+
+/**
+ * Room center coordinates for inter-room navigation
+ */
+export const ROOM_CENTER_X = 25;
+export const ROOM_CENTER_Y = 25;
+
+/**
  * Helper function to find the closest target by path or fall back to the first target.
  * Reduces code duplication throughout role controllers.
  *
@@ -107,4 +120,31 @@ export function findSpawnAdjacentContainers(
   }
 
   return containers;
+}
+
+/**
+ * Helper function to move a creep to a target room.
+ * Handles finding exit direction and navigating to room exits.
+ *
+ * @param creep - The creep to move
+ * @param targetRoom - Target room name
+ * @param reusePath - Path reuse parameter
+ * @returns true if the creep is moving to the target room, false if already there or no path found
+ */
+export function moveToTargetRoom(creep: CreepLike, targetRoom: string, reusePath: number = 50): boolean {
+  if (creep.room.name === targetRoom) {
+    return false;
+  }
+
+  const exitDir: ExitConstant | ERR_NO_PATH | ERR_INVALID_ARGS = creep.room.findExitTo(targetRoom);
+  if (typeof exitDir === "number" && exitDir >= 1 && exitDir <= 8) {
+    const exitPositions = creep.room.find(exitDir as ExitConstant) as RoomPosition[];
+    if (exitPositions.length > 0) {
+      const exitPos: RoomPosition | null = creep.pos.findClosestByPath(exitPositions);
+      const actualExitPos: RoomPosition = exitPos ?? exitPositions[0];
+      creep.moveTo(actualExitPos, { reusePath });
+      return true;
+    }
+  }
+  return false;
 }

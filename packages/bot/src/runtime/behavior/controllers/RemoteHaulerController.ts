@@ -10,13 +10,11 @@
 import { BaseRoleController, type RoleConfig } from "./RoleController";
 import type { CreepLike } from "@runtime/types/GameContext";
 import { serviceRegistry } from "./ServiceLocator";
-import { tryPickupDroppedEnergy } from "./helpers";
+import { tryPickupDroppedEnergy, ROOM_CENTER_X, ROOM_CENTER_Y } from "./helpers";
 
 const REMOTE_HAULER_TRAVEL_TASK = "remoteTravel" as const;
 const REMOTE_HAULER_PICKUP_TASK = "remotePickup" as const;
 const REMOTE_HAULER_RETURN_TASK = "remoteReturn" as const;
-const ROOM_CENTER_X = 25;
-const ROOM_CENTER_Y = 25;
 
 type RemoteHaulerTask =
   | typeof REMOTE_HAULER_TRAVEL_TASK
@@ -62,10 +60,7 @@ export class RemoteHaulerController extends BaseRoleController<RemoteHaulerMemor
       comm?.say(creep, "travel");
 
       if (memory.targetRoom && creep.room.name !== memory.targetRoom) {
-        creep.moveTo(
-          { pos: { x: ROOM_CENTER_X, y: ROOM_CENTER_Y, roomName: memory.targetRoom } as unknown as RoomPosition },
-          { reusePath: 50 }
-        );
+        creep.moveTo(new RoomPosition(ROOM_CENTER_X, ROOM_CENTER_Y, memory.targetRoom), { reusePath: 50 });
         return REMOTE_HAULER_TRAVEL_TASK;
       }
 
@@ -114,10 +109,7 @@ export class RemoteHaulerController extends BaseRoleController<RemoteHaulerMemor
     comm?.say(creep, "deliver");
 
     if (memory.homeRoom && creep.room.name !== memory.homeRoom) {
-      creep.moveTo(
-        { pos: { x: ROOM_CENTER_X, y: ROOM_CENTER_Y, roomName: memory.homeRoom } as unknown as RoomPosition },
-        { reusePath: 50 }
-      );
+      creep.moveTo(new RoomPosition(ROOM_CENTER_X, ROOM_CENTER_Y, memory.homeRoom), { reusePath: 50 });
       return REMOTE_HAULER_RETURN_TASK;
     }
 
@@ -125,10 +117,7 @@ export class RemoteHaulerController extends BaseRoleController<RemoteHaulerMemor
     if (memory.homeRoom && creep.room.name === memory.homeRoom) {
       const isNearEdge = creep.pos.x <= 2 || creep.pos.x >= 47 || creep.pos.y <= 2 || creep.pos.y >= 47;
       if (isNearEdge) {
-        creep.moveTo(
-          { pos: { x: ROOM_CENTER_X, y: ROOM_CENTER_Y, roomName: memory.homeRoom } as unknown as RoomPosition },
-          { reusePath: 50 }
-        );
+        creep.moveTo(new RoomPosition(ROOM_CENTER_X, ROOM_CENTER_Y, memory.homeRoom), { reusePath: 50 });
         return REMOTE_HAULER_RETURN_TASK;
       }
     }

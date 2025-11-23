@@ -68,7 +68,7 @@ export class UpgraderController extends BaseRoleController<UpgraderMemory> {
         safeSpot = spawns[0];
       }
       if (safeSpot && !creep.pos.inRangeTo(safeSpot, 3)) {
-        void creep.moveTo(safeSpot, { range: 3, reusePath: 10 });
+        creep.moveTo(safeSpot, { range: 3, reusePath: 10 });
       }
       return UPGRADE_TASK; // Keep task state but don't upgrade
     }

@@ -108,6 +108,7 @@ All state machine definitions are in `packages/bot/src/runtime/behavior/stateMac
 - `healer.ts` - HealerContext, HealerEvent, healerStates
 - `dismantler.ts` - DismantlerContext, DismantlerEvent, dismantlerStates
 - `claimer.ts` - ClaimerContext, ClaimerEvent, claimerStates
+- `scout.ts` - ScoutContext, ScoutEvent, scoutStates
 
 ## Benefits of State Machines
 

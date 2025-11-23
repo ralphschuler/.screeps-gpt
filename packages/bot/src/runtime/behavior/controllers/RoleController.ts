@@ -92,6 +92,6 @@ export abstract class BaseRoleController<TMemory extends CreepMemory = CreepMemo
     }
 
     // Ensure role is set
-    memory.role = this.getRoleName();
+    memory.role = this.getRoleName() as TMemory["role"];
   }
 }

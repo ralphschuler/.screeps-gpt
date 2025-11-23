@@ -152,8 +152,7 @@ export class RoleControllerManager {
   public execute(
     game: GameContext,
     memory: Memory,
-    roleCounts: Record<string, number>,
-    _bootstrapRoleMinimums?: Partial<Record<RoleName, number>>
+    roleCounts: Record<string, number>
   ): BehaviorSummary {
     // Initialize creep counter if not present
     if (typeof memory.creepCounter !== "number") {
@@ -263,7 +262,7 @@ export class RoleControllerManager {
    */
   private executeWithRoleControllers(
     game: GameContext,
-    _memory: Memory
+    memory: Memory
   ): { processedCreeps: number; tasksExecuted: Record<string, number> } {
     const tasksExecuted: Record<string, number> = {};
     let processedCreeps = 0;
@@ -287,7 +286,7 @@ export class RoleControllerManager {
       const cpuBefore = game.cpu.getUsed();
 
       // Check if creep is dying and should drop energy
-      const dyingConfig = _memory.dyingCreepBehavior ?? { enabled: true, ttlThreshold: 50 };
+      const dyingConfig = memory.dyingCreepBehavior ?? { enabled: true, ttlThreshold: 50 };
       const isDying = dyingConfig.enabled !== false && isCreepDying(creep as Creep, dyingConfig.ttlThreshold ?? 50);
 
       if (isDying) {

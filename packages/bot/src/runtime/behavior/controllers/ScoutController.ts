@@ -9,6 +9,7 @@
 import { BaseRoleController, type RoleConfig } from "./RoleController";
 import type { CreepLike } from "@runtime/types/GameContext";
 import { serviceRegistry } from "./ServiceLocator";
+import { moveToTargetRoom } from "./helpers";
 
 const SCOUT_TASK = "scout" as const;
 
@@ -45,17 +46,8 @@ export class ScoutController extends BaseRoleController<ScoutMemory> {
     const comm = serviceRegistry.getCommunicationManager();
 
     // Move to target room if specified
-    if (memory.targetRoom && creep.room.name !== memory.targetRoom) {
+    if (memory.targetRoom && moveToTargetRoom(creep, memory.targetRoom, 50)) {
       comm?.say(creep, "🔍");
-      const exitDir: ExitConstant | ERR_NO_PATH | ERR_INVALID_ARGS = creep.room.findExitTo(memory.targetRoom);
-      if (typeof exitDir === "number" && exitDir >= 1 && exitDir <= 8) {
-        const exitPositions = creep.room.find(exitDir as ExitConstant) as RoomPosition[];
-        if (exitPositions.length > 0) {
-          const exitPos: RoomPosition | null = creep.pos.findClosestByPath(exitPositions);
-          const actualExitPos: RoomPosition = exitPos ?? exitPositions[0];
-          creep.moveTo(actualExitPos, { reusePath: 50 });
-        }
-      }
     } else {
       comm?.say(creep, "👀");
     }

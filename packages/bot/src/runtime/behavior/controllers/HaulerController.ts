@@ -93,7 +93,8 @@ export class HaulerController extends BaseRoleController<HaulerMemory> {
         const store = (structure as AnyStoreStructure).store;
         const capacity = store.getCapacity(RESOURCE_ENERGY);
         const used = store.getUsedCapacity(RESOURCE_ENERGY);
-        return capacity > 0 && used < capacity * DEFAULT_ENERGY_CONFIG.towerMinCapacity;
+        // Use 30% threshold for spawn/extension critical level
+        return capacity > 0 && used < capacity * 0.3;
       }
     });
 
