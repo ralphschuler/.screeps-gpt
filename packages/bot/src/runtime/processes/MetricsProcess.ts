@@ -1,4 +1,3 @@
- 
 /* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment */
 import { process as registerProcess, type ProcessContext } from "@ralphschuler/screeps-kernel";
 import type { GameContext } from "@runtime/types/GameContext";
@@ -66,7 +65,6 @@ export class MetricsProcess {
       return;
     }
 
-     
     // Get behavior summary from protocol (set by BehaviorProcess)
     const behaviorSummaryFromProtocol: BehaviorSummary | undefined = ctx.protocol.getBehaviorSummary();
     const behaviorSummary: BehaviorSummary = behaviorSummaryFromProtocol ?? {
@@ -101,7 +99,7 @@ export class MetricsProcess {
 
     // Evaluate system health and store report
     const repository = this.repositorySignalProvider?.();
-     
+
     const memoryUtilization = ctx.protocol.getMemoryUtilization();
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const result = this.evaluator.evaluateAndStore(memory, snapshot, repository, memoryUtilization);

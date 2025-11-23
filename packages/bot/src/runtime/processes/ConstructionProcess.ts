@@ -1,4 +1,3 @@
- 
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import { process as registerProcess, type ProcessContext } from "@ralphschuler/screeps-kernel";
 import type { RuntimeProtocols } from "@runtime/protocols";
@@ -29,7 +28,6 @@ export class ConstructionProcess {
   public run(ctx: ProcessContext<Memory, RuntimeProtocols>): void {
     const gameContext = ctx.game as GameContext;
 
-     
     // Skip if emergency reset or respawn occurred
     if (ctx.protocol.isEmergencyReset() || ctx.protocol.needsRespawn()) {
       return;

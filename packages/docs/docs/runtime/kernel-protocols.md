@@ -42,6 +42,7 @@ export class MyProcess {
 **Replaces**: `memory.emergencyReset`, `memory.needsRespawn`
 
 **Interface**:
+
 ```typescript
 interface IStateCoordinationProtocol {
   setEmergencyReset(value: boolean): void;
@@ -53,6 +54,7 @@ interface IStateCoordinationProtocol {
 ```
 
 **Usage**:
+
 ```typescript
 // MemoryProcess sets emergency reset
 ctx.protocol.setEmergencyReset(true);
@@ -75,6 +77,7 @@ if (ctx.protocol.isEmergencyReset()) {
 **Replaces**: `memory.roles`
 
 **Interface**:
+
 ```typescript
 interface IRoleManagementProtocol {
   setRoleCounts(counts: Record<string, number>): void;
@@ -85,13 +88,14 @@ interface IRoleManagementProtocol {
 ```
 
 **Usage**:
+
 ```typescript
 // MemoryProcess updates role counts
 ctx.protocol.setRoleCounts({ harvester: 3, upgrader: 2 });
 
 // BehaviorProcess reads role counts
 const roleCounts = ctx.protocol.getRoleCounts();
-const harvesterCount = ctx.protocol.getRoleCount('harvester');
+const harvesterCount = ctx.protocol.getRoleCount("harvester");
 ```
 
 **Producers**: MemoryProcess  
@@ -106,6 +110,7 @@ const harvesterCount = ctx.protocol.getRoleCount('harvester');
 **Replaces**: `memory.behaviorSummary`
 
 **Interface**:
+
 ```typescript
 interface IBehaviorCoordinationProtocol {
   setBehaviorSummary(summary: BehaviorSummary): void;
@@ -115,6 +120,7 @@ interface IBehaviorCoordinationProtocol {
 ```
 
 **Types**:
+
 ```typescript
 interface BehaviorSummary {
   processedCreeps: number;
@@ -124,11 +130,12 @@ interface BehaviorSummary {
 ```
 
 **Usage**:
+
 ```typescript
 // BehaviorProcess stores summary
 ctx.protocol.setBehaviorSummary({
   processedCreeps: 5,
-  spawnedCreeps: ['harvester1'],
+  spawnedCreeps: ["harvester1"],
   tasksExecuted: { harvest: 10, upgrade: 5 }
 });
 
@@ -148,6 +155,7 @@ const summary = ctx.protocol.getBehaviorSummary();
 **Replaces**: `memory.bootstrapStatus`
 
 **Interface**:
+
 ```typescript
 interface IBootstrapCoordinationProtocol {
   setBootstrapStatus(status: BootstrapStatus): void;
@@ -159,6 +167,7 @@ interface IBootstrapCoordinationProtocol {
 ```
 
 **Types**:
+
 ```typescript
 interface BootstrapStatus {
   isActive: boolean;
@@ -168,11 +177,12 @@ interface BootstrapStatus {
 ```
 
 **Usage**:
+
 ```typescript
 // BootstrapProcess updates status
-ctx.protocol.setBootstrapStatus({ 
-  isActive: true, 
-  phase: 'initial',
+ctx.protocol.setBootstrapStatus({
+  isActive: true,
+  phase: "initial",
   progress: 50
 });
 
@@ -195,6 +205,7 @@ if (ctx.protocol.isBootstrapActive()) {
 **Replaces**: `memory.memoryUtilization`
 
 **Interface**:
+
 ```typescript
 interface IMetricsCoordinationProtocol {
   setMemoryUtilization(utilization: MemoryUtilization): void;
@@ -204,6 +215,7 @@ interface IMetricsCoordinationProtocol {
 ```
 
 **Types**:
+
 ```typescript
 interface MemoryUtilization {
   currentBytes: number;
@@ -216,11 +228,12 @@ interface MemoryUtilization {
 ```
 
 **Usage**:
+
 ```typescript
 // MemoryProcess stores utilization
-ctx.protocol.setMemoryUtilization({ 
-  currentBytes: 1024, 
-  maxBytes: 2048, 
+ctx.protocol.setMemoryUtilization({
+  currentBytes: 1024,
+  maxBytes: 2048,
   usagePercent: 50,
   isWarning: false,
   isCritical: false,
@@ -243,6 +256,7 @@ const utilization = ctx.protocol.getMemoryUtilization();
 **Replaces**: `memory.health`
 
 **Interface**:
+
 ```typescript
 interface IHealthMonitoringProtocol {
   setHealthMetrics(metrics: HealthMetrics): void;
@@ -254,6 +268,7 @@ interface IHealthMonitoringProtocol {
 ```
 
 **Types**:
+
 ```typescript
 interface HealthMetrics {
   score: number;
@@ -277,15 +292,16 @@ interface RecoveryState {
 ```
 
 **Usage**:
+
 ```typescript
 // HealthProcess stores metrics
 ctx.protocol.setHealthMetrics({
   score: 85,
-  state: 'healthy',
+  state: "healthy",
   metrics: { creeps: 10, energy: 5000 },
   timestamp: Game.time,
   warnings: [],
-  recovery: { mode: 'NORMAL', actionsCount: 0 }
+  recovery: { mode: "NORMAL", actionsCount: 0 }
 });
 
 // Other processes check health
@@ -436,7 +452,7 @@ describe("RoleManagementProtocol", () => {
 
   it("should store and retrieve role counts", () => {
     protocol.setRoleCounts({ harvester: 3, upgrader: 2 });
-    
+
     expect(protocol.getRoleCounts()).toEqual({
       harvester: 3,
       upgrader: 2
@@ -477,12 +493,12 @@ Protocol names should clearly indicate their purpose:
 
 ```typescript
 // ✅ Good
-StateCoordinationProtocol
-RoleManagementProtocol
+StateCoordinationProtocol;
+RoleManagementProtocol;
 
 // ❌ Bad
-Protocol1
-DataProtocol
+Protocol1;
+DataProtocol;
 ```
 
 ### 3. Handle Missing Data
@@ -546,6 +562,7 @@ run(ctx: ProcessContext<Memory, RuntimeProtocols>): void {
 **Problem**: Protocol state resets each tick
 
 **Cause**: Protocol instances are singleton by design. If state resets:
+
 1. Check that the protocol is properly decorated with `@protocol`
 2. Ensure the protocol is imported in `main.ts`
 3. Verify no other code is clearing the ProtocolRegistry

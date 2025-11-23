@@ -1,4 +1,3 @@
- 
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import { process as registerProcess, type ProcessContext } from "@ralphschuler/screeps-kernel";
 import type { GameContext } from "@runtime/types/GameContext";
