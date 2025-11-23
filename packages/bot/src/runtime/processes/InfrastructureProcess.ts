@@ -1,4 +1,7 @@
+ 
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { process as registerProcess, type ProcessContext } from "@ralphschuler/screeps-kernel";
+import type { RuntimeProtocols } from "@runtime/protocols";
 import type { GameContext } from "@runtime/types/GameContext";
 import { InfrastructureManager, type InfrastructureMemory } from "@runtime/infrastructure/InfrastructureManager";
 import { LinkManager } from "@runtime/infrastructure/LinkManager";
@@ -39,12 +42,13 @@ export class InfrastructureProcess {
     this.bootstrapManager = new BootstrapPhaseManager({}, this.logger);
   }
 
-  public run(ctx: ProcessContext<Memory>): void {
+  public run(ctx: ProcessContext<Memory, RuntimeProtocols>): void {
     const gameContext = ctx.game as GameContext;
     const memory = ctx.memory;
 
+     
     // Skip if emergency reset or respawn occurred
-    if (memory.emergencyReset || memory.needsRespawn) {
+    if (ctx.protocol.isEmergencyReset() || ctx.protocol.needsRespawn()) {
       return;
     }
 

@@ -1,5 +1,8 @@
+ 
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { process as registerProcess, type ProcessContext } from "@ralphschuler/screeps-kernel";
 import type { GameContext } from "@runtime/types/GameContext";
+import type { RuntimeProtocols } from "@runtime/protocols";
 import { HealthMonitor } from "@runtime/health/HealthMonitor";
 import { WarningDetector } from "@runtime/health/WarningDetector";
 import { RecoveryOrchestrator, RecoveryMode } from "@runtime/health/RecoveryOrchestrator";
@@ -32,12 +35,13 @@ export class HealthProcess {
     this.cpuEmergencyThreshold = 0.9;
   }
 
-  public run(ctx: ProcessContext<Memory>): void {
+  public run(ctx: ProcessContext<Memory, RuntimeProtocols>): void {
     const gameContext = ctx.game as GameContext;
     const memory = ctx.memory;
 
-    // Skip if emergency reset or respawn occurred
-    if (memory.emergencyReset || memory.needsRespawn) {
+     
+    // Skip if emergency reset or respawn occurred (check protocol)
+    if (ctx.protocol.isEmergencyReset() || ctx.protocol.needsRespawn()) {
       return;
     }
 
@@ -65,8 +69,9 @@ export class HealthProcess {
       // Orchestrate recovery if needed
       const recoveryState = this.recoveryOrchestrator.orchestrateRecovery(gameContext, memory, healthStatus, warnings);
 
-      // Store health data in memory for external monitoring and other processes
-      memory.health = {
+     
+      // Share health data via protocol for external monitoring and other processes
+      const healthMetrics = {
         score: healthStatus.score,
         state: healthStatus.state,
         metrics: healthStatus.metrics,
@@ -81,6 +86,9 @@ export class HealthProcess {
           actionsCount: recoveryState.actions.length
         }
       };
+      ctx.protocol.setHealthMetrics(healthMetrics);
+      // Also store in Memory for external monitoring compatibility
+      memory.health = healthMetrics;
 
       // Log health status periodically (every 100 ticks) or when entering recovery
       const isInRecovery = String(recoveryState.mode) !== String(RecoveryMode.NORMAL);

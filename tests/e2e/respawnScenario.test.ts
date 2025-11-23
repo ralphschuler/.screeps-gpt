@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import { Kernel } from "@ralphschuler/screeps-kernel";
 import type { GameContext } from "@runtime/types/GameContext";
 
+// Import protocols to trigger @protocol decorator registration
+import "@runtime/protocols";
 // Import processes to trigger @process decorator registration
 import "@runtime/processes";
 

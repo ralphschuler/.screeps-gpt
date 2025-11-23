@@ -4,6 +4,8 @@ import type { GameContext } from "@runtime/types/GameContext";
 import type { CreepLike, RoomLike } from "@runtime/types/GameContext";
 
 // Import processes to trigger @process decorator registration
+// Import protocols to trigger @protocol decorator registration
+import "@runtime/protocols";
 import "@runtime/processes";
 
 function createCreep(role: string, room: RoomLike, energy: { free: number; used: number }): CreepLike {

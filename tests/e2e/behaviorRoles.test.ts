@@ -3,6 +3,8 @@ import { Kernel } from "@ralphschuler/screeps-kernel";
 import type { CreepLike, GameContext, RoomLike } from "@runtime/types/GameContext";
 
 // Import processes to trigger @process decorator registration
+// Import protocols to trigger @protocol decorator registration
+import "@runtime/protocols";
 import "@runtime/processes";
 
 function createCreep(role: string, room: RoomLike, store: { free: number; used: number }): CreepLike {
