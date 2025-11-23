@@ -70,8 +70,6 @@ The repository is organized as a monorepo with clear package boundaries:
     /screeps-metrics     # Metrics collection library
     /screeps-logger      # Logging library
     /screeps-*           # Additional Screeps utility packages
-    /actions             # GitHub composite actions (placeholder)
-    /console             # Screeps console integration (placeholder)
   /.github         # GitHub workflows, actions, configs
   /reports         # CI/CD reports and artifacts
   /tests           # Test suites (unit, e2e, regression)
@@ -87,8 +85,6 @@ The repository is organized as a monorepo with clear package boundaries:
 - **`packages/screeps-perf/`** - Performance optimizations (array methods, memory cleanup, pathfinding cache)
 - **`packages/screeps-metrics/`** - Metrics collection using official game APIs
 - **`packages/screeps-logger/`** - Logging utilities for Screeps
-- **`packages/actions/`** - Reusable GitHub Actions components (future)
-- **`packages/console/`** - Screeps console customizations (future)
 
 All packages share a common root configuration for TypeScript, ESLint, and testing, while maintaining independent `package.json` files for isolated dependency management.
 

@@ -1,8 +1,0 @@
-{
-  "name": "@ralphschuler/screeps-gpt-console",
-  "version": "0.45.4",
-  "description": "Screeps console integration and enhancements",
-  "license": "MIT",
-  "author": "OpenAI Automations",
-  "type": "module"
-}
