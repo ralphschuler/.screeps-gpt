@@ -1,0 +1,118 @@
+---
+name: copilot-issue-agent
+description: |
+  Unified Copilot agent for GitHub issue management operations.
+
+  Features:
+  - Role-based behavior (triage, resolve)
+  - Context-aware issue analysis with duplicate detection
+  - Automatic reformulation and labeling (triage mode)
+  - Code implementation with progress tracking (resolve mode)
+  - Intelligent dependency and relationship management
+  - Single agent with multiple operational modes
+author: "ralph@nyphon.de"
+inputs:
+  copilot-token:
+    description: Personal access token with Copilot Requests scope
+    required: true
+  mode:
+    description: |
+      Operation mode: 'triage' (reformulate and label new issues),
+      'resolve' (implement solution via PR)
+    required: true
+  issue-number:
+    description: GitHub issue number to process
+    required: true
+  issue-title:
+    description: Issue title (JSON-encoded)
+    required: true
+  issue-body:
+    description: Issue body content (JSON-encoded)
+    required: false
+    default: ""
+  issue-url:
+    description: Issue HTML URL
+    required: true
+  issue-author:
+    description: Issue author username (JSON-encoded)
+    required: true
+  repository:
+    description: Repository name in owner/repo format
+    required: false
+    default: ${{ github.repository }}
+  verbose:
+    description: Enable verbose logging for debugging
+    required: false
+    default: "false"
+  timeout:
+    description: Maximum time in minutes for Copilot CLI execution
+    required: false
+    default: "45"
+
+outputs:
+  output-path:
+    description: Absolute path to the agent output log file
+    value: ${{ steps.execute.outputs.output-path }}
+  mode:
+    description: The operation mode that was executed
+    value: ${{ inputs.mode }}
+
+runs:
+  using: composite
+  steps:
+    - name: Validate mode parameter
+      shell: bash
+      run: |
+        set -euo pipefail
+        mode="${{ inputs.mode }}"
+        if [[ ! "$mode" =~ ^(triage|resolve)$ ]]; then
+          echo "❌ Invalid mode: $mode. Must be one of: triage, resolve"
+          exit 1
+        fi
+        echo "✅ Mode validated: $mode"
+
+    - name: Select prompt template
+      id: select-prompt
+      shell: bash
+      env:
+        MODE: ${{ inputs.mode }}
+      run: |
+        set -euo pipefail
+        case "$MODE" in
+          triage)
+            prompt=".github/copilot/prompts/issue-triage"
+            output="issue-triage-${{ inputs.issue-number }}.log"
+            ;;
+          resolve)
+            prompt=".github/copilot/prompts/todo-issue"
+            output="todo-issue-${{ inputs.issue-number }}.log"
+            ;;
+          *)
+            echo "❌ Unknown mode: $MODE"
+            exit 1
+            ;;
+        esac
+        echo "prompt-path=$prompt" >> "$GITHUB_OUTPUT"
+        echo "output-file=$output" >> "$GITHUB_OUTPUT"
+        echo "✅ Selected prompt: $prompt"
+
+    - name: Execute Copilot agent
+      id: execute
+      uses: ./.github/actions/copilot-exec
+      env:
+        REPO_NAME: ${{ inputs.repository }}
+        ISSUE_NUMBER: ${{ inputs.issue-number }}
+        ISSUE_TITLE: ${{ inputs.issue-title }}
+        ISSUE_BODY: ${{ inputs.issue-body }}
+        ISSUE_HTML_URL: ${{ inputs.issue-url }}
+        ISSUE_AUTHOR: ${{ inputs.issue-author }}
+        AGENT_MODE: ${{ inputs.mode }}
+      with:
+        force-response: >-
+          ${{ inputs.mode == 'triage' && 'true' || 'false' }}
+        copilot-token: ${{ inputs.copilot-token }}
+        prompt-path: ${{ steps.select-prompt.outputs.prompt-path }}
+        output-path: >-
+          reports/copilot/${{ steps.select-prompt.outputs.output-file }}
+        verbose: ${{ inputs.verbose }}
+        timeout: ${{ inputs.timeout }}

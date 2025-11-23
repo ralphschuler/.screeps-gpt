@@ -24,9 +24,10 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v5
       - name: Run Copilot issue triage
-        uses: ./.github/actions/copilot-triage-agent
+        uses: ./.github/actions/copilot-issue-agent
         with:
           copilot-token: ${{ secrets.COPILOT_TOKEN }}
+          mode: triage
           issue-number: ${{ github.event.issue.number }}
           issue-title: ${{ toJSON(github.event.issue.title) }}
           issue-body: ${{ toJSON(github.event.issue.body || '') }}

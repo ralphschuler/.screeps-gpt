@@ -87,8 +87,8 @@ describe("Copilot-Exec Backward Compatibility", () => {
   const workflowFiles = [
     { file: "copilot-review.yml", agent: "copilot-audit-agent" },
     { file: "copilot-email-triage.yml", agent: "copilot-exec" },
-    { file: "copilot-issue-triage.yml", agent: "copilot-triage-agent" },
-    { file: "copilot-todo-pr.yml", agent: "copilot-dev-agent" },
+    { file: "copilot-issue-triage.yml", agent: "copilot-issue-agent" },
+    { file: "copilot-todo-pr.yml", agent: "copilot-issue-agent" },
     { file: "copilot-todo-daily.yml", agent: "copilot-exec" }
   ];
 
