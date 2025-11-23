@@ -1,19 +1,21 @@
+version: latest
+
 mods:
   - screepsmod-auth
   - screepsmod-admin-utils
   - screepsmod-mongo # Requires running mongodb and redis (provided in docker-compose)
-  - screepsmod-bots
-  - screepsmod-history
-  - screepsmod-stats
+  #  - screepsmod-bots
+  #  - screepsmod-history
+  #  - screepsmod-stats
   - screepsmod-visualize
   - screepsmod-dynamicmarket
   - screepsmod-features
   - screepsmod-portals
   - screepsmod-timeout
-  - "@admon-dev/screepsmod-speedrun"
-  - "@brisberg/screepsmod-lockstep"
-  - "@screepsmod/serverinfo"
-  - screepsmod-gcltocpu
+#  - "@admon-dev/screepsmod-speedrun"
+#  - "@brisberg/screepsmod-lockstep"
+#  - "@screepsmod/serverinfo"
+#  - screepsmod-gcltocpu
 
 pinnedPackages:
   ssri: 8.0.1
@@ -22,13 +24,19 @@ pinnedPackages:
   minipass-fetch: 2.1.2
   express-rate-limit: 6.7.0
   yaml: 2.0.0-11
+  canvas: 2.11.2
 
-bots:
-  overmind: screeps-bot-overmind
-  toolangle: screeps-bot-tooangel # Username aligns with your bots.yml entry
-  choreographer: screeps-bot-choreographer
-  simplebot: "@screeps/simplebot"
-  screeps-gpt: "https://github.com/ralphschuler/.screeps-gpt"
+extraPackages:
+  morgan: "*"
+
+STEAM_KEY: ${STEAM_KEY}
+
+#bots:
+#  overmind: screeps-bot-overmind
+#  toolangle: screeps-bot-tooangel # Username aligns with your bots.yml entry
+#  choreographer: screeps-bot-choreographer
+#  simplebot: "@screeps/simplebot"
+#  screeps-gpt: "https://github.com/ralphschuler/.screeps-gpt"
 
 serverConfig:
   welcomeText: |
