@@ -79,11 +79,11 @@ export class DefenseCoordinator {
       threatsNeutralized: 0
     };
 
-    if (threatAssessment.hostileCount > 0) {
-      // Activate towers
-      const towerActions = this.towerManager.run(room);
-      result.towersEngaged = towerActions.attack;
+    // Always run towers for repairs/healing, even without hostiles
+    const towerActions = this.towerManager.run(room);
+    result.towersEngaged = towerActions.attack;
 
+    if (threatAssessment.hostileCount > 0) {
       // Activate combat squads
       const combatResult = this.combatManager.run(room);
       result.squadsDeployed = combatResult.activeSquads;

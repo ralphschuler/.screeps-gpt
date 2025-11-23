@@ -187,6 +187,65 @@ describe("DefenseCoordinator", () => {
       expect(result.towersEngaged).toBe(1);
       expect(tower.attack).toHaveBeenCalledWith(hostile);
     });
+
+    it("should repair structures even without hostiles present", () => {
+      const tower: StructureTower = {
+        id: "tower1" as Id<StructureTower>,
+        structureType: STRUCTURE_TOWER,
+        pos: {
+          x: 25,
+          y: 25,
+          getRangeTo: vi.fn(() => 5),
+          findClosestByRange: vi.fn()
+        } as unknown as RoomPosition,
+        store: {
+          getUsedCapacity: vi.fn(() => 600),
+          energy: 600
+        } as unknown as StoreDefinition,
+        attack: vi.fn(() => OK),
+        heal: vi.fn(() => OK),
+        repair: vi.fn(() => OK)
+      } as unknown as StructureTower;
+
+      const damagedRoad: StructureRoad = {
+        id: "road1" as Id<StructureRoad>,
+        structureType: STRUCTURE_ROAD,
+        pos: { x: 20, y: 20 } as RoomPosition,
+        hits: 2000,
+        hitsMax: 5000
+      } as unknown as StructureRoad;
+
+      const mockRoom: RoomLike = {
+        name: "W0N0",
+        find: (type: FindConstant, options?: FilterOptions) => {
+          if (type === FIND_MY_STRUCTURES) {
+            if (options?.filter) {
+              return [tower].filter(options.filter as (s: Structure) => boolean);
+            }
+            return [tower];
+          }
+          if (type === FIND_HOSTILE_CREEPS) {
+            return [];
+          }
+          if (type === FIND_MY_CREEPS) {
+            return [];
+          }
+          if (type === FIND_STRUCTURES) {
+            if (options?.filter) {
+              return [damagedRoad].filter(options.filter as (s: Structure) => boolean);
+            }
+            return [damagedRoad];
+          }
+          return [];
+        }
+      };
+
+      const result = coordinator.coordinateDefense(mockRoom, 1000);
+
+      // Should repair structures even with no hostiles
+      expect(tower.repair).toHaveBeenCalledWith(damagedRoad);
+      expect(result.posture).toBe("normal");
+    });
   });
 
   describe("Defensive mode checks", () => {
