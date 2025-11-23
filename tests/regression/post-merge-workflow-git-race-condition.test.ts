@@ -36,7 +36,7 @@ describe("Post Merge Release Workflow - Modernized CI/CD", () => {
 
     // Check for direct commit to main
     expect(workflowContent).toContain("name: Commit version bump to main");
-    expect(workflowContent).toContain("branch: main");
+    expect(workflowContent).toContain("git push origin main");
     expect(workflowContent).toContain("[skip ci]");
 
     // Should NOT create release branches
@@ -77,15 +77,20 @@ describe("Post Merge Release Workflow - Modernized CI/CD", () => {
     expect(workflowContent).toContain("chore(release):");
   });
 
-  test("git-auto-commit-action should have proper configuration", () => {
+  test("commit step should handle git race conditions", () => {
     const workflowContent = fs.readFileSync(workflowPath, "utf8");
 
-    // Verify the workflow uses git-auto-commit-action properly
-    expect(workflowContent).toContain("stefanzweifel/git-auto-commit-action@v7");
-    expect(workflowContent).toContain("skip_fetch: false");
+    // Verify the workflow uses manual git commands for race condition handling
+    expect(workflowContent).toContain("name: Commit version bump to main");
+    expect(workflowContent).toContain("git fetch origin main");
+    expect(workflowContent).toContain("git rebase origin/main");
+    expect(workflowContent).toContain("git push origin main");
+
+    // Verify it has retry logic for race conditions
+    expect(workflowContent).toContain("MAX_RETRIES");
+    expect(workflowContent).toContain("RETRY_COUNT");
 
     // Verify it commits to main with skip ci
-    expect(workflowContent).toContain("branch: main");
     expect(workflowContent).toContain("[skip ci]");
   });
 });
