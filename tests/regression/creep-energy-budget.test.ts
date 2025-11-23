@@ -39,11 +39,11 @@ describe("Creep Energy Budget - Regression", () => {
     originalGame = global.Game;
     global.Game = {
       creeps: {
-        creep1: { room: mockRoomStable },
-        creep2: { room: mockRoomStable },
-        creep3: { room: mockRoomStable },
-        creep4: { room: mockRoomStable },
-        creep5: { room: mockRoomStable }
+        creep1: { room: { name: "W1N1" } },
+        creep2: { room: { name: "W1N1" } },
+        creep3: { room: { name: "W1N1" } },
+        creep4: { room: { name: "W1N1" } },
+        creep5: { room: { name: "W1N1" } }
       }
     } as unknown as Game;
   });
@@ -182,20 +182,31 @@ describe("Creep Energy Budget - Regression", () => {
     expect(body.filter(p => p === MOVE).length).toBeGreaterThan(0);
   });
 
-  it("should allow full capacity in early game (< 5 creeps)", () => {
-    // Mock early game scenario with only 2 creeps
-    global.Game = {
-      creeps: {
-        creep1: { room: mockRoomStable },
-        creep2: { room: mockRoomStable }
-      }
-    } as unknown as Game;
+  describe("early game (< 5 creeps)", () => {
+    let originalGame: typeof global.Game;
 
-    const body = composer.generateBody("harvester", 550, mockRoomStable);
-    const cost = composer.calculateBodyCost(body);
+    beforeEach(() => {
+      originalGame = global.Game;
+      // Mock early game scenario with only 2 creeps
+      global.Game = {
+        creeps: {
+          creep1: { room: { name: "W1N1" } },
+          creep2: { room: { name: "W1N1" } }
+        }
+      } as unknown as Game;
+    });
 
-    // In early game, should allow more than 50% (up to sustainable capacity)
-    expect(cost).toBeGreaterThan(275); // More than 50% budget
-    expect(cost).toBeLessThanOrEqual(550); // But not more than capacity
+    afterEach(() => {
+      global.Game = originalGame;
+    });
+
+    it("should allow full capacity", () => {
+      const body = composer.generateBody("harvester", 550, mockRoomStable);
+      const cost = composer.calculateBodyCost(body);
+
+      // In early game, should allow more than 50% (up to sustainable capacity)
+      expect(cost).toBeGreaterThan(275); // More than 50% budget
+      expect(cost).toBeLessThanOrEqual(550); // But not more than capacity
+    });
   });
 });
