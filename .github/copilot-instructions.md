@@ -19,6 +19,7 @@ This repository hosts an autonomous Screeps AI with comprehensive automation. Wh
 - **Test-driven**: Write or update tests before fixing bugs
 - **Documentation-first**: Update docs when behavior changes
 - **Quality gates**: Always run lint, format, and relevant test suites before committing
+- **No backwards compatibility**: Obsolete or deprecated code is removed immediately; code only needs to work with itself, not previous versions
 
 ## Suitable Tasks for Copilot
 
@@ -36,10 +37,32 @@ This repository hosts an autonomous Screeps AI with comprehensive automation. Wh
 
 - **New features** affecting game behavior or strategy
 - **Architectural changes** to the runtime kernel or evaluation system
-- **Breaking changes** to APIs or contracts
 - **Complex refactoring** across multiple modules
 - **Security-sensitive code** (authentication, secrets handling, deployment)
 - **Algorithm changes** affecting AI decision-making
+
+## Deprecation and Code Removal Policy
+
+**This repository has a zero-tolerance policy for obsolete code:**
+
+- **Remove obsolete/deprecated code immediately** - no grace period, no feature flags, no dual code paths
+- **Code only needs to work with itself** - backwards compatibility with previous versions is NOT a concern
+- **When better implementations exist, delete the old ones** - don't mark as deprecated, just remove
+- **No compatibility layers** - if code is replaced, remove the old version entirely
+
+**Examples of immediate removal:**
+
+- If a new architecture replaces an old one (e.g., RoleControllerManager replaces BehaviorController), delete the old controller
+- If a better algorithm is implemented, remove the old one
+- If a feature is reimplemented, delete the original implementation
+
+**Benefits of this policy:**
+
+- Clean, maintainable codebase without legacy cruft
+- No confusion about which code path is active or should be used
+- Faster development without compatibility constraints
+- Reduced cognitive load when reading and maintaining code
+- Smaller bundle sizes and better performance
 
 ## Repository Structure
 
