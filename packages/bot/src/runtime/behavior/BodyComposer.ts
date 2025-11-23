@@ -142,10 +142,28 @@ export class BodyComposer {
       return this.generateEmergencyBody(energyCapacity);
     }
 
-    // Adjust capacity based on room's energy production if room context provided
+    // Start with full capacity
     let adjustedCapacity = energyCapacity;
+
+    // Apply budget constraints only when room context is provided (actual spawning scenario)
     if (room) {
-      adjustedCapacity = this.calculateSustainableCapacity(room, energyCapacity);
+      // Check if we're in early game/bootstrap scenario
+      const creepCount = Game.creeps
+        ? Object.keys(Game.creeps).filter(name => {
+            const creep = Game.creeps[name];
+            return creep?.room && creep.room.name === room.name;
+          }).length
+        : 0;
+      const isEarlyGame = creepCount < 5;
+
+      // Enforce 50% energy budget constraint to maintain spawn throughput
+      // Exception: Allow higher capacity during early game (< 5 creeps) for rapid bootstrap
+      // This allows spawning 2 creeps per spawn cycle and prevents energy depletion
+      const budgetLimit = isEarlyGame ? energyCapacity : energyCapacity * 0.5;
+      adjustedCapacity = Math.min(adjustedCapacity, budgetLimit);
+
+      // Further adjust based on sustainable capacity calculation
+      adjustedCapacity = Math.min(adjustedCapacity, this.calculateSustainableCapacity(room, energyCapacity));
     }
 
     // Try normal body generation first
