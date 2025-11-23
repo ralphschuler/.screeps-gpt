@@ -52,9 +52,10 @@ export class BootstrapProcess {
       this.bootstrapManager.completeBootstrap(gameContext, memory, bootstrapStatus.reason);
     }
 
-     
     // Share bootstrap status via protocol (for behavior process)
-    ctx.protocol.setBootstrapStatus(bootstrapStatus as { isActive: boolean; phase?: string; progress?: number });
+    ctx.protocol.setBootstrapStatus({ isActive: bootstrapStatus.isActive });
+    // Also store in Memory for external monitoring compatibility
+    memory.bootstrapStatus = bootstrapStatus;
 
     // Detect RCL phase transitions
     const phaseTransitions = this.bootstrapManager.detectRCLPhaseTransitions(gameContext, memory);

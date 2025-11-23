@@ -206,9 +206,12 @@ interface IMetricsCoordinationProtocol {
 **Types**:
 ```typescript
 interface MemoryUtilization {
-  used: number;
-  limit: number;
-  percentage: number;
+  currentBytes: number;
+  maxBytes: number;
+  usagePercent: number;
+  isWarning: boolean;
+  isCritical: boolean;
+  subsystems: Record<string, number>;
 }
 ```
 
@@ -216,9 +219,12 @@ interface MemoryUtilization {
 ```typescript
 // MemoryProcess stores utilization
 ctx.protocol.setMemoryUtilization({ 
-  used: 1024, 
-  limit: 2048, 
-  percentage: 50 
+  currentBytes: 1024, 
+  maxBytes: 2048, 
+  usagePercent: 50,
+  isWarning: false,
+  isCritical: false,
+  subsystems: {}
 });
 
 // MetricsProcess reads utilization

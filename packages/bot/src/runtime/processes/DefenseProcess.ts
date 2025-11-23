@@ -54,9 +54,8 @@ export class DefenseProcess {
   public run(ctx: ProcessContext<Memory, RuntimeProtocols>): void {
     const gameContext = ctx.game as GameContext;
 
-     
-    // Skip if emergency reset occurred (check protocol)
-    if (ctx.protocol.isEmergencyReset()) {
+    // Skip if emergency reset occurred or respawn is needed (check protocol)
+    if (ctx.protocol.isEmergencyReset() || ctx.protocol.needsRespawn()) {
       return;
     }
 

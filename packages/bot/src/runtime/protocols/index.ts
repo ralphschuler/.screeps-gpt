@@ -33,6 +33,9 @@ export type {
   RecoveryState
 } from "./HealthMonitoringProtocol";
 
+// Re-export shared types used by protocols
+export type { BehaviorSummary } from "@shared/contracts";
+
 /**
  * Combined protocol interface for type-safe process contexts.
  * Use this interface in ProcessContext generic parameter to get type checking

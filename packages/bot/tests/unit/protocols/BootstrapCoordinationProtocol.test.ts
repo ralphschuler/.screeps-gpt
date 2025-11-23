@@ -33,9 +33,9 @@ describe("BootstrapCoordinationProtocol", () => {
 
     const minimums = protocol.getBootstrapMinimums();
     expect(minimums).toEqual({
-      harvester: 2,
+      harvester: 6,
       upgrader: 1,
-      builder: 1
+      builder: 0
     });
   });
 

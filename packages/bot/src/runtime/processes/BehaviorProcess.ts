@@ -85,8 +85,9 @@ export class BehaviorProcess {
     // Execute behavior (spawning and creep control)
     const behaviorSummary: BehaviorSummary = this.behavior.execute(gameContext, memory, roleCounts, bootstrapMinimums);
 
-     
     // Share behavior summary via protocol (for metrics process)
     ctx.protocol.setBehaviorSummary(behaviorSummary);
+    // Also store in Memory for external monitoring compatibility
+    memory.behaviorSummary = behaviorSummary;
   }
 }

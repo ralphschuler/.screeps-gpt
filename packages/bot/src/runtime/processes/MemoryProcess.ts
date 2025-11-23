@@ -60,16 +60,18 @@ export class MemoryProcess {
         this.selfHealer.emergencyReset(memory);
         this.logger.warn?.("[MemoryProcess] Emergency reset complete. Other processes should skip this tick.");
 
-     
-        // Signal emergency reset via protocol instead of Memory
+        // Signal emergency reset via protocol
         ctx.protocol.setEmergencyReset(true);
+        // Also set in Memory for external monitoring compatibility
+        memory.emergencyReset = true;
         return;
       }
     }
-
-     
     // Clear emergency reset flag if it was set in previous tick
     ctx.protocol.setEmergencyReset(false);
+    if (memory.emergencyReset) {
+      delete memory.emergencyReset;
+    }
 
     // Run memory migrations on first tick or version change
     try {
@@ -102,18 +104,20 @@ export class MemoryProcess {
     this.memoryManager.pruneMissingCreeps(memory, gameContext.creeps);
     const roleCounts = this.memoryManager.updateRoleBookkeeping(memory, gameContext.creeps);
 
-     
-    // Share role counts via protocol instead of Memory
+    // Share role counts via protocol
     ctx.protocol.setRoleCounts(roleCounts);
+    // Also store in Memory for external monitoring compatibility
+    memory.roles = roleCounts;
 
     // Run garbage collection if enabled
     if (this.enableGarbageCollection && gameContext.time % this.garbageCollectionInterval === 0) {
       this.garbageCollector.collect(gameContext, memory);
     }
 
-     
-    // Measure memory utilization and share via protocol instead of Memory
+    // Measure memory utilization and share via protocol
     const memoryUtilization = this.utilizationMonitor.measure(memory);
     ctx.protocol.setMemoryUtilization(memoryUtilization);
+    // Also store in Memory for external monitoring compatibility
+    memory.memoryUtilization = memoryUtilization;
   }
 }

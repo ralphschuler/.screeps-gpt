@@ -5,6 +5,8 @@ import { Kernel } from "@ralphschuler/screeps-kernel";
 import type { GameContext, CreepLike, RoomLike } from "@runtime/types/GameContext";
 
 // Import processes to trigger @process decorator registration
+// Import protocols to trigger @protocol decorator registration
+import "@runtime/protocols";
 import "@runtime/processes";
 
 /**

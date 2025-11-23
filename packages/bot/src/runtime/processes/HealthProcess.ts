@@ -71,7 +71,7 @@ export class HealthProcess {
 
      
       // Share health data via protocol for external monitoring and other processes
-      ctx.protocol.setHealthMetrics({
+      const healthMetrics = {
         score: healthStatus.score,
         state: healthStatus.state,
         metrics: healthStatus.metrics,
@@ -85,7 +85,10 @@ export class HealthProcess {
           mode: recoveryState.mode,
           actionsCount: recoveryState.actions.length
         }
-      });
+      };
+      ctx.protocol.setHealthMetrics(healthMetrics);
+      // Also store in Memory for external monitoring compatibility
+      memory.health = healthMetrics;
 
       // Log health status periodically (every 100 ticks) or when entering recovery
       const isInRecovery = String(recoveryState.mode) !== String(RecoveryMode.NORMAL);

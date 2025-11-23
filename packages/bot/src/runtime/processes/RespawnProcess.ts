@@ -48,14 +48,18 @@ export class RespawnProcess {
     // Check for respawn condition
     const needsRespawn = this.respawnManager.checkRespawnNeeded(gameContext, memory);
     if (needsRespawn) {
-     
       // Signal respawn via protocol for other processes to check
       ctx.protocol.setNeedsRespawn(true);
+      // Also set in Memory for external monitoring compatibility
+      memory.needsRespawn = true;
       this.logger.warn?.("[RespawnProcess] Respawn condition detected. Other processes should skip this tick.");
     } else {
-     
       // Clear respawn flag
       ctx.protocol.setNeedsRespawn(false);
+      // Also clear from Memory
+      if (memory.needsRespawn) {
+        delete memory.needsRespawn;
+      }
     }
   }
 }

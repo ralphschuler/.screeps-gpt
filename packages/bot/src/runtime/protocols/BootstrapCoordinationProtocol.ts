@@ -78,11 +78,11 @@ export class BootstrapCoordinationProtocol implements IBootstrapCoordinationProt
     if (!this.isBootstrapActive()) {
       return {};
     }
-    // Return standard bootstrap minimums
+    // Return standard bootstrap minimums (matches BootstrapPhaseManager.getBootstrapRoleMinimums)
     return {
-      harvester: 2,
+      harvester: 6,
       upgrader: 1,
-      builder: 1
+      builder: 0
     };
   }
 
