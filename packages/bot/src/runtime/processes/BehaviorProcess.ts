@@ -1,4 +1,3 @@
- 
 /* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment */
 import { process as registerProcess, type ProcessContext } from "@ralphschuler/screeps-kernel";
 import type { GameContext } from "@runtime/types/GameContext";
@@ -59,7 +58,6 @@ export class BehaviorProcess {
     const gameContext = ctx.game as GameContext;
     const memory = ctx.memory;
 
-     
     // Skip if emergency reset or respawn occurred (check protocol instead of Memory)
     if (ctx.protocol.isEmergencyReset() || ctx.protocol.needsRespawn()) {
       return;
@@ -74,11 +72,9 @@ export class BehaviorProcess {
       return;
     }
 
-     
     // Get role counts from protocol (set by MemoryProcess)
     const roleCounts: Record<string, number> = ctx.protocol.getRoleCounts();
 
-     
     // Get bootstrap role minimums if bootstrap is active (from protocol)
     const bootstrapMinimums: Record<string, number> = ctx.protocol.getBootstrapMinimums();
 

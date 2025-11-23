@@ -1,4 +1,3 @@
- 
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import { process as registerProcess, type ProcessContext } from "@ralphschuler/screeps-kernel";
 import type { GameContext } from "@runtime/types/GameContext";
@@ -39,7 +38,6 @@ export class HealthProcess {
     const gameContext = ctx.game as GameContext;
     const memory = ctx.memory;
 
-     
     // Skip if emergency reset or respawn occurred (check protocol)
     if (ctx.protocol.isEmergencyReset() || ctx.protocol.needsRespawn()) {
       return;
@@ -69,7 +67,6 @@ export class HealthProcess {
       // Orchestrate recovery if needed
       const recoveryState = this.recoveryOrchestrator.orchestrateRecovery(gameContext, memory, healthStatus, warnings);
 
-     
       // Share health data via protocol for external monitoring and other processes
       const healthMetrics = {
         score: healthStatus.score,
