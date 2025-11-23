@@ -130,7 +130,9 @@ export class RepairerController extends BaseRoleController<RepairerMemory> {
           if (aNearSource && !bNearSource) return -1;
           if (!aNearSource && bNearSource) return 1;
 
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
           const aDist = creep.pos.getRangeTo(a.pos);
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
           const bDist = creep.pos.getRangeTo(b.pos);
           return aDist - bDist;
         }
@@ -140,7 +142,9 @@ export class RepairerController extends BaseRoleController<RepairerMemory> {
         if (!isAContainer && isBContainer) return 1;
 
         // Both are same type - use distance
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
         const aDist = creep.pos.getRangeTo(a.pos);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
         const bDist = creep.pos.getRangeTo(b.pos);
         return aDist - bDist;
       });

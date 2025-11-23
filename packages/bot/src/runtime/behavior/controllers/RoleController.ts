@@ -36,6 +36,11 @@ export interface RoleController<TMemory extends CreepMemory = CreepMemory> {
   getConfig(): RoleConfig<TMemory>;
 
   /**
+   * Create initial memory for a new creep of this role
+   */
+  createMemory(): TMemory;
+
+  /**
    * Execute behavior logic for a creep of this role.
    * Returns the current task name for metrics/logging.
    *
@@ -56,9 +61,7 @@ export interface RoleController<TMemory extends CreepMemory = CreepMemory> {
 /**
  * Abstract base class providing common functionality for role controllers
  */
-export abstract class BaseRoleController<TMemory extends CreepMemory = CreepMemory>
-  implements RoleController<TMemory>
-{
+export abstract class BaseRoleController<TMemory extends CreepMemory = CreepMemory> implements RoleController<TMemory> {
   protected readonly config: RoleConfig<TMemory>;
 
   public constructor(config: RoleConfig<TMemory>) {
@@ -69,6 +72,10 @@ export abstract class BaseRoleController<TMemory extends CreepMemory = CreepMemo
 
   public getConfig(): RoleConfig<TMemory> {
     return this.config;
+  }
+
+  public createMemory(): TMemory {
+    return this.config.createMemory();
   }
 
   public abstract execute(creep: CreepLike): string;

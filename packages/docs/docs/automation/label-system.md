@@ -116,8 +116,6 @@ Automation workflows apply labels:
 - CI Autofix PRs get: `automation`, `copilot`, `type/chore`, `priority/high`
 - Dependabot PRs get: `dependencies`
 
-
-
 ## Examples
 
 ### Example 1: Critical Bug Report

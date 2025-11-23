@@ -59,6 +59,7 @@ export class AttackerController extends BaseRoleController<AttackerMemory> {
     if (hostileCreeps.length > 0) {
       const target: Creep | null = creep.pos.findClosestByPath(hostileCreeps);
       const actualTarget: Creep = target ?? hostileCreeps[0];
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
       const result = creep.attack(actualTarget);
       if (result === ERR_NOT_IN_RANGE) {
         creep.moveTo(actualTarget, { reusePath: 10 });
@@ -74,6 +75,7 @@ export class AttackerController extends BaseRoleController<AttackerMemory> {
     if (hostileStructures.length > 0) {
       const target: AnyOwnedStructure | null = creep.pos.findClosestByPath(hostileStructures);
       const actualTarget: AnyOwnedStructure = target ?? hostileStructures[0];
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
       const result = creep.attack(actualTarget);
       if (result === ERR_NOT_IN_RANGE) {
         creep.moveTo(actualTarget, { reusePath: 10 });

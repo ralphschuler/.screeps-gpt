@@ -90,7 +90,8 @@ export class RemoteHaulerController extends BaseRoleController<RemoteHaulerMemor
       // Pick up from containers
       const containers = creep.room.find(FIND_STRUCTURES, {
         filter: s =>
-          s.structureType === STRUCTURE_CONTAINER && (s as StructureContainer).store.getUsedCapacity(RESOURCE_ENERGY) > 0
+          s.structureType === STRUCTURE_CONTAINER &&
+          (s as StructureContainer).store.getUsedCapacity(RESOURCE_ENERGY) > 0
       }) as StructureContainer[];
 
       if (containers.length > 0) {

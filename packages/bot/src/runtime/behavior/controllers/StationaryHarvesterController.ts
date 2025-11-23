@@ -85,7 +85,7 @@ export class StationaryHarvesterController extends BaseRoleController<Stationary
       if (!container) {
         const nearbyContainers = creep.pos.findInRange(FIND_STRUCTURES, 1, {
           filter: s => s.structureType === STRUCTURE_CONTAINER
-        }) as StructureContainer[];
+        });
 
         if (nearbyContainers.length > 0) {
           container = nearbyContainers[0];

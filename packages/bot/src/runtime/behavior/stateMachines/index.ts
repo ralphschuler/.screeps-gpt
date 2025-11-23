@@ -16,3 +16,4 @@ export * from "./attacker";
 export * from "./healer";
 export * from "./dismantler";
 export * from "./claimer";
+export * from "./scout";

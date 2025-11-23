@@ -9,7 +9,7 @@ import { RoleControllerManager } from "@runtime/behavior/RoleControllerManager";
  * Set to true to use the new RoleControllerManager architecture.
  * Set to false to use the legacy BehaviorController (for rollback if needed).
  */
-const USE_MODULAR_CONTROLLERS = false; // TODO: Enable after all roles are migrated
+const USE_MODULAR_CONTROLLERS = true;
 
 /**
  * Behavior execution process that handles all creep behavior and spawning.
@@ -29,7 +29,7 @@ export class BehaviorProcess {
 
   public constructor() {
     this.logger = console;
-    
+
     // Use modular role controllers if feature flag is enabled
     if (USE_MODULAR_CONTROLLERS) {
       this.behavior = new RoleControllerManager(
@@ -48,7 +48,7 @@ export class BehaviorProcess {
         this.logger
       );
     }
-    
+
     this.cpuEmergencyThreshold = 0.9;
   }
 

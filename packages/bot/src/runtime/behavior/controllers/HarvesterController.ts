@@ -56,6 +56,9 @@ export class HarvesterController extends BaseRoleController<HarvesterMemory> {
     const memory = creep.memory as HarvesterMemory;
     const comm = serviceRegistry.getCommunicationManager();
 
+    // Clean up machines for dead creeps to prevent memory leaks
+    this.cleanupDeadCreepMachines();
+
     // Get or create state machine for this creep
     let machine = this.machines.get(creep.name);
     if (!machine) {
@@ -84,7 +87,7 @@ export class HarvesterController extends BaseRoleController<HarvesterMemory> {
       }
     } else if (currentState === "harvesting") {
       comm?.say(creep, "⛏️");
-      
+
       if (ctx.sourceId) {
         const source = Game.getObjectById(ctx.sourceId);
         if (source && source.energy > 0) {
@@ -166,5 +169,17 @@ export class HarvesterController extends BaseRoleController<HarvesterMemory> {
     memory.task = currentState;
 
     return currentState;
+  }
+
+  /**
+   * Clean up state machines for dead creeps to prevent memory leaks.
+   * This is called on every execute to ensure the machines Map doesn't grow indefinitely.
+   */
+  private cleanupDeadCreepMachines(): void {
+    for (const creepName of this.machines.keys()) {
+      if (!Game.creeps[creepName]) {
+        this.machines.delete(creepName);
+      }
+    }
   }
 }
