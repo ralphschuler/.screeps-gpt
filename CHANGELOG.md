@@ -5,6 +5,9 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.137.15] - 2025-11-23
+
+
 ### Changed
 
 - **Refactoring**: Extracted hardcoded spawn threshold constants from BehaviorController
@@ -15,6 +18,7 @@ All notable changes to this project are documented here. This changelog now main
   - Added regression test validating constant values
   - No behavioral changes - all values remain functionally identical
   - Unblocks issue #1267 (state machine migration) by providing reusable threshold constants
+
 
 ## [0.137.9] - 2025-11-23
 
