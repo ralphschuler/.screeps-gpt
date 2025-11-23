@@ -182,6 +182,7 @@ interface ScoutMemory extends BaseCreepMemory {
   homeRoom: string;
   targetRooms: string[];
   currentTargetIndex: number;
+  lastRoomSwitchTick?: number;
 }
 
 /**
@@ -3268,7 +3269,7 @@ function runScout(creep: ManagedCreep): string {
   }
 
   // We're in the target room - spend a few ticks here for scouting
-  // Move to next room after brief stay (every 5 ticks when at room center)
+  // Move to next room after brief stay (5 ticks when at room center)
   if (creep.room.name === currentTarget) {
     comm?.say(creep, "👁️");
 
@@ -3279,18 +3280,23 @@ function runScout(creep: ManagedCreep): string {
     if (distanceToCenter > 3) {
       creep.moveTo(centerPos, { reusePath: 20 });
     } else {
-      // We're near center, move to next room after short delay
-      if (Game.time % 5 === 0) {
+      // We're near center - track how long we've been here
+      memory.lastRoomSwitchTick ??= creep.ticksToLive ?? 1500;
+
+      // Move to next room after 5 ticks at center
+      const ticksAtCenter: number = (creep.ticksToLive ?? 1500) - (memory.lastRoomSwitchTick ?? 1500);
+      if (Math.abs(ticksAtCenter) >= 5) {
         memory.currentTargetIndex = (memory.currentTargetIndex + 1) % memory.targetRooms.length;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        memory.lastRoomSwitchTick = creep.ticksToLive ?? 1500;
       }
     }
     return SCOUT_TASK;
   }
 
-  // Fallback: if we're in home room and no target, move to first target
-  if (creep.room.name === memory.homeRoom) {
+  // Fallback: ensure we always have a valid target
+  if (!currentTarget) {
     memory.currentTargetIndex = 0;
-    comm?.say(creep, "🏠");
   }
 
   return SCOUT_TASK;

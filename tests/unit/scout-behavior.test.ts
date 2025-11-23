@@ -188,7 +188,8 @@ describe("Scout Behavior", () => {
         version: 1,
         homeRoom: "W5N5",
         targetRooms: ["W4N5", "W6N5", "W5N4", "W5N6", "W4N4", "W6N6", "W4N6", "W6N4"],
-        currentTargetIndex: 0
+        currentTargetIndex: 0,
+        lastRoomSwitchTick: 1500
       },
       store: {
         getFreeCapacity: vi.fn(() => 0),
@@ -199,6 +200,7 @@ describe("Scout Behavior", () => {
         getRangeTo: vi.fn(() => 2) // Close to center
       },
       room: targetRoom,
+      ticksToLive: 1495, // 5 ticks have passed since lastRoomSwitchTick
       harvest: vi.fn(() => OK),
       transfer: vi.fn(() => OK),
       moveTo: vi.fn(() => OK),
@@ -210,7 +212,7 @@ describe("Scout Behavior", () => {
     };
 
     const game: GameContext = {
-      time: 1005, // Time divisible by 5 to trigger room change
+      time: 1005,
       cpu: { getUsed: () => 0, limit: 20, bucket: 1000 },
       creeps: { scout: scout },
       spawns: {},
@@ -222,7 +224,7 @@ describe("Scout Behavior", () => {
 
     controller.execute(game, memory, roleCounts);
 
-    // Scout should increment target index when near center and time is right
+    // Scout should increment target index when near center and enough ticks have passed
     expect(scout.memory.currentTargetIndex).toBe(1);
   });
 
