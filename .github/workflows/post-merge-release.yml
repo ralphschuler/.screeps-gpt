@@ -109,13 +109,18 @@ jobs:
                 echo "commit_hash=$COMMIT_HASH" >> "$GITHUB_OUTPUT"
                 echo "Successfully pushed changes"
                 exit 0
+              else
+                # Push failed after successful rebase, abort rebase
+                echo "Push failed after rebase, aborting..."
+                git rebase --abort
               fi
             else
               echo "Rebase failed, aborting..."
               git rebase --abort
             fi
 
-            # Retry after a short delay
+            # Retry after a short delay (2s allows time for concurrent
+            # workflows to complete)
             echo "Retrying (attempt $((RETRY_COUNT + 1))/$MAX_RETRIES)..."
             RETRY_COUNT=$((RETRY_COUNT + 1))
             sleep 2
