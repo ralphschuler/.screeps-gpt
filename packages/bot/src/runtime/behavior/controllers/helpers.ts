@@ -72,3 +72,39 @@ export function isValidEnergySource(structure: AnyStructure, minEnergy: number =
   const store = structure as AnyStoreStructure;
   return store.store.getUsedCapacity(RESOURCE_ENERGY) > minEnergy;
 }
+
+/**
+ * Finds containers adjacent to spawns in a room.
+ * Helper function to avoid duplicate find operations in hauler logic.
+ *
+ * @param room - The room to search in
+ * @param minEnergy - Optional minimum energy threshold to filter containers
+ * @returns Array of containers adjacent to spawns
+ */
+export function findSpawnAdjacentContainers(
+  room: { find: (constant: number, opts?: unknown) => unknown[] },
+  minEnergy?: number
+): StructureContainer[] {
+  const spawns = room.find(FIND_MY_SPAWNS) as StructureSpawn[];
+  const containers: StructureContainer[] = [];
+
+  for (const spawn of spawns) {
+    const nearbyStructures = spawn.pos.findInRange(FIND_STRUCTURES, 1, {
+      filter: (s: Structure) => s.structureType === STRUCTURE_CONTAINER
+    });
+
+    for (const structure of nearbyStructures) {
+      const container = structure as StructureContainer;
+      if (minEnergy !== undefined) {
+        const currentEnergy = container.store.getUsedCapacity(RESOURCE_ENERGY);
+        if (currentEnergy < minEnergy && container.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+          containers.push(container);
+        }
+      } else if (container.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+        containers.push(container);
+      }
+    }
+  }
+
+  return containers;
+}

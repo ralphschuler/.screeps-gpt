@@ -25,9 +25,21 @@ import { RoleTaskQueueManager } from "./RoleTaskQueue";
 import * as TaskDiscovery from "./TaskDiscovery";
 import type { RoleController } from "./controllers/RoleController";
 import { serviceRegistry } from "./controllers/ServiceLocator";
-import { HarvesterController } from "./controllers/HarvesterController";
-import { UpgraderController } from "./controllers/UpgraderController";
-import { BuilderController } from "./controllers/BuilderController";
+import {
+  HarvesterController,
+  UpgraderController,
+  BuilderController,
+  HaulerController,
+  RepairerController,
+  StationaryHarvesterController,
+  RemoteMinerController,
+  RemoteHaulerController,
+  AttackerController,
+  HealerController,
+  DismantlerController,
+  ClaimerController,
+  ScoutController
+} from "./controllers";
 
 type RoleName =
   | "harvester"
@@ -96,14 +108,27 @@ export class RoleControllerManager {
     // Initialize role controllers registry
     this.roleControllers = new Map();
     
-    // Register role controllers
+    // Register all role controllers
+    // Core economy roles
     this.registerRoleController(new HarvesterController());
     this.registerRoleController(new UpgraderController());
     this.registerRoleController(new BuilderController());
+    this.registerRoleController(new HaulerController());
+    this.registerRoleController(new RepairerController());
     
-    // TODO: Register remaining role controllers as they are migrated
-    // - remoteMiner, remoteHauler, stationaryHarvester, hauler
-    // - repairer, attacker, healer, dismantler, claimer, scout
+    // Specialized roles
+    this.registerRoleController(new StationaryHarvesterController());
+    this.registerRoleController(new RemoteMinerController());
+    this.registerRoleController(new RemoteHaulerController());
+    
+    // Combat roles
+    this.registerRoleController(new AttackerController());
+    this.registerRoleController(new HealerController());
+    this.registerRoleController(new DismantlerController());
+    
+    // Support roles
+    this.registerRoleController(new ClaimerController());
+    this.registerRoleController(new ScoutController());
   }
 
   /**
