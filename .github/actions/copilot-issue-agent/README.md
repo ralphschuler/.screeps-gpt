@@ -53,25 +53,25 @@ This action consolidates issue management functionality into a single, parameter
 
 ## Inputs
 
-| Input | Required | Default | Description |
-|-------|----------|---------|-------------|
-| `copilot-token` | Yes | - | Personal access token with Copilot Requests scope |
-| `mode` | Yes | - | Operation mode: `triage` or `resolve` |
-| `issue-number` | Yes | - | GitHub issue number to process |
-| `issue-title` | Yes | - | Issue title (JSON-encoded) |
-| `issue-body` | No | `""` | Issue body content (JSON-encoded) |
-| `issue-url` | Yes | - | Issue HTML URL |
-| `issue-author` | Yes | - | Issue author username (JSON-encoded) |
-| `repository` | No | `${{ github.repository }}` | Repository name in owner/repo format |
-| `verbose` | No | `"false"` | Enable verbose logging for debugging |
-| `timeout` | No | `"45"` | Maximum time in minutes for execution |
+| Input           | Required | Default                    | Description                                       |
+| --------------- | -------- | -------------------------- | ------------------------------------------------- |
+| `copilot-token` | Yes      | -                          | Personal access token with Copilot Requests scope |
+| `mode`          | Yes      | -                          | Operation mode: `triage` or `resolve`             |
+| `issue-number`  | Yes      | -                          | GitHub issue number to process                    |
+| `issue-title`   | Yes      | -                          | Issue title (JSON-encoded)                        |
+| `issue-body`    | No       | `""`                       | Issue body content (JSON-encoded)                 |
+| `issue-url`     | Yes      | -                          | Issue HTML URL                                    |
+| `issue-author`  | Yes      | -                          | Issue author username (JSON-encoded)              |
+| `repository`    | No       | `${{ github.repository }}` | Repository name in owner/repo format              |
+| `verbose`       | No       | `"false"`                  | Enable verbose logging for debugging              |
+| `timeout`       | No       | `"45"`                     | Maximum time in minutes for execution             |
 
 ## Outputs
 
-| Output | Description |
-|--------|-------------|
+| Output        | Description                                |
+| ------------- | ------------------------------------------ |
 | `output-path` | Absolute path to the agent output log file |
-| `mode` | The operation mode that was executed |
+| `mode`        | The operation mode that was executed       |
 
 ## Implementation Details
 
@@ -105,11 +105,13 @@ This action is used by:
 ## Migration from Legacy Actions
 
 ### Before (Triage)
+
 ```yaml
 uses: ./.github/actions/copilot-triage-agent
 ```
 
 ### After (Triage)
+
 ```yaml
 uses: ./.github/actions/copilot-issue-agent
 with:
@@ -117,11 +119,13 @@ with:
 ```
 
 ### Before (Todo/Development)
+
 ```yaml
 uses: ./.github/actions/copilot-dev-agent
 ```
 
 ### After (Todo/Development)
+
 ```yaml
 uses: ./.github/actions/copilot-issue-agent
 with:

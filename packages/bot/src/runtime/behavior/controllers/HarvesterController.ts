@@ -2,9 +2,11 @@
  * Harvester Role Controller
  *
  * Harvesters are responsible for:
+ * - Picking up dropped energy when available (during harvest phase)
  * - Harvesting energy from sources
- * - Delivering energy to spawns and extensions (priority)
- * - Filling containers when spawns/extensions are full
+ * - Delivering energy to spawns and extensions (priority 1)
+ * - Filling towers below threshold capacity (priority 2)
+ * - Filling containers when spawns/extensions/towers are full (priority 3)
  * - Upgrading controller as fallback when no delivery targets
  *
  * Uses state machine from screeps-xstate for declarative behavior management.
@@ -20,6 +22,8 @@ import {
   type HarvesterContext,
   type HarvesterEvent
 } from "../stateMachines/harvester";
+import { tryPickupDroppedEnergy } from "./helpers";
+import { DEFAULT_ENERGY_CONFIG } from "@runtime/energy";
 
 interface HarvesterMemory extends CreepMemory {
   role: "harvester";
@@ -88,6 +92,15 @@ export class HarvesterController extends BaseRoleController<HarvesterMemory> {
     } else if (currentState === "harvesting") {
       comm?.say(creep, "⛏️");
 
+      // Try to pick up dropped energy first before harvesting
+      if (tryPickupDroppedEnergy(creep)) {
+        // Check if full after pickup
+        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+          machine.send({ type: "ENERGY_FULL" });
+        }
+        return currentState;
+      }
+
       if (ctx.sourceId) {
         const source = Game.getObjectById(ctx.sourceId);
         if (source && source.energy > 0) {
@@ -126,15 +139,18 @@ export class HarvesterController extends BaseRoleController<HarvesterMemory> {
           machine.send({ type: "ENERGY_EMPTY" });
         }
       } else {
-        // Priority 2: Fill containers
-        const containers = creep.room.find(FIND_STRUCTURES, {
-          filter: (structure: AnyStructure) =>
-            structure.structureType === STRUCTURE_CONTAINER &&
-            (structure as AnyStoreStructure).store.getFreeCapacity(RESOURCE_ENERGY) > 0
-        }) as AnyStoreStructure[];
+        // Priority 2: Fill towers below threshold capacity (defense)
+        const lowTowers = creep.room.find(FIND_STRUCTURES, {
+          filter: (structure: AnyStructure) => {
+            if (structure.structureType !== STRUCTURE_TOWER) return false;
+            const capacity = structure.store.getCapacity(RESOURCE_ENERGY);
+            const used = structure.store.getUsedCapacity(RESOURCE_ENERGY);
+            return capacity > 0 && used < capacity * DEFAULT_ENERGY_CONFIG.towerMinCapacity;
+          }
+        }) as StructureTower[];
 
-        if (containers.length > 0) {
-          const target = creep.pos.findClosestByPath(containers) ?? containers[0];
+        if (lowTowers.length > 0) {
+          const target = creep.pos.findClosestByPath(lowTowers) ?? lowTowers[0];
           const result = creep.transfer(target, RESOURCE_ENERGY);
           if (result === ERR_NOT_IN_RANGE) {
             creep.moveTo(target, { range: 1, reusePath: 30 });
@@ -144,8 +160,27 @@ export class HarvesterController extends BaseRoleController<HarvesterMemory> {
             machine.send({ type: "ENERGY_EMPTY" });
           }
         } else {
-          // No delivery targets, upgrade controller
-          machine.send({ type: "START_UPGRADE" });
+          // Priority 3: Fill containers
+          const containers = creep.room.find(FIND_STRUCTURES, {
+            filter: (structure: AnyStructure) =>
+              structure.structureType === STRUCTURE_CONTAINER &&
+              (structure as AnyStoreStructure).store.getFreeCapacity(RESOURCE_ENERGY) > 0
+          }) as AnyStoreStructure[];
+
+          if (containers.length > 0) {
+            const target = creep.pos.findClosestByPath(containers) ?? containers[0];
+            const result = creep.transfer(target, RESOURCE_ENERGY);
+            if (result === ERR_NOT_IN_RANGE) {
+              creep.moveTo(target, { range: 1, reusePath: 30 });
+            }
+
+            if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+              machine.send({ type: "ENERGY_EMPTY" });
+            }
+          } else {
+            // No delivery targets, upgrade controller
+            machine.send({ type: "START_UPGRADE" });
+          }
         }
       }
     } else if (currentState === "upgrading") {
