@@ -34,7 +34,6 @@ bots:
   overmind: screeps-bot-overmind
   toolangle: screeps-bot-tooangel # Username aligns with your bots.yml entry
   choreographer: screeps-bot-choreographer
-  simplebot: "@screeps/simplebot"
 
 serverConfig:
   welcomeText: |
