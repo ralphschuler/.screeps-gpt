@@ -125,6 +125,7 @@ export function findSpawnAdjacentContainers(
 /**
  * Helper function to move a creep to a target room.
  * Handles finding exit direction and navigating to room exits.
+ * When at room edge, moves directly to target room center to avoid oscillation.
  *
  * @param creep - The creep to move
  * @param targetRoom - Target room name
@@ -134,6 +135,15 @@ export function findSpawnAdjacentContainers(
 export function moveToTargetRoom(creep: CreepLike, targetRoom: string, reusePath: number = 50): boolean {
   if (creep.room.name === targetRoom) {
     return false;
+  }
+
+  // Check if creep is at room edge (coordinates 0 or 49)
+  const atEdge = creep.pos.x === 0 || creep.pos.x === 49 || creep.pos.y === 0 || creep.pos.y === 49;
+
+  // If at edge, move directly to target room center to avoid oscillation
+  if (atEdge) {
+    creep.moveTo(new RoomPosition(ROOM_CENTER_X, ROOM_CENTER_Y, targetRoom), { reusePath });
+    return true;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
