@@ -23,7 +23,7 @@ describe("Regression: RoleControllerManager Spawning", () => {
     global.FIND_CONSTRUCTION_SITES = 107 as FindConstant;
     global.FIND_STRUCTURES = 106 as FindConstant;
     global.FIND_MY_STRUCTURES = 112 as FindConstant;
-    global.FIND_DROPPED_RESOURCES = 106 as FindConstant;
+    global.FIND_DROPPED_RESOURCES = 109 as FindConstant;
     global.STRUCTURE_SPAWN = "spawn" as StructureConstant;
     global.STRUCTURE_EXTENSION = "extension" as StructureConstant;
     global.STRUCTURE_STORAGE = "storage" as StructureConstant;
@@ -36,10 +36,10 @@ describe("Regression: RoleControllerManager Spawning", () => {
     global.OK = 0;
     global.ERR_NOT_IN_RANGE = -9;
     global.BODYPART_COST = {
-      [WORK]: 100,
-      [CARRY]: 50,
-      [MOVE]: 50
-    } as Record<BodyPartConstant, number>;
+      work: 100,
+      carry: 50,
+      move: 50
+    } as Record<string, number>;
 
     logger = { log: vi.fn(), warn: vi.fn() };
 
@@ -154,12 +154,10 @@ describe("Regression: RoleControllerManager Spawning", () => {
         harvester: spawnedCreeps.filter(n => n.includes("harvester")).length
       };
 
-      // Mock spawn availability
-      if (spawnedCreeps.length > 0 && tick < spawnedCreeps.length) {
-        mockSpawn.spawning = { name: spawnedCreeps[spawnedCreeps.length - 1] } as Spawning;
-      } else {
-        mockSpawn.spawning = null;
-      }
+      // Mock spawn availability: spawn is busy for one tick after each spawn
+      // This simulates the real Screeps behavior where spawning takes time
+      const isSpawnBusy = spawnedCreeps.length > 0 && tick === spawnedCreeps.length;
+      mockSpawn.spawning = isSpawnBusy ? ({ name: spawnedCreeps[spawnedCreeps.length - 1] } as Spawning) : null;
 
       const summary = manager.execute(game, memory, roleCounts);
 

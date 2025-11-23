@@ -347,6 +347,14 @@ export class RoleControllerManager {
     const isEmergency = totalCreeps === 0;
     const harvesterCount = roleCounts["harvester"] ?? 0;
 
+    // Pre-calculate room creep counts to avoid repeated filtering
+    // Map room name to creep count for efficient lookup during spawning
+    const roomCreepCounts = new Map<string, number>();
+    for (const creep of Object.values(game.creeps)) {
+      const roomName = creep.room.name;
+      roomCreepCounts.set(roomName, (roomCreepCounts.get(roomName) ?? 0) + 1);
+    }
+
     // Determine spawn priority order
     const roleOrder: RoleName[] = [
       "harvester",
@@ -388,11 +396,9 @@ export class RoleControllerManager {
       const spawnEnergy = this.getSpawnEnergyDetails(spawn, isEmergency || harvesterCount === 0);
       const energyToUse = spawnEnergy.energyToUse;
 
-      // Count creeps in the spawn's room for early game detection
-      // Use game.creeps instead of global Game to work with kernel context
-      const roomCreepCount = spawnEnergy.room
-        ? Object.values(game.creeps).filter(creep => creep.room.name === spawnEnergy.room.name).length
-        : undefined;
+      // Get pre-calculated creep count for the spawn's room
+      // Defaults to 0 if room not in map (no creeps in room)
+      const roomCreepCount = spawnEnergy.room ? roomCreepCounts.get(spawnEnergy.room.name) ?? 0 : undefined;
 
       // Generate body based on energy
       const body = this.bodyComposer.generateBody(role, energyToUse, spawnEnergy.room, roomCreepCount);
