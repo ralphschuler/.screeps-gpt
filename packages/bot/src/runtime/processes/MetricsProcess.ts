@@ -101,8 +101,9 @@ export class MetricsProcess {
 
     // Evaluate system health and store report
     const repository = this.repositorySignalProvider?.();
-    const memoryUtilization: { used: number; limit: number; percentage: number } | undefined =
-      ctx.protocol.getMemoryUtilization();
+     
+    const memoryUtilization = ctx.protocol.getMemoryUtilization();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const result = this.evaluator.evaluateAndStore(memory, snapshot, repository, memoryUtilization);
 
     // Generate pixel if bucket is full

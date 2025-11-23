@@ -1,13 +1,5 @@
 import { protocol } from "@ralphschuler/screeps-kernel";
-
-/**
- * Memory utilization metrics.
- */
-export interface MemoryUtilization {
-  used: number;
-  limit: number;
-  percentage: number;
-}
+import type { MemoryUtilization } from "@runtime/memory/MemoryUtilizationMonitor";
 
 /**
  * Metrics coordination protocol interface for type safety.

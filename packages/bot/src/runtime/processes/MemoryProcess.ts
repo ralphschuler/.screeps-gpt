@@ -114,6 +114,6 @@ export class MemoryProcess {
      
     // Measure memory utilization and share via protocol instead of Memory
     const memoryUtilization = this.utilizationMonitor.measure(memory);
-    ctx.protocol.setMemoryUtilization(memoryUtilization as { used: number; limit: number; percentage: number });
+    ctx.protocol.setMemoryUtilization(memoryUtilization);
   }
 }

@@ -25,7 +25,7 @@ export type { IStateCoordinationProtocol } from "./StateCoordinationProtocol";
 export type { IRoleManagementProtocol, RoleCounts } from "./RoleManagementProtocol";
 export type { IBehaviorCoordinationProtocol } from "./BehaviorCoordinationProtocol";
 export type { IBootstrapCoordinationProtocol, BootstrapStatus } from "./BootstrapCoordinationProtocol";
-export type { IMetricsCoordinationProtocol, MemoryUtilization } from "./MetricsCoordinationProtocol";
+export type { IMetricsCoordinationProtocol } from "./MetricsCoordinationProtocol";
 export type {
   IHealthMonitoringProtocol,
   HealthMetrics,
