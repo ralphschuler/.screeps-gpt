@@ -128,6 +128,11 @@ export class ColonyManager {
     // Update claimed rooms list
     this.updateClaimedRooms(rooms);
 
+    // Clean up old expansion queue entries (every 100 ticks to prevent memory bloat)
+    if (currentTick % 100 === 0) {
+      this.cleanupExpansionQueue(currentTick);
+    }
+
     // Check expansion opportunities every 100 ticks
     if (currentTick - this.lastExpansionCheck >= 100) {
       this.evaluateExpansionOpportunities(rooms, currentTick);
@@ -150,6 +155,13 @@ export class ColonyManager {
       const room = rooms[roomName];
       if (room.controller?.my) {
         this.claimedRooms.add(roomName);
+
+        // Mark expansion request as claimed if it exists in the queue
+        const expansionRequest = this.expansionQueue.find(req => req.targetRoom === roomName);
+        if (expansionRequest?.status === "pending") {
+          expansionRequest.status = "claimed";
+          this.logger.log?.(`[ColonyManager] Marked expansion to ${roomName} as claimed`);
+        }
       }
     }
   }
@@ -234,6 +246,61 @@ export class ColonyManager {
         this.logger.log(`[ColonyManager] Cannot claim ${request.targetRoom}: reserved by Invaders`);
         request.status = "failed";
       }
+    }
+  }
+
+  /**
+   * Clean up old and completed expansion requests to prevent memory bloat.
+   * Removes entries that are:
+   * - Marked as "claimed" or "failed"
+   * - Older than 10000 ticks (to allow recent failed attempts to be visible for debugging)
+   *
+   * Also enforces a maximum queue size to prevent unbounded growth.
+   */
+  private cleanupExpansionQueue(currentTick: number): void {
+    const MAX_QUEUE_SIZE = 100;
+    const FAILED_ENTRY_RETENTION_TICKS = 10000;
+
+    // Remove old completed/failed entries
+    const sizeBefore = this.expansionQueue.length;
+    for (let i = this.expansionQueue.length - 1; i >= 0; i--) {
+      const entry = this.expansionQueue[i];
+      const age = currentTick - entry.requestedAt;
+
+      // Remove claimed entries (room is now owned)
+      if (entry.status === "claimed") {
+        this.expansionQueue.splice(i, 1);
+        continue;
+      }
+
+      // Remove old failed entries (keep recent ones for debugging)
+      if (entry.status === "failed" && age > FAILED_ENTRY_RETENTION_TICKS) {
+        this.expansionQueue.splice(i, 1);
+        continue;
+      }
+    }
+
+    const removedCount = sizeBefore - this.expansionQueue.length;
+    if (removedCount > 0) {
+      this.logger.log?.(
+        `[ColonyManager] Cleaned up ${removedCount} old expansion entries (${sizeBefore} → ${this.expansionQueue.length})`
+      );
+    }
+
+    // Enforce maximum queue size by removing oldest pending entries
+    if (this.expansionQueue.length > MAX_QUEUE_SIZE) {
+      // Sort by age (oldest first) and keep only the MAX_QUEUE_SIZE newest
+      this.expansionQueue.sort((a, b) => a.requestedAt - b.requestedAt);
+      const excess = this.expansionQueue.length - MAX_QUEUE_SIZE;
+      this.expansionQueue.splice(0, excess);
+
+      this.logger.warn?.(
+        `[ColonyManager] Expansion queue exceeded maximum size (${MAX_QUEUE_SIZE}). ` +
+          `Removed ${excess} oldest entries to prevent memory bloat.`
+      );
+
+      // Re-sort by priority (descending) after trimming
+      this.expansionQueue.sort((a, b) => b.priority - a.priority);
     }
   }
 

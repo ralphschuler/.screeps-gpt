@@ -1155,12 +1155,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@ralphschuler/screeps-gpt-actions@workspace:packages/actions":
-  version: 0.0.0-use.local
-  resolution: "@ralphschuler/screeps-gpt-actions@workspace:packages/actions"
-  languageName: unknown
-  linkType: soft
-
 "@ralphschuler/screeps-gpt-bot@workspace:packages/bot":
   version: 0.0.0-use.local
   resolution: "@ralphschuler/screeps-gpt-bot@workspace:packages/bot"
@@ -1177,12 +1171,6 @@ __metadata:
     screeps-cartographer: "npm:^1.8.13"
     typescript: "npm:^5.4.3"
     vitest: "npm:^4.0.12"
-  languageName: unknown
-  linkType: soft
-
-"@ralphschuler/screeps-gpt-console@workspace:packages/console":
-  version: 0.0.0-use.local
-  resolution: "@ralphschuler/screeps-gpt-console@workspace:packages/console"
   languageName: unknown
   linkType: soft
 
