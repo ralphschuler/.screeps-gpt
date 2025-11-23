@@ -6,6 +6,7 @@ import type { InfrastructureMemory } from "./src/runtime/infrastructure/Infrastr
 import type { ThreatMemory } from "./src/runtime/defense/ThreatDetector";
 import type { DefenseMemory } from "./src/runtime/defense/DefenseCoordinator";
 import type { CombatManagerMemory } from "./src/runtime/defense/CombatManager";
+import type { SerializedMachine } from "@ralphschuler/screeps-xstate";
 
 declare global {
   /**
@@ -14,6 +15,7 @@ declare global {
    */
   const __PROFILER_ENABLED__: "true" | "false";
   const __ROOM_VISUALS_ENABLED__: string;
+  const __PLAYER_USERNAME__: string;
 
   /**
    * Global EventBus instance for inter-component communication.
@@ -98,6 +100,42 @@ declare global {
       ttlThreshold?: number; // Default: 50 ticks
     };
     colony?: ColonyManagerMemory;
+    /**
+     * Takeover planning memory for occupied room conquest.
+     * Tracks identified enemy rooms and takeover strategies.
+     * @see src/runtime/empire/EmpireManager.ts
+     */
+    takeover?: {
+      targets: Array<{
+        roomName: string;
+        owner?: string;
+        controllerLevel?: number;
+        sourceCount: number;
+        threatLevel: string;
+        hostileStructures?: {
+          towers: number;
+          ramparts: number;
+          walls: number;
+          spawns: number;
+        };
+        hostileCreeps?: {
+          defenders: number;
+          healers: number;
+          totalBodyParts: {
+            attack: number;
+            rangedAttack: number;
+            heal: number;
+            tough: number;
+            work: number;
+          };
+        };
+        discoveredAt: number;
+        status: "identified" | "analyzing" | "planning" | "executing" | "conquered" | "abandoned";
+        priority: number;
+        strategy?: string;
+      }>;
+      lastUpdate: number;
+    };
     /**
      * Profiler performance data collection.
      * Populated when profiler is enabled and started.
@@ -190,6 +228,9 @@ declare global {
     homeRoom?: string;
     targetRoom?: string;
     sourceId?: Id<Source>;
+    stateMachine?: SerializedMachine;
+    containerId?: Id<StructureContainer>;
+    squadId?: string;
   }
 }
 
