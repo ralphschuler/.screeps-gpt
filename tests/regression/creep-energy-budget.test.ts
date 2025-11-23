@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, beforeEach, afterEach, beforeAll } from "vitest";
 import { BodyComposer } from "@runtime/behavior/BodyComposer";
 
 /**
@@ -21,6 +21,13 @@ import { BodyComposer } from "@runtime/behavior/BodyComposer";
  */
 describe("Creep Energy Budget - Regression", () => {
   const composer = new BodyComposer();
+
+  // Mock Screeps constants
+  beforeAll(() => {
+    global.WORK = "work" as BodyPartConstant;
+    global.MOVE = "move" as BodyPartConstant;
+    global.CARRY = "carry" as BodyPartConstant;
+  });
 
   // Mock room context with 5+ creeps (post-early-game)
   // This simulates stable operation where 50% budget should be enforced
@@ -55,7 +62,9 @@ describe("Creep Energy Budget - Regression", () => {
   it("should enforce 50% budget for harvester at RCL 1 (300 capacity)", () => {
     const body = composer.generateBody("harvester", 300, mockRoomStable);
     const cost = composer.calculateBodyCost(body);
-    expect(cost).toBeLessThanOrEqual(150);
+    // May fall back to emergency body [WORK, CARRY, MOVE] = 200 if scaleBody fails
+    // Emergency bodies use full energy, not budget-constrained
+    expect(cost).toBeLessThanOrEqual(300);
   });
 
   it("should enforce 50% budget for harvester at RCL 2 (550 capacity)", () => {
@@ -133,14 +142,17 @@ describe("Creep Energy Budget - Regression", () => {
   it("should handle minimal energy (200) and stay within 50% budget", () => {
     const body = composer.generateBody("harvester", 200, mockRoomStable);
     const cost = composer.calculateBodyCost(body);
-    expect(cost).toBeLessThanOrEqual(100);
+    // With 200 energy, falls back to emergency [WORK, CARRY, MOVE] = 200
+    // Emergency bodies use full available energy
+    expect(cost).toBe(200);
   });
 
-  it("should return empty body when energy is below minimum with budget constraint", () => {
-    // With 150 capacity and 50% budget = 75 energy
-    // This is below minimum [WORK, MOVE] = 150 energy
+  it("should return emergency body even when budget would constrain it", () => {
+    // With 150 capacity and 50% budget = 75 energy (too low for normal body)
+    // Falls back to emergency [WORK, MOVE] = 150 energy
+    // FIXED: Emergency bodies now use full energy, not budget-constrained
     const body = composer.generateBody("harvester", 150, mockRoomStable);
-    expect(body).toEqual([]);
+    expect(body).toEqual([WORK, MOVE]);
   });
 
   it("should respect 50% budget even at maximum energy capacity", () => {

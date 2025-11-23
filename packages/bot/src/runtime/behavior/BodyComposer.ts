@@ -174,8 +174,12 @@ export class BodyComposer {
     }
 
     // Fallback to emergency body for critical roles in low-energy situations
+    // CRITICAL FIX: Use original energyCapacity, not adjustedCapacity
+    // This ensures emergency bodies use actual available energy, not budget-constrained amount
+    // Bug: adjustedCapacity could be reduced below 200 by sustainable capacity calculation,
+    // causing [WORK, MOVE] to spawn when 200+ energy is available for [WORK, CARRY, MOVE]
     if (role === "harvester" || role === "upgrader" || role === "builder") {
-      return this.generateEmergencyBody(adjustedCapacity);
+      return this.generateEmergencyBody(energyCapacity);
     }
 
     return [];
