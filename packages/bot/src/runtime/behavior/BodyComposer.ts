@@ -154,9 +154,12 @@ export class BodyComposer {
       const isEarlyGame = creepCount < 5;
 
       // Enforce 50% energy budget constraint to maintain spawn throughput
-      // Exception: Allow higher capacity during early game (< 5 creeps) for rapid bootstrap
+      // Exceptions:
+      // 1. Early game (< 5 creeps): Allow higher capacity for rapid bootstrap
+      // 2. Capacity ≤ 450: Budget not applied at RCL 1-2
       // This allows spawning 2 creeps per spawn cycle and prevents energy depletion
-      const budgetLimit = isEarlyGame ? energyCapacity : energyCapacity * 0.5;
+      const shouldApplyBudget = !isEarlyGame && energyCapacity > 450;
+      const budgetLimit = shouldApplyBudget ? energyCapacity * 0.5 : energyCapacity;
       adjustedCapacity = Math.min(adjustedCapacity, budgetLimit);
 
       // Further adjust based on sustainable capacity calculation
@@ -174,8 +177,12 @@ export class BodyComposer {
     }
 
     // Fallback to emergency body for critical roles in low-energy situations
+    // CRITICAL FIX: Use original energyCapacity, not adjustedCapacity
+    // This ensures emergency bodies use actual available energy, not budget-constrained amount
+    // Bug: adjustedCapacity could be reduced below 200 by sustainable capacity calculation,
+    // causing [WORK, MOVE] to spawn when 200+ energy is available for [WORK, CARRY, MOVE]
     if (role === "harvester" || role === "upgrader" || role === "builder") {
-      return this.generateEmergencyBody(adjustedCapacity);
+      return this.generateEmergencyBody(energyCapacity);
     }
 
     return [];

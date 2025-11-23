@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, beforeAll, afterEach } from "vitest";
 import { BodyComposer } from "@runtime/behavior/BodyComposer";
 
 /**
@@ -17,10 +17,19 @@ import { BodyComposer } from "@runtime/behavior/BodyComposer";
  * Fix:
  * - Added budget limit (energyCapacity * 0.5) after early game check
  * - Budget only applies when room context is provided (actual spawning)
- * - Exception for early game (< 5 creeps) to allow rapid bootstrap
+ * - Exceptions:
+ *   1. Early game (< 5 creeps): Allow rapid bootstrap
+ *   2. Capacity ≤ 450: Budget not applied at RCL 1-2
  */
 describe("Creep Energy Budget - Regression", () => {
   const composer = new BodyComposer();
+
+  // Mock Screeps constants
+  beforeAll(() => {
+    global.WORK = "work" as BodyPartConstant;
+    global.MOVE = "move" as BodyPartConstant;
+    global.CARRY = "carry" as BodyPartConstant;
+  });
 
   // Mock room context with 5+ creeps (post-early-game)
   // This simulates stable operation where 50% budget should be enforced
@@ -52,15 +61,20 @@ describe("Creep Energy Budget - Regression", () => {
     global.Game = originalGame;
   });
 
-  it("should enforce 50% budget for harvester at RCL 1 (300 capacity)", () => {
+  it("should NOT enforce 50% budget for harvester at RCL 1 (300 capacity)", () => {
     const body = composer.generateBody("harvester", 300, mockRoomStable);
     const cost = composer.calculateBodyCost(body);
-    expect(cost).toBeLessThanOrEqual(150);
+    // NEW: Budget constraint only applies when capacity > 450
+    // At RCL 1 (300), no budget constraint - can use full capacity
+    expect(cost).toBeLessThanOrEqual(300);
   });
 
   it("should enforce 50% budget for harvester at RCL 2 (550 capacity)", () => {
+    // RCL 2 starts at 550, and budget applies when capacity > 450
+    // At 550, budget SHOULD apply (550 > 450)
     const body = composer.generateBody("harvester", 550, mockRoomStable);
     const cost = composer.calculateBodyCost(body);
+    // Budget applies: 550 * 0.5 = 275
     expect(cost).toBeLessThanOrEqual(275);
   });
 
@@ -133,14 +147,17 @@ describe("Creep Energy Budget - Regression", () => {
   it("should handle minimal energy (200) and stay within 50% budget", () => {
     const body = composer.generateBody("harvester", 200, mockRoomStable);
     const cost = composer.calculateBodyCost(body);
-    expect(cost).toBeLessThanOrEqual(100);
+    // With 200 energy, falls back to emergency [WORK, CARRY, MOVE] = 200
+    // Emergency bodies use full available energy
+    expect(cost).toBe(200);
   });
 
-  it("should return empty body when energy is below minimum with budget constraint", () => {
-    // With 150 capacity and 50% budget = 75 energy
-    // This is below minimum [WORK, MOVE] = 150 energy
+  it("should return emergency body even when budget would constrain it", () => {
+    // With 150 capacity and 50% budget = 75 energy (too low for normal body)
+    // Falls back to emergency [WORK, MOVE] = 150 energy
+    // FIXED: Emergency bodies now use full energy, not budget-constrained
     const body = composer.generateBody("harvester", 150, mockRoomStable);
-    expect(body).toEqual([]);
+    expect(body).toEqual([WORK, MOVE]);
   });
 
   it("should respect 50% budget even at maximum energy capacity", () => {
@@ -158,11 +175,36 @@ describe("Creep Energy Budget - Regression", () => {
     expect(cost).toBeLessThanOrEqual(6450);
   });
 
-  it("should allow at least minimum viable body (200 energy)", () => {
-    // Budget of 50% means we need at least 400 capacity for a 200 energy body
+  it("should NOT apply budget at exactly 450 energy", () => {
+    // Boundary test: at 450, budget should NOT apply (threshold is > 450)
+    const body = composer.generateBody("harvester", 450, mockRoomStable);
+    const cost = composer.calculateBodyCost(body);
+    // No budget constraint at 450: can use full capacity
+    expect(cost).toBeLessThanOrEqual(450);
+  });
+
+  it("should apply budget at 451 energy (just above threshold)", () => {
+    // Just above threshold: budget should apply
+    const body = composer.generateBody("harvester", 451, mockRoomStable);
+    const cost = composer.calculateBodyCost(body);
+    // Budget applies: 451 * 0.5 = 225.5
+    expect(cost).toBeLessThanOrEqual(226);
+  });
+
+  it("should apply budget at 500 energy (RCL 2+)", () => {
+    // RCL 2+ with 500+ energy: budget should apply
+    const body = composer.generateBody("harvester", 500, mockRoomStable);
+    const cost = composer.calculateBodyCost(body);
+    // Budget applies: 500 * 0.5 = 250
+    expect(cost).toBeLessThanOrEqual(250);
+  });
+
+  it("should allow full capacity at 400 energy (below 450 threshold)", () => {
+    // NEW: At 400 energy, no budget constraint (≤ 450 threshold)
+    // Can use full 400 energy, not restricted to 50%
     const body = composer.generateBody("harvester", 400, mockRoomStable);
     const cost = composer.calculateBodyCost(body);
-    expect(cost).toBeLessThanOrEqual(200);
+    expect(cost).toBeLessThanOrEqual(400); // Full capacity allowed
     expect(body.length).toBeGreaterThanOrEqual(3); // At least [WORK, CARRY, MOVE]
   });
 
