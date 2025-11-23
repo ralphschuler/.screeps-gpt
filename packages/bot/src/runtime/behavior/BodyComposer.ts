@@ -154,9 +154,12 @@ export class BodyComposer {
       const isEarlyGame = creepCount < 5;
 
       // Enforce 50% energy budget constraint to maintain spawn throughput
-      // Exception: Allow higher capacity during early game (< 5 creeps) for rapid bootstrap
+      // Exceptions:
+      // 1. Early game (< 5 creeps): Allow higher capacity for rapid bootstrap
+      // 2. Low energy rooms (≤ 450): Budget constraint too restrictive at RCL 1-2
       // This allows spawning 2 creeps per spawn cycle and prevents energy depletion
-      const budgetLimit = isEarlyGame ? energyCapacity : energyCapacity * 0.5;
+      const shouldApplyBudget = !isEarlyGame && energyCapacity > 450;
+      const budgetLimit = shouldApplyBudget ? energyCapacity * 0.5 : energyCapacity;
       adjustedCapacity = Math.min(adjustedCapacity, budgetLimit);
 
       // Further adjust based on sustainable capacity calculation
