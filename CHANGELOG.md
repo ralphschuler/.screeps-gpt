@@ -5,6 +5,15 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Changed
+
+- **Repository Cleanup**: Removed unused files and placeholder packages to improve maintainability
+  - Removed stale `source/docs` directory (migrated to `packages/docs/source/` previously)
+  - Removed placeholder package `packages/actions` (no implementation, marked as "future" in README)
+  - Removed placeholder package `packages/console` (no implementation, marked as "future" in README)
+  - No breaking changes - all builds, tests, and deployments remain functional
+  - Workspace configuration automatically adapts to removed packages
+
 ## [0.125.7] - 2025-11-21
 
 ### Changed
