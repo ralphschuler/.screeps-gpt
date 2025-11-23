@@ -398,7 +398,7 @@ export class RoleControllerManager {
 
       // Get pre-calculated creep count for the spawn's room
       // Defaults to 0 if room not in map (no creeps in room)
-      const roomCreepCount = spawnEnergy.room ? roomCreepCounts.get(spawnEnergy.room.name) ?? 0 : undefined;
+      const roomCreepCount = spawnEnergy.room ? (roomCreepCounts.get(spawnEnergy.room.name) ?? 0) : undefined;
 
       // Generate body based on energy
       const body = this.bodyComposer.generateBody(role, energyToUse, spawnEnergy.room, roomCreepCount);
