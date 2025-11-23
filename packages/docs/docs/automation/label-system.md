@@ -116,41 +116,7 @@ Automation workflows apply labels:
 - CI Autofix PRs get: `automation`, `copilot`, `type/chore`, `priority/high`
 - Dependabot PRs get: `dependencies`
 
-## Legacy Labels (Deprecated)
 
-The following labels are deprecated but kept for backward compatibility:
-
-- **`bug`** → Use `type/bug` instead
-- **`enhancement`** → Use `type/enhancement` instead
-- **`severity/high`** → Use `priority/critical` or `priority/high` instead
-- **`severity/medium`** → Use `priority/high` or `priority/medium` instead
-- **`severity/low`** → Use `priority/low` instead
-
-These labels will be automatically migrated over time. New issues and PRs should use the standardized labels.
-
-## Migration Strategy
-
-### For Existing Issues
-
-Existing issues can retain their old labels. The system supports both old and new labels simultaneously. When updating an existing issue:
-
-1. Add the appropriate new labels (type/_, priority/_, state/\*)
-2. Optionally remove the deprecated labels (bug, enhancement, severity/\*)
-3. The label-sync workflow will not delete labels from existing issues
-
-### For Automation
-
-All automation workflows and copilot prompts have been updated to:
-
-- Use the new label structure by default
-- Understand both old and new labels for backward compatibility
-- Gradually migrate to exclusive use of new labels
-
-### Timeline
-
-- **Phase 1 (Current):** Both old and new labels coexist
-- **Phase 2 (Future):** Gradually migrate existing issues to new labels
-- **Phase 3 (Future):** Remove deprecated labels after migration is complete
 
 ## Examples
 

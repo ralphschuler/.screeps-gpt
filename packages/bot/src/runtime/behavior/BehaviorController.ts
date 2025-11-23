@@ -379,9 +379,6 @@ let energyPriorityManager: EnergyPriorityManager | null = null;
 // Global wall upgrade manager instance for role functions to access
 let wallUpgradeManager: WallUpgradeManager | null = null;
 
-// Global task queue manager instance for role functions to access
-let taskQueueManager: RoleTaskQueueManager | null = null;
-
 /**
  * Coordinates spawning and per-tick behaviour execution for every registered role.
  * Uses role-based behavior system with individual role handlers.
@@ -413,7 +410,6 @@ export class BehaviorController {
     wallUpgradeManager = this.wallUpgradeManager;
     this.scoutManager = new ScoutManager(this.logger);
     this.taskQueueManager = new RoleTaskQueueManager(this.logger);
-    taskQueueManager = this.taskQueueManager;
   }
 
   /**
@@ -1587,14 +1583,6 @@ function getEnergyManager(): EnergyPriorityManager | null {
   return energyPriorityManager;
 }
 
-/**
- * Helper to get task queue manager instance
- * @deprecated This function is unused and will be removed in a future version
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function getTaskQueue(): RoleTaskQueueManager | null {
-  return taskQueueManager;
-}
 
 /**
  * Helper function to find the closest target by path or fall back to the first target.
