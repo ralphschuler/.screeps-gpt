@@ -3261,10 +3261,8 @@ function runScout(creep: ManagedCreep): string {
     comm?.say(creep, "🔍");
 
     // Move to room center for better path finding
-    creep.moveTo(
-      { pos: { x: ROOM_CENTER_X, y: ROOM_CENTER_Y, roomName: currentTarget } as unknown as RoomPosition },
-      { reusePath: 50 }
-    );
+    const targetPos = new RoomPosition(ROOM_CENTER_X, ROOM_CENTER_Y, currentTarget);
+    creep.moveTo(targetPos, { reusePath: 50 });
     return SCOUT_TASK;
   }
 
@@ -3275,8 +3273,8 @@ function runScout(creep: ManagedCreep): string {
 
     // Move to center of room for complete visibility
     const centerPos = new RoomPosition(ROOM_CENTER_X, ROOM_CENTER_Y, creep.room.name);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    const distanceToCenter = creep.pos.getRangeTo(centerPos) as number;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+    const distanceToCenter: number = creep.pos.getRangeTo(centerPos);
     if (distanceToCenter > 3) {
       creep.moveTo(centerPos, { reusePath: 20 });
     } else {
