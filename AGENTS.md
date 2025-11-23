@@ -6,13 +6,27 @@ This repository manages an autonomous Screeps AI and the automation surrounding 
 
 ### Primary Agents
 
+The repository uses a **unified agent architecture** where similar operations are consolidated into single agents with role-based behavior:
+
 1. **GitHub Copilot** - General-purpose code editing, issue triage, and repository maintenance
-2. **Copilot Review** - Scheduled repository audits and quality assessments
-3. **Copilot Todo Automation** - Automated issue resolution via draft pull requests with visible implementation progress
-4. **Copilot Issue Triage** - Automatic issue reformulation and labeling
-5. **Copilot Stats Monitor** - PTR telemetry analysis and anomaly detection
-6. **CI Auto Issue** - Automated issue creation for CI failures with circuit breaker pattern
-7. **Copilot Email Triage** - Email-to-issue conversion and triage
+2. **Copilot Issue Agent** (Unified) - Multi-mode issue management with role-based behavior
+   - **Triage mode** - Automatic issue reformulation and labeling
+   - **Resolve mode** - Automated issue resolution via draft pull requests with visible implementation progress
+   - **Analyze mode** - Context gathering and relationship analysis
+3. **Copilot Audit Agent** - Scheduled repository audits and quality assessments
+4. **Screeps Monitoring** - PTR telemetry analysis, anomaly detection, and strategic analysis
+5. **CI Auto Issue** - Automated issue creation for CI failures with circuit breaker pattern
+6. **Copilot Email Triage** - Email-to-issue conversion and triage
+
+### Consolidation Benefits
+
+The unified agent pattern provides:
+
+- **Reduced maintenance burden** - Single agent to maintain instead of multiple similar agents
+- **Consistent behavior** - Shared infrastructure and validation logic across modes
+- **Easier testing** - Single entry point for related operations
+- **Clear intent** - Mode parameter makes operational intent explicit
+- **Simplified debugging** - Consistent logging and error handling
 
 ### Operational Boundaries
 
