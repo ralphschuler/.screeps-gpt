@@ -17,8 +17,8 @@ describe("moveToTargetRoom", () => {
   let mockCreep: CreepLike;
   let mockRoom: MockRoom;
 
-  // Exit direction constant (valid ExitConstant values are 1, 3, 5, 7)
-  const EXIT_RIGHT = 2; // Using a valid exit constant
+  // Exit direction constant (valid ExitConstant values are 1=TOP, 3=RIGHT, 5=BOTTOM, 7=LEFT)
+  const EXIT_RIGHT = 3; // FIND_EXIT_RIGHT constant
 
   beforeEach(() => {
     mockRoom = {
