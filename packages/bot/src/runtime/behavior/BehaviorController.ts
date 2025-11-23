@@ -2112,6 +2112,19 @@ function runRemoteMiner(creep: ManagedCreep): string {
       return REMOTE_TRAVEL_TASK;
     }
 
+    // Check if creep is in target room and far enough from edges to avoid cycling
+    if (memory.targetRoom && creep.room.name === memory.targetRoom) {
+      const isNearEdge = creep.pos.x <= 2 || creep.pos.x >= 47 || creep.pos.y <= 2 || creep.pos.y >= 47;
+      if (isNearEdge) {
+        // Continue moving to room center to avoid edge cycling
+        creep.moveTo(
+          { pos: { x: ROOM_CENTER_X, y: ROOM_CENTER_Y, roomName: memory.targetRoom } as unknown as RoomPosition },
+          { reusePath: 50 }
+        );
+        return REMOTE_TRAVEL_TASK;
+      }
+    }
+
     memory.task = REMOTE_MINE_TASK;
   }
 
@@ -2148,6 +2161,18 @@ function runRemoteMiner(creep: ManagedCreep): string {
       { reusePath: 50 }
     );
     return REMOTE_RETURN_TASK;
+  }
+
+  // Check if creep is in home room but near edge - continue moving to center to avoid cycling
+  if (memory.homeRoom && creep.room.name === memory.homeRoom) {
+    const isNearEdge = creep.pos.x <= 2 || creep.pos.x >= 47 || creep.pos.y <= 2 || creep.pos.y >= 47;
+    if (isNearEdge) {
+      creep.moveTo(
+        { pos: { x: ROOM_CENTER_X, y: ROOM_CENTER_Y, roomName: memory.homeRoom } as unknown as RoomPosition },
+        { reusePath: 50 }
+      );
+      return REMOTE_RETURN_TASK;
+    }
   }
 
   const depositTargets = creep.room.find(FIND_STRUCTURES, {
@@ -2199,21 +2224,27 @@ function ensureRemoteHaulerTask(memory: RemoteHaulerMemory, creep: CreepLike): R
     return memory.task;
   }
 
-  // Transition from travel to pickup when in target room
+  // Transition from travel to pickup when in target room and far from edges
   if (memory.task === REMOTE_HAULER_TRAVEL_TASK && creep.room.name === memory.targetRoom) {
-    memory.task = REMOTE_HAULER_PICKUP_TASK;
+    const isNearEdge = creep.pos.x <= 2 || creep.pos.x >= 47 || creep.pos.y <= 2 || creep.pos.y >= 47;
+    if (!isNearEdge) {
+      memory.task = REMOTE_HAULER_PICKUP_TASK;
+    }
   }
   // Transition from pickup to return when full
   else if (memory.task === REMOTE_HAULER_PICKUP_TASK && creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
     memory.task = REMOTE_HAULER_RETURN_TASK;
   }
-  // Transition from return to travel when empty and back home
+  // Transition from return to travel when empty and back home, and far from edges
   else if (
     memory.task === REMOTE_HAULER_RETURN_TASK &&
     creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0 &&
     creep.room.name === memory.homeRoom
   ) {
-    memory.task = REMOTE_HAULER_TRAVEL_TASK;
+    const isNearEdge = creep.pos.x <= 2 || creep.pos.x >= 47 || creep.pos.y <= 2 || creep.pos.y >= 47;
+    if (!isNearEdge) {
+      memory.task = REMOTE_HAULER_TRAVEL_TASK;
+    }
   }
 
   return memory.task;
@@ -2256,6 +2287,16 @@ function runRemoteHauler(creep: ManagedCreep): string {
 
     // Travel to target room
     if (creep.room.name !== memory.targetRoom) {
+      creep.moveTo(
+        { pos: { x: ROOM_CENTER_X, y: ROOM_CENTER_Y, roomName: memory.targetRoom } as unknown as RoomPosition },
+        { reusePath: 50 }
+      );
+      return REMOTE_HAULER_TRAVEL_TASK;
+    }
+
+    // Check if creep is in target room but near edge - continue moving to center to avoid cycling
+    const isNearEdge = creep.pos.x <= 2 || creep.pos.x >= 47 || creep.pos.y <= 2 || creep.pos.y >= 47;
+    if (isNearEdge) {
       creep.moveTo(
         { pos: { x: ROOM_CENTER_X, y: ROOM_CENTER_Y, roomName: memory.targetRoom } as unknown as RoomPosition },
         { reusePath: 50 }
@@ -2306,6 +2347,16 @@ function runRemoteHauler(creep: ManagedCreep): string {
 
   // Travel back to home room
   if (creep.room.name !== memory.homeRoom) {
+    creep.moveTo(
+      { pos: { x: ROOM_CENTER_X, y: ROOM_CENTER_Y, roomName: memory.homeRoom } as unknown as RoomPosition },
+      { reusePath: 50 }
+    );
+    return REMOTE_HAULER_RETURN_TASK;
+  }
+
+  // Check if creep is in home room but near edge - continue moving to center to avoid cycling
+  const isNearEdge = creep.pos.x <= 2 || creep.pos.x >= 47 || creep.pos.y <= 2 || creep.pos.y >= 47;
+  if (isNearEdge) {
     creep.moveTo(
       { pos: { x: ROOM_CENTER_X, y: ROOM_CENTER_Y, roomName: memory.homeRoom } as unknown as RoomPosition },
       { reusePath: 50 }
@@ -3172,6 +3223,17 @@ function runClaimer(creep: ManagedCreep): string {
     return CLAIMER_CLAIM_TASK;
   }
 
+  // Check if creep is in target room but near edge - continue moving to center to avoid cycling
+  const isNearEdge = creep.pos.x <= 2 || creep.pos.x >= 47 || creep.pos.y <= 2 || creep.pos.y >= 47;
+  if (isNearEdge) {
+    comm?.say(creep, "🚀");
+    creep.moveTo(
+      { pos: { x: ROOM_CENTER_X, y: ROOM_CENTER_Y, roomName: targetRoom } as unknown as RoomPosition },
+      { reusePath: 50 }
+    );
+    return CLAIMER_CLAIM_TASK;
+  }
+
   // In target room - claim controller
   const controller = creep.room.controller;
   if (!controller) {
@@ -3263,6 +3325,17 @@ function runScout(creep: ManagedCreep): string {
     const targetPos = new RoomPosition(ROOM_CENTER_X, ROOM_CENTER_Y, currentTarget);
     creep.moveTo(targetPos, { reusePath: 50 });
     return SCOUT_TASK;
+  }
+
+  // Check if just entered target room and near edge - continue to center to avoid cycling
+  if (currentTarget && creep.room.name === currentTarget) {
+    const isNearEdge = creep.pos.x <= 2 || creep.pos.x >= 47 || creep.pos.y <= 2 || creep.pos.y >= 47;
+    if (isNearEdge) {
+      comm?.say(creep, "🔍");
+      const targetPos = new RoomPosition(ROOM_CENTER_X, ROOM_CENTER_Y, currentTarget);
+      creep.moveTo(targetPos, { reusePath: 50 });
+      return SCOUT_TASK;
+    }
   }
 
   // We're in the target room - spend a few ticks here for scouting
