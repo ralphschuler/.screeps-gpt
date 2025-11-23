@@ -31,12 +31,11 @@ extraPackages:
 
 STEAM_KEY: ${STEAM_KEY}
 
-#bots:
-#  overmind: screeps-bot-overmind
-#  toolangle: screeps-bot-tooangel # Username aligns with your bots.yml entry
-#  choreographer: screeps-bot-choreographer
-#  simplebot: "@screeps/simplebot"
-#  screeps-gpt: "https://github.com/ralphschuler/.screeps-gpt"
+bots:
+  overmind: screeps-bot-overmind
+  toolangle: screeps-bot-tooangel # Username aligns with your bots.yml entry
+  choreographer: screeps-bot-choreographer
+  simplebot: "@screeps/simplebot"
 
 serverConfig:
   welcomeText: |
