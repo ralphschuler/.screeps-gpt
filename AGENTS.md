@@ -54,9 +54,9 @@ All agents should reference these documents before making changes:
    - [`TASKS.md`](TASKS.md) - Active, in-progress, and recently completed tasks
    - [`AGENTS.md`](AGENTS.md) - This file; agent rules and knowledge base
 
-2. **Structured Knowledge Base (`docs/`)**
+2. **Structured Knowledge Base (`packages/docs/`)**
    - [`docs/index.md`](docs/index.md) - Documentation hub with quick start and documentation rules
-   - [`docs/automation/overview.md`](docs/automation/overview.md) - Detailed workflow specifications and local validation
+   - [`packages/docs/source/docs/automation/overview.md`](packages/docs/source/docs/automation/overview.md) - Detailed workflow specifications and local validation
    - [`docs/operations/stats-monitoring.md`](docs/operations/stats-monitoring.md) - PTR monitoring pipeline and Copilot analysis
    - [`docs/operations/respawn-handling.md`](docs/operations/respawn-handling.md) - Automatic respawn detection and handling
    - [`docs/changelog/versions.md`](docs/changelog/versions.md) - Generated release history (do not edit manually)
@@ -138,7 +138,7 @@ Agents working on runtime code should understand:
 
 ### 4. Workflow Guidelines
 
-- Any change to `.github/workflows/` must keep the automation promises described in `README.md` and `docs/automation/overview.md`.
+- Any change to `.github/workflows/` must keep the automation promises described in `README.md` and `packages/docs/source/docs/automation/overview.md`.
 - Follow [Graphite's GitHub Actions permissions guidance](https://graphite.dev/guides/github-actions-permissions) to ensure least-privilege scopes.
 - Secrets referenced by workflows must be documented in `README.md` under the automation section.
 - Use the GitHub Copilot CLI via the shared `copilot-exec` composite action and template prompts in `.github/copilot/prompts/`.
@@ -303,7 +303,7 @@ When a new agent or contributor starts work:
 1. ✓ Read this `AGENTS.md` file completely
 2. ✓ Review [`README.md`](README.md) for repository overview
 3. ✓ Study [`DOCS.md`](DOCS.md) for developer resources
-4. ✓ Browse [`docs/`](docs/) knowledge base, especially `docs/automation/overview.md`
+4. ✓ Browse [`docs/`](docs/) knowledge base, especially `packages/docs/source/docs/automation/overview.md`
 5. ✓ Review [`TASKS.md`](TASKS.md) for current priorities
 6. ✓ Check [`CHANGELOG.md`](CHANGELOG.md) for recent changes
 7. ✓ Run `yarn install && yarn lint && yarn test:unit` to verify environment

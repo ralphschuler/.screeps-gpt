@@ -212,28 +212,45 @@ The repository uses a specialized agent architecture for Copilot automation, whe
 
 **Design Principles:**
 
-- **Single Responsibility**: Each agent handles only one specific task type
+- **Unified Agent Pattern**: Similar operations consolidated into single agents with role-based behavior
+- **Mode-Based Execution**: Agents accept a `mode` parameter to select operational behavior
 - **Minimal Input Requirements**: Accept only essential parameters (copilot-token + task-specific inputs)
 - **Consistent Interface**: Standardized input/output patterns across all agents
 - **Composable**: Agents can be combined in workflows without conflicts
 - **Built on copilot-exec**: All agents leverage the existing `copilot-exec` composite action
 
+**Consolidation Benefits:**
+
+- **Reduced Maintenance**: Single agent to maintain instead of multiple similar agents (~70% shared logic)
+- **Consistent Behavior**: Shared infrastructure and validation logic across modes
+- **Easier Testing**: Single entry point for related operations
+- **Clear Intent**: Mode parameter makes operational intent explicit
+- **Simplified Debugging**: Consistent logging and error handling
+
 **Agent Implementations:**
 
-All specialized agents are located in `.github/actions/copilot-*-agent/` directories and provide wrappers around `copilot-exec` with task-specific configurations.
+All specialized agents are located in `.github/actions/copilot-*-agent/` directories and provide wrappers around `copilot-exec` with task-specific configurations. The repository uses **unified agents** where appropriate to consolidate similar operations.
 
 ### Available Agents
 
-**copilot-triage-agent** (`.github/actions/copilot-triage-agent/`):
+**copilot-issue-agent** (`.github/actions/copilot-issue-agent/`) - **UNIFIED AGENT**:
 
-- **Purpose**: GitHub issue triage and reformulation
+- **Purpose**: Multi-mode issue management with role-based behavior
+- **Modes**:
+  - `triage` - Reformulate and label new issues with duplicate detection
+  - `resolve` - Implement solutions via draft PRs with progress tracking
+  - `analyze` - Context gathering and relationship analysis only
 - **Key Features**:
   - Context-aware issue analysis with duplicate detection
-  - Automatic reformulation of title and description
-  - Intelligent label application based on content
+  - Automatic reformulation of title and description (triage mode)
+  - Intelligent label application based on content (triage mode)
   - Related issue linking and relationship management
-- **Required Inputs**: `copilot-token`, `issue-number`, `issue-title`, `issue-url`, `issue-author`
-- **Used By**: `copilot-issue-triage.yml`
+  - Code implementation with progress tracking (resolve mode)
+  - Dependency and sub-task validation (resolve mode)
+  - Incremental commits and automated testing (resolve mode)
+- **Required Inputs**: `copilot-token`, `mode`, `issue-number`, `issue-title`, `issue-url`, `issue-author`
+- **Used By**: `copilot-issue-triage.yml` (triage mode), `copilot-todo-pr.yml` (resolve mode)
+- **Replaces**: `copilot-triage-agent` and `copilot-dev-agent` (legacy)
 
 **copilot-review-agent** (`.github/actions/copilot-review-agent/`):
 
@@ -272,31 +289,39 @@ All specialized agents are located in `.github/actions/copilot-*-agent/` directo
 - **Documentation**: [Strategic Planning Guide](./strategic-planning.md)
 - **Used By**: Direct workflow invocation via `copilot-exec` with `strategic-planner` prompt
 
-**copilot-dev-agent** (`.github/actions/copilot-dev-agent/`):
 
-- **Purpose**: Development workflow assistance and code generation
-- **Key Features**:
-  - Context-aware code implementation and fixes
-  - Dependency and sub-task validation
-  - Incremental progress reporting and commit management
-  - Automated testing and validation
-- **Required Inputs**: `copilot-token`, `issue-number`, `issue-title`, `issue-url`, `issue-author`
-- **Used By**: `copilot-todo-pr.yml`
 
 ### Usage Examples
 
-**Using the Triage Agent:**
+**Using the Unified Issue Agent (Triage Mode):**
 
 ```yaml
 - name: Triage issue
-  uses: ./.github/actions/copilot-triage-agent
+  uses: ./.github/actions/copilot-issue-agent
   with:
     copilot-token: ${{ secrets.COPILOT_TOKEN }}
+    mode: triage
     issue-number: ${{ github.event.issue.number }}
     issue-title: ${{ toJSON(github.event.issue.title) }}
     issue-body: ${{ toJSON(github.event.issue.body || '') }}
     issue-url: ${{ toJSON(github.event.issue.html_url) }}
     issue-author: ${{ toJSON(github.event.issue.user.login) }}
+```
+
+**Using the Unified Issue Agent (Resolve Mode):**
+
+```yaml
+- name: Resolve issue via PR
+  uses: ./.github/actions/copilot-issue-agent
+  with:
+    copilot-token: ${{ secrets.COPILOT_TOKEN }}
+    mode: resolve
+    issue-number: ${{ github.event.issue.number }}
+    issue-title: ${{ toJSON(github.event.issue.title) }}
+    issue-body: ${{ toJSON(github.event.issue.body || '') }}
+    issue-url: ${{ toJSON(github.event.issue.html_url) }}
+    issue-author: ${{ toJSON(github.event.issue.user.login) }}
+    timeout: "45"
 ```
 
 **Using the Audit Agent:**
@@ -309,14 +334,17 @@ All specialized agents are located in `.github/actions/copilot-*-agent/` directo
     run-url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 ```
 
-### Benefits of Specialized Agents
+### Benefits of Unified Agent Architecture
 
-1. **Reduced Complexity**: Workflows are simpler and easier to understand with focused agents
-2. **Better Maintainability**: Agent-specific changes are isolated from other automation
-3. **Easier Debugging**: Agent boundaries make it clear where issues originate
-4. **Clear Contracts**: Well-defined input/output interfaces for each automation type
-5. **Optimized Configuration**: Agent-specific defaults and timeouts for each task type
-6. **Reusability**: Agents can be easily reused across multiple workflows
+1. **Reduced Maintenance Burden**: Single agent to maintain instead of multiple similar agents
+2. **Consistent Behavior**: Shared infrastructure and validation logic across operational modes
+3. **Easier Testing**: Single entry point for all issue management operations
+4. **Clear Intent**: Mode parameter makes operational purpose explicit
+5. **Simplified Debugging**: Consistent logging and error handling across modes
+6. **Better Maintainability**: Agent-specific changes affect all related operations consistently
+7. **Clear Contracts**: Well-defined input/output interfaces for each automation type
+8. **Optimized Configuration**: Mode-specific defaults and timeouts for each task type
+9. **Reusability**: Agents can be easily reused across multiple workflows with different modes
 
 ### Backward Compatibility
 

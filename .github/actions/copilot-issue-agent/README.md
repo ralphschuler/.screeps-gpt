@@ -148,6 +148,6 @@ with:
 
 ## Related Documentation
 
-- [Automation Overview](../../../docs/automation/overview.md)
+- [Automation Overview](../../../packages/docs/source/docs/automation/overview.md)
 - [Agent Guidelines](../../../AGENTS.md)
 - [Copilot Exec Action](../copilot-exec/action.yml)

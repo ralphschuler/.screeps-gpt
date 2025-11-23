@@ -53,7 +53,7 @@ GitHub Actions workflows that orchestrate specialized Copilot agents for differe
 - **Stats Monitor Agent**: Collects PTR performance data and bot telemetry
 - **Spec-Kit Agent**: Generates detailed implementation plans from requirements
 
-See [Automation Overview](docs/automation/overview.md) for complete workflow documentation.
+See [Automation Overview](packages/docs/source/docs/automation/overview.md) for complete workflow documentation.
 
 ## Repository Structure
 
@@ -217,7 +217,7 @@ Multiple specialized Copilot agents collaborate on different aspects of developm
 
 ### 🔧 Technical Documentation
 
-- **[Automation Overview](docs/automation/overview.md)** - Complete workflow documentation
+- **[Automation Overview](packages/docs/source/docs/automation/overview.md)** - Complete workflow documentation
 - **[Runtime Architecture](docs/getting-started.md#runtime-architecture)** - Bot component overview
 - **[Creep Communication System](docs/runtime/creep-communication.md)** - Visual feedback and debugging
 - **[Docker Development](docs/operations/docker-guide.md)** - Containerized development guide
@@ -281,7 +281,7 @@ The repository uses 14 GitHub Actions workflows orchestrating the agent swarm:
 
 **Workflow Dependencies:** The post-merge-release workflow triggers both deploy and blog generation workflows automatically upon successful completion, ensuring coordinated release execution.
 
-**[Complete Workflow Documentation →](docs/automation/overview.md)**
+**[Complete Workflow Documentation →](packages/docs/source/docs/automation/overview.md)**
 
 ### Stale Issue Policy
 
