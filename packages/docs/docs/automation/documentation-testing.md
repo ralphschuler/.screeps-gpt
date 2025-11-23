@@ -213,7 +213,8 @@ tests/
 - Verify theme configuration in `_config.yml`
 - Check for Hexo renderer errors in build output
 
-**Related Issues**: 
+**Related Issues**:
+
 - [#604](https://github.com/ralphschuler/.screeps-gpt/issues/604) - Documentation pages returning 404 (original issue)
 - [#815](https://github.com/ralphschuler/.screeps-gpt/issues/815) - Documentation 404 regression (this fix)
 
