@@ -23,6 +23,7 @@ Conducted comprehensive investigation of spawn logic and body composition system
 ### Root Cause Identified
 
 The critical state was caused by a bug in `BodyComposer.generateBody()` line 178:
+
 - Emergency body fallback received `adjustedCapacity` (budget-constrained ~150) instead of `energyCapacity` (actual 200+)
 - Resulted in [WORK, MOVE] spawning when [WORK, CARRY, MOVE] was affordable
 - Creeps could harvest but couldn't transport energy, blocking workforce recovery
@@ -34,11 +35,13 @@ The critical state was caused by a bug in `BodyComposer.generateBody()` line 178
 ### 1. Code Review
 
 **Files Analyzed:**
+
 - `packages/bot/src/runtime/behavior/BehaviorController.ts` (3371 lines)
 - `packages/bot/src/runtime/behavior/BodyComposer.ts` (356 lines)
 - `packages/bot/src/runtime/planning/SpawnManager.ts` (254 lines)
 
 **Key Systems Reviewed:**
+
 - Spawn queue management (lines 1124-1450 in BehaviorController)
 - Emergency spawn mode (lines 1248-1292 in BehaviorController)
 - Body part generation (lines 139-205 in BodyComposer)
@@ -48,6 +51,7 @@ The critical state was caused by a bug in `BodyComposer.generateBody()` line 178
 ### 2. Test Coverage Analysis
 
 **Existing Regression Tests:**
+
 - `emergency-spawn-deadlock-recovery.test.ts` (8 tests) ✅
 - `spawn-starvation-recovery.test.ts` (10 tests) ✅
 - `spawn-queue-deadlock.test.ts` (7 tests) ✅
@@ -56,6 +60,7 @@ The critical state was caused by a bug in `BodyComposer.generateBody()` line 178
 - Plus 60+ additional spawn-related tests
 
 **Test Coverage Validated:**
+
 - Emergency body generation ([WORK, MOVE] at 150, [WORK, CARRY, MOVE] at 200)
 - Energy reserve bypass in emergency mode
 - Bootstrap scenarios with 0 creeps
@@ -68,6 +73,7 @@ The critical state was caused by a bug in `BodyComposer.generateBody()` line 178
 **File**: `tests/regression/body-composer-emergency-mode.test.ts` (9 tests)
 
 Validates body composition under emergency conditions:
+
 - Ultra-minimal body generation (150 energy)
 - Minimal harvester body (200 energy)
 - Emergency body without room context
@@ -86,17 +92,19 @@ Validates body composition under emergency conditions:
 **Purpose**: Recover from total creep loss by spawning with minimal available energy
 
 **Functionality**:
+
 ```typescript
-const energyToUse = isEmergency || harvesterCount === 0 
-  ? (room?.energyAvailable ?? 300) 
-  : (room?.energyCapacityAvailable ?? 300);
+const energyToUse =
+  isEmergency || harvesterCount === 0 ? (room?.energyAvailable ?? 300) : (room?.energyCapacityAvailable ?? 300);
 ```
 
 **Emergency Detection**:
+
 - `isEmergency = totalCreeps === 0` (complete workforce collapse)
 - `harvesterCount === 0` (cannot collect energy)
 
 **Body Generation**:
+
 - 200+ energy: `[WORK, CARRY, MOVE]` (full minimal harvester)
 - 150-199 energy: `[WORK, MOVE]` (ultra-minimal, drops resources)
 - <150 energy: Logs diagnostic warning, waits for source regeneration
@@ -108,6 +116,7 @@ const energyToUse = isEmergency || harvesterCount === 0
 **Purpose**: Prevent energy depletion by limiting spawn costs
 
 **Logic**:
+
 ```typescript
 const isEarlyGame = creepCount < 5;
 const budgetLimit = isEarlyGame ? energyCapacity : energyCapacity * 0.5;
@@ -115,6 +124,7 @@ adjustedCapacity = Math.min(adjustedCapacity, budgetLimit);
 ```
 
 **Concerns Investigated**:
+
 1. Could budget constraint reduce emergency capacity below minimum?
    - ❌ No - Emergency mode passes `energyAvailable`, not `energyCapacity`
    - ❌ No - Early game bypass (< 5 creeps) prevents constraint application
@@ -129,6 +139,7 @@ adjustedCapacity = Math.min(adjustedCapacity, budgetLimit);
 **Purpose**: Maintain 20% energy buffer for emergencies, construction, and repairs
 
 **Reserve Calculation**:
+
 ```typescript
 const reserveThreshold = Math.max(
   SPAWN_THRESHOLDS.MIN_ENERGY_RESERVE, // 50 energy minimum
@@ -137,6 +148,7 @@ const reserveThreshold = Math.max(
 ```
 
 **Bypass Conditions**:
+
 1. **Emergency Mode**: `harvesterCount < 2` bypasses reserve entirely
 2. **Critical Spawn**: `needsCriticalHauler && role === "hauler"` bypasses reserve
 3. **Essential Roles**: When reserve would block spawn at low RCL, allows spawning
@@ -165,6 +177,7 @@ const reserveThreshold = Math.max(
    - Harvesters: Minimal for backup
 
 **Edge Case Identified**:
+
 - **Containers exist but not adjacent to sources**
   - Triggers `hasAnyContainersOrStorage = true` (line 807)
   - Falls through to else-if at line 878
@@ -182,6 +195,7 @@ const reserveThreshold = Math.max(
 **Severity**: LOW (monitoring issue, not spawn logic bug)
 
 **Details**:
+
 - Latest monitoring data: 2025-11-17 (6 days old)
 - Issue reported: 2025-11-23
 - Bot state: Unknown for 6-day gap
@@ -193,11 +207,13 @@ const reserveThreshold = Math.max(
 **Severity**: MEDIUM (infrastructure optimization, not spawn failure)
 
 **Details**:
+
 - Monitoring notes: "No hauler creeps detected (see issue #959)"
 - Last known state: 5 upgraders, 4 harvesters (no haulers)
 - Impact: ~20-30% energy collection efficiency loss
 
 **Analysis**:
+
 - Not a spawn logic bug - haulers spawn when infrastructure exists
 - Likely: Containers built but not yet placed adjacent to sources
 - Spawn logic correctly spawns haulers when `hasAnyContainersOrStorage = true`
@@ -209,6 +225,7 @@ const reserveThreshold = Math.max(
 **Severity**: LOW (graceful degradation exists)
 
 **Details**:
+
 - If `room.find(FIND_SOURCES)` returns empty array (detection failure)
 - Falls back to default harvester minimum (4)
 - Does not cause spawn failure, only suboptimal counts
@@ -221,27 +238,28 @@ const reserveThreshold = Math.max(
 
 ### Regression Tests (All Pass)
 
-| Test Suite | Tests | Status |
-|-----------|-------|--------|
-| emergency-spawn-deadlock-recovery | 8 | ✅ PASS |
-| spawn-starvation-recovery | 10 | ✅ PASS |
-| spawn-queue-deadlock | 7 | ✅ PASS |
-| spawn-recovery | 17 | ✅ PASS |
-| body-composer-emergency-mode (NEW) | 9 | ✅ PASS |
-| builder-spawning-with-containers | 6 | ✅ PASS |
-| hauler-spawning-with-storage | tests | ✅ PASS |
-| spawn-idle-rcl2-energy-threshold | 4 | ✅ PASS |
-| role-controller-manager-spawning | 5 | ✅ PASS |
-| spawn-threshold-constants | 13 | ✅ PASS |
-| spawn-monitor-workflow-structure | 10 | ✅ PASS |
-| spawn-idle-with-full-energy | tests | ✅ PASS |
-| **TOTAL** | **91+** | **✅ ALL PASS** |
+| Test Suite                         | Tests   | Status          |
+| ---------------------------------- | ------- | --------------- |
+| emergency-spawn-deadlock-recovery  | 8       | ✅ PASS         |
+| spawn-starvation-recovery          | 10      | ✅ PASS         |
+| spawn-queue-deadlock               | 7       | ✅ PASS         |
+| spawn-recovery                     | 17      | ✅ PASS         |
+| body-composer-emergency-mode (NEW) | 9       | ✅ PASS         |
+| builder-spawning-with-containers   | 6       | ✅ PASS         |
+| hauler-spawning-with-storage       | tests   | ✅ PASS         |
+| spawn-idle-rcl2-energy-threshold   | 4       | ✅ PASS         |
+| role-controller-manager-spawning   | 5       | ✅ PASS         |
+| spawn-threshold-constants          | 13      | ✅ PASS         |
+| spawn-monitor-workflow-structure   | 10      | ✅ PASS         |
+| spawn-idle-with-full-energy        | tests   | ✅ PASS         |
+| **TOTAL**                          | **91+** | **✅ ALL PASS** |
 
 ### New Test Coverage
 
 **Created**: `tests/regression/body-composer-emergency-mode.test.ts`
 
 **Validates**:
+
 - Ultra-minimal body [WORK, MOVE] at 150 energy ✅
 - Minimal harvester [WORK, CARRY, MOVE] at 200 energy ✅
 - Emergency body generation without room context ✅
@@ -261,6 +279,7 @@ const reserveThreshold = Math.max(
 **Action**: Trigger screeps-monitoring workflow to capture current bot state
 
 **Command**:
+
 ```bash
 gh workflow run screeps-monitoring.yml
 ```
@@ -272,6 +291,7 @@ gh workflow run screeps-monitoring.yml
 **Action**: Check GitHub Actions runs for 2025-11-18 to 2025-11-23
 
 **Investigate**:
+
 - Bot aliveness status
 - Creep population trends
 - Energy capacity utilization
@@ -282,6 +302,7 @@ gh workflow run screeps-monitoring.yml
 **Priority**: MEDIUM
 
 **Check**:
+
 - Container placement relative to sources (should be within range 2)
 - Tower energy levels (should trigger hauler spawning)
 - Storage construction status (RCL4 should have storage planned)
@@ -292,6 +313,7 @@ gh workflow run screeps-monitoring.yml
 **Priority**: MEDIUM
 
 **Look For**:
+
 - "EMERGENCY DEADLOCK" warnings
 - "EMERGENCY SPAWN" messages
 - Spawn queue validation failures
@@ -302,6 +324,7 @@ gh workflow run screeps-monitoring.yml
 **Priority**: LOW
 
 **Validate**:
+
 - CPU bucket above 1000 (spawn activation threshold)
 - No CPU throttling occurring
 - Spawn logic not being skipped due to CPU budget
@@ -313,11 +336,13 @@ gh workflow run screeps-monitoring.yml
 **Spawn logic is functioning correctly** with robust emergency recovery, proper body composition, and appropriate role management. All 91+ regression tests pass, confirming system reliability.
 
 The reported critical bot state is likely due to:
+
 1. **External factors** (hostile activity, respawn event)
 2. **Temporary state** that has since recovered
 3. **Infrastructure optimization** (missing haulers is efficiency issue, not spawn bug)
 
 **Next Steps**:
+
 1. ✅ Update monitoring data (trigger workflow)
 2. ✅ Review recent bot activity logs
 3. ✅ Validate infrastructure placement

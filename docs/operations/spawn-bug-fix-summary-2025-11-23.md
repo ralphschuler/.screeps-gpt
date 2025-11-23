@@ -26,6 +26,7 @@
 ### The Problem
 
 When bot entered emergency mode (0 creeps), spawn logic attempted to recover by spawning minimal creeps:
+
 - Energy available: 200+ (sufficient for [WORK, CARRY, MOVE])
 - Expected body: [WORK, CARRY, MOVE] = 200 energy
 - **Actual body spawned**: [WORK, MOVE] = 150 energy ❌
@@ -36,6 +37,7 @@ When bot entered emergency mode (0 creeps), spawn logic attempted to recover by 
 **Location**: `packages/bot/src/runtime/behavior/BodyComposer.ts`, line 178
 
 **Bug Sequence**:
+
 1. Emergency mode passes `energyAvailable = 200` to `generateBody()`
 2. Room has 0 creeps, triggers early game mode
 3. `calculateSustainableCapacity()` analyzes energy balance
@@ -47,22 +49,25 @@ When bot entered emergency mode (0 creeps), spawn logic attempted to recover by 
 9. Returns [WORK, MOVE] instead of [WORK, CARRY, MOVE]
 
 **Problematic Code**:
+
 ```typescript
 // Line 178 - BEFORE FIX (BUG)
 if (role === "harvester" || role === "upgrader" || role === "builder") {
-  return this.generateEmergencyBody(adjustedCapacity);  // ← Uses budget-constrained value
+  return this.generateEmergencyBody(adjustedCapacity); // ← Uses budget-constrained value
 }
 ```
 
 ### Why This Matters
 
 **Without CARRY Part**:
+
 - ❌ Creep cannot transport energy from sources to spawn
 - ❌ Energy drops on ground, cannot be delivered
 - ❌ Spawn cannot refill, cannot spawn more creeps
 - ❌ Bot stuck in deadlock despite having energy
 
 **With CARRY Part**:
+
 - ✅ Creep harvests and transports energy
 - ✅ Spawn refills and spawns additional workforce
 - ✅ Bot recovers from total creep loss
@@ -92,7 +97,7 @@ if (normalBody.length > 0) {
 // Bug: adjustedCapacity could be reduced below 200 by sustainable capacity calculation,
 // causing [WORK, MOVE] to spawn when 200+ energy is available for [WORK, CARRY, MOVE]
 if (role === "harvester" || role === "upgrader" || role === "builder") {
-  return this.generateEmergencyBody(energyCapacity);  // ← FIXED: Uses actual energy
+  return this.generateEmergencyBody(energyCapacity); // ← FIXED: Uses actual energy
 }
 
 return [];
@@ -108,6 +113,7 @@ return [];
 ### Fix Validation
 
 **Test Coverage**: 121 regression tests
+
 - ✅ Emergency body at 200 energy → [WORK, CARRY, MOVE]
 - ✅ Emergency body at 150 energy → [WORK, MOVE]
 - ✅ Edge cases (199, 200, 220, 250, 300 energy)
@@ -122,18 +128,18 @@ return [];
 
 **File**: `tests/regression/body-composer-emergency-fallback-bug.test.ts`
 
-| Test Case | Energy | Expected Body | Status |
-|-----------|--------|---------------|--------|
-| 200+ energy available | 220 | [WORK, CARRY, MOVE] | ✅ PASS |
-| Sustainable capacity low | 250 | [WORK, CARRY, MOVE] | ✅ PASS |
-| Below 200 energy | 180 | [WORK, MOVE] | ✅ PASS |
-| Higher energy in emergency | 300 | Scaled with CARRY | ✅ PASS |
-| Upgrader role | 220 | [WORK, CARRY, MOVE] | ✅ PASS |
-| Builder role | 220 | [WORK, CARRY, MOVE] | ✅ PASS |
-| Exact 200 energy | 200 | [WORK, CARRY, MOVE] | ✅ PASS |
-| Just below threshold | 199 | [WORK, MOVE] | ✅ PASS |
-| Abundant energy | 500 | Scaled with CARRY | ✅ PASS |
-| No room context | 220 | Valid body | ✅ PASS |
+| Test Case                  | Energy | Expected Body       | Status  |
+| -------------------------- | ------ | ------------------- | ------- |
+| 200+ energy available      | 220    | [WORK, CARRY, MOVE] | ✅ PASS |
+| Sustainable capacity low   | 250    | [WORK, CARRY, MOVE] | ✅ PASS |
+| Below 200 energy           | 180    | [WORK, MOVE]        | ✅ PASS |
+| Higher energy in emergency | 300    | Scaled with CARRY   | ✅ PASS |
+| Upgrader role              | 220    | [WORK, CARRY, MOVE] | ✅ PASS |
+| Builder role               | 220    | [WORK, CARRY, MOVE] | ✅ PASS |
+| Exact 200 energy           | 200    | [WORK, CARRY, MOVE] | ✅ PASS |
+| Just below threshold       | 199    | [WORK, MOVE]        | ✅ PASS |
+| Abundant energy            | 500    | Scaled with CARRY   | ✅ PASS |
+| No room context            | 220    | Valid body          | ✅ PASS |
 
 **Total**: 10 tests, 10 pass ✅
 
@@ -142,6 +148,7 @@ return [];
 **File**: `tests/regression/creep-energy-budget.test.ts`
 
 Updated 3 tests to reflect correct emergency body behavior:
+
 - Emergency bodies bypass budget constraints (intended behavior)
 - Budget constraints apply only to normal scaled bodies
 - Tests validate both scenarios correctly
@@ -151,6 +158,7 @@ Updated 3 tests to reflect correct emergency body behavior:
 ### Full Regression Suite
 
 **Spawn-Related Tests**: 124 tests (across 14 test files)
+
 - emergency-spawn-deadlock-recovery: 8 tests ✅
 - spawn-starvation-recovery: 10 tests ✅
 - spawn-queue-deadlock: 7 tests ✅
@@ -177,6 +185,7 @@ Updated 3 tests to reflect correct emergency body behavior:
 ### Before Fix
 
 **Symptom**: Bot enters critical state, cannot recover
+
 - Spawn has 200+ energy available
 - Attempts to spawn harvester for recovery
 - Spawns [WORK, MOVE] without CARRY part
@@ -189,6 +198,7 @@ Updated 3 tests to reflect correct emergency body behavior:
 ### After Fix
 
 **Resolution**: Bot recovers successfully from workforce collapse
+
 - Spawn has 200+ energy available
 - Attempts to spawn harvester for recovery
 - Spawns [WORK, CARRY, MOVE] with proper parts
@@ -201,6 +211,7 @@ Updated 3 tests to reflect correct emergency body behavior:
 ### Risk Analysis
 
 **Change Risk**: LOW
+
 - Single line fix in emergency fallback path
 - Normal body generation unchanged
 - Budget constraints still apply to scaled bodies
@@ -208,12 +219,14 @@ Updated 3 tests to reflect correct emergency body behavior:
 - Fix aligns with original emergency body intent
 
 **Test Coverage**: HIGH
+
 - 121 spawn-related tests validate fix
 - 10 new tests specifically for this bug
 - 3 updated tests validate correct budget behavior
 - No regressions detected
 
 **Deployment Risk**: LOW
+
 - Fix improves emergency recovery reliability
 - No changes to normal operation paths
 - Comprehensive validation ensures correctness

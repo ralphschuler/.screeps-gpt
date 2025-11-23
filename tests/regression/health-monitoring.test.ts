@@ -57,8 +57,12 @@ describe("Health Monitoring System - Regression Tests", () => {
     mockProtocol = {
       isEmergencyReset: () => !!(mockMemory as any).emergencyReset,
       needsRespawn: () => !!(mockMemory as any).needsRespawn,
-      setEmergencyReset: (value: boolean) => { (mockMemory as any).emergencyReset = value; },
-      setNeedsRespawn: (value: boolean) => { (mockMemory as any).needsRespawn = value; },
+      setEmergencyReset: (value: boolean) => {
+        (mockMemory as any).emergencyReset = value;
+      },
+      setNeedsRespawn: (value: boolean) => {
+        (mockMemory as any).needsRespawn = value;
+      },
       clearFlags: () => {
         delete (mockMemory as any).emergencyReset;
         delete (mockMemory as any).needsRespawn;
