@@ -19,7 +19,7 @@ import { BodyComposer } from "@runtime/behavior/BodyComposer";
  * - Budget only applies when room context is provided (actual spawning)
  * - Exceptions:
  *   1. Early game (< 5 creeps): Allow rapid bootstrap
- *   2. Low energy rooms (≤ 450): Budget too restrictive at RCL 1-2
+ *   2. Capacity ≤ 450: Budget not applied at RCL 1-2
  */
 describe("Creep Energy Budget - Regression", () => {
   const composer = new BodyComposer();

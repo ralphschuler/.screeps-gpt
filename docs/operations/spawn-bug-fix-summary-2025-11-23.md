@@ -150,7 +150,7 @@ Updated 3 tests to reflect correct emergency body behavior:
 
 ### Full Regression Suite
 
-**Spawn-Related Tests**: 121 tests
+**Spawn-Related Tests**: 124 tests (across 14 test files)
 - emergency-spawn-deadlock-recovery: 8 tests ✅
 - spawn-starvation-recovery: 10 tests ✅
 - spawn-queue-deadlock: 7 tests ✅
@@ -164,7 +164,9 @@ Updated 3 tests to reflect correct emergency body behavior:
 - role-controller-manager-spawning: 5 tests ✅
 - spawn-threshold-constants: 13 tests ✅
 - spawn-monitor-workflow-structure: 10 tests ✅
-- creep-energy-budget: 20 tests ✅
+- creep-energy-budget: 23 tests ✅
+
+**Note**: Some tests are skipped in normal runs (5 skipped), bringing active tests to 124 passing.
 
 **Total Regression Suite**: 555+ tests pass ✅
 

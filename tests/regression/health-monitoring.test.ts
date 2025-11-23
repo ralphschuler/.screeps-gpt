@@ -21,6 +21,7 @@ describe("Health Monitoring System - Regression Tests", () => {
   let mockGame: GameContext;
   let mockMemory: Memory;
   let healthProcess: HealthProcess;
+  let mockProtocol: any;
 
   beforeEach(() => {
     mockGame = {
@@ -51,6 +52,15 @@ describe("Health Monitoring System - Regression Tests", () => {
       }
     } as Memory;
 
+    // Mock protocol for emergency reset and respawn checks
+    mockProtocol = {
+      isEmergencyReset: () => false,
+      needsRespawn: () => false,
+      setEmergencyReset: () => {},
+      setNeedsRespawn: () => {},
+      clearFlags: () => {}
+    };
+
     healthProcess = new HealthProcess();
   });
 
@@ -77,7 +87,8 @@ describe("Health Monitoring System - Regression Tests", () => {
 
       const ctx: ProcessContext<Memory> = {
         game: mockGame,
-        memory: mockMemory
+        memory: mockMemory,
+        protocol: mockProtocol
       };
 
       healthProcess.run(ctx);
@@ -129,7 +140,8 @@ describe("Health Monitoring System - Regression Tests", () => {
 
       const ctx: ProcessContext<Memory> = {
         game: mockGame,
-        memory: mockMemory
+        memory: mockMemory,
+        protocol: mockProtocol
       };
 
       healthProcess.run(ctx);
@@ -164,7 +176,8 @@ describe("Health Monitoring System - Regression Tests", () => {
 
       const ctx: ProcessContext<Memory> = {
         game: mockGame,
-        memory: mockMemory
+        memory: mockMemory,
+        protocol: mockProtocol
       };
 
       healthProcess.run(ctx);
@@ -207,7 +220,8 @@ describe("Health Monitoring System - Regression Tests", () => {
 
       const ctx: ProcessContext<Memory> = {
         game: mockGame,
-        memory: mockMemory
+        memory: mockMemory,
+        protocol: mockProtocol
       };
 
       healthProcess.run(ctx);
@@ -239,7 +253,8 @@ describe("Health Monitoring System - Regression Tests", () => {
 
       const ctx: ProcessContext<Memory> = {
         game: mockGame,
-        memory: mockMemory
+        memory: mockMemory,
+        protocol: mockProtocol
       };
 
       healthProcess.run(ctx);
@@ -277,7 +292,8 @@ describe("Health Monitoring System - Regression Tests", () => {
 
       const ctx: ProcessContext<Memory> = {
         game: mockGame,
-        memory: mockMemory
+        memory: mockMemory,
+        protocol: mockProtocol
       };
 
       healthProcess.run(ctx);
@@ -324,7 +340,8 @@ describe("Health Monitoring System - Regression Tests", () => {
 
       const ctx: ProcessContext<Memory> = {
         game: mockGame,
-        memory: mockMemory
+        memory: mockMemory,
+        protocol: mockProtocol
       };
 
       healthProcess.run(ctx);
@@ -354,7 +371,8 @@ describe("Health Monitoring System - Regression Tests", () => {
 
       const ctx: ProcessContext<Memory> = {
         game: mockGame,
-        memory: mockMemory
+        memory: mockMemory,
+        protocol: mockProtocol
       };
 
       healthProcess.run(ctx);
@@ -378,7 +396,8 @@ describe("Health Monitoring System - Regression Tests", () => {
 
       const ctx: ProcessContext<Memory> = {
         game: mockGame,
-        memory: mockMemory
+        memory: mockMemory,
+        protocol: mockProtocol
       };
 
       healthProcess.run(ctx);
@@ -396,7 +415,8 @@ describe("Health Monitoring System - Regression Tests", () => {
 
       const ctx: ProcessContext<Memory> = {
         game: mockGame,
-        memory: mockMemory
+        memory: mockMemory,
+        protocol: mockProtocol
       };
 
       healthProcess.run(ctx);
@@ -410,7 +430,8 @@ describe("Health Monitoring System - Regression Tests", () => {
 
       const ctx: ProcessContext<Memory> = {
         game: mockGame,
-        memory: mockMemory
+        memory: mockMemory,
+        protocol: mockProtocol
       };
 
       healthProcess.run(ctx);
@@ -445,7 +466,8 @@ describe("Health Monitoring System - Regression Tests", () => {
 
       const ctx: ProcessContext<Memory> = {
         game: mockGame,
-        memory: mockMemory
+        memory: mockMemory,
+        protocol: mockProtocol
       };
 
       healthProcess.run(ctx);

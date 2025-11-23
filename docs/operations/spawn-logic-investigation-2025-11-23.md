@@ -3,29 +3,29 @@
 **Issue**: [#1222](https://github.com/ralphschuler/.screeps-gpt/issues/1222) - Critical bot state - investigate spawn logic and creep body composition failures
 
 **Investigation Date**: 2025-11-23  
-**Status**: INVESTIGATION COMPLETE - No Critical Bugs Found  
-**Conclusion**: Existing spawn logic is robust and well-tested
+**Status**: INVESTIGATION COMPLETE - Critical Bug Found and Fixed  
+**Conclusion**: Critical bug discovered and resolved; spawn logic is now robust and well-tested
 
 ---
 
 ## Executive Summary
 
-Conducted comprehensive investigation of spawn logic and body composition systems in response to critical bot state report. **No critical bugs or deadlocks found** in the spawn system. All 91 existing regression tests pass, including emergency spawn recovery, body composition validation, and various edge case scenarios.
+Conducted comprehensive investigation of spawn logic and body composition systems in response to critical bot state report. **A critical bug was discovered**: emergency body fallback used budget-constrained energy instead of actual available energy, causing creeps to spawn with [WORK, MOVE] instead of [WORK, CARRY, MOVE]. The bug was identified, fixed, and validated with comprehensive test coverage.
 
 ### Key Findings
 
-1. ✅ **Emergency Spawn System**: Fully functional with ultra-minimal body support ([WORK, MOVE] at 150 energy)
-2. ✅ **Body Composition**: Correctly generates bodies based on available energy with proper budget constraints
+1. ❌ **Emergency Spawn System**: Bug found - emergency fallback used `adjustedCapacity` instead of `energyCapacity`, causing CARRY-less creeps; **FIXED** in [PR #1290](https://github.com/ralphschuler/.screeps-gpt/pull/1290)
+2. ✅ **Body Composition**: Now correctly generates bodies based on available energy with proper budget constraints (after fix)
 3. ✅ **Energy Reserve Logic**: Properly bypasses reserves in emergency mode
 4. ✅ **Dynamic Role Minimums**: Correctly calculates role requirements based on room infrastructure
 5. ⚠️ **Monitoring Data**: Latest bot telemetry is 6 days old (2025-11-17) - current state unknown
 
-### Most Likely Explanation
+### Root Cause Identified
 
-Given that spawn logic is functioning correctly, the critical state reported is likely due to:
-- **External factors** (hostile attack, respawn event, or manual intervention)
-- **Temporary state** that has since recovered (monitoring is 6 days old)
-- **Infrastructure-specific issue** (missing haulers, container placement) rather than spawn logic bug
+The critical state was caused by a bug in `BodyComposer.generateBody()` line 178:
+- Emergency body fallback received `adjustedCapacity` (budget-constrained ~150) instead of `energyCapacity` (actual 200+)
+- Resulted in [WORK, MOVE] spawning when [WORK, CARRY, MOVE] was affordable
+- Creeps could harvest but couldn't transport energy, blocking workforce recovery
 
 ---
 
@@ -321,12 +321,12 @@ The reported critical bot state is likely due to:
 1. ✅ Update monitoring data (trigger workflow)
 2. ✅ Review recent bot activity logs
 3. ✅ Validate infrastructure placement
-4. ❌ DO NOT modify spawn logic (working as designed)
+4. ✅ Bug fixed in spawn logic (emergency body fallback corrected)
 
-**Incident Classification**: FALSE ALARM or EXTERNAL CAUSE  
-**Spawn System Health**: ✅ OPERATIONAL  
-**Test Coverage**: ✅ COMPREHENSIVE (91+ tests)  
-**Code Quality**: ✅ HIGH (robust error handling, graceful degradation)
+**Incident Classification**: CRITICAL BUG - RESOLVED  
+**Spawn System Health**: ✅ OPERATIONAL (after fix)  
+**Test Coverage**: ✅ COMPREHENSIVE (124+ tests, +13 new)  
+**Code Quality**: ✅ HIGH (robust error handling, bug fixed, comprehensive validation)
 
 ---
 
@@ -351,6 +351,6 @@ The reported critical bot state is likely due to:
 
 **Investigation Completed**: 2025-11-23  
 **Investigator**: GitHub Copilot (Autonomous Agent)  
-**Regression Tests Added**: 1 (body-composer-emergency-mode.test.ts)  
-**Critical Bugs Found**: 0  
-**Spawn System Status**: ✅ OPERATIONAL
+**Regression Tests Added**: 3 (body-composer-emergency-mode.test.ts, body-composer-emergency-fallback-bug.test.ts, updates to creep-energy-budget.test.ts)  
+**Critical Bugs Found**: 1 (emergency body fallback - FIXED)  
+**Spawn System Status**: ✅ OPERATIONAL (after fix)
