@@ -1,6 +1,12 @@
+volumes:
+  mongo-data:
+  redis-data:
+  screeps-data:
+
 services:
   screeps:
     image: screepers/screeps-launcher
+    env_file: .env
     platform: linux/amd64
     depends_on:
       mongo:
@@ -10,7 +16,7 @@ services:
     volumes:
       - ./config.yml:/screeps/config.yml
       - ./bots.yml:/screeps/bots.yml
-      - ./.data/screeps:/screeps
+      - screeps-data:/screeps
     environment:
       MONGO_URI: mongodb://root:password@mongo:27017/screeps?authSource=admin
       REDIS_HOST: redis
@@ -32,7 +38,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: password
     volumes:
-      - ./.data/mongo:/data/db
+      - mongo-data:/data/db
     restart: unless-stopped
     healthcheck:
       test:
@@ -50,7 +56,7 @@ services:
     platform: linux/amd64
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
-      - ./.data/redis:/data
+      - redis-data:/data
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -61,6 +67,7 @@ services:
 
   init-post:
     image: screepers/screeps-launcher
+    env_file: .env
     platform: linux/amd64
     depends_on:
       screeps:
