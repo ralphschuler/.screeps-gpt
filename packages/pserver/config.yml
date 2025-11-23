@@ -7,11 +7,11 @@ mods:
   #  - screepsmod-bots
   #  - screepsmod-history
   #  - screepsmod-stats
-  - screepsmod-visualize
-  - screepsmod-dynamicmarket
-  - screepsmod-features
-  - screepsmod-portals
-  - screepsmod-timeout
+#  - screepsmod-visualize
+#  - screepsmod-dynamicmarket
+#  - screepsmod-features
+#  - screepsmod-portals
+#  - screepsmod-timeout
 #  - "@admon-dev/screepsmod-speedrun"
 #  - "@brisberg/screepsmod-lockstep"
 #  - "@screepsmod/serverinfo"
@@ -32,10 +32,10 @@ extraPackages:
 STEAM_KEY: ${STEAM_KEY}
 
 bots:
-  overmind: screeps-bot-overmind
-  toolangle: screeps-bot-tooangel # Username aligns with your bots.yml entry
-  choreographer: screeps-bot-choreographer
-  simplebot: "@screeps/simplebot"
+#  overmind: screeps-bot-overmind
+#  toolangle: screeps-bot-tooangel # Username aligns with your bots.yml entry
+#  choreographer: screeps-bot-choreographer
+#  simplebot: "@screeps/simplebot"
 
 serverConfig:
   welcomeText: |
