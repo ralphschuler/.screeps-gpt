@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach, beforeAll } from "vitest";
+import { describe, expect, it, vi, beforeAll, afterEach } from "vitest";
 import { BodyComposer } from "@runtime/behavior/BodyComposer";
 
 /**
@@ -69,9 +69,9 @@ describe("Creep Energy Budget - Regression", () => {
     expect(cost).toBeLessThanOrEqual(300);
   });
 
-  it("should NOT enforce 50% budget for harvester at RCL 2 (550 capacity at low end)", () => {
-    // RCL 2 starts at 550, but we only apply budget when > 450
-    // At exactly 550, budget SHOULD apply (550 > 450)
+  it("should enforce 50% budget for harvester at RCL 2 (550 capacity)", () => {
+    // RCL 2 starts at 550, and budget applies when capacity > 450
+    // At 550, budget SHOULD apply (550 > 450)
     const body = composer.generateBody("harvester", 550, mockRoomStable);
     const cost = composer.calculateBodyCost(body);
     // Budget applies: 550 * 0.5 = 275

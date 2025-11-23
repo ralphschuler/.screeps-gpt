@@ -33,6 +33,7 @@ describe("Regression: Emergency Body Fallback Bug", () => {
       [CARRY]: 50,
       [MOVE]: 50
     } as Record<BodyPartConstant, number>;
+    // FIND_SOURCES and RESOURCE_ENERGY used for sustainable capacity calculation
     global.FIND_SOURCES = 104 as FindConstant;
     global.RESOURCE_ENERGY = "energy" as ResourceConstant;
 
