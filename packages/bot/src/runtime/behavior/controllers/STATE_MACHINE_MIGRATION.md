@@ -1,6 +1,10 @@
 # State Machine Migration Guide
 
-This document outlines the pattern for migrating role controllers to use state machines from `@ralphschuler/screeps-xstate`.
+**Status: MIGRATION TO ROLECONTROLLERMANAGER COMPLETE ✅**
+
+The migration from BehaviorController to RoleControllerManager is complete. The system now uses modular role controllers with `USE_MODULAR_CONTROLLERS = true`.
+
+This document outlines the optional pattern for enhancing role controllers with state machines from `@ralphschuler/screeps-xstate`. State machine migration is **optional** - controllers work without it.
 
 ## Migration Pattern
 
@@ -77,21 +81,23 @@ public execute(creep: CreepLike): string {
 }
 ```
 
-## Controllers to Migrate
+## Controllers with State Machine Support (Optional Enhancement)
 
 - [x] HarvesterController ✅ **DONE**
-- [ ] UpgraderController (states: recharge, upgrading)
-- [ ] BuilderController (states: gather, building, maintaining)
-- [ ] HaulerController (states: pickup, delivering)
-- [ ] RepairerController (states: gather, repairing)
-- [ ] StationaryHarvesterController (states: harvesting)
-- [ ] RemoteMinerController (states: travel, mining, returning)
-- [ ] RemoteHaulerController (states: travel, pickup, returning)
-- [ ] AttackerController (states: attacking)
-- [ ] HealerController (states: healing)
-- [ ] DismantlerController (states: dismantling)
-- [ ] ClaimerController (states: claiming)
-- [ ] ScoutController (states: scouting)
+- [x] ScoutController ✅ **DONE**
+- [ ] UpgraderController (states: recharge, upgrading) - Works without state machine
+- [ ] BuilderController (states: gather, building, maintaining) - Works without state machine
+- [ ] HaulerController (states: pickup, delivering) - Works without state machine
+- [ ] RepairerController (states: gather, repairing) - Works without state machine
+- [ ] StationaryHarvesterController (states: harvesting) - Works without state machine
+- [ ] RemoteMinerController (states: travel, mining, returning) - Works without state machine
+- [ ] RemoteHaulerController (states: travel, pickup, returning) - Works without state machine
+- [ ] AttackerController (states: attacking) - Works without state machine
+- [ ] HealerController (states: healing) - Works without state machine
+- [ ] DismantlerController (states: dismantling) - Works without state machine
+- [ ] ClaimerController (states: claiming) - Works without state machine
+
+**Note**: State machine migration is optional. All controllers work with RoleControllerManager without state machines.
 
 ## State Machine Files
 

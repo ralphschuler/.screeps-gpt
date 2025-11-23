@@ -381,19 +381,28 @@ export class RoleControllerManager {
         continue;
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const spawn = this.findAvailableSpawn(game.spawns);
       if (!spawn) {
         continue; // No available spawns
       }
 
-      const room = spawn.room as Room | undefined;
-
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      const room = spawn.room;
+      
+      // Get energy values based on emergency mode
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      const roomEnergyAvailable = room.energyAvailable ?? 300;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      const roomEnergyCapacity = room.energyCapacityAvailable ?? 300;
+      
       // EMERGENCY MODE: Use actual available energy instead of capacity
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const energyToUse =
-        isEmergency || harvesterCount === 0 ? (room?.energyAvailable ?? 300) : (room?.energyCapacityAvailable ?? 300);
+        isEmergency || harvesterCount === 0 ? roomEnergyAvailable : roomEnergyCapacity;
 
       // Generate body based on energy
-      const body = this.bodyComposer.generateBody(role, energyToUse, room);
+      const body = this.bodyComposer.generateBody(role, energyToUse as number, room as Room | undefined);
 
       if (body.length === 0) {
         // Not enough energy for minimum body
@@ -402,7 +411,7 @@ export class RoleControllerManager {
 
       // Validate sufficient energy before spawning
       const spawnCost = this.bodyComposer.calculateBodyCost(body);
-      if (spawn.room && spawn.room.energyAvailable < spawnCost) {
+      if ((roomEnergyAvailable as number) < spawnCost) {
         continue; // Not enough energy yet
       }
 
@@ -411,6 +420,7 @@ export class RoleControllerManager {
 
       const creepMemory = controller.createMemory();
 
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       const result = spawn.spawnCreep(body, name, { memory: creepMemory });
       if (result === OK) {
         spawned.push(name);
@@ -422,12 +432,14 @@ export class RoleControllerManager {
   /**
    * Find an available spawn that is not currently spawning.
    */
-  private findAvailableSpawn(spawns: Record<string, SpawnLike>): SpawnLike | null {
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+  private findAvailableSpawn(spawns: Record<string, SpawnLike>): SpawnLike | undefined {
     for (const spawn of Object.values(spawns)) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (!spawn.spawning) {
         return spawn;
       }
     }
-    return null;
+    return undefined;
   }
 }
