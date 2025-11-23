@@ -12,7 +12,7 @@ mods:
   - screepsmod-features
   - screepsmod-portals
   - screepsmod-timeout
-#  - "@admon-dev/screepsmod-speedrun"
+  #  - "@admon-dev/screepsmod-speedrun"
   - "@screepsmod/serverinfo"
   - screepsmod-gcltocpu
 
