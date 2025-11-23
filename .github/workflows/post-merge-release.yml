@@ -88,13 +88,13 @@ jobs:
             exit 0
           fi
 
-          # Commit changes
+          # Commit changes (using original author attribution)
           VERSION="${{ steps.bump.outputs.version }}"
           AUTHOR="ralphschuler <48420064+ralphschuler@users.noreply.github.com>"
           git commit -m "chore(release): bump version to $VERSION [skip ci]" \
             --author="$AUTHOR"
 
-          # Pull with rebase to handle race conditions
+          # Fetch and rebase to handle race conditions
           MAX_RETRIES=3
           RETRY_COUNT=0
           while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
@@ -109,17 +109,16 @@ jobs:
                 echo "commit_hash=$COMMIT_HASH" >> "$GITHUB_OUTPUT"
                 echo "Successfully pushed changes"
                 exit 0
-              else
-                echo "Push failed, retrying..."
-                RETRY_COUNT=$((RETRY_COUNT + 1))
-                sleep 2
               fi
             else
-              echo "Rebase failed, aborting and retrying..."
+              echo "Rebase failed, aborting..."
               git rebase --abort
-              RETRY_COUNT=$((RETRY_COUNT + 1))
-              sleep 2
             fi
+
+            # Retry after a short delay
+            echo "Retrying (attempt $((RETRY_COUNT + 1))/$MAX_RETRIES)..."
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            sleep 2
           done
 
           echo "Failed to push after $MAX_RETRIES attempts"
