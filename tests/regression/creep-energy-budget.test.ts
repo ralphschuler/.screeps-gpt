@@ -32,8 +32,11 @@ describe("Creep Energy Budget - Regression", () => {
     find: vi.fn(() => [])
   } as unknown as Room;
 
+  let originalGame: Game;
+
   // Mock Game.creeps for stable room (5+ creeps)
   beforeEach(() => {
+    originalGame = global.Game;
     global.Game = {
       creeps: {
         creep1: { room: mockRoomStable },
@@ -43,6 +46,10 @@ describe("Creep Energy Budget - Regression", () => {
         creep5: { room: mockRoomStable }
       }
     } as unknown as Game;
+  });
+
+  afterEach(() => {
+    global.Game = originalGame;
   });
 
   it("should enforce 50% budget for harvester at RCL 1 (300 capacity)", () => {
