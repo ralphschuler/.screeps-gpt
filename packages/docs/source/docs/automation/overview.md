@@ -239,7 +239,6 @@ All specialized agents are located in `.github/actions/copilot-*-agent/` directo
 - **Modes**:
   - `triage` - Reformulate and label new issues with duplicate detection
   - `resolve` - Implement solutions via draft PRs with progress tracking
-  - `analyze` - Context gathering and relationship analysis only
 - **Key Features**:
   - Context-aware issue analysis with duplicate detection
   - Automatic reformulation of title and description (triage mode)

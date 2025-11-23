@@ -4,7 +4,7 @@ description: |
   Unified Copilot agent for GitHub issue management operations.
 
   Features:
-  - Role-based behavior (triage, resolve, analyze)
+  - Role-based behavior (triage, resolve)
   - Context-aware issue analysis with duplicate detection
   - Automatic reformulation and labeling (triage mode)
   - Code implementation with progress tracking (resolve mode)
@@ -18,7 +18,7 @@ inputs:
   mode:
     description: |
       Operation mode: 'triage' (reformulate and label new issues),
-      'resolve' (implement solution via PR), 'analyze' (context gathering)
+      'resolve' (implement solution via PR)
     required: true
   issue-number:
     description: GitHub issue number to process
@@ -65,8 +65,8 @@ runs:
       run: |
         set -euo pipefail
         mode="${{ inputs.mode }}"
-        if [[ ! "$mode" =~ ^(triage|resolve|analyze)$ ]]; then
-          echo "❌ Invalid mode: $mode. Must be one of: triage, resolve, analyze"
+        if [[ ! "$mode" =~ ^(triage|resolve)$ ]]; then
+          echo "❌ Invalid mode: $mode. Must be one of: triage, resolve"
           exit 1
         fi
         echo "✅ Mode validated: $mode"
@@ -86,10 +86,6 @@ runs:
           resolve)
             prompt=".github/copilot/prompts/todo-issue"
             output="todo-issue-${{ inputs.issue-number }}.log"
-            ;;
-          analyze)
-            prompt=".github/copilot/prompts/issue-analysis"
-            output="issue-analysis-${{ inputs.issue-number }}.log"
             ;;
           *)
             echo "❌ Unknown mode: $MODE"

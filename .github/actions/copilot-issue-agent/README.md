@@ -8,7 +8,6 @@ This action consolidates issue management functionality into a single, parameter
 
 - **`triage`** - Reformulate and label new issues with duplicate detection
 - **`resolve`** - Implement solutions via draft PRs with progress tracking
-- **`analyze`** - Context gathering and relationship analysis only
 
 ## Features
 
@@ -52,27 +51,12 @@ This action consolidates issue management functionality into a single, parameter
     timeout: "45"
 ```
 
-### Analyze Mode (Context Gathering)
-
-```yaml
-- name: Analyze issue context
-  uses: ./.github/actions/copilot-issue-agent
-  with:
-    copilot-token: ${{ secrets.COPILOT_TOKEN }}
-    mode: analyze
-    issue-number: ${{ github.event.issue.number }}
-    issue-title: ${{ toJSON(github.event.issue.title) }}
-    issue-body: ${{ toJSON(github.event.issue.body || '') }}
-    issue-url: ${{ toJSON(github.event.issue.html_url) }}
-    issue-author: ${{ toJSON(github.event.issue.user.login) }}
-```
-
 ## Inputs
 
 | Input | Required | Default | Description |
 |-------|----------|---------|-------------|
 | `copilot-token` | Yes | - | Personal access token with Copilot Requests scope |
-| `mode` | Yes | - | Operation mode: `triage`, `resolve`, or `analyze` |
+| `mode` | Yes | - | Operation mode: `triage` or `resolve` |
 | `issue-number` | Yes | - | GitHub issue number to process |
 | `issue-title` | Yes | - | Issue title (JSON-encoded) |
 | `issue-body` | No | `""` | Issue body content (JSON-encoded) |
@@ -97,13 +81,11 @@ The agent validates the mode parameter and selects the appropriate prompt templa
 
 - **`triage`** → `.github/copilot/prompts/issue-triage`
 - **`resolve`** → `.github/copilot/prompts/todo-issue`
-- **`analyze`** → `.github/copilot/prompts/issue-analysis`
 
 ### Cache Behavior
 
 - **Triage mode**: Cache disabled (`force-response: true`) for time-sensitive duplicate detection
 - **Resolve mode**: Cache enabled for efficiency when re-running implementations
-- **Analyze mode**: Cache enabled for repeated context gathering
 
 ### Integration with Workflows
 
