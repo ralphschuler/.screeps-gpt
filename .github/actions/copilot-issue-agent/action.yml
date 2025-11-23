@@ -1,7 +1,8 @@
+---
 name: copilot-issue-agent
 description: |
   Unified Copilot agent for GitHub issue management operations.
-  
+
   Features:
   - Role-based behavior (triage, resolve, analyze)
   - Context-aware issue analysis with duplicate detection
@@ -16,8 +17,8 @@ inputs:
     required: true
   mode:
     description: |
-      Operation mode: 'triage' (reformulate and label new issues), 
-      'resolve' (implement solution via PR), 'analyze' (context gathering only)
+      Operation mode: 'triage' (reformulate and label new issues),
+      'resolve' (implement solution via PR), 'analyze' (context gathering)
     required: true
   issue-number:
     description: GitHub issue number to process
@@ -79,25 +80,25 @@ runs:
         set -euo pipefail
         case "$MODE" in
           triage)
-            prompt_path=".github/copilot/prompts/issue-triage"
-            output_file="issue-triage-${{ inputs.issue-number }}.log"
+            prompt=".github/copilot/prompts/issue-triage"
+            output="issue-triage-${{ inputs.issue-number }}.log"
             ;;
           resolve)
-            prompt_path=".github/copilot/prompts/todo-issue"
-            output_file="todo-issue-${{ inputs.issue-number }}.log"
+            prompt=".github/copilot/prompts/todo-issue"
+            output="todo-issue-${{ inputs.issue-number }}.log"
             ;;
           analyze)
-            prompt_path=".github/copilot/prompts/issue-analysis"
-            output_file="issue-analysis-${{ inputs.issue-number }}.log"
+            prompt=".github/copilot/prompts/issue-analysis"
+            output="issue-analysis-${{ inputs.issue-number }}.log"
             ;;
           *)
             echo "❌ Unknown mode: $MODE"
             exit 1
             ;;
         esac
-        echo "prompt-path=$prompt_path" >> "$GITHUB_OUTPUT"
-        echo "output-file=$output_file" >> "$GITHUB_OUTPUT"
-        echo "✅ Selected prompt: $prompt_path"
+        echo "prompt-path=$prompt" >> "$GITHUB_OUTPUT"
+        echo "output-file=$output" >> "$GITHUB_OUTPUT"
+        echo "✅ Selected prompt: $prompt"
 
     - name: Execute Copilot agent
       id: execute
@@ -111,9 +112,11 @@ runs:
         ISSUE_AUTHOR: ${{ inputs.issue-author }}
         AGENT_MODE: ${{ inputs.mode }}
       with:
-        force-response: ${{ inputs.mode == 'triage' && 'true' || 'false' }}
+        force-response: >-
+          ${{ inputs.mode == 'triage' && 'true' || 'false' }}
         copilot-token: ${{ inputs.copilot-token }}
         prompt-path: ${{ steps.select-prompt.outputs.prompt-path }}
-        output-path: reports/copilot/${{ steps.select-prompt.outputs.output-file }}
+        output-path: >-
+          reports/copilot/${{ steps.select-prompt.outputs.output-file }}
         verbose: ${{ inputs.verbose }}
         timeout: ${{ inputs.timeout }}

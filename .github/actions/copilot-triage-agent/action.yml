@@ -1,14 +1,25 @@
 name: copilot-triage-agent
 description: |
-  Specialized Copilot agent for GitHub issue triage and reformulation.
+  ⚠️ DEPRECATED: Use copilot-issue-agent with mode: triage instead.
+
+  Legacy Copilot agent for GitHub issue triage and reformulation.
+  This action has been superseded by the unified copilot-issue-agent.
+
+  Migration:
+    OLD: uses: ./.github/actions/copilot-triage-agent
+    NEW: uses: ./.github/actions/copilot-issue-agent
+         with:
+           mode: triage
+
+  See: .github/actions/copilot-issue-agent/README.md
 
   Features:
   - Context-aware issue analysis with duplicate detection
   - Automatic reformulation of title and description
   - Intelligent label application based on content
   - Related issue linking and relationship management
-  - Single responsibility focused on triage operations
 author: "ralph@nyphon.de"
+deprecated: true
 inputs:
   copilot-token:
     description: Personal access token with Copilot Requests scope
