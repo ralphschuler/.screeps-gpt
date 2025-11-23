@@ -90,12 +90,14 @@ export class ColonyManager {
     if (!this.memoryRef) return;
 
     if (this.memoryRef.expansionQueue) {
+      this.expansionQueue.length = 0;
       this.expansionQueue.push(...this.memoryRef.expansionQueue);
     }
     if (this.memoryRef.claimedRooms) {
       this.memoryRef.claimedRooms.forEach(room => this.claimedRooms.add(room));
     }
     if (this.memoryRef.shardMessages) {
+      this.shardMessages.length = 0;
       this.shardMessages.push(...this.memoryRef.shardMessages);
     }
     this.lastExpansionCheck = this.memoryRef.lastExpansionCheck;
