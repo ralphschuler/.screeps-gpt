@@ -20,7 +20,7 @@ describe("DefenseCoordinator", () => {
     const logger = { log: vi.fn(), warn: vi.fn() };
 
     threatDetector = new ThreatDetector(logger, threatMemory);
-    towerManager = new TowerManager(logger);
+    towerManager = new TowerManager({ logger });
     combatManager = new CombatManager({ logger });
 
     coordinator = new DefenseCoordinator(threatDetector, towerManager, combatManager, logger, defenseMemory);
