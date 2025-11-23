@@ -1,4 +1,7 @@
+ 
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { process as registerProcess, type ProcessContext } from "@ralphschuler/screeps-kernel";
+import type { RuntimeProtocols } from "@runtime/protocols";
 import type { GameContext } from "@runtime/types/GameContext";
 import { ConstructionManager } from "@runtime/planning/ConstructionManager";
 
@@ -23,12 +26,12 @@ export class ConstructionProcess {
     this.cpuEmergencyThreshold = 0.9;
   }
 
-  public run(ctx: ProcessContext<Memory>): void {
+  public run(ctx: ProcessContext<Memory, RuntimeProtocols>): void {
     const gameContext = ctx.game as GameContext;
-    const memory = ctx.memory;
 
+     
     // Skip if emergency reset or respawn occurred
-    if (memory.emergencyReset || memory.needsRespawn) {
+    if (ctx.protocol.isEmergencyReset() || ctx.protocol.needsRespawn()) {
       return;
     }
 

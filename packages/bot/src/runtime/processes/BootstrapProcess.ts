@@ -1,5 +1,8 @@
+ 
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { process as registerProcess, type ProcessContext } from "@ralphschuler/screeps-kernel";
 import type { GameContext } from "@runtime/types/GameContext";
+import type { RuntimeProtocols } from "@runtime/protocols";
 import { BootstrapPhaseManager } from "@runtime/bootstrap/BootstrapPhaseManager";
 
 /**
@@ -24,12 +27,13 @@ export class BootstrapProcess {
     this.cpuEmergencyThreshold = 0.9;
   }
 
-  public run(ctx: ProcessContext<Memory>): void {
+  public run(ctx: ProcessContext<Memory, RuntimeProtocols>): void {
     const gameContext = ctx.game as GameContext;
     const memory = ctx.memory;
 
-    // Skip if emergency reset or respawn occurred
-    if (memory.emergencyReset || memory.needsRespawn) {
+     
+    // Skip if emergency reset or respawn occurred (check protocol)
+    if (ctx.protocol.isEmergencyReset() || ctx.protocol.needsRespawn()) {
       return;
     }
 
@@ -48,8 +52,9 @@ export class BootstrapProcess {
       this.bootstrapManager.completeBootstrap(gameContext, memory, bootstrapStatus.reason);
     }
 
-    // Store bootstrap status in memory for other processes
-    memory.bootstrapStatus = bootstrapStatus;
+     
+    // Share bootstrap status via protocol (for behavior process)
+    ctx.protocol.setBootstrapStatus(bootstrapStatus as { isActive: boolean; phase?: string; progress?: number });
 
     // Detect RCL phase transitions
     const phaseTransitions = this.bootstrapManager.detectRCLPhaseTransitions(gameContext, memory);

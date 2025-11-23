@@ -1,7 +1,9 @@
+ 
+/* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment */
 import { process as registerProcess, type ProcessContext } from "@ralphschuler/screeps-kernel";
 import type { GameContext } from "@runtime/types/GameContext";
+import type { RuntimeProtocols } from "@runtime/protocols";
 import type { RepositorySignal, BehaviorSummary } from "@shared/contracts";
-import type { MemoryUtilization } from "@runtime/memory";
 import { StatsCollector } from "@runtime/metrics/StatsCollector";
 import { PixelGenerator } from "@runtime/metrics/PixelGenerator";
 import { SystemEvaluator } from "@runtime/evaluation/SystemEvaluator";
@@ -36,12 +38,12 @@ export class MetricsProcess {
     };
   }
 
-  public run(ctx: ProcessContext<Memory>): void {
+  public run(ctx: ProcessContext<Memory, RuntimeProtocols>): void {
     const gameContext = ctx.game as GameContext;
     const memory = ctx.memory;
 
-    // If emergency reset or respawn occurred, collect minimal stats
-    if (memory.emergencyReset || memory.needsRespawn) {
+    // If emergency reset or respawn occurred, collect minimal stats (check protocol)
+    if (ctx.protocol.isEmergencyReset() || ctx.protocol.needsRespawn()) {
       const repository = this.repositorySignalProvider?.();
       // Create minimal snapshot without performance tracking
       const minimalSnapshot = {
@@ -64,10 +66,10 @@ export class MetricsProcess {
       return;
     }
 
-    // Get behavior summary from memory (set by BehaviorProcess)
-    const behaviorSummaryFromMemory = memory.behaviorSummary as BehaviorSummary | undefined;
-
-    const behaviorSummary: BehaviorSummary = behaviorSummaryFromMemory ?? {
+     
+    // Get behavior summary from protocol (set by BehaviorProcess)
+    const behaviorSummaryFromProtocol: BehaviorSummary | undefined = ctx.protocol.getBehaviorSummary();
+    const behaviorSummary: BehaviorSummary = behaviorSummaryFromProtocol ?? {
       processedCreeps: 0,
       spawnedCreeps: [],
       tasksExecuted: {}
@@ -99,7 +101,8 @@ export class MetricsProcess {
 
     // Evaluate system health and store report
     const repository = this.repositorySignalProvider?.();
-    const memoryUtilization = memory.memoryUtilization as MemoryUtilization | undefined;
+    const memoryUtilization: { used: number; limit: number; percentage: number } | undefined =
+      ctx.protocol.getMemoryUtilization();
     const result = this.evaluator.evaluateAndStore(memory, snapshot, repository, memoryUtilization);
 
     // Generate pixel if bucket is full

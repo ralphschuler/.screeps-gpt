@@ -1,5 +1,8 @@
+ 
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { process as registerProcess, type ProcessContext } from "@ralphschuler/screeps-kernel";
 import type { GameContext } from "@runtime/types/GameContext";
+import type { RuntimeProtocols } from "@runtime/protocols";
 import {
   MemoryManager,
   MemoryGarbageCollector,
@@ -45,7 +48,7 @@ export class MemoryProcess {
     this.enableSelfHealing = true;
   }
 
-  public run(ctx: ProcessContext<Memory>): void {
+  public run(ctx: ProcessContext<Memory, RuntimeProtocols>): void {
     const gameContext = ctx.game as GameContext;
     const memory = ctx.memory;
 
@@ -57,16 +60,16 @@ export class MemoryProcess {
         this.selfHealer.emergencyReset(memory);
         this.logger.warn?.("[MemoryProcess] Emergency reset complete. Other processes should skip this tick.");
 
-        // Store emergency reset flag in memory for other processes to check
-        memory.emergencyReset = true;
+     
+        // Signal emergency reset via protocol instead of Memory
+        ctx.protocol.setEmergencyReset(true);
         return;
       }
     }
 
-    // Clear emergency reset flag if it exists
-    if (memory.emergencyReset) {
-      delete memory.emergencyReset;
-    }
+     
+    // Clear emergency reset flag if it was set in previous tick
+    ctx.protocol.setEmergencyReset(false);
 
     // Run memory migrations on first tick or version change
     try {
@@ -99,16 +102,18 @@ export class MemoryProcess {
     this.memoryManager.pruneMissingCreeps(memory, gameContext.creeps);
     const roleCounts = this.memoryManager.updateRoleBookkeeping(memory, gameContext.creeps);
 
-    // Store role counts in memory for other processes to use
-    memory.roles = roleCounts;
+     
+    // Share role counts via protocol instead of Memory
+    ctx.protocol.setRoleCounts(roleCounts);
 
     // Run garbage collection if enabled
     if (this.enableGarbageCollection && gameContext.time % this.garbageCollectionInterval === 0) {
       this.garbageCollector.collect(gameContext, memory);
     }
 
-    // Measure memory utilization and store in memory for evaluation
+     
+    // Measure memory utilization and share via protocol instead of Memory
     const memoryUtilization = this.utilizationMonitor.measure(memory);
-    memory.memoryUtilization = memoryUtilization;
+    ctx.protocol.setMemoryUtilization(memoryUtilization as { used: number; limit: number; percentage: number });
   }
 }

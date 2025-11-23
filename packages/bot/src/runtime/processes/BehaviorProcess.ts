@@ -1,5 +1,8 @@
+ 
+/* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment */
 import { process as registerProcess, type ProcessContext } from "@ralphschuler/screeps-kernel";
 import type { GameContext } from "@runtime/types/GameContext";
+import type { RuntimeProtocols } from "@runtime/protocols";
 import type { BehaviorSummary } from "@shared/contracts";
 import { BehaviorController } from "@runtime/behavior/BehaviorController";
 import { RoleControllerManager } from "@runtime/behavior/RoleControllerManager";
@@ -52,12 +55,13 @@ export class BehaviorProcess {
     this.cpuEmergencyThreshold = 0.9;
   }
 
-  public run(ctx: ProcessContext<Memory>): void {
+  public run(ctx: ProcessContext<Memory, RuntimeProtocols>): void {
     const gameContext = ctx.game as GameContext;
     const memory = ctx.memory;
 
-    // Skip if emergency reset or respawn occurred
-    if (memory.emergencyReset || memory.needsRespawn) {
+     
+    // Skip if emergency reset or respawn occurred (check protocol instead of Memory)
+    if (ctx.protocol.isEmergencyReset() || ctx.protocol.needsRespawn()) {
       return;
     }
 
@@ -70,23 +74,19 @@ export class BehaviorProcess {
       return;
     }
 
-    // Get role counts from memory (set by MemoryProcess)
-    const roleCounts = memory.roles ?? {};
+     
+    // Get role counts from protocol (set by MemoryProcess)
+    const roleCounts: Record<string, number> = ctx.protocol.getRoleCounts();
 
-    // Get bootstrap role minimums if bootstrap is active
-    const bootstrapStatus = memory.bootstrapStatus as { isActive: boolean } | undefined;
-    const bootstrapMinimums = bootstrapStatus?.isActive
-      ? {
-          harvester: 2,
-          upgrader: 1,
-          builder: 1
-        }
-      : {};
+     
+    // Get bootstrap role minimums if bootstrap is active (from protocol)
+    const bootstrapMinimums: Record<string, number> = ctx.protocol.getBootstrapMinimums();
 
     // Execute behavior (spawning and creep control)
     const behaviorSummary: BehaviorSummary = this.behavior.execute(gameContext, memory, roleCounts, bootstrapMinimums);
 
-    // Store behavior summary in memory for metrics process
-    memory.behaviorSummary = behaviorSummary;
+     
+    // Share behavior summary via protocol (for metrics process)
+    ctx.protocol.setBehaviorSummary(behaviorSummary);
   }
 }

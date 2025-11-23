@@ -5,6 +5,9 @@ import { Diagnostics } from "@runtime/utils/Diagnostics";
 import { EventTypes } from "@ralphschuler/screeps-events";
 import { globalEventBus } from "@runtime/events/globalEventBus";
 
+// Import protocol modules to trigger @protocol decorator registration
+import "@runtime/protocols";
+
 // Import process modules to trigger @process decorator registration
 import "@runtime/processes";
 

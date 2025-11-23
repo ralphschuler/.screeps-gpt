@@ -1,5 +1,8 @@
+ 
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { process as registerProcess, type ProcessContext } from "@ralphschuler/screeps-kernel";
 import type { GameContext } from "@runtime/types/GameContext";
+import type { RuntimeProtocols } from "@runtime/protocols";
 import { ThreatDetector, type ThreatMemory } from "@runtime/defense/ThreatDetector";
 import { DefenseCoordinator, type DefenseMemory } from "@runtime/defense/DefenseCoordinator";
 import { TowerManager } from "@runtime/defense/TowerManager";
@@ -48,12 +51,12 @@ export class DefenseProcess {
     );
   }
 
-  public run(ctx: ProcessContext<Memory>): void {
+  public run(ctx: ProcessContext<Memory, RuntimeProtocols>): void {
     const gameContext = ctx.game as GameContext;
-    const memory = ctx.memory;
 
-    // Skip if emergency reset occurred
-    if (memory.emergencyReset) {
+     
+    // Skip if emergency reset occurred (check protocol)
+    if (ctx.protocol.isEmergencyReset()) {
       return;
     }
 
