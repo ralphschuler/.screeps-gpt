@@ -81,10 +81,7 @@ export class RoleControllerManager {
   private readonly taskQueueManager: RoleTaskQueueManager;
   private readonly roleControllers: Map<string, RoleController>;
 
-  public constructor(
-    options: RoleControllerManagerOptions = {},
-    logger: Pick<Console, "log" | "warn"> = console
-  ) {
+  public constructor(options: RoleControllerManagerOptions = {}, logger: Pick<Console, "log" | "warn"> = console) {
     this.logger = logger;
     this.options = {
       cpuSafetyMargin: options.cpuSafetyMargin ?? 0.85,
@@ -107,7 +104,7 @@ export class RoleControllerManager {
 
     // Initialize role controllers registry
     this.roleControllers = new Map();
-    
+
     // Register all role controllers
     // Core economy roles
     this.registerRoleController(new HarvesterController());
@@ -115,17 +112,17 @@ export class RoleControllerManager {
     this.registerRoleController(new BuilderController());
     this.registerRoleController(new HaulerController());
     this.registerRoleController(new RepairerController());
-    
+
     // Specialized roles
     this.registerRoleController(new StationaryHarvesterController());
     this.registerRoleController(new RemoteMinerController());
     this.registerRoleController(new RemoteHaulerController());
-    
+
     // Combat roles
     this.registerRoleController(new AttackerController());
     this.registerRoleController(new HealerController());
     this.registerRoleController(new DismantlerController());
-    
+
     // Support roles
     this.registerRoleController(new ClaimerController());
     this.registerRoleController(new ScoutController());
@@ -297,7 +294,7 @@ export class RoleControllerManager {
 
       const role = creep.memory.role;
       const controller = role ? this.getRoleController(role) : undefined;
-      
+
       if (!controller) {
         this.logger.warn?.(`Unknown or unimplemented role '${role}' for creep ${creep.name}`);
         processedCreeps++;
@@ -443,16 +440,16 @@ export class RoleControllerManager {
     // Type guard to safely access room properties
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const room = spawn.room;
-    
+
     // Extract energy values with fallback defaults
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const energyAvailable = (room.energyAvailable as number | undefined) ?? 300;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const energyCapacity = (room.energyCapacityAvailable as number | undefined) ?? 300;
-    
+
     // EMERGENCY MODE: Use actual available energy instead of capacity
     const energyToUse = isEmergencyMode ? energyAvailable : energyCapacity;
-    
+
     return {
       energyAvailable,
       energyCapacity,

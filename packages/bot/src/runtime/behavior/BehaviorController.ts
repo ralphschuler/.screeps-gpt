@@ -1583,7 +1583,6 @@ function getEnergyManager(): EnergyPriorityManager | null {
   return energyPriorityManager;
 }
 
-
 /**
  * Helper function to find the closest target by path or fall back to the first target.
  * Reduces code duplication throughout the file.

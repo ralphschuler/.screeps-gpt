@@ -12,10 +12,7 @@ export interface ScoutContext {
   targetRoom?: string;
 }
 
-export type ScoutEvent =
-  | { type: "START_SCOUT"; targetRoom: string }
-  | { type: "ARRIVED" }
-  | { type: "NO_TARGET" };
+export type ScoutEvent = { type: "START_SCOUT"; targetRoom: string } | { type: "ARRIVED" } | { type: "NO_TARGET" };
 
 export const scoutStates: Record<string, StateConfig<ScoutContext, ScoutEvent>> = {
   idle: {

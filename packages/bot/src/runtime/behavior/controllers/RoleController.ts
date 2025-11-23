@@ -61,9 +61,7 @@ export interface RoleController<TMemory extends CreepMemory = CreepMemory> {
 /**
  * Abstract base class providing common functionality for role controllers
  */
-export abstract class BaseRoleController<TMemory extends CreepMemory = CreepMemory>
-  implements RoleController<TMemory>
-{
+export abstract class BaseRoleController<TMemory extends CreepMemory = CreepMemory> implements RoleController<TMemory> {
   protected readonly config: RoleConfig<TMemory>;
 
   public constructor(config: RoleConfig<TMemory>) {

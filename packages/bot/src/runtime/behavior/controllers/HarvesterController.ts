@@ -87,7 +87,7 @@ export class HarvesterController extends BaseRoleController<HarvesterMemory> {
       }
     } else if (currentState === "harvesting") {
       comm?.say(creep, "⛏️");
-      
+
       if (ctx.sourceId) {
         const source = Game.getObjectById(ctx.sourceId);
         if (source && source.energy > 0) {

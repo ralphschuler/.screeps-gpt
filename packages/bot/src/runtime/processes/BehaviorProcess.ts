@@ -29,7 +29,7 @@ export class BehaviorProcess {
 
   public constructor() {
     this.logger = console;
-    
+
     // Use modular role controllers if feature flag is enabled
     if (USE_MODULAR_CONTROLLERS) {
       this.behavior = new RoleControllerManager(
@@ -48,7 +48,7 @@ export class BehaviorProcess {
         this.logger
       );
     }
-    
+
     this.cpuEmergencyThreshold = 0.9;
   }
 

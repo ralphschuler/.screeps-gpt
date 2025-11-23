@@ -13,12 +13,7 @@ import type { CreepLike } from "@runtime/types/GameContext";
 import { serviceRegistry } from "./ServiceLocator";
 import { moveToTargetRoom } from "./helpers";
 import { StateMachine, serialize, restore } from "@ralphschuler/screeps-xstate";
-import {
-  scoutStates,
-  SCOUT_INITIAL_STATE,
-  type ScoutContext,
-  type ScoutEvent
-} from "../stateMachines/scout";
+import { scoutStates, SCOUT_INITIAL_STATE, type ScoutContext, type ScoutEvent } from "../stateMachines/scout";
 
 interface ScoutMemory extends CreepMemory {
   role: "scout";
@@ -83,7 +78,7 @@ export class ScoutController extends BaseRoleController<ScoutMemory> {
       }
     } else if (currentState === "scouting") {
       comm?.say(creep, "🔍");
-      
+
       if (ctx.targetRoom) {
         const arrived = moveToTargetRoom(creep, ctx.targetRoom, 50);
         if (arrived) {

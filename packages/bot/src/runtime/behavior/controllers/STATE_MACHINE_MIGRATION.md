@@ -11,27 +11,30 @@ This document outlines the optional pattern for enhancing role controllers with 
 Each controller should follow this pattern (see HarvesterController for complete example):
 
 ### 1. Update Imports
+
 ```typescript
 import { StateMachine, serialize, restore } from "@ralphschuler/screeps-xstate";
 import {
-  roleStates,          // e.g., upgraderStates
-  ROLE_INITIAL_STATE,  // e.g., UPGRADER_INITIAL_STATE
-  type RoleContext,    // e.g., UpgraderContext
-  type RoleEvent       // e.g., UpgraderEvent
+  roleStates, // e.g., upgraderStates
+  ROLE_INITIAL_STATE, // e.g., UPGRADER_INITIAL_STATE
+  type RoleContext, // e.g., UpgraderContext
+  type RoleEvent // e.g., UpgraderEvent
 } from "../stateMachines/roleName";
 ```
 
 ### 2. Update Memory Interface
+
 ```typescript
 interface RoleMemory extends CreepMemory {
   role: "roleName";
-  task: string;  // Changed from specific type to string
+  task: string; // Changed from specific type to string
   version: number;
-  stateMachine?: unknown;  // Add this
+  stateMachine?: unknown; // Add this
 }
 ```
 
 ### 3. Add State Machine Map to Controller
+
 ```typescript
 export class RoleController extends BaseRoleController<RoleMemory> {
   private machines: Map<string, StateMachine<RoleContext, RoleEvent>> = new Map();
@@ -40,6 +43,7 @@ export class RoleController extends BaseRoleController<RoleMemory> {
 ```
 
 ### 4. Update execute() Method Pattern
+
 ```typescript
 public execute(creep: CreepLike): string {
   const memory = creep.memory as RoleMemory;
@@ -102,6 +106,7 @@ public execute(creep: CreepLike): string {
 ## State Machine Files
 
 All state machine definitions are in `packages/bot/src/runtime/behavior/stateMachines/`:
+
 - `harvester.ts` - HarvesterContext, HarvesterEvent, harvesterStates
 - `upgrader.ts` - UpgraderContext, UpgraderEvent, upgraderStates
 - `builder.ts` - BuilderContext, BuilderEvent, builderStates
