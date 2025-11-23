@@ -12,7 +12,6 @@ The repository uses a **unified agent architecture** where similar operations ar
 2. **Copilot Issue Agent** (Unified) - Multi-mode issue management with role-based behavior
    - **Triage mode** - Automatic issue reformulation and labeling
    - **Resolve mode** - Automated issue resolution via draft pull requests with visible implementation progress
-   - **Analyze mode** - Context gathering and relationship analysis
 3. **Copilot Audit Agent** - Scheduled repository audits and quality assessments
 4. **Screeps Monitoring** - PTR telemetry analysis, anomaly detection, and strategic analysis
 5. **CI Auto Issue** - Automated issue creation for CI failures with circuit breaker pattern
