@@ -38,14 +38,30 @@ jobs:
         working-directory: packages/docs
         run: yarn install
       - name: Clone Hexo Cactus theme
-        working-directory: packages/docs/themes
+        working-directory: packages/docs
         run: |
+          # Ensure themes directory exists
+          mkdir -p themes
+          cd themes
+          
+          # Clone theme if not present
           if [ ! -d "cactus/.git" ]; then
+            echo "Cloning Hexo Cactus theme..."
             rm -rf cactus
             git clone \
               https://github.com/probberechts/hexo-theme-cactus.git \
               cactus
+          else
+            echo "Theme already exists, skipping clone"
           fi
+          
+          # Validate theme was cloned successfully
+          if [ ! -d "cactus/layout" ]; then
+            echo "ERROR: Theme clone failed - layout directory not found"
+            exit 1
+          fi
+          
+          echo "✓ Hexo Cactus theme is available"
       - name: Update versions
         run: yarn versions:update
       - name: Generate analytics data
@@ -55,6 +71,45 @@ jobs:
       - name: Generate documentation site
         working-directory: packages/docs
         run: yarn build
+      - name: Validate generated HTML files
+        working-directory: packages/docs
+        run: |
+          echo "Validating generated HTML files..."
+          
+          # Check if public directory exists
+          if [ ! -d "public" ]; then
+            echo "ERROR: public directory not found after build"
+            exit 1
+          fi
+          
+          # Check for key pages that should exist
+          KEY_PAGES=(
+            "index.html"
+            "docs/index.html"
+            "docs/automation/index.html"
+            "docs/operations/index.html"
+          )
+          
+          FAILED=0
+          for page in "${KEY_PAGES[@]}"; do
+            if [ ! -f "public/$page" ]; then
+              echo "ERROR: Missing page: $page"
+              FAILED=1
+            elif [ ! -s "public/$page" ]; then
+              echo "ERROR: Empty file (0 bytes): $page"
+              FAILED=1
+            else
+              SIZE=$(stat -f%z "public/$page" 2>/dev/null || stat -c%s "public/$page" 2>/dev/null)
+              echo "✓ $page ($SIZE bytes)"
+            fi
+          done
+          
+          if [ $FAILED -eq 1 ]; then
+            echo "ERROR: HTML file validation failed"
+            exit 1
+          fi
+          
+          echo "✓ All key HTML files validated successfully"
       - name: Copy to build directory
         run: |
           mkdir -p build
