@@ -136,6 +136,7 @@ export function moveToTargetRoom(creep: CreepLike, targetRoom: string, reusePath
     return false;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
   const exitDir: ExitConstant | ERR_NO_PATH | ERR_INVALID_ARGS = creep.room.findExitTo(targetRoom);
   if (typeof exitDir === "number" && exitDir >= 1 && exitDir <= 8) {
     const exitPositions = creep.room.find(exitDir as ExitConstant) as RoomPosition[];

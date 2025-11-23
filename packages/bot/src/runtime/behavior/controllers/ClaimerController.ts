@@ -60,12 +60,14 @@ export class ClaimerController extends BaseRoleController<ClaimerMemory> {
     // Reserve or claim based on memory flag
     if (memory.reserveOnly) {
       comm?.say(creep, "🔰");
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
       const result = creep.reserveController(controller);
       if (result === ERR_NOT_IN_RANGE) {
         creep.moveTo(controller, { reusePath: 50 });
       }
     } else {
       comm?.say(creep, "🏴");
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
       const result = creep.claimController(controller);
       if (result === ERR_NOT_IN_RANGE) {
         creep.moveTo(controller, { reusePath: 50 });

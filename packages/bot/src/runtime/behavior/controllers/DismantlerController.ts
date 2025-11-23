@@ -61,6 +61,7 @@ export class DismantlerController extends BaseRoleController<DismantlerMemory> {
     if (hostileStructures.length > 0) {
       const target: AnyOwnedStructure | null = creep.pos.findClosestByPath(hostileStructures);
       const actualTarget: AnyOwnedStructure = target ?? hostileStructures[0];
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
       const result = creep.dismantle(actualTarget);
       if (result === ERR_NOT_IN_RANGE) {
         creep.moveTo(actualTarget, { reusePath: 10 });
