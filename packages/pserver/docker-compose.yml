@@ -18,7 +18,7 @@ services:
       - ./bots.yml:/screeps/bots.yml
       - screeps-data:/screeps
     environment:
-      MONGO_URI: mongodb://root:password@mongo:27017/screeps?authSource=admin
+      MONGO_HOST: mongo
       REDIS_HOST: redis
       STEAM_KEY: ${STEAM_KEY}
     ports:
@@ -32,11 +32,8 @@ services:
       retries: 6
 
   mongo:
-    image: mongo:8.2
+    image: mongo:8
     platform: linux/amd64
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: password
     volumes:
       - mongo-data:/data/db
     restart: unless-stopped
@@ -52,7 +49,7 @@ services:
       retries: 6
 
   redis:
-    image: redis:6
+    image: redis:7
     platform: linux/amd64
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
