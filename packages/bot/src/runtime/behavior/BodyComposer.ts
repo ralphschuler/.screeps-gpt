@@ -123,6 +123,24 @@ export class BodyComposer {
       dismantler: {
         base: [TOUGH, WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE],
         pattern: [WORK, MOVE]
+      },
+
+      // Scout: Minimal lightweight creep for room reconnaissance
+      // Base: 1 MOVE (50 energy)
+      // Pattern: None (scouts should stay minimal for cost efficiency)
+      scout: {
+        base: [MOVE],
+        pattern: []
+      },
+
+      // Claimer: Room controller claiming/reserving specialist
+      // Base: 1 CLAIM, 1 MOVE (650 energy)
+      // Pattern: 1 MOVE (add one extra move for ~50% energy at higher RCL, max 2 moves total)
+      // This keeps claimers efficient while allowing slightly faster movement at higher energy levels
+      claimer: {
+        base: [CLAIM, MOVE],
+        pattern: [MOVE],
+        maxRepeats: 1
       }
     };
   }

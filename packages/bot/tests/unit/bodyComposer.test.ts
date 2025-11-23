@@ -307,4 +307,63 @@ describe("BodyComposer", () => {
       expect(carryParts).toBeGreaterThan(moveParts);
     });
   });
+
+  describe("scout role", () => {
+    it("should generate minimal body with only move part", () => {
+      const body = composer.generateBody("scout", 300);
+      expect(body).toEqual([MOVE]);
+      expect(composer.calculateBodyCost(body)).toBe(50);
+    });
+
+    it("should not scale up scout body with more energy", () => {
+      const body = composer.generateBody("scout", 1000);
+      expect(body).toEqual([MOVE]); // Should remain minimal
+      expect(composer.calculateBodyCost(body)).toBe(50);
+    });
+
+    it("should generate scout body even with minimal energy", () => {
+      const body = composer.generateBody("scout", 50);
+      expect(body).toEqual([MOVE]);
+    });
+
+    it("should return empty array if insufficient energy for scout", () => {
+      const body = composer.generateBody("scout", 40);
+      expect(body).toEqual([]);
+    });
+  });
+
+  describe("claimer role", () => {
+    it("should generate minimal claimer body at low energy", () => {
+      const body = composer.generateBody("claimer", 650);
+      expect(body).toEqual([CLAIM, MOVE]);
+      expect(composer.calculateBodyCost(body)).toBe(650);
+    });
+
+    it("should add one extra move at higher energy (50% usage target)", () => {
+      const body = composer.generateBody("claimer", 1300);
+      // Should add one move part (maxRepeats: 1)
+      expect(body).toEqual([CLAIM, MOVE, MOVE]);
+      expect(composer.calculateBodyCost(body)).toBe(700);
+    });
+
+    it("should not scale beyond 2 move parts", () => {
+      const body = composer.generateBody("claimer", 5000);
+      // Should cap at base + 1 pattern repeat (maxRepeats: 1)
+      expect(body).toEqual([CLAIM, MOVE, MOVE]);
+      expect(composer.calculateBodyCost(body)).toBe(700);
+    });
+
+    it("should return empty array if insufficient energy for claimer", () => {
+      const body = composer.generateBody("claimer", 600);
+      expect(body).toEqual([]);
+    });
+
+    it("should maintain efficient energy usage (target ~50% at RCL4+)", () => {
+      // At RCL 4 (1300 energy), claimer should use ~700 energy (~54%)
+      const body = composer.generateBody("claimer", 1300);
+      const cost = composer.calculateBodyCost(body);
+      expect(cost).toBeGreaterThanOrEqual(650);
+      expect(cost).toBeLessThanOrEqual(750);
+    });
+  });
 });
