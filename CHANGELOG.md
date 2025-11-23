@@ -5,6 +5,17 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Changed
+
+- **Refactoring**: Extracted hardcoded spawn threshold constants from BehaviorController
+  - Created `packages/bot/src/runtime/behavior/constants.ts` with `SPAWN_THRESHOLDS` export
+  - Extracted CPU safety margin (0.85), energy reserve ratios (0.2, 50), storage thresholds (0.5, 0.3), and energy thresholds (0.9, 0.75, 0.8)
+  - Updated BehaviorController.ts to import and use constants instead of magic numbers
+  - Added comprehensive TSDoc documentation explaining threshold rationale
+  - Added regression test validating constant values
+  - No behavioral changes - all values remain functionally identical
+  - Unblocks issue #1267 (state machine migration) by providing reusable threshold constants
+
 ## [0.137.9] - 2025-11-23
 
 ### Removed
