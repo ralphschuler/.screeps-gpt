@@ -3161,19 +3161,14 @@ function runClaimer(creep: ManagedCreep): string {
     return CLAIMER_CLAIM_TASK;
   }
 
-  // If not in target room, move there
+  // If not in target room, move there using room center navigation
+  // This matches the pattern used by remoteMiner and remoteHauler for reliable inter-room travel
   if (creep.room.name !== targetRoom) {
     comm?.say(creep, "🚀");
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-    const exit = creep.room.findExitTo(targetRoom);
-    if (exit !== ERR_NO_PATH && exit !== ERR_INVALID_ARGS) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-      const exitPos = creep.pos.findClosestByRange(exit);
-      if (exitPos) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        creep.moveTo(exitPos, { reusePath: 50 });
-      }
-    }
+    creep.moveTo(
+      { pos: { x: ROOM_CENTER_X, y: ROOM_CENTER_Y, roomName: targetRoom } as unknown as RoomPosition },
+      { reusePath: 50 }
+    );
     return CLAIMER_CLAIM_TASK;
   }
 
