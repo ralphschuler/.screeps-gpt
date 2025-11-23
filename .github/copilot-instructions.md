@@ -206,7 +206,7 @@ Repository labels are synchronized from `.github/labels.yml` using a standardize
 **Important:**
 
 - Never edit labels in the UI - update `.github/labels.yml` instead
-- Use new `type/*` and `priority/*` labels instead of deprecated `bug`, `enhancement`, `severity/*` labels
+- Use `type/*` and `priority/*` labels for issue classification
 - Apply `state/pending` to new issues, update states as work progresses
 
 ## Additional Resources

@@ -250,7 +250,7 @@ Repository labels are synchronized from `.github/labels.yml` using a standardize
 
 **Workflow Labels:** `good-first-issue`, `help-wanted`, `wontfix`, `duplicate`, `invalid`
 
-Do not edit labels manually in the UI—update the YAML file instead. Legacy labels (`bug`, `enhancement`, `severity/*`) are deprecated but kept for backward compatibility.
+Do not edit labels manually in the UI—update the YAML file instead.
 
 ### Issue and PR Management
 

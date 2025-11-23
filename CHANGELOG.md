@@ -5,6 +5,29 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.137.9] - 2025-11-23
+
+
+### Removed
+
+- **Breaking**: Removed deprecated GitHub labels (`bug`, `enhancement`, `severity/*`)
+  - Use `type/bug`, `type/enhancement`, and `priority/*` labels instead
+  - No backward compatibility maintained as this is a single-user repository
+- **Breaking**: Removed Logger backward compatibility wrapper (`packages/bot/src/runtime/utils/Logger.ts`)
+  - Import directly from `@ralphschuler/screeps-logger` package instead
+- **Breaking**: Removed deprecated `getTaskQueue()` function from BehaviorController
+  - Function was unused and marked for removal
+
+### Changed
+
+- Updated documentation to remove backward compatibility references
+  - Removed legacy label migration sections from label-system.md
+  - Updated AGENTS.md to remove references to deprecated labels
+  - Updated .github/copilot-instructions.md to remove backward compatibility notes
+
+
+## [0.137.3] - 2025-11-23
+
 ### Changed
 
 - **Repository Cleanup**: Removed unused files and placeholder packages to improve maintainability
