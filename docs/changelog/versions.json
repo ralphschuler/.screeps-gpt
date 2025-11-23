@@ -1,5 +1,18 @@
 [
   {
+    "version": "0.137.21",
+    "date": "2025-11-23",
+    "notes": [
+      "**Workflow**: Fixed screeps-agent.yml using npm instead of yarn, breaking workspace dependency resolution",
+      "Replaced `npm ci` + `npm install` with `yarn install --frozen-lockfile`",
+      "Updated Node.js version to use `.nvmrc` instead of hardcoded version",
+      "Aligns with other workflows (guard-build.yml, deploy.yml)",
+      "Resolves issue ralphschuler/.screeps-gpt#1270"
+    ],
+    "anchor": "013721---2025-11-23",
+    "slug": "v0-137-21"
+  },
+  {
     "version": "0.137.15",
     "date": "2025-11-23",
     "notes": [
