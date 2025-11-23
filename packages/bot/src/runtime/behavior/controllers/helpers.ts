@@ -123,6 +123,30 @@ export function findSpawnAdjacentContainers(
 }
 
 /**
+ * Finds towers in a room that are below the minimum energy threshold.
+ * Used by both harvesters and haulers to identify towers that need refilling.
+ *
+ * @param room - The room to search for towers
+ * @param minCapacityRatio - Minimum capacity ratio (0-1) to maintain (default: 0.5 for 50%)
+ * @returns Array of towers below the threshold
+ */
+export function findLowEnergyTowers(
+  room: { find: (constant: number, opts?: unknown) => unknown[] },
+  minCapacityRatio: number = 0.5
+): StructureTower[] {
+  const towers = room.find(FIND_STRUCTURES, {
+    filter: (structure: AnyStructure) => {
+      if (structure.structureType !== STRUCTURE_TOWER) return false;
+      const capacity = structure.store.getCapacity(RESOURCE_ENERGY);
+      const used = structure.store.getUsedCapacity(RESOURCE_ENERGY);
+      return used < capacity * minCapacityRatio;
+    }
+  }) as StructureTower[];
+
+  return towers;
+}
+
+/**
  * Helper function to move a creep to a target room.
  * Handles finding exit direction and navigating to room exits.
  * When at room edge, moves directly to target room center to avoid oscillation.

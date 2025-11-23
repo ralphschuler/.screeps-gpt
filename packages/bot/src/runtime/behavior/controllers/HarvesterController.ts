@@ -22,7 +22,7 @@ import {
   type HarvesterContext,
   type HarvesterEvent
 } from "../stateMachines/harvester";
-import { tryPickupDroppedEnergy } from "./helpers";
+import { tryPickupDroppedEnergy, findLowEnergyTowers } from "./helpers";
 import { DEFAULT_ENERGY_CONFIG } from "@runtime/energy";
 
 interface HarvesterMemory extends CreepMemory {
@@ -140,14 +140,7 @@ export class HarvesterController extends BaseRoleController<HarvesterMemory> {
         }
       } else {
         // Priority 2: Fill towers below threshold capacity (defense)
-        const lowTowers = creep.room.find(FIND_STRUCTURES, {
-          filter: (structure: AnyStructure) => {
-            if (structure.structureType !== STRUCTURE_TOWER) return false;
-            const capacity = structure.store.getCapacity(RESOURCE_ENERGY);
-            const used = structure.store.getUsedCapacity(RESOURCE_ENERGY);
-            return capacity > 0 && used < capacity * DEFAULT_ENERGY_CONFIG.towerMinCapacity;
-          }
-        }) as StructureTower[];
+        const lowTowers = findLowEnergyTowers(creep.room, DEFAULT_ENERGY_CONFIG.towerMinCapacity);
 
         if (lowTowers.length > 0) {
           const target = creep.pos.findClosestByPath(lowTowers) ?? lowTowers[0];

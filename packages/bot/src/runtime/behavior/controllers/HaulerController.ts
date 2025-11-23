@@ -11,7 +11,7 @@
 import { BaseRoleController, type RoleConfig } from "./RoleController";
 import type { CreepLike } from "@runtime/types/GameContext";
 import { serviceRegistry } from "./ServiceLocator";
-import { tryPickupDroppedEnergy, findSpawnAdjacentContainers } from "./helpers";
+import { tryPickupDroppedEnergy, findSpawnAdjacentContainers, findLowEnergyTowers } from "./helpers";
 import { DEFAULT_ENERGY_CONFIG } from "@runtime/energy";
 
 // Task constants
@@ -110,15 +110,7 @@ export class HaulerController extends BaseRoleController<HaulerMemory> {
     }
 
     // Priority 2: Towers below threshold capacity (defense)
-    const lowTowers = creep.room.find(FIND_STRUCTURES, {
-      filter: (structure: AnyStructure) => {
-        if (structure.structureType !== STRUCTURE_TOWER) return false;
-        const tower = structure;
-        const capacity = tower.store.getCapacity(RESOURCE_ENERGY);
-        const used = tower.store.getUsedCapacity(RESOURCE_ENERGY);
-        return capacity > 0 && used < capacity * DEFAULT_ENERGY_CONFIG.towerMinCapacity;
-      }
-    }) as StructureTower[];
+    const lowTowers = findLowEnergyTowers(creep.room, DEFAULT_ENERGY_CONFIG.towerMinCapacity);
 
     if (lowTowers.length > 0) {
       const closest = creep.pos.findClosestByPath(lowTowers);
