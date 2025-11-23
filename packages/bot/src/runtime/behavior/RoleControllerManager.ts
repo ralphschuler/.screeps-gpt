@@ -152,7 +152,8 @@ export class RoleControllerManager {
   public execute(
     game: GameContext,
     memory: Memory,
-    roleCounts: Record<string, number>
+    roleCounts: Record<string, number>,
+    bootstrapMinimums?: Partial<Record<RoleName, number>>
   ): BehaviorSummary {
     // Initialize creep counter if not present
     if (typeof memory.creepCounter !== "number") {
@@ -173,11 +174,7 @@ export class RoleControllerManager {
     this.communicationManager.resetTick(game.time);
 
     const spawned: string[] = [];
-    // TODO: Implement ensureRoleMinimums using role controllers
-    // this.ensureRoleMinimums(game, memory, roleCounts, spawned, bootstrapMinimums ?? {});
-
-    // TODO: Implement spawnClaimersForExpansion
-    // this.spawnClaimersForExpansion(game, memory, roleCounts, spawned);
+    this.ensureRoleMinimums(game, memory, roleCounts, spawned, bootstrapMinimums ?? {});
 
     // Clean up dead creep tasks first to release assignments before new task discovery
     this.taskQueueManager.cleanupDeadCreepTasks(memory, game);
@@ -326,5 +323,111 @@ export class RoleControllerManager {
       processedCreeps,
       tasksExecuted
     };
+  }
+
+  /**
+   * Ensure role minimums are met by spawning creeps as needed.
+   */
+  private ensureRoleMinimums(
+    game: GameContext,
+    memory: Memory,
+    roleCounts: Record<string, number>,
+    spawned: string[],
+    bootstrapMinimums: Partial<Record<RoleName, number>>
+  ): void {
+    // Check CPU budget before spawn operations
+    const cpuBudget = game.cpu.limit * this.options.cpuSafetyMargin;
+    if (game.cpu.getUsed() > cpuBudget) {
+      this.logger.warn?.(
+        `CPU budget exceeded before spawn operations (${game.cpu.getUsed().toFixed(2)}/${cpuBudget.toFixed(2)}), ` +
+          `skipping spawn checks to prevent timeout`
+      );
+      return;
+    }
+
+    // Detect emergency situation: no creeps alive in any owned room
+    const totalCreeps = Object.keys(game.creeps).length;
+    const isEmergency = totalCreeps === 0;
+    const harvesterCount = roleCounts["harvester"] ?? 0;
+
+    // Determine spawn priority order
+    const roleOrder: RoleName[] = [
+      "harvester",
+      "upgrader",
+      "builder",
+      "stationaryHarvester",
+      "hauler",
+      "repairer",
+      "remoteMiner",
+      "remoteHauler",
+      "scout",
+      "attacker",
+      "healer",
+      "dismantler",
+      "claimer"
+    ];
+
+    for (const role of roleOrder) {
+      const controller = this.getRoleController(role);
+      if (!controller) {
+        continue;
+      }
+
+      const current = roleCounts[role] ?? 0;
+      const config = controller.getConfig();
+      const targetMinimum = bootstrapMinimums[role] ?? config.minimum;
+
+      if (current >= targetMinimum) {
+        continue;
+      }
+
+      const spawn = this.findAvailableSpawn(game.spawns);
+      if (!spawn) {
+        continue; // No available spawns
+      }
+
+      const room = spawn.room as Room | undefined;
+
+      // EMERGENCY MODE: Use actual available energy instead of capacity
+      const energyToUse =
+        isEmergency || harvesterCount === 0 ? (room?.energyAvailable ?? 300) : (room?.energyCapacityAvailable ?? 300);
+
+      // Generate body based on energy
+      const body = this.bodyComposer.generateBody(role, energyToUse, room);
+
+      if (body.length === 0) {
+        // Not enough energy for minimum body
+        continue;
+      }
+
+      // Validate sufficient energy before spawning
+      const spawnCost = this.bodyComposer.calculateBodyCost(body);
+      if (spawn.room && spawn.room.energyAvailable < spawnCost) {
+        continue; // Not enough energy yet
+      }
+
+      const name = `${role}-${game.time}-${memory.creepCounter}`;
+      memory.creepCounter += 1;
+
+      const creepMemory = controller.createMemory();
+
+      const result = spawn.spawnCreep(body, name, { memory: creepMemory });
+      if (result === OK) {
+        spawned.push(name);
+        this.logger.log?.(`[RoleControllerManager] Spawned ${name} (${body.length} parts, ${spawnCost} energy)`);
+      }
+    }
+  }
+
+  /**
+   * Find an available spawn that is not currently spawning.
+   */
+  private findAvailableSpawn(spawns: Record<string, SpawnLike>): SpawnLike | null {
+    for (const spawn of Object.values(spawns)) {
+      if (!spawn.spawning) {
+        return spawn;
+      }
+    }
+    return null;
   }
 }
