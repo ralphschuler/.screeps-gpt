@@ -70,7 +70,7 @@ describe("Regression: Emergency Body Fallback Bug", () => {
     } as unknown as Room;
   });
 
-  it("should spawn [WORK, CARRY, MOVE] when 200+ energy available (BUG: spawned [WORK, MOVE])", () => {
+  it("should spawn [WORK, CARRY, MOVE] when 200+ energy available", () => {
     // Emergency scenario: 0 creeps, 220 energy available
     // BUG: Sustainable capacity calculation reduced adjustedCapacity to ~150
     // Emergency fallback used adjustedCapacity instead of original energyCapacity
@@ -159,9 +159,13 @@ describe("Regression: Emergency Body Fallback Bug", () => {
 
   it("should not regress to [WORK, MOVE] with abundant energy", () => {
     // High energy scenario - should never spawn [WORK, MOVE]
-    mockRoom.energyAvailable = 500;
+    // Create separate mock room to avoid test isolation issues
+    const abundantEnergyRoom = {
+      ...mockRoom,
+      energyAvailable: 500
+    } as Room;
 
-    const body = composer.generateBody("harvester", 500, mockRoom);
+    const body = composer.generateBody("harvester", 500, abundantEnergyRoom);
 
     // Should spawn scaled body, not minimal emergency body
     expect(body).not.toEqual([WORK, MOVE]);
