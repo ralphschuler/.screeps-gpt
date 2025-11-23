@@ -103,19 +103,4 @@
   color: E4E669
   description: This doesn't seem right or is not applicable.
 
-# Legacy Labels - Kept for backward compatibility, will be migrated
-- name: bug
-  color: D73A4A
-  description: "[DEPRECATED] Use type/bug instead. Confirmed defects that require fixes."
-- name: enhancement
-  color: A2EEEF
-  description: "[DEPRECATED] Use type/enhancement instead. Feature work or improvements beyond bug fixes."
-- name: severity/high
-  color: B60205
-  description: "[DEPRECATED] Use priority/critical instead. Immediate attention required."
-- name: severity/medium
-  color: D93F0B
-  description: "[DEPRECATED] Use priority/high instead. Degraded behaviour that should be addressed soon."
-- name: severity/low
-  color: F9D0C4
-  description: "[DEPRECATED] Use priority/low instead. Minor issues to tackle when capacity allows."
+
