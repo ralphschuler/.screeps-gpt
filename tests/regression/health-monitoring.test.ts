@@ -52,13 +52,20 @@ describe("Health Monitoring System - Regression Tests", () => {
       }
     } as Memory;
 
-    // Mock protocol for emergency reset and respawn checks
+    // Mock protocol for emergency reset, respawn checks, and health metrics
+    // Protocol reads from memory for state coordination
     mockProtocol = {
-      isEmergencyReset: () => false,
-      needsRespawn: () => false,
-      setEmergencyReset: () => {},
-      setNeedsRespawn: () => {},
-      clearFlags: () => {}
+      isEmergencyReset: () => !!(mockMemory as any).emergencyReset,
+      needsRespawn: () => !!(mockMemory as any).needsRespawn,
+      setEmergencyReset: (value: boolean) => { (mockMemory as any).emergencyReset = value; },
+      setNeedsRespawn: (value: boolean) => { (mockMemory as any).needsRespawn = value; },
+      clearFlags: () => {
+        delete (mockMemory as any).emergencyReset;
+        delete (mockMemory as any).needsRespawn;
+      },
+      setHealthMetrics: () => {},
+      getHealthMetrics: () => undefined,
+      getHealthScore: () => 0
     };
 
     healthProcess = new HealthProcess();
