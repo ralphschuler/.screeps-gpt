@@ -189,7 +189,7 @@ describe("Scout Behavior", () => {
         homeRoom: "W5N5",
         targetRooms: ["W4N5", "W6N5", "W5N4", "W5N6", "W4N4", "W6N6", "W4N6", "W6N4"],
         currentTargetIndex: 0,
-        lastRoomSwitchTick: 1500
+        lastRoomSwitchTick: 1000
       },
       store: {
         getFreeCapacity: vi.fn(() => 0),
@@ -200,7 +200,6 @@ describe("Scout Behavior", () => {
         getRangeTo: vi.fn(() => 2) // Close to center
       },
       room: targetRoom,
-      ticksToLive: 1495, // 5 ticks have passed since lastRoomSwitchTick
       harvest: vi.fn(() => OK),
       transfer: vi.fn(() => OK),
       moveTo: vi.fn(() => OK),
@@ -212,12 +211,15 @@ describe("Scout Behavior", () => {
     };
 
     const game: GameContext = {
-      time: 1005,
+      time: 1005, // 5 ticks have passed since lastRoomSwitchTick (1000)
       cpu: { getUsed: () => 0, limit: 20, bucket: 1000 },
       creeps: { scout: scout },
       spawns: {},
       rooms: { W4N5: targetRoom }
     };
+
+    // Set global Game.time for the runScout function
+    Game.time = 1005;
 
     const memory = { creepCounter: 0 } as Memory;
     const roleCounts = { harvester: 4, upgrader: 3, builder: 2, scout: 1 };

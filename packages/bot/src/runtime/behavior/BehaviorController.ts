@@ -3217,9 +3217,13 @@ function getAdjacentRooms(roomName: string): string[] {
       const adjX = x + dx;
       const adjY = y + dy;
 
-      const adjEwDir = adjX < 0 ? "W" : "E";
-      const adjNsDir = adjY < 0 ? "S" : "N";
-      const adjRoomName = `${adjEwDir}${Math.abs(adjX)}${adjNsDir}${Math.abs(adjY)}`;
+      // Screeps coordinate system skips 0: goes from W1 <-> E1 and N1 <-> S1
+      // If adjX or adjY is 0, we need to skip to 1 and set direction based on sign
+      const adjEwDir = adjX === 0 ? (x + dx >= 0 ? "E" : "W") : adjX < 0 ? "W" : "E";
+      const adjEwNum = adjX === 0 ? 1 : Math.abs(adjX);
+      const adjNsDir = adjY === 0 ? (y + dy >= 0 ? "N" : "S") : adjY < 0 ? "S" : "N";
+      const adjNsNum = adjY === 0 ? 1 : Math.abs(adjY);
+      const adjRoomName = `${adjEwDir}${adjEwNum}${adjNsDir}${adjNsNum}`;
 
       adjacentRooms.push(adjRoomName);
     }
@@ -3232,8 +3236,8 @@ function getAdjacentRooms(roomName: string): string[] {
  * Executes the behavior logic for a scout creep.
  *
  * Scouts move through adjacent rooms to provide visibility for the ScoutingProcess.
- * They cycle through all adjacent rooms, spending time in each to ensure the room
- * is properly scouted by the ScoutingProcess, then return to the home room.
+ * They continuously cycle through all adjacent rooms, spending time in each to ensure the room
+ * is properly scouted by the ScoutingProcess.
  *
  * @param creep - The scout creep to run behavior for.
  * @returns The current scout task ("scout") as a string.
@@ -3279,15 +3283,14 @@ function runScout(creep: ManagedCreep): string {
       creep.moveTo(centerPos, { reusePath: 20 });
     } else {
       // We're near center - track how long we've been here
-      memory.lastRoomSwitchTick ??= creep.ticksToLive ?? 1500;
+      memory.lastRoomSwitchTick ??= Game.time;
 
       // Move to next room after 5 ticks at center
-      // Since ticksToLive decreases, subtract current from stored to get elapsed time
-      const ticksAtCenter: number = (memory.lastRoomSwitchTick ?? 1500) - (creep.ticksToLive ?? 1500);
+      // Use Game.time to track elapsed time, which is monotonic and unaffected by respawn
+      const ticksAtCenter: number = Game.time - (memory.lastRoomSwitchTick ?? Game.time);
       if (ticksAtCenter >= 5) {
         memory.currentTargetIndex = (memory.currentTargetIndex + 1) % memory.targetRooms.length;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        memory.lastRoomSwitchTick = creep.ticksToLive ?? 1500;
+        memory.lastRoomSwitchTick = Game.time;
       }
     }
     return SCOUT_TASK;
