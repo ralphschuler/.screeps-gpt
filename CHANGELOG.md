@@ -5,6 +5,14 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Fixed
+
+- **Workflow**: Fixed screeps-agent.yml using npm instead of yarn, breaking workspace dependency resolution
+  - Replaced `npm ci` + `npm install` with `yarn install --frozen-lockfile`
+  - Updated Node.js version to use `.nvmrc` instead of hardcoded version
+  - Aligns with other workflows (guard-build.yml, deploy.yml)
+  - Resolves issue ralphschuler/.screeps-gpt#1270
+
 ## [0.137.15] - 2025-11-23
 
 ### Changed
