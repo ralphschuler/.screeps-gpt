@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.137.3",
+    "date": "2025-11-23",
+    "notes": [
+      "**Repository Cleanup**: Removed unused files and placeholder packages to improve maintainability",
+      "Removed stale `source/docs` directory (migrated to `packages/docs/source/` previously)",
+      "Removed placeholder package `packages/actions` (no implementation, marked as \"future\" in README)",
+      "Removed placeholder package `packages/console` (no implementation, marked as \"future\" in README)",
+      "No breaking changes - all builds, tests, and deployments remain functional",
+      "Workspace configuration automatically adapts to removed packages"
+    ],
+    "anchor": "01373---2025-11-23",
+    "slug": "v0-137-3"
+  },
+  {
     "version": "0.125.7",
     "date": "2025-11-21",
     "notes": [

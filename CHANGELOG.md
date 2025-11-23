@@ -5,6 +5,9 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.137.3] - 2025-11-23
+
+
 ### Changed
 
 - **Repository Cleanup**: Removed unused files and placeholder packages to improve maintainability
@@ -13,6 +16,7 @@ All notable changes to this project are documented here. This changelog now main
   - Removed placeholder package `packages/console` (no implementation, marked as "future" in README)
   - No breaking changes - all builds, tests, and deployments remain functional
   - Workspace configuration automatically adapts to removed packages
+
 
 ## [0.125.7] - 2025-11-21
 
