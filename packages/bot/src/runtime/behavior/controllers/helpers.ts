@@ -141,8 +141,9 @@ export function moveToTargetRoom(creep: CreepLike, targetRoom: string, reusePath
   const atEdge = creep.pos.x === 0 || creep.pos.x === 49 || creep.pos.y === 0 || creep.pos.y === 49;
 
   // If at edge, move directly to target room center to avoid oscillation
+  // Use reusePath: 0 to force fresh pathfinding and prevent cached path issues at room boundaries
   if (atEdge) {
-    creep.moveTo(new RoomPosition(ROOM_CENTER_X, ROOM_CENTER_Y, targetRoom), { reusePath });
+    creep.moveTo(new RoomPosition(ROOM_CENTER_X, ROOM_CENTER_Y, targetRoom), { reusePath: 0 });
     return true;
   }
 

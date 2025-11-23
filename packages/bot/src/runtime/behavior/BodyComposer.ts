@@ -142,10 +142,24 @@ export class BodyComposer {
       return this.generateEmergencyBody(energyCapacity);
     }
 
-    // Adjust capacity based on room's energy production if room context provided
+    // Start with full capacity
     let adjustedCapacity = energyCapacity;
+
+    // Apply budget constraints only when room context is provided (actual spawning scenario)
     if (room) {
-      adjustedCapacity = this.calculateSustainableCapacity(room, energyCapacity);
+      // Check if we're in early game/bootstrap scenario
+      const creepCount = this.countRoomCreeps(room);
+      const isEarlyGame = creepCount < 5;
+
+      // Enforce 50% energy budget constraint to maintain spawn throughput
+      // Exception: Allow higher capacity during early game (< 5 creeps) for rapid bootstrap
+      // This allows spawning 2 creeps per spawn cycle and prevents energy depletion
+      const budgetLimit = isEarlyGame ? energyCapacity : energyCapacity * 0.5;
+      adjustedCapacity = Math.min(adjustedCapacity, budgetLimit);
+
+      // Further adjust based on sustainable capacity calculation
+      // Pass isEarlyGame flag to avoid duplicate calculation
+      adjustedCapacity = Math.min(adjustedCapacity, this.calculateSustainableCapacity(room, energyCapacity, isEarlyGame));
     }
 
     // Try normal body generation first
@@ -260,6 +274,22 @@ export class BodyComposer {
   }
 
   /**
+   * Count the number of creeps in a specific room.
+   * Used for early game detection and capacity calculations.
+   *
+   * @param room - The room to count creeps in
+   * @returns Number of creeps currently in the room
+   */
+  private countRoomCreeps(room: Room): number {
+    return Game.creeps
+      ? Object.keys(Game.creeps).filter(name => {
+          const creep = Game.creeps[name];
+          return creep?.room && creep.room.name === room.name;
+        }).length
+      : 0;
+  }
+
+  /**
    * Calculate sustainable energy capacity based on room's energy balance.
    * Uses energy production/consumption analysis to determine optimal spawn budget.
    *
@@ -271,9 +301,10 @@ export class BodyComposer {
    *
    * @param room - The room context
    * @param baseCapacity - Room's energy capacity available
+   * @param isEarlyGame - Whether the room is in early game phase (optional, will be calculated if not provided)
    * @returns Adjusted capacity that balances sustainability and performance
    */
-  private calculateSustainableCapacity(room: Room, baseCapacity: number): number {
+  private calculateSustainableCapacity(room: Room, baseCapacity: number, isEarlyGame?: boolean): number {
     // Calculate room's energy balance
     const balance = this.energyCalculator.calculate(room);
 
@@ -282,17 +313,15 @@ export class BodyComposer {
       return baseCapacity;
     }
 
-    // Count creeps in room for early game detection
-    const creepCount = Game.creeps
-      ? Object.keys(Game.creeps).filter(name => {
-          const creep = Game.creeps[name];
-          return creep?.room && creep.room.name === room.name;
-        }).length
-      : 0;
+    // Check early game status if not provided
+    if (isEarlyGame === undefined) {
+      const creepCount = this.countRoomCreeps(room);
+      isEarlyGame = creepCount < 5;
+    }
 
     // Early game strategy: Use full capacity for rapid growth
     // This allows bootstrapping with larger, more efficient creeps
-    if (creepCount < 5) {
+    if (isEarlyGame) {
       return baseCapacity;
     }
 
