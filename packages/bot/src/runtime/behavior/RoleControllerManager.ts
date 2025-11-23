@@ -410,6 +410,8 @@ export class RoleControllerManager {
       const result = this.spawnCreepSafely(spawn, body, name, creepMemory);
       if (result === OK) {
         spawned.push(name);
+        // Update role counts to reflect the newly spawned creep
+        roleCounts[role] = (roleCounts[role] ?? 0) + 1;
         this.logger.log?.(`[RoleControllerManager] Spawned ${name} (${body.length} parts, ${spawnCost} energy)`);
       }
     }
