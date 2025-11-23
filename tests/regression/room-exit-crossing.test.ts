@@ -121,7 +121,7 @@ describe("Room Exit Crossing - Regression", () => {
         x: 25,
         y: 25,
         roomName: "W5N5",
-        findClosestByPath: vi.fn(() => ({ x: 25, y: 0, roomName: "W5N5" } as RoomPosition)),
+        findClosestByPath: vi.fn(() => ({ x: 25, y: 0, roomName: "W5N5" }) as RoomPosition),
         getRangeTo: vi.fn(() => 10)
       },
       room: { name: "W5N5", findExitTo, find },

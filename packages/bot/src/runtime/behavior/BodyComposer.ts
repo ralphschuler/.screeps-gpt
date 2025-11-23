@@ -159,7 +159,10 @@ export class BodyComposer {
 
       // Further adjust based on sustainable capacity calculation
       // Pass isEarlyGame flag to avoid duplicate calculation
-      adjustedCapacity = Math.min(adjustedCapacity, this.calculateSustainableCapacity(room, energyCapacity, isEarlyGame));
+      adjustedCapacity = Math.min(
+        adjustedCapacity,
+        this.calculateSustainableCapacity(room, energyCapacity, isEarlyGame)
+      );
     }
 
     // Try normal body generation first
