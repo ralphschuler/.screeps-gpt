@@ -54,3 +54,21 @@ export function tryPickupDroppedEnergy(creep: CreepLike, minAmount = 50): boolea
 
   return false;
 }
+
+/**
+ * Determines if a structure is a valid energy source that creeps can withdraw from.
+ * Valid sources include containers and storage, but NOT spawns, extensions, or towers.
+ *
+ * @param structure - The structure to check
+ * @param minEnergy - Minimum energy threshold (default: 0)
+ * @returns true if the structure is a valid energy source for withdrawal
+ */
+export function isValidEnergySource(structure: AnyStructure, minEnergy: number = 0): boolean {
+  // Only containers and storage are valid withdrawal sources
+  if (structure.structureType !== STRUCTURE_CONTAINER && structure.structureType !== STRUCTURE_STORAGE) {
+    return false;
+  }
+
+  const store = structure as AnyStoreStructure;
+  return store.store.getUsedCapacity(RESOURCE_ENERGY) > minEnergy;
+}
