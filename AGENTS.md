@@ -114,6 +114,19 @@ Agents working on runtime code should understand:
 - Only disable features when there is a documented performance or compatibility concern.
 - Example: The profiler is enabled by default (`__PROFILER_ENABLED__` defaults to `true`). Use `PROFILER_ENABLED=false` or `yarn build:no-profiler` to explicitly disable.
 
+**Deprecation and Obsolescence Policy:**
+
+- **Obsolete or deprecated code is removed immediately** - no grace period, no backwards compatibility concerns.
+- Code only needs to work with the current version of itself, not with any previous versions.
+- When a better implementation exists, the old one is deleted entirely, not marked as deprecated.
+- Feature flags or dual code paths for backwards compatibility are NOT permitted.
+- If code is identified as obsolete (e.g., BehaviorController when RoleControllerManager exists), delete it immediately.
+- This policy ensures:
+  - Clean, maintainable codebase without legacy cruft
+  - No confusion about which code path is active
+  - Faster development without compatibility constraints
+  - Reduced cognitive load when reading and maintaining code
+
 ### 3. Documentation Discipline
 
 **Update triggers:**

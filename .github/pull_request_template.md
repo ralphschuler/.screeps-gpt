@@ -83,12 +83,14 @@ Provide evidence of testing:
 
 - [ ] No breaking changes
 - [ ] Breaking changes documented below
+- [ ] Obsolete/deprecated code removed (if applicable)
 
 If breaking changes exist, describe:
 
 - What breaks:
-- Migration path:
-- Backward compatibility considerations:
+- Migration path (if transitioning existing deployments):
+
+**Note**: This repository does not maintain backwards compatibility. Obsolete code should be removed immediately rather than deprecated.
 
 ## Deployment Considerations
 
