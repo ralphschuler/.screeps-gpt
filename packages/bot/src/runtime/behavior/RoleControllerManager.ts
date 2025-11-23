@@ -388,8 +388,14 @@ export class RoleControllerManager {
       const spawnEnergy = this.getSpawnEnergyDetails(spawn, isEmergency || harvesterCount === 0);
       const energyToUse = spawnEnergy.energyToUse;
 
+      // Count creeps in the spawn's room for early game detection
+      // Use game.creeps instead of global Game to work with kernel context
+      const roomCreepCount = spawnEnergy.room
+        ? Object.values(game.creeps).filter(creep => creep.room.name === spawnEnergy.room.name).length
+        : undefined;
+
       // Generate body based on energy
-      const body = this.bodyComposer.generateBody(role, energyToUse, spawnEnergy.room);
+      const body = this.bodyComposer.generateBody(role, energyToUse, spawnEnergy.room, roomCreepCount);
 
       if (body.length === 0) {
         // Not enough energy for minimum body
