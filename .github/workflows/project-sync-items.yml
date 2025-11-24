@@ -55,7 +55,7 @@ jobs:
           fi
 
       - name: Check out repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Add item to project
         uses: ./.github/actions/project-sync

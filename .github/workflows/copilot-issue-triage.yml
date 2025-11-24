@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Check out repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Run Copilot issue triage
         uses: ./.github/actions/copilot-issue-agent
         with:
