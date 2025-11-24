@@ -1,5 +1,6 @@
 import { profile } from "@ralphschuler/screeps-profiler";
 import { WallUpgradeManager } from "@runtime/defense/WallUpgradeManager";
+import { EnergyValidator } from "@runtime/energy/EnergyValidation";
 
 /**
  * Configuration options for room visuals
@@ -48,6 +49,12 @@ export interface RoomVisualConfig {
   showWallUpgrade?: boolean;
 
   /**
+   * Show energy economy status
+   * Default: true (if enabled)
+   */
+  showEnergyEconomy?: boolean;
+
+  /**
    * Maximum CPU budget for visuals per tick
    * Default: 2.0
    */
@@ -88,6 +95,7 @@ interface GameLike {
 export class RoomVisualManager {
   private readonly config: Required<RoomVisualConfig>;
   private readonly wallUpgradeManager: WallUpgradeManager;
+  private readonly energyValidator: EnergyValidator;
 
   public constructor(config: RoomVisualConfig = {}, wallUpgradeManager?: WallUpgradeManager) {
     this.config = {
@@ -98,9 +106,11 @@ export class RoomVisualManager {
       showSpawnQueue: config.showSpawnQueue ?? true,
       showCpuUsage: config.showCpuUsage ?? true,
       showWallUpgrade: config.showWallUpgrade ?? true,
+      showEnergyEconomy: config.showEnergyEconomy ?? true,
       cpuBudget: config.cpuBudget ?? 2.0
     };
     this.wallUpgradeManager = wallUpgradeManager ?? new WallUpgradeManager();
+    this.energyValidator = new EnergyValidator();
   }
 
   /**
@@ -146,6 +156,10 @@ export class RoomVisualManager {
 
       if (this.config.showWallUpgrade) {
         this.renderWallUpgrade(room);
+      }
+
+      if (this.config.showEnergyEconomy) {
+        this.renderEnergyEconomy(room);
       }
     }
   }
@@ -359,6 +373,29 @@ export class RoomVisualManager {
         opacity: 0.8
       });
     }
+  }
+
+  /**
+   * Render energy economy status
+   */
+  private renderEnergyEconomy(room: {
+    visual: RoomVisual;
+    name: string;
+    energyAvailable: number;
+    energyCapacityAvailable: number;
+    controller?: StructureController | null;
+    find<T>(type: number): T[];
+  }): void {
+    // Only show for owned rooms
+    if (!room.controller?.my) {
+      return;
+    }
+
+    // Cast to Room type for EnergyValidator
+    const actualRoom = room as unknown as Room;
+
+    // Render energy status at position (1, 3) to avoid overlap with wall upgrade
+    this.energyValidator.renderEnergyStatus(actualRoom, { x: 1, y: 3 });
   }
 
   /**
