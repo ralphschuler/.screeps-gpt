@@ -422,14 +422,46 @@ export class RoleControllerManager {
       : false;
 
     // Check for pending expansion requests and adjust claimer minimum
-    // Access colony memory with type checking for expansion queue
-    const colonyMemory = memory.colony as
-      | { expansionQueue?: Array<{ targetRoom: string; status: string }> }
+    // Access colony memory expansion queue (typed as ColonyManagerMemory when set by EmpireManager)
+    const expansionQueue = memory.colony?.expansionQueue as
+      | Array<{ targetRoom: string; status: string }>
       | undefined;
-    const pendingExpansions = colonyMemory?.expansionQueue?.filter(req => req.status === "pending") ?? [];
+    const pendingExpansions = expansionQueue?.filter(req => req.status === "pending") ?? [];
     const needsClaimers = pendingExpansions.length > 0;
 
+    // Pre-calculate claimer assignments to avoid repeated iterations
+    // Build a Set of target rooms already assigned to claimers and count them
+    const assignedClaimerRooms = new Set<string>();
+    let claimersOnExpansionCount = 0;
+    if (needsClaimers) {
+      for (const creep of Object.values(game.creeps)) {
+        if (creep.memory.role === "claimer" && creep.memory.targetRoom) {
+          assignedClaimerRooms.add(creep.memory.targetRoom);
+          if (pendingExpansions.some(exp => exp.targetRoom === creep.memory.targetRoom)) {
+            claimersOnExpansionCount++;
+          }
+        }
+      }
+    }
+
     // Determine spawn priority order based on combat status
+    // Base role order that will be adjusted based on conditions
+    const baseRoleOrder: RoleName[] = [
+      "harvester",
+      "upgrader",
+      "builder",
+      "stationaryHarvester",
+      "hauler",
+      "repairer",
+      "remoteMiner",
+      "remoteHauler",
+      "scout",
+      "attacker",
+      "healer",
+      "dismantler",
+      "claimer"
+    ];
+
     let roleOrder: RoleName[];
     if (isUnderCombat) {
       // Combat mode: prioritize defenders, attackers, and repairers over upgraders
@@ -449,40 +481,13 @@ export class RoleControllerManager {
         "claimer"
       ];
       this.logger.log?.(`[RoleControllerManager] Combat mode active in rooms: ${roomsUnderCombat.join(", ")}`);
+    } else if (needsClaimers) {
+      // Normal mode with expansion: prioritize claimers (second after harvesters)
+      roleOrder = baseRoleOrder.filter(r => r !== "claimer");
+      roleOrder.splice(1, 0, "claimer");
     } else {
       // Normal mode: standard priority order
-      // Prioritize claimers when expansion is pending
-      roleOrder = needsClaimers
-        ? [
-            "harvester",
-            "claimer", // Prioritize claimers for expansion
-            "upgrader",
-            "builder",
-            "stationaryHarvester",
-            "hauler",
-            "repairer",
-            "remoteMiner",
-            "remoteHauler",
-            "scout",
-            "attacker",
-            "healer",
-            "dismantler"
-          ]
-        : [
-            "harvester",
-            "upgrader",
-            "builder",
-            "stationaryHarvester",
-            "hauler",
-            "repairer",
-            "remoteMiner",
-            "remoteHauler",
-            "scout",
-            "attacker",
-            "healer",
-            "dismantler",
-            "claimer"
-          ];
+      roleOrder = baseRoleOrder;
     }
 
     if (needsClaimers) {
@@ -502,17 +507,10 @@ export class RoleControllerManager {
       let targetMinimum = bootstrapMinimums[role] ?? config.minimum;
 
       // Dynamically increase claimer minimum when expansion is pending
-      // Count claimers already assigned to expansions once before role processing
       if (role === "claimer" && needsClaimers) {
-        const claimersOnExpansion = Object.values(game.creeps).filter(
-          creep =>
-            creep.memory.role === "claimer" &&
-            creep.memory.targetRoom &&
-            pendingExpansions.some(exp => exp.targetRoom === creep.memory.targetRoom)
-        ).length;
-
+        // Use pre-calculated claimer count to avoid iterating through all creeps again
         // Spawn one claimer per pending expansion (up to current pending count)
-        targetMinimum = Math.max(targetMinimum, pendingExpansions.length - claimersOnExpansion);
+        targetMinimum = Math.max(targetMinimum, pendingExpansions.length - claimersOnExpansionCount);
       }
 
       // Dynamically reduce upgrader minimum during combat to focus on defense
@@ -577,12 +575,9 @@ export class RoleControllerManager {
 
       // If spawning a claimer for expansion, assign the target room
       if (role === "claimer" && needsClaimers) {
-        // Find the first pending expansion without an assigned claimer
+        // Use pre-calculated Set to efficiently find first unassigned expansion
         const unassignedExpansion = pendingExpansions.find(
-          expansion =>
-            !Object.values(game.creeps).some(
-              creep => creep.memory.role === "claimer" && creep.memory.targetRoom === expansion.targetRoom
-            )
+          expansion => !assignedClaimerRooms.has(expansion.targetRoom)
         );
 
         if (unassignedExpansion) {
