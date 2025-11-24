@@ -20,7 +20,7 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Check out repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Run Copilot repository audit
         uses: ./.github/actions/copilot-audit-agent
         with:

@@ -23,7 +23,7 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Check out repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Update project status to In Progress
         uses: ./.github/actions/project-sync
         with:

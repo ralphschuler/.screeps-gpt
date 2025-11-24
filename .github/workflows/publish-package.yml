@@ -39,7 +39,7 @@ jobs:
           - screeps-xtree
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: ${{ inputs.version_tag || github.ref }}
 
@@ -95,7 +95,7 @@ jobs:
     needs: publish-packages
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: ${{ inputs.version_tag || github.ref }}
 
