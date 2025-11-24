@@ -36,6 +36,7 @@ export interface CleanupResult {
   roomDataCleaned: number;
   statsEntriesCleaned: number;
   reportsRotated: number;
+  flagMemoryCleaned: number;
   totalBytesSaved: number;
 }
 
@@ -63,22 +64,31 @@ export class MemoryGarbageCollector {
    * Perform incremental garbage collection on Memory.
    * Uses CPU throttling to avoid spikes.
    */
-  public collect(game: { time: number; rooms: Record<string, unknown> }, memory: Memory): CleanupResult {
+  public collect(
+    game: { time: number; rooms: Record<string, unknown>; flags?: Record<string, unknown> },
+    memory: Memory
+  ): CleanupResult {
     const result: CleanupResult = {
       roomDataCleaned: 0,
       statsEntriesCleaned: 0,
       reportsRotated: 0,
+      flagMemoryCleaned: 0,
       totalBytesSaved: 0
     };
 
     // Clean orphaned room data
     result.roomDataCleaned = this.cleanOrphanedRoomData(game, memory);
 
+    // Clean orphaned flag memory
+    result.flagMemoryCleaned = this.cleanOrphanedFlagMemory(game, memory);
+
     // Rotate old system reports
     result.reportsRotated = this.rotateSystemReports(game.time, memory);
 
-    if (result.roomDataCleaned > 0 || result.reportsRotated > 0) {
-      this.logger.log(`[GC] Cleaned ${result.roomDataCleaned} room(s), rotated ${result.reportsRotated} report(s)`);
+    if (result.roomDataCleaned > 0 || result.reportsRotated > 0 || result.flagMemoryCleaned > 0) {
+      this.logger.log(
+        `[GC] Cleaned ${result.roomDataCleaned} room(s), ${result.flagMemoryCleaned} flag(s), rotated ${result.reportsRotated} report(s)`
+      );
     }
 
     return result;
@@ -116,6 +126,43 @@ export class MemoryGarbageCollector {
 
       if (age > this.config.roomDataRetentionTicks) {
         delete memory.rooms[roomName];
+        cleaned++;
+      }
+    }
+
+    return cleaned;
+  }
+
+  /**
+   * Remove memory for flags that no longer exist.
+   * Flags can be created and removed dynamically, and their memory entries
+   * may become orphaned when the flag is removed.
+   * @see https://wiki.screepspl.us/Memory/ - Flag memory cleanup
+   */
+  private cleanOrphanedFlagMemory(
+    game: { time: number; rooms: Record<string, unknown>; flags?: Record<string, unknown> },
+    memory: Memory
+  ): number {
+    // Memory.flags may not exist in all type definitions, check at runtime
+    const memoryFlags = (memory as { flags?: Record<string, unknown> }).flags;
+    if (!memoryFlags) {
+      return 0;
+    }
+
+    const gameFlags = game.flags ?? {};
+    let cleaned = 0;
+    let processed = 0;
+
+    for (const flagName of Object.keys(memoryFlags)) {
+      // CPU throttling
+      if (processed >= this.config.maxCleanupPerTick) {
+        break;
+      }
+      processed++;
+
+      // Remove memory for flags that no longer exist
+      if (!(flagName in gameFlags)) {
+        delete memoryFlags[flagName];
         cleaned++;
       }
     }

@@ -90,6 +90,77 @@ describe("Memory Management System", () => {
       });
     });
 
+    describe("Flag Memory Cleanup", () => {
+      it("should clean orphaned flag memory", () => {
+        const mockLogger = { log: vi.fn() };
+        const collector = new MemoryGarbageCollector({}, mockLogger);
+
+        const memory: Memory = {} as Memory;
+        (memory as any).flags = {
+          existingFlag: { someData: "value" },
+          orphanedFlag: { someData: "orphaned" }
+        };
+
+        const game = {
+          time: 1000,
+          rooms: {},
+          flags: {
+            existingFlag: {} // Only this flag exists in the game
+          }
+        };
+
+        const result = collector.collect(game, memory);
+
+        expect(result.flagMemoryCleaned).toBe(1);
+        expect((memory as any).flags).toHaveProperty("existingFlag");
+        expect((memory as any).flags).not.toHaveProperty("orphanedFlag");
+      });
+
+      it("should not fail if Memory.flags is undefined", () => {
+        const mockLogger = { log: vi.fn() };
+        const collector = new MemoryGarbageCollector({}, mockLogger);
+
+        const memory: Memory = {} as Memory;
+        const game = { time: 1000, rooms: {} };
+
+        expect(() => collector.collect(game, memory)).not.toThrow();
+      });
+
+      it("should not fail if Game.flags is undefined", () => {
+        const mockLogger = { log: vi.fn() };
+        const collector = new MemoryGarbageCollector({}, mockLogger);
+
+        const memory: Memory = {} as Memory;
+        (memory as any).flags = { someFlag: {} };
+
+        const game = { time: 1000, rooms: {} }; // No flags property
+
+        const result = collector.collect(game, memory);
+
+        // When Game.flags is undefined, all flag memories should be treated as orphaned
+        expect(result.flagMemoryCleaned).toBe(1);
+      });
+
+      it("should respect maxCleanupPerTick for flags", () => {
+        const mockLogger = { log: vi.fn() };
+        const collector = new MemoryGarbageCollector({ maxCleanupPerTick: 2 }, mockLogger);
+
+        const memory: Memory = {} as Memory;
+        (memory as any).flags = {
+          orphan1: {},
+          orphan2: {},
+          orphan3: {},
+          orphan4: {}
+        };
+
+        const game = { time: 1000, rooms: {}, flags: {} };
+        const result = collector.collect(game, memory);
+
+        // Should only clean up to maxCleanupPerTick flags
+        expect(result.flagMemoryCleaned).toBeLessThanOrEqual(2);
+      });
+    });
+
     describe("Memory Usage Tracking", () => {
       it("should estimate memory usage", () => {
         const mockLogger = { log: vi.fn() };
