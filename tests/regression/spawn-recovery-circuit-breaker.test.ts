@@ -282,9 +282,7 @@ describe("Spawn Recovery Circuit Breaker", () => {
 
     it("should handle corrupted state file", async () => {
       // Write invalid JSON
-      await import("node:fs/promises").then(fs =>
-        fs.writeFile(TEST_STATE_FILE, "invalid json {")
-      );
+      await import("node:fs/promises").then(fs => fs.writeFile(TEST_STATE_FILE, "invalid json {"));
 
       const result = await canAttemptRecovery();
       expect(result.allowed).toBe(true);

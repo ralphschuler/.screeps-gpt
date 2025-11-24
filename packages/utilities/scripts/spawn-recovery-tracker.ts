@@ -100,9 +100,7 @@ function shouldActivateCircuitBreaker(state: SpawnRecoveryState): boolean {
 
   // Check recent attempts
   const recentAttempts = getRecentAttempts(state);
-  const failedAttempts = recentAttempts.filter(
-    attempt => attempt.action === "failed" || attempt.action === "none"
-  );
+  const failedAttempts = recentAttempts.filter(attempt => attempt.action === "failed" || attempt.action === "none");
 
   // Activate if we've had MAX_ATTEMPTS failures in the window
   if (failedAttempts.length >= MAX_ATTEMPTS_PER_WINDOW) {
@@ -141,10 +139,7 @@ export async function recordAttempt(attempt: Omit<SpawnRecoveryAttempt, "timesta
   await saveState(state);
 
   // Log individual attempt to separate file for audit trail
-  const attemptFile = resolve(
-    REPORTS_DIR,
-    `attempt-${fullAttempt.timestamp.replace(/:/g, "-")}.json`
-  );
+  const attemptFile = resolve(REPORTS_DIR, `attempt-${fullAttempt.timestamp.replace(/:/g, "-")}.json`);
   await writeFile(attemptFile, JSON.stringify(fullAttempt, null, 2));
 }
 
@@ -213,9 +208,7 @@ export async function getRecoveryStats(): Promise<{
   return {
     totalAttempts: state.attempts.length,
     recentAttempts: recentAttempts.length,
-    successfulAttempts: state.attempts.filter(
-      a => a.action === "respawned" || a.action === "spawn_placed"
-    ).length,
+    successfulAttempts: state.attempts.filter(a => a.action === "respawned" || a.action === "spawn_placed").length,
     failedAttempts: state.attempts.filter(a => a.action === "failed").length,
     lastSuccessfulRecovery: state.lastSuccessfulRecovery,
     circuitBreakerActive: shouldActivateCircuitBreaker(state),
@@ -231,7 +224,7 @@ export async function resetCircuitBreaker(): Promise<void> {
   const state = await loadState();
   state.circuitBreakerActive = false;
   state.circuitBreakerUntil = undefined;
-  
+
   // Clear recent attempts to prevent immediate reactivation
   // Keep older attempts for audit trail
   const now = Date.now();
@@ -240,7 +233,7 @@ export async function resetCircuitBreaker(): Promise<void> {
     const attemptTime = new Date(attempt.timestamp).getTime();
     return attemptTime < windowStart;
   });
-  
+
   await saveState(state);
 }
 
