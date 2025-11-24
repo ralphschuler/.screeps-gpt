@@ -50,7 +50,9 @@ export function validateProfilerEnabled(): boolean {
 const RUNTIME_DEFINES = {
   __PROFILER_ENABLED__: validateProfilerEnabled() ? "true" : "false",
   __ROOM_VISUALS_ENABLED__: JSON.stringify(process.env.ROOM_VISUALS_ENABLED ?? "false"),
-  __PLAYER_USERNAME__: JSON.stringify(process.env.PLAYER_USERNAME ?? "ralphschuler")
+  __PLAYER_USERNAME__: JSON.stringify(process.env.PLAYER_USERNAME ?? "ralphschuler"),
+  // Map globalThis to global for Screeps runtime compatibility (ES2020 -> ES5)
+  globalThis: "global"
 } as const;
 
 async function prepare() {

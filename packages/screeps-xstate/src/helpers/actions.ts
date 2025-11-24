@@ -1,5 +1,8 @@
 import type { Action } from "../types.js";
 
+// Declare global for Screeps compatibility (available in both Node.js and Screeps)
+declare const global: any;
+
 /**
  * Creates an action that assigns a value to a context property.
  *
@@ -39,9 +42,10 @@ export function log<TContext, TEvent>(
 ): Action<TContext, TEvent> {
   return (ctx, event) => {
     const msg = typeof message === "function" ? message(ctx, event) : message;
-    // Use globalThis.console to avoid TypeScript lib issues
+    // Access console from global for Screeps compatibility
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any).console.log(msg);
+    const safeConsole = (typeof global !== "undefined" ? (global as any).console : undefined) || { log: () => {} };
+    safeConsole.log(msg);
   };
 }
 
