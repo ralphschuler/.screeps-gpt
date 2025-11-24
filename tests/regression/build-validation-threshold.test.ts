@@ -13,9 +13,10 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { writeFile, unlink, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
+import { tmpdir } from "node:os";
 import { validateFile } from "../../packages/utilities/scripts/lib/buildProject";
 
-const TEST_DIR = resolve("/tmp/build-validation-test");
+const TEST_DIR = resolve(tmpdir(), "build-validation-test");
 
 describe("Build Validation Threshold Regression", () => {
   beforeAll(async () => {
@@ -30,7 +31,8 @@ describe("Build Validation Threshold Regression", () => {
         "small-main.js",
         "valid-main.js",
         "tiny-module.js",
-        "valid-module.js",
+        "valid-module-500b.js",
+        "valid-type-module.js",
         "empty.js"
       ];
       for (const file of testFiles) {
@@ -101,7 +103,7 @@ describe("Build Validation Threshold Regression", () => {
 
     it("should accept module at 500 bytes or larger", async () => {
       // Create a 500-byte module (minimum valid size)
-      const validModulePath = resolve(TEST_DIR, "valid-module.js");
+      const validModulePath = resolve(TEST_DIR, "valid-module-500b.js");
       const validContent = "a".repeat(500);
       await writeFile(validModulePath, validContent);
 
@@ -110,7 +112,7 @@ describe("Build Validation Threshold Regression", () => {
 
     it("should accept small type-only modules (>500 bytes)", async () => {
       // Create a realistic small type-only module (837 bytes, like types.js)
-      const typeModulePath = resolve(TEST_DIR, "valid-module.js");
+      const typeModulePath = resolve(TEST_DIR, "valid-type-module.js");
       const typeContent = `
 // Type definitions module
 export interface GameContext {
