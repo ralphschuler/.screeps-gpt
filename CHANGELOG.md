@@ -7,14 +7,12 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [0.151.1] - 2025-11-24
 
-
 ### Fixed
 
 - **Claimer Room Cycling**: Fixed claimers cycling back through room exits after entering target room
   - When creep enters target room at edge position (x/y = 0 or 49), it now moves toward room center before attempting to claim
   - Prevents pathfinding to controller from leading creep back through the exit
   - Added regression tests to verify behavior at all edge positions and corners
-
 
 ## [0.146.0] - 2025-11-24
 

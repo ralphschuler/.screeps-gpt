@@ -261,7 +261,17 @@ describe("BodyComposer", () => {
     });
 
     it("should return patterns for all standard roles", () => {
-      const roles = ["harvester", "upgrader", "builder", "remoteMiner", "stationaryHarvester", "hauler", "repairer", "claimer", "scout"];
+      const roles = [
+        "harvester",
+        "upgrader",
+        "builder",
+        "remoteMiner",
+        "stationaryHarvester",
+        "hauler",
+        "repairer",
+        "claimer",
+        "scout"
+      ];
 
       for (const role of roles) {
         const pattern = composer.getPattern(role);
