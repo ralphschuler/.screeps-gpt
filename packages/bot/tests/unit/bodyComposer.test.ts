@@ -147,6 +147,52 @@ describe("BodyComposer", () => {
       });
     });
 
+    describe("claimer role", () => {
+      it("should generate body with CLAIM part at minimum energy", () => {
+        const body = composer.generateBody("claimer", 650);
+        expect(body).toContain(CLAIM);
+        expect(body).toContain(MOVE);
+        expect(composer.calculateBodyCost(body)).toBe(650);
+      });
+
+      it("should scale with additional MOVE parts at higher energy", () => {
+        const body = composer.generateBody("claimer", 850);
+        const moveParts = body.filter(p => p === MOVE).length;
+        const claimParts = body.filter(p => p === CLAIM).length;
+
+        expect(claimParts).toBe(1); // Only one CLAIM in base
+        expect(moveParts).toBeGreaterThan(1); // Additional move parts added
+        expect(composer.calculateBodyCost(body)).toBeLessThanOrEqual(850);
+      });
+
+      it("should return empty array if insufficient energy for base body", () => {
+        const body = composer.generateBody("claimer", 600);
+        expect(body).toEqual([]);
+      });
+    });
+
+    describe("scout role", () => {
+      it("should generate minimal body with just MOVE parts", () => {
+        const body = composer.generateBody("scout", 50);
+        expect(body).toEqual([MOVE]);
+        expect(composer.calculateBodyCost(body)).toBe(50);
+      });
+
+      it("should scale with additional MOVE parts at higher energy", () => {
+        const body = composer.generateBody("scout", 200);
+        const moveParts = body.filter(p => p === MOVE).length;
+
+        expect(moveParts).toBeGreaterThan(1);
+        expect(body.every(p => p === MOVE)).toBe(true); // All parts should be MOVE
+        expect(composer.calculateBodyCost(body)).toBeLessThanOrEqual(200);
+      });
+
+      it("should return empty array if insufficient energy for base body", () => {
+        const body = composer.generateBody("scout", 40);
+        expect(body).toEqual([]);
+      });
+    });
+
     describe("unknown role", () => {
       it("should return minimal body for unknown role with sufficient energy", () => {
         const body = composer.generateBody("unknown", 300);
@@ -215,7 +261,7 @@ describe("BodyComposer", () => {
     });
 
     it("should return patterns for all standard roles", () => {
-      const roles = ["harvester", "upgrader", "builder", "remoteMiner", "stationaryHarvester", "hauler", "repairer"];
+      const roles = ["harvester", "upgrader", "builder", "remoteMiner", "stationaryHarvester", "hauler", "repairer", "claimer", "scout"];
 
       for (const role of roles) {
         const pattern = composer.getPattern(role);
@@ -242,6 +288,8 @@ describe("BodyComposer", () => {
       expect(roles).toContain("stationaryHarvester");
       expect(roles).toContain("hauler");
       expect(roles).toContain("repairer");
+      expect(roles).toContain("claimer");
+      expect(roles).toContain("scout");
     });
   });
 

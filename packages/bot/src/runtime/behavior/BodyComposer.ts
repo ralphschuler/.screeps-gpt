@@ -123,6 +123,25 @@ export class BodyComposer {
       dismantler: {
         base: [TOUGH, WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE],
         pattern: [WORK, MOVE]
+      },
+
+      // Claimer: Room claiming specialist
+      // Base: 1 CLAIM, 1 MOVE (650 energy)
+      // Pattern: 1 MOVE (additional mobility for faster travel)
+      // CLAIM part is required for claimController() and reserveController()
+      claimer: {
+        base: [CLAIM, MOVE],
+        pattern: [MOVE],
+        maxRepeats: 4 // Limited scaling since CLAIM parts are fixed
+      },
+
+      // Scout: Fast reconnaissance specialist
+      // Base: 1 MOVE (50 energy) - minimal and fast
+      // Pattern: 1 MOVE (additional mobility)
+      scout: {
+        base: [MOVE],
+        pattern: [MOVE],
+        maxRepeats: 4 // Limited scaling for speed
       }
     };
   }
