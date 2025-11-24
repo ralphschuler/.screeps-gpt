@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { safeSerialize } from "../../packages/bot/src/runtime/utils/safeSerialize";
+import { safeSerialize } from "../../packages/screeps-logger/src/safeSerialize";
 
 /**
  * Comprehensive regression test for safeSerialize utility.
