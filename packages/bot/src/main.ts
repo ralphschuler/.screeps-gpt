@@ -124,7 +124,7 @@ export const loop = (): void => {
     kernel.run(gameContext, Memory);
   } catch (error) {
     // Enhanced error handling with specific error classification
-    // Use logger.errorObject to safely serialize errors and prevent primitive conversion issues
+    // Use logger.errorObject() to safely serialize errors and prevent primitive conversion issues
     if (error instanceof TypeError) {
       logger.errorObject(error, "[Type Error]");
     } else if (error instanceof Error) {
