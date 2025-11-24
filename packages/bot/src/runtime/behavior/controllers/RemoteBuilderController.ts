@@ -101,8 +101,7 @@ export class RemoteBuilderController extends BaseRoleController<RemoteBuilderMem
       // Priority 2: Withdraw from containers
       const containers = creep.room.find(FIND_STRUCTURES, {
         filter: (structure: AnyStructure) =>
-          structure.structureType === STRUCTURE_CONTAINER &&
-          structure.store.getUsedCapacity(RESOURCE_ENERGY) > 50
+          structure.structureType === STRUCTURE_CONTAINER && structure.store.getUsedCapacity(RESOURCE_ENERGY) > 50
       }) as StructureContainer[];
 
       if (containers.length > 0) {

@@ -7,7 +7,6 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [0.154.0] - 2025-11-24
 
-
 ### Added
 
 - **Memory Management**: Implemented proper memory usage patterns from wiki.screepspl.us/Memory
@@ -16,7 +15,6 @@ All notable changes to this project are documented here. This changelog now main
   - Added flag memory cleanup to `MemoryGarbageCollector`
   - Updated memory management documentation with advanced patterns
   - Covers heap caching, path serialization, and RawMemory segments documentation
-
 
 ## [0.151.1] - 2025-11-24
 
