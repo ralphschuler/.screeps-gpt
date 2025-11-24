@@ -423,9 +423,7 @@ export class RoleControllerManager {
 
     // Check for pending expansion requests and adjust claimer minimum
     // Access colony memory expansion queue (typed as ColonyManagerMemory when set by EmpireManager)
-    const expansionQueue = memory.colony?.expansionQueue as
-      | Array<{ targetRoom: string; status: string }>
-      | undefined;
+    const expansionQueue = memory.colony?.expansionQueue as Array<{ targetRoom: string; status: string }> | undefined;
     const pendingExpansions = expansionQueue?.filter(req => req.status === "pending") ?? [];
     const needsClaimers = pendingExpansions.length > 0;
 
