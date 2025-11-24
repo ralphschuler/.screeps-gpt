@@ -16,17 +16,44 @@ interface StructurePlan {
  * These values determine optimal spawn location in newly claimed rooms.
  */
 const SPAWN_PLACEMENT = {
-  /** Minimum distance from walls required for spawn placement (need room for extensions) */
+  /**
+   * Minimum distance from walls required for spawn placement.
+   * Rationale: 4 tiles allows a 3x3 extension cluster around the spawn, which is the
+   * minimum needed for efficient early base layouts. This distance ensures enough
+   * buildable space for extensions and infrastructure.
+   */
   MIN_WALL_DISTANCE: 4,
-  /** Weight factor for wall distance in scoring (higher = prefer more open areas) */
+  /**
+   * Weight factor for wall distance in scoring.
+   * Rationale: Higher values prioritize open areas over proximity to sources,
+   * reducing risk of cramped layouts. A value of 2 balances buildable space
+   * with reasonable travel distances for creeps.
+   */
   WALL_DISTANCE_WEIGHT: 2,
-  /** Maximum ideal distance to sources (beyond this, penalty applies) */
+  /**
+   * Maximum ideal distance to sources (beyond this, penalty applies).
+   * Rationale: 20 tiles is roughly the maximum distance a hauler can travel
+   * efficiently without excessive travel time. Based on typical room dimensions.
+   */
   MAX_IDEAL_SOURCE_DISTANCE: 20,
-  /** Minimum ideal distance to sources (closer than this, penalty applies) */
+  /**
+   * Minimum ideal distance to sources (closer than this, penalty applies).
+   * Rationale: 5 tiles ensures the spawn is not placed directly adjacent to sources,
+   * which can block building space and create traffic jams. This buffer allows for
+   * extension clusters and roads between spawn and sources.
+   */
   MIN_IDEAL_SOURCE_DISTANCE: 5,
-  /** Penalty multiplier for being too far from sources */
+  /**
+   * Penalty multiplier for being too far from sources.
+   * Rationale: A moderate penalty (0.5) discourages excessive travel distance for
+   * haulers, but does not outweigh the need for buildable space.
+   */
   FAR_SOURCE_PENALTY: 0.5,
-  /** Penalty multiplier for being too close to sources (stronger to ensure building space) */
+  /**
+   * Penalty multiplier for being too close to sources.
+   * Rationale: A stronger penalty (2) ensures the spawn is not placed so close to
+   * sources that it blocks extension clusters or causes pathing issues.
+   */
   CLOSE_SOURCE_PENALTY: 2
 } as const;
 
@@ -140,6 +167,23 @@ export class BasePlanner {
   }
 
   /**
+   * Calculate the source proximity penalty for spawn placement scoring.
+   * Returns a penalty value based on average distance to sources.
+   * 
+   * @param avgSourceDist - The average Chebyshev distance from position to all sources
+   * @returns A penalty value (higher = worse position). Returns 0 if within ideal range,
+   *          positive penalty if too far or too close to sources.
+   */
+  private calculateSourceProximityPenalty(avgSourceDist: number): number {
+    if (avgSourceDist > SPAWN_PLACEMENT.MAX_IDEAL_SOURCE_DISTANCE) {
+      return (avgSourceDist - SPAWN_PLACEMENT.MAX_IDEAL_SOURCE_DISTANCE) * SPAWN_PLACEMENT.FAR_SOURCE_PENALTY;
+    } else if (avgSourceDist < SPAWN_PLACEMENT.MIN_IDEAL_SOURCE_DISTANCE) {
+      return (SPAWN_PLACEMENT.MIN_IDEAL_SOURCE_DISTANCE - avgSourceDist) * SPAWN_PLACEMENT.CLOSE_SOURCE_PENALTY;
+    }
+    return 0;
+  }
+
+  /**
    * Simplified distance transform to find open spaces.
    * Returns the position furthest from walls while considering source proximity.
    * For newly claimed rooms, this determines optimal spawn placement.
@@ -170,8 +214,9 @@ export class BasePlanner {
       }
     }
 
-    // Get source positions if room is available for proximity scoring
+    // Pre-compute source positions to avoid repeated property access
     const sources = room ? (room.find(FIND_SOURCES) as Array<{ pos: { x: number; y: number } }>) : [];
+    const sourcePositions = sources.map(s => ({ x: s.pos.x, y: s.pos.y }));
 
     // Find position with best combined score:
     // - High distance from walls (for building space)
@@ -191,24 +236,18 @@ export class BasePlanner {
         // Calculate score: balance wall distance and source proximity
         let score = wallDistance * SPAWN_PLACEMENT.WALL_DISTANCE_WEIGHT;
 
-        if (sources.length > 0) {
+        if (sourcePositions.length > 0) {
           // Calculate average distance to sources (lower is better)
           let totalSourceDist = 0;
-          for (const source of sources) {
-            const dx = Math.abs(x - source.pos.x);
-            const dy = Math.abs(y - source.pos.y);
+          for (const sourcePos of sourcePositions) {
+            const dx = Math.abs(x - sourcePos.x);
+            const dy = Math.abs(y - sourcePos.y);
             totalSourceDist += Math.max(dx, dy); // Chebyshev distance
           }
-          const avgSourceDist = totalSourceDist / sources.length;
+          const avgSourceDist = totalSourceDist / sourcePositions.length;
 
-          // Penalty for being too far or too close to sources
-          // Ideal distance is between MIN_IDEAL and MAX_IDEAL
-          if (avgSourceDist > SPAWN_PLACEMENT.MAX_IDEAL_SOURCE_DISTANCE) {
-            score -= (avgSourceDist - SPAWN_PLACEMENT.MAX_IDEAL_SOURCE_DISTANCE) * SPAWN_PLACEMENT.FAR_SOURCE_PENALTY;
-          } else if (avgSourceDist < SPAWN_PLACEMENT.MIN_IDEAL_SOURCE_DISTANCE) {
-            score -=
-              (SPAWN_PLACEMENT.MIN_IDEAL_SOURCE_DISTANCE - avgSourceDist) * SPAWN_PLACEMENT.CLOSE_SOURCE_PENALTY;
-          }
+          // Apply proximity penalty using helper function
+          score -= this.calculateSourceProximityPenalty(avgSourceDist);
         }
 
         if (score > bestScore) {

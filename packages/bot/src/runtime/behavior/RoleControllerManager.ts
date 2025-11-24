@@ -74,6 +74,11 @@ const COMBAT_MIN_ATTACKERS_HEALERS = 2; // Minimum attackers/healers during comb
 const COMBAT_MIN_REPAIRERS = 1; // Minimum repairers during combat
 
 /**
+ * Room integration constants for workforce deployment
+ */
+const MINERS_PER_INTEGRATION_ROOM = 2; // Remote miners spawned per room needing integration
+
+/**
  * Coordinates spawning and per-tick behavior execution using individual role controllers.
  */
 @profile
@@ -560,9 +565,8 @@ export class RoleControllerManager {
       }
 
       // Dynamically increase remote miner minimum when rooms need workforce integration
-      // Spawn 2 remote miners per room needing workforce (to harvest energy for spawn construction)
+      // Spawn remote miners per room needing workforce (to harvest energy for spawn construction)
       if (role === "remoteMiner" && needsRemoteWorkforce) {
-        const MINERS_PER_INTEGRATION_ROOM = 2;
         let neededMiners = 0;
         for (const integrationRoom of roomsNeedingIntegration) {
           const assigned = assignedRemoteMiners.get(integrationRoom.roomName) ?? 0;
@@ -649,7 +653,6 @@ export class RoleControllerManager {
 
       // If spawning a remote miner for room integration, assign home and target rooms
       if (role === "remoteMiner" && needsRemoteWorkforce) {
-        const MINERS_PER_INTEGRATION_ROOM = 2;
         // Find an integration room that needs more miners
         for (const integrationRoom of roomsNeedingIntegration) {
           const assigned = assignedRemoteMiners.get(integrationRoom.roomName) ?? 0;

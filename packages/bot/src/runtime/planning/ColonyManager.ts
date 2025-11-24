@@ -271,14 +271,17 @@ export class ColonyManager {
     }
 
     // Clean up rooms that are no longer visible or no longer owned
+    // Rooms that have been invisible for too long are removed to prevent memory bloat
+    const INVISIBLE_ROOM_TIMEOUT = 1000; // ticks before removing invisible rooms
     this.memoryRef.roomsNeedingIntegration = this.memoryRef.roomsNeedingIntegration.filter(data => {
       const room = rooms[data.roomName];
-      // Keep if room is not visible (may just be out of visibility)
-      if (!room) return true;
+      // Keep invisible rooms only if they were checked within the timeout period
+      // After INVISIBLE_ROOM_TIMEOUT ticks without visibility, they will be removed
+      if (!room && currentTick - data.lastWorkforceCheck < INVISIBLE_ROOM_TIMEOUT) return true;
       // Keep if still owned
-      if (room.controller?.my) return true;
-      // Remove if no longer owned
-      this.logger.log?.(`[ColonyManager] Removing ${data.roomName} from integration tracking (no longer owned)`);
+      if (room?.controller?.my) return true;
+      // Remove if no longer owned or invisible for too long
+      this.logger.log?.(`[ColonyManager] Removing ${data.roomName} from integration tracking (no longer owned or invisible for too long)`);
       return false;
     });
   }

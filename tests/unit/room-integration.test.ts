@@ -208,9 +208,13 @@ describe("Room Integration", () => {
         find: () => []
       } as unknown as Room;
 
-      // Mock Game.map.getRoomLinearDistance
-      const originalGame = (global as { Game?: { map?: { getRoomLinearDistance?: (r1: string, r2: string) => number } } }).Game;
-      (global as { Game: { map: { getRoomLinearDistance: (r1: string, r2: string) => number } } }).Game = {
+      // Save original Game.map.getRoomLinearDistance if it exists
+      const globalAny = global as Record<string, unknown>;
+      const originalGame = globalAny.Game as { map?: { getRoomLinearDistance?: (r1: string, r2: string) => number } } | undefined;
+      const originalGetRoomLinearDistance = originalGame?.map?.getRoomLinearDistance;
+
+      // Set up mock Game object
+      globalAny.Game = {
         map: {
           getRoomLinearDistance: (from: string, to: string) => {
             if (from === "W0N0" && to === "W3N0") return 3;
@@ -227,7 +231,10 @@ describe("Room Integration", () => {
       expect(roomsNeedingWorkforce[0].homeRoom).toBe("W2N0"); // Closer home room
 
       // Restore original Game object
-      (global as { Game?: typeof originalGame }).Game = originalGame;
+      if (originalGetRoomLinearDistance && originalGame?.map) {
+        originalGame.map.getRoomLinearDistance = originalGetRoomLinearDistance;
+      }
+      globalAny.Game = originalGame;
     });
   });
 
