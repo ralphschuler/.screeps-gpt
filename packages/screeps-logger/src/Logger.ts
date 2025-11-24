@@ -69,7 +69,7 @@ export class Logger {
     };
     // Use provided console implementation or create a safe default
     // Access console from global for Screeps compatibility
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     this.consoleImpl =
       consoleImpl ?? ((typeof global !== "undefined" ? (global as any).console : undefined) || { log: () => {} });
   }

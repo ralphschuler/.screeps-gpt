@@ -1,5 +1,24 @@
 [
   {
+    "version": "0.143.5",
+    "date": "2025-11-24",
+    "notes": [
+      "**Video Pipeline**: Implemented Screeps room history video rendering infrastructure (stub implementation)",
+      "Created video pipeline configuration system with type definitions",
+      "Added `capture-room-history.ts` script for fetching Screeps replay data via API",
+      "Added `render-room-video.ts` script for video generation (stub, requires ffmpeg integration)",
+      "Added `upload-to-youtube.ts` script for YouTube upload automation (stub, requires googleapis)",
+      "Created GitHub Actions workflow `.github/workflows/screeps-video-render.yml` for automated pipeline",
+      "Added configuration example file `config/video-pipeline.example.json`",
+      "Added comprehensive documentation at `docs/automation/video-rendering-pipeline.md`",
+      "Pipeline supports configurable time windows, video quality settings, and YouTube metadata",
+      "Infrastructure complete, core rendering features require additional dependencies",
+      "Resolves issue ralphschuler/.screeps-gpt#1277"
+    ],
+    "anchor": "01435---2025-11-24",
+    "slug": "v0-143-5"
+  },
+  {
     "version": "0.139.3",
     "date": "2025-11-24",
     "notes": [

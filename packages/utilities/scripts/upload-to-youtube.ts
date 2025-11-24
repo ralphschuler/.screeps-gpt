@@ -76,7 +76,15 @@ async function uploadVideo(
   _youtube: null,
   videoPath: string,
   metadata: VideoMetadata,
-  config: { youtube?: { enabled: boolean; titleTemplate: string; descriptionTemplate: string; tags: string[]; visibility: string } }
+  config: {
+    youtube?: {
+      enabled: boolean;
+      titleTemplate: string;
+      descriptionTemplate: string;
+      tags: string[];
+      visibility: string;
+    };
+  }
 ): Promise<YouTubeUploadResult> {
   if (!config.youtube?.enabled) {
     throw new Error("YouTube upload is not enabled in configuration");

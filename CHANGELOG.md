@@ -5,6 +5,9 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.143.5] - 2025-11-24
+
+
 ### Added
 
 - **Video Pipeline**: Implemented Screeps room history video rendering infrastructure (stub implementation)
@@ -18,6 +21,7 @@ All notable changes to this project are documented here. This changelog now main
   - Pipeline supports configurable time windows, video quality settings, and YouTube metadata
   - Infrastructure complete, core rendering features require additional dependencies
   - Resolves issue ralphschuler/.screeps-gpt#1277
+
 
 ## [0.139.3] - 2025-11-24
 
