@@ -192,7 +192,7 @@ export class RemoteBuilderController extends BaseRoleController<RemoteBuilderMem
 
   private ensureRemoteAssignments(memory: RemoteBuilderMemory, creep: CreepLike): void {
     if (!memory.homeRoom) {
-      memory.homeRoom = creep.room.name ?? memory.homeRoom ?? "";
+      memory.homeRoom = creep.room.name ?? "";
     }
     if (!memory.targetRoom) {
       memory.targetRoom = memory.homeRoom;
