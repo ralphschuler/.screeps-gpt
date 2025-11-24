@@ -13,10 +13,15 @@
 
 import { describe, it, expect } from "vitest";
 import { readFileSync, existsSync } from "fs";
-import { join } from "path";
+import { join, resolve, dirname } from "path";
+import { fileURLToPath } from "url";
+
+// Get the repository root directory (two levels up from packages/docs)
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const repoRoot = resolve(__dirname, "../../../..");
 
 describe("Hexo build script validation (#252)", () => {
-  const scriptPath = join(process.cwd(), "packages/utilities/scripts/build-hexo-site.ts");
+  const scriptPath = join(repoRoot, "packages/utilities/scripts/build-hexo-site.ts");
 
   it("should have build-hexo-site.ts script", () => {
     expect(existsSync(scriptPath)).toBe(true);
@@ -139,7 +144,7 @@ describe("Hexo build script validation (#252)", () => {
   });
 
   describe("Main documentation configuration", () => {
-    const configPath = join(process.cwd(), "packages/docs/_config.yml");
+    const configPath = join(repoRoot, "packages/docs/_config.yml");
 
     it("should have _config.yml in packages/docs", () => {
       expect(existsSync(configPath)).toBe(true);
@@ -182,7 +187,7 @@ describe("Hexo build script validation (#252)", () => {
   });
 
   describe("Package.json script integration", () => {
-    const packagePath = join(process.cwd(), "package.json");
+    const packagePath = join(repoRoot, "package.json");
 
     it("should have build:docs-site script", () => {
       const content = readFileSync(packagePath, "utf-8");
