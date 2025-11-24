@@ -25,6 +25,7 @@ import { RoleTaskQueueManager } from "./RoleTaskQueue";
 import * as TaskDiscovery from "./TaskDiscovery";
 import type { RoleController } from "./controllers/RoleController";
 import { serviceRegistry } from "./controllers/ServiceLocator";
+import type { DefenseMemory } from "@runtime/defense";
 import {
   HarvesterController,
   UpgraderController,
@@ -408,7 +409,7 @@ export class RoleControllerManager {
     }
 
     // Check if any room is under defensive posture (alert, defensive, or emergency)
-    const defenseMemory = memory.defense as { posture: Record<string, string> } | undefined;
+    const defenseMemory = memory.defense as DefenseMemory | undefined;
     const roomsUnderCombat = defenseMemory
       ? Object.entries(defenseMemory.posture)
           .filter(([_, posture]) => posture === "alert" || posture === "defensive" || posture === "emergency")
