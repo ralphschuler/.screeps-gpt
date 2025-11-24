@@ -31,11 +31,7 @@ const MECHANICS_TOPICS = [
 /**
  * Scrape game mechanics documentation for a specific topic
  */
-export async function scrapeMechanicsTopic(
-  path: string,
-  topic: string,
-  name: string
-): Promise<MechanicsDoc | null> {
+export async function scrapeMechanicsTopic(path: string, topic: string, name: string): Promise<MechanicsDoc | null> {
   try {
     const url = `${DOCS_BASE_URL}${path}`;
     const response = await fetch(url);
@@ -56,11 +52,11 @@ export async function scrapeMechanicsTopic(
     contentArea.find("h2, h3").each((_, elem) => {
       const $elem = $(elem);
       const heading = $elem.text().trim();
-      
+
       // Get content until next heading
       const sectionContent: string[] = [];
       let next = $elem.next();
-      
+
       while (next.length && !next.is("h2, h3")) {
         if (next.is("p")) {
           sectionContent.push(next.text().trim());

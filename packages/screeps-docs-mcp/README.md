@@ -144,6 +144,7 @@ List all available game mechanics topics.
 ## Documentation Source
 
 Documentation is scraped from official Screeps documentation:
+
 - API Reference: https://docs.screeps.com/api/
 - Game Mechanics: https://docs.screeps.com/
 
