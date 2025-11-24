@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.139.3",
+    "date": "2025-11-24",
+    "notes": [
+      "**Tower Repair**: Fixed towers not repairing structures when no hostile creeps present",
+      "DefenseCoordinator now calls TowerManager.run() unconditionally",
+      "Towers will repair damaged infrastructure (roads, containers, etc.) during normal operations",
+      "Energy efficiency maintained (towers still reserve 500 energy for defense)",
+      "Added test coverage for repair-only scenarios",
+      "Resolves issue ralphschuler/.screeps-gpt#1275"
+    ],
+    "anchor": "01393---2025-11-24",
+    "slug": "v0-139-3"
+  },
+  {
     "version": "0.137.21",
     "date": "2025-11-23",
     "notes": [
