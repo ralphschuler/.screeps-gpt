@@ -287,9 +287,9 @@ Potential improvements for the energy economy system:
 
 ## References
 
-- [Energy Balance Calculator](../src/runtime/behavior/EnergyBalanceCalculator.ts)
-- [Energy Validator](../src/runtime/energy/EnergyValidation.ts)
-- [Body Composer](../src/runtime/behavior/BodyComposer.ts)
-- [Role Controller Manager](../src/runtime/behavior/RoleControllerManager.ts)
+- [Energy Balance Calculator](../../../../bot/src/runtime/behavior/EnergyBalanceCalculator.ts)
+- [Energy Validator](../../../../bot/src/runtime/energy/EnergyValidation.ts)
+- [Body Composer](../../../../bot/src/runtime/behavior/BodyComposer.ts)
+- [Role Controller Manager](../../../../bot/src/runtime/behavior/RoleControllerManager.ts)
 - [Memory Management](./memory-management.md)
-- [Role Balancing](./role-balancing.md)
+- [Logging and Visuals](./logging-and-visuals.md)

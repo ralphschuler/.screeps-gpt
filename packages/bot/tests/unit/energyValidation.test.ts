@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { EnergyValidator } from "@runtime/energy/EnergyValidation";
+import { EnergyValidator, type EnergyEconomyMetrics } from "@runtime/energy/EnergyValidation";
 
 describe("EnergyValidator", () => {
   let validator: EnergyValidator;
@@ -80,8 +80,9 @@ describe("EnergyValidator", () => {
 
       expect(Memory.rooms).toBeDefined();
       expect(Memory.rooms["W1N1"]).toBeDefined();
-      const roomMemory = Memory.rooms["W1N1"] as { energyMetrics?: unknown };
+      const roomMemory = Memory.rooms["W1N1"] as { energyMetrics?: EnergyEconomyMetrics };
       expect(roomMemory.energyMetrics).toBeDefined();
+      expect(roomMemory.energyMetrics?.productionRate).toBeGreaterThanOrEqual(0);
     });
 
     it("should include last update tick", () => {

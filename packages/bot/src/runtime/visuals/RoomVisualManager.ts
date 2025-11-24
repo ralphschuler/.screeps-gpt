@@ -391,7 +391,8 @@ export class RoomVisualManager {
       return;
     }
 
-    // Cast to Room type for EnergyValidator
+    // Safe cast: The duck-typed interface satisfies Room's requirements for EnergyValidator.
+    // This pattern allows testing without full Room mocks while maintaining type safety at runtime.
     const actualRoom = room as unknown as Room;
 
     // Render energy status at position (1, 3) to avoid overlap with wall upgrade

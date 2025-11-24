@@ -196,10 +196,15 @@ export class EnergyValidator {
    */
   private updateMemoryMetrics(roomName: string, metrics: EnergyEconomyMetrics): void {
     Memory.rooms ??= {};
-    Memory.rooms[roomName] ??= {};
-
-    // Store metrics in room memory
-    (Memory.rooms[roomName] as { energyMetrics?: EnergyEconomyMetrics }).energyMetrics = metrics;
+    
+    const roomMemory = Memory.rooms[roomName];
+    if (roomMemory) {
+      // Type-safe access using interface extension
+      const typedRoomMemory = roomMemory as typeof roomMemory & { energyMetrics?: EnergyEconomyMetrics };
+      typedRoomMemory.energyMetrics = metrics;
+    } else {
+      Memory.rooms[roomName] = { energyMetrics: metrics };
+    }
   }
 
   /**
