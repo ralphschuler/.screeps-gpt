@@ -22,6 +22,9 @@
 import process from "node:process";
 import { writeFile } from "node:fs/promises";
 import { ScreepsAPI } from "screeps-api";
+import { canAttemptRecovery, recordAttempt, getRecoveryStats } from "./spawn-recovery-tracker.js";
+
+const MAX_ATTEMPTS_PER_WINDOW = 3;
 
 interface WorldStatusResponse {
   ok: number;
@@ -260,6 +263,31 @@ async function checkAndRespawn(): Promise<void> {
 
   console.log(`🔍 Checking spawn status on ${hostname}:${port}${path}...`);
 
+  // Check circuit breaker before attempting recovery
+  const circuitBreakerStatus = await canAttemptRecovery();
+  if (!circuitBreakerStatus.allowed) {
+    console.error("🚫 Circuit breaker active - spawn recovery blocked");
+    console.error(`   Reason: ${circuitBreakerStatus.reason}`);
+    console.error(`   Attempts in window: ${circuitBreakerStatus.attemptsInWindow}`);
+    if (circuitBreakerStatus.circuitBreakerUntil) {
+      console.error(`   Circuit breaker until: ${circuitBreakerStatus.circuitBreakerUntil}`);
+    }
+    console.error("   Manual intervention required - check GitHub issues for escalation");
+
+    await setOutput("status", "circuit_breaker_active");
+    await setOutput("action", "blocked");
+    await setOutput("circuit_breaker_until", circuitBreakerStatus.circuitBreakerUntil || "");
+    process.exitCode = 2; // Different exit code to signal circuit breaker
+    return;
+  }
+
+  // Log recovery stats for visibility
+  const stats = await getRecoveryStats();
+  console.log(`📊 Recovery stats: ${stats.recentAttempts}/${MAX_ATTEMPTS_PER_WINDOW} attempts in 24h window`);
+  if (stats.lastSuccessfulRecovery) {
+    console.log(`   Last successful recovery: ${stats.lastSuccessfulRecovery}`);
+  }
+
   const api = new ScreepsAPI({ token, hostname, protocol, port, path });
   const raw = ensureRawApi(api);
 
@@ -291,11 +319,30 @@ async function checkAndRespawn(): Promise<void> {
 
       if (success) {
         console.log("✅ Automatic respawn completed successfully!");
+
+        // Record successful recovery attempt
+        await recordAttempt({
+          tick: 0, // Not available in this context
+          status: "lost",
+          action: "respawned",
+          source: "spawn_monitor"
+        });
+
         await setOutput("status", "normal");
         await setOutput("action", "respawned");
         return;
       } else {
         console.error("❌ Automatic respawn failed. Manual intervention required.");
+
+        // Record failed recovery attempt
+        await recordAttempt({
+          tick: 0,
+          status: "lost",
+          action: "failed",
+          error: "Respawn process failed",
+          source: "spawn_monitor"
+        });
+
         await setOutput("status", status);
         await setOutput("action", "failed");
         process.exitCode = 1;
@@ -358,12 +405,33 @@ async function checkAndRespawn(): Promise<void> {
         }
 
         console.log("✅ Spawn placed successfully!");
+
+        // Record successful spawn placement
+        await recordAttempt({
+          tick: 0,
+          status: "empty",
+          action: "spawn_placed",
+          roomName: actualRoomName,
+          shardName: shardName,
+          source: "spawn_monitor"
+        });
+
         await setOutput("status", "normal");
         await setOutput("action", "spawn_placed");
         return;
       } catch (error) {
         console.error("❌ Failed to place spawn:", error);
         console.error("   Manual spawn placement required through Screeps web interface.");
+
+        // Record failed spawn placement
+        await recordAttempt({
+          tick: 0,
+          status: "empty",
+          action: "failed",
+          error: error instanceof Error ? error.message : String(error),
+          source: "spawn_monitor"
+        });
+
         await setOutput("status", status);
         await setOutput("action", "failed");
         process.exitCode = 1;
