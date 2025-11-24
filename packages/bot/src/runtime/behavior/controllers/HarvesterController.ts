@@ -68,7 +68,6 @@ export class HarvesterController extends BaseRoleController<HarvesterMemory> {
     if (!machine) {
       if (memory.stateMachine) {
         machine = restore<HarvesterContext, HarvesterEvent>(memory.stateMachine, harvesterStates);
-        machine.getContext().creep = creep as Creep;
       } else {
         machine = new StateMachine<HarvesterContext, HarvesterEvent>(HARVESTER_INITIAL_STATE, harvesterStates, {
           creep: creep as Creep

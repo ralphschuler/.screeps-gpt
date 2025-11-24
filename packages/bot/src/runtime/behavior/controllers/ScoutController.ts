@@ -56,7 +56,6 @@ export class ScoutController extends BaseRoleController<ScoutMemory> {
     if (!machine) {
       if (memory.stateMachine) {
         machine = restore<ScoutContext, ScoutEvent>(memory.stateMachine, scoutStates);
-        machine.getContext().creep = creep as Creep;
       } else {
         machine = new StateMachine<ScoutContext, ScoutEvent>(SCOUT_INITIAL_STATE, scoutStates, {
           creep: creep as Creep,
@@ -65,6 +64,9 @@ export class ScoutController extends BaseRoleController<ScoutMemory> {
       }
       this.machines.set(creep.name, machine);
     }
+
+    // Update creep reference in context every tick to ensure guards evaluate current state
+    machine.getContext().creep = creep as Creep;
 
     const ctx = machine.getContext();
     const currentState = machine.getState();
