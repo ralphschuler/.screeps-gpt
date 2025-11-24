@@ -7,11 +7,11 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Fixed
 
-- **Build Validation**: Enhanced build validation with context-aware size thresholds
-  - main.js now requires minimum 50KB (ensures functional AI with kernel + runtime components)
-  - Module files require minimum 500 bytes (allows small type-only modules)
-  - Prevents broken or incomplete builds from passing validation
-  - Added comprehensive regression tests for size threshold enforcement
+- **Build Validation**: Added comprehensive test coverage for context-aware size thresholds
+  - Validates main.js requires minimum 50KB (ensures functional AI with kernel + runtime components)
+  - Validates module files require minimum 500 bytes (allows small type-only modules)
+  - Tests confirm validation prevents broken or incomplete builds from passing
+  - Added 11 regression test cases covering threshold enforcement and edge cases
   - Addresses deployment safety concerns from ralphschuler/.screeps-gpt#729
 
 ## [0.143.5] - 2025-11-24

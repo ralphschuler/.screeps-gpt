@@ -34,7 +34,9 @@ describe("Build Validation Threshold Regression", () => {
         "tiny-module.js",
         "valid-module-500b.js",
         "valid-type-module.js",
-        "empty.js"
+        "empty-main.js",
+        "empty-module.js",
+        "tiny-module-error-msg.js"
       ];
       for (const file of testFiles) {
         await unlink(resolve(TEST_DIR, file)).catch(() => {});
@@ -84,7 +86,7 @@ describe("Build Validation Threshold Regression", () => {
     });
 
     it("should reject empty main.js", async () => {
-      const emptyPath = resolve(TEST_DIR, "empty.js");
+      const emptyPath = resolve(TEST_DIR, "empty-main.js");
       await writeFile(emptyPath, "");
 
       await expect(validateFile(emptyPath, "main.js", true)).rejects.toThrow(/is empty/);
@@ -130,7 +132,7 @@ export const ROLES = ["harvester", "upgrader", "builder"] as const;
     });
 
     it("should reject empty modules", async () => {
-      const emptyPath = resolve(TEST_DIR, "empty.js");
+      const emptyPath = resolve(TEST_DIR, "empty-module.js");
       await writeFile(emptyPath, "");
 
       await expect(validateFile(emptyPath, "behavior.js", false)).rejects.toThrow(/is empty/);
@@ -139,7 +141,7 @@ export const ROLES = ["harvester", "upgrader", "builder"] as const;
 
   describe("edge cases", () => {
     it("should provide helpful error messages with file size", async () => {
-      const tinyPath = resolve(TEST_DIR, "tiny-module.js");
+      const tinyPath = resolve(TEST_DIR, "tiny-module-error-msg.js");
       await writeFile(tinyPath, "a".repeat(100));
 
       try {
