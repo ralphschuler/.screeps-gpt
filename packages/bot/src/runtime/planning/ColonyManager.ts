@@ -201,8 +201,10 @@ export class ColonyManager {
     // Initialize roomsNeedingIntegration if not present
     this.memoryRef.roomsNeedingIntegration ??= [];
 
-    // Find rooms with controllers we own
-    const ownedRooms = Object.values(rooms).filter(room => room.controller?.my);
+    // Find rooms with controllers we own and have the find method (skip incomplete mock objects)
+    const ownedRooms = Object.values(rooms).filter(
+      room => room.controller?.my && typeof room.find === "function"
+    );
 
     // Identify home rooms (rooms with operational spawns) for workforce sourcing
     const homeRooms = ownedRooms.filter(room => {
