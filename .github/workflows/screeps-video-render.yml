@@ -175,7 +175,8 @@ jobs:
         run: |
           echo "Uploading videos to YouTube..."
           npx tsx packages/utilities/scripts/upload-to-youtube.ts || \
-            echo "::warning::YouTube upload failed (credentials not configured or stub implementation)"
+            echo "::warning::YouTube upload failed \
+            (credentials not configured or stub implementation)"
         continue-on-error: true
 
   summary:
@@ -186,24 +187,32 @@ jobs:
     steps:
       - name: Generate summary
         run: |
-          echo "# Screeps Video Rendering Pipeline Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "## Job Status" >> $GITHUB_STEP_SUMMARY
-          echo "- Capture History: ${{ needs.capture-history.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Render Video: ${{ needs.render-video.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Upload YouTube: ${{ needs.upload-youtube.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "## Data Status" >> $GITHUB_STEP_SUMMARY
-          echo "- Replay Data Captured: ${{ needs.capture-history.outputs.has-data }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Videos Rendered: ${{ needs.render-video.outputs.has-videos }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "## Implementation Status" >> $GITHUB_STEP_SUMMARY
-          echo "⚠️ **This is a stub implementation**" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Full functionality requires:" >> $GITHUB_STEP_SUMMARY
-          echo "- Frame extraction from Screeps replay data" >> $GITHUB_STEP_SUMMARY
-          echo "- ffmpeg integration for video encoding" >> $GITHUB_STEP_SUMMARY
-          echo "- YouTube Data API v3 credentials" >> $GITHUB_STEP_SUMMARY
-          echo "- screeps-world-printer or equivalent for rendering" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "See [issue documentation](https://github.com/${{ github.repository }}/issues) for implementation details." >> $GITHUB_STEP_SUMMARY
+          SUMMARY=$GITHUB_STEP_SUMMARY
+          echo "# Screeps Video Rendering Pipeline Summary" >> $SUMMARY
+          echo "" >> $SUMMARY
+          echo "## Job Status" >> $SUMMARY
+          echo "- Capture History: \
+          ${{ needs.capture-history.result }}" >> $SUMMARY
+          echo "- Render Video: \
+          ${{ needs.render-video.result }}" >> $SUMMARY
+          echo "- Upload YouTube: \
+          ${{ needs.upload-youtube.result }}" >> $SUMMARY
+          echo "" >> $SUMMARY
+          echo "## Data Status" >> $SUMMARY
+          echo "- Replay Data Captured: \
+          ${{ needs.capture-history.outputs.has-data }}" >> $SUMMARY
+          echo "- Videos Rendered: \
+          ${{ needs.render-video.outputs.has-videos }}" >> $SUMMARY
+          echo "" >> $SUMMARY
+          echo "## Implementation Status" >> $SUMMARY
+          echo "⚠️ **This is a stub implementation**" >> $SUMMARY
+          echo "" >> $SUMMARY
+          echo "Full functionality requires:" >> $SUMMARY
+          echo "- Frame extraction from Screeps replay data" >> $SUMMARY
+          echo "- ffmpeg integration for video encoding" >> $SUMMARY
+          echo "- YouTube Data API v3 credentials" >> $SUMMARY
+          echo "- screeps-world-printer or equivalent" >> $SUMMARY
+          echo "" >> $SUMMARY
+          REPO="${{ github.repository }}"
+          echo "See [issue docs](https://github.com/$REPO/issues)" \
+            >> $SUMMARY
