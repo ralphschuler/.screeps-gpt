@@ -202,9 +202,7 @@ export class ColonyManager {
     this.memoryRef.roomsNeedingIntegration ??= [];
 
     // Find rooms with controllers we own and have the find method (skip incomplete mock objects)
-    const ownedRooms = Object.values(rooms).filter(
-      room => room.controller?.my && typeof room.find === "function"
-    );
+    const ownedRooms = Object.values(rooms).filter(room => room.controller?.my && typeof room.find === "function");
 
     // Identify home rooms (rooms with operational spawns) for workforce sourcing
     const homeRooms = ownedRooms.filter(room => {
@@ -230,9 +228,7 @@ export class ColonyManager {
         if (existing && existing.status !== "established") {
           existing.status = "established";
           existing.spawnOperational = currentTick;
-          this.logger.log?.(
-            `[ColonyManager] 🏠 Room ${room.name} is now established with operational spawn`
-          );
+          this.logger.log?.(`[ColonyManager] 🏠 Room ${room.name} is now established with operational spawn`);
         }
         continue;
       }
@@ -247,9 +243,7 @@ export class ColonyManager {
         if (spawnSites.length > 0 && existing.status === "pending") {
           existing.status = "building";
           existing.spawnConstructionStarted = currentTick;
-          this.logger.log?.(
-            `[ColonyManager] 🔨 Room ${room.name} spawn construction started`
-          );
+          this.logger.log?.(`[ColonyManager] 🔨 Room ${room.name} spawn construction started`);
         }
 
         existing.lastWorkforceCheck = currentTick;
@@ -283,7 +277,9 @@ export class ColonyManager {
       // Keep if still owned
       if (room?.controller?.my) return true;
       // Remove if no longer owned or invisible for too long
-      this.logger.log?.(`[ColonyManager] Removing ${data.roomName} from integration tracking (no longer owned or invisible for too long)`);
+      this.logger.log?.(
+        `[ColonyManager] Removing ${data.roomName} from integration tracking (no longer owned or invisible for too long)`
+      );
       return false;
     });
   }

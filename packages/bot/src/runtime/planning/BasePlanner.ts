@@ -169,7 +169,7 @@ export class BasePlanner {
   /**
    * Calculate the source proximity penalty for spawn placement scoring.
    * Returns a penalty value based on average distance to sources.
-   * 
+   *
    * @param avgSourceDist - The average Chebyshev distance from position to all sources
    * @returns A penalty value (higher = worse position). Returns 0 if within ideal range,
    *          positive penalty if too far or too close to sources.

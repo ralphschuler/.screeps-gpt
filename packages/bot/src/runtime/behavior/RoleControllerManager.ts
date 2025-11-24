@@ -452,9 +452,8 @@ export class RoleControllerManager {
     // Note: We access memory directly because RoleControllerManager doesn't own ColonyManager
     // (ColonyManager is owned by EmpireManager). The filter logic mirrors ColonyManager.getRoomsNeedingWorkforce()
     const roomsNeedingIntegration =
-      memory.colony?.roomsNeedingIntegration?.filter(
-        data => data.status === "pending" || data.status === "building"
-      ) ?? [];
+      memory.colony?.roomsNeedingIntegration?.filter(data => data.status === "pending" || data.status === "building") ??
+      [];
     const needsRemoteWorkforce = roomsNeedingIntegration.length > 0;
 
     // Pre-calculate remote worker assignments for rooms needing integration

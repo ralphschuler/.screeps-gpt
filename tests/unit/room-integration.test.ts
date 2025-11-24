@@ -210,7 +210,9 @@ describe("Room Integration", () => {
 
       // Save original Game.map.getRoomLinearDistance if it exists
       const globalAny = global as Record<string, unknown>;
-      const originalGame = globalAny.Game as { map?: { getRoomLinearDistance?: (r1: string, r2: string) => number } } | undefined;
+      const originalGame = globalAny.Game as
+        | { map?: { getRoomLinearDistance?: (r1: string, r2: string) => number } }
+        | undefined;
       const originalGetRoomLinearDistance = originalGame?.map?.getRoomLinearDistance;
 
       // Set up mock Game object
@@ -248,7 +250,14 @@ describe("Room Integration", () => {
         roomsNeedingIntegration: [
           { roomName: "W1N1", status: "pending", homeRoom: "W0N0", claimedAt: 100, lastWorkforceCheck: 100 },
           { roomName: "W2N2", status: "building", homeRoom: "W0N0", claimedAt: 200, lastWorkforceCheck: 200 },
-          { roomName: "W3N3", status: "established", homeRoom: "W0N0", claimedAt: 300, lastWorkforceCheck: 300, spawnOperational: 400 }
+          {
+            roomName: "W3N3",
+            status: "established",
+            homeRoom: "W0N0",
+            claimedAt: 300,
+            lastWorkforceCheck: 300,
+            spawnOperational: 400
+          }
         ]
       };
 
