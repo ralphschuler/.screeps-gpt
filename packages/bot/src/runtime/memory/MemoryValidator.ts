@@ -1,4 +1,7 @@
 import { z } from "zod";
+import { createComponentLogger } from "@runtime/utils/logger";
+
+const logger = createComponentLogger("MemoryValidator");
 
 /**
  * Zod schema for Memory.stats CPU information
@@ -71,7 +74,7 @@ export class MemoryValidator {
   public static validateStats(stats: unknown): Memory["stats"] | null {
     const result = MemoryStatsSchema.safeParse(stats);
     if (!result.success) {
-      console.log(`[MemoryValidator] Invalid Memory.stats structure: ${JSON.stringify(result.error.issues)}`);
+      logger.errorObject(result.error.issues, "Invalid Memory.stats structure:");
       return null;
     }
     return result.data;
@@ -111,7 +114,7 @@ export class MemoryValidator {
 
     const validated = this.validateStats(memory.stats);
     if (!validated) {
-      console.log("[MemoryValidator] Repairing corrupted Memory.stats with defaults");
+      logger.info("Repairing corrupted Memory.stats with defaults");
       memory.stats = {
         time: currentTick,
         lastTimeoutTick: previousLastTimeoutTick,

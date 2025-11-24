@@ -2,6 +2,7 @@ import { Kernel } from "@ralphschuler/screeps-kernel";
 import type { GameContext } from "@runtime/types/GameContext";
 import { init as initProfiler } from "@ralphschuler/screeps-profiler";
 import { Diagnostics } from "@runtime/utils/Diagnostics";
+import { logger } from "@runtime/utils/logger";
 import { EventTypes } from "@ralphschuler/screeps-events";
 import { globalEventBus } from "@runtime/events/globalEventBus";
 
@@ -20,22 +21,24 @@ const kernel = new Kernel({
 // Subscribe to runtime events for monitoring and debugging
 // These subscriptions are only active when profiler is enabled to minimize CPU overhead
 if (__PROFILER_ENABLED__ === "true") {
+  const eventLogger = logger.child({ source: "EventBus" });
+
   globalEventBus.subscribe(EventTypes.HOSTILE_DETECTED, event => {
-    console.log(
-      `[EventBus] Hostiles detected in ${event.data.roomName}: ` +
+    eventLogger.info(
+      `Hostiles detected in ${event.data.roomName}: ` +
         `${event.data.hostileCount} hostiles from [${event.data.hostileUsernames.join(", ")}]`
     );
   });
 
   globalEventBus.subscribe(EventTypes.ENERGY_DEPLETED, event => {
-    console.log(
-      `[EventBus] Energy depleted in ${event.data.roomName}: ` + `${event.data.structureType} ${event.data.structureId}`
+    eventLogger.info(
+      `Energy depleted in ${event.data.roomName}: ${event.data.structureType} ${event.data.structureId}`
     );
   });
 
   globalEventBus.subscribe(EventTypes.ENERGY_RESTORED, event => {
-    console.log(
-      `[EventBus] Energy restored in ${event.data.roomName}: ` +
+    eventLogger.info(
+      `Energy restored in ${event.data.roomName}: ` +
         `${event.data.structureType} ${event.data.structureId} (${event.data.energyAmount} energy)`
     );
   });
@@ -97,7 +100,7 @@ function ensureProfilerRunning(): void {
   // Check every tick to handle Memory resets gracefully
   if (Memory.profiler.start === undefined) {
     profilerInstance.start();
-    console.log(`[Profiler] Auto-started profiler data collection (tick: ${Game.time})`);
+    logger.info(`Profiler auto-started data collection (tick: ${Game.time})`, { component: "Profiler" });
   }
 }
 
@@ -121,14 +124,13 @@ export const loop = (): void => {
     kernel.run(gameContext, Memory);
   } catch (error) {
     // Enhanced error handling with specific error classification
+    // Use logger.errorObject to safely serialize errors and prevent primitive conversion issues
     if (error instanceof TypeError) {
-      console.log(`[Type Error] ${error.message}`);
-      if (error.stack) console.log(error.stack);
+      logger.errorObject(error, "[Type Error]");
     } else if (error instanceof Error) {
-      console.log(`[Runtime Error] ${error.message}`);
-      if (error.stack) console.log(error.stack);
+      logger.errorObject(error, "[Runtime Error]");
     } else {
-      console.log(`[Unknown Error] ${String(error)}`);
+      logger.errorObject(error, "[Unknown Error]");
     }
   }
 };

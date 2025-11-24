@@ -4,3 +4,4 @@
  */
 
 export { Logger, LogLevel, LogEntry, LoggerOptions, ConsoleInterface } from "./Logger";
+export { safeSerialize } from "./safeSerialize";
