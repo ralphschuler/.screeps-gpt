@@ -13,6 +13,19 @@
  */
 
 /**
+ * Room coordinate bounds (0-49 for both x and y)
+ */
+const ROOM_MIN_COORD = 0;
+const ROOM_MAX_COORD = 49;
+
+/**
+ * Memory size estimates for serialization comparison
+ * These are approximate sizes based on typical JSON serialization
+ */
+const BYTES_PER_POSITION_RAW = 40; // RoomPosition JSON: {"x":25,"y":25,"roomName":"W1N1"} ~40 bytes
+const BYTES_HEADER_SERIALIZED = 20; // Serialized header: "25,25,W1N1:" ~20 bytes
+
+/**
  * Path step with direction for movement
  */
 export interface PathStep {
@@ -173,7 +186,7 @@ export function deserializePath(serialized: string): RoomPosition[] {
       y += dy;
 
       // Ensure we stay within room bounds
-      if (x < 0 || x > 49 || y < 0 || y > 49) {
+      if (x < ROOM_MIN_COORD || x > ROOM_MAX_COORD || y < ROOM_MIN_COORD || y > ROOM_MAX_COORD) {
         break;
       }
 
@@ -287,12 +300,10 @@ export function getRemainingPath(serialized: string, currentPos: RoomPosition): 
  * @returns Object with raw and serialized sizes in bytes (approximate)
  */
 export function calculateMemorySavings(pathLength: number): { raw: number; serialized: number; savings: number } {
-  // RoomPosition object in JSON: ~40 bytes each
-  const rawSize = pathLength * 40;
+  const rawSize = pathLength * BYTES_PER_POSITION_RAW;
 
-  // Serialized format: "x,y,roomName:" + one char per step
-  // Approximate: 20 bytes header + pathLength-1 direction chars
-  const serializedSize = 20 + Math.max(0, pathLength - 1);
+  // Serialized format: header + one char per step (direction character)
+  const serializedSize = BYTES_HEADER_SERIALIZED + Math.max(0, pathLength - 1);
 
   return {
     raw: rawSize,
