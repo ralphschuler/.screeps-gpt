@@ -174,10 +174,10 @@ export class CreepCommunicationManager {
   }
 
   /**
-   * Check if communication is enabled based on verbosity level
+   * Check if communication is enabled based on severity level
    */
   private isEnabled(): boolean {
-    return this.config.level !== CommunicationLevel.SILENT && this.config.verbosity !== "disabled";
+    return this.config.level !== CommunicationLevel.SILENT;
   }
 
   /**
