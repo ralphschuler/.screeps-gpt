@@ -20,6 +20,7 @@ export { RepairerController } from "./RepairerController";
 export { StationaryHarvesterController } from "./StationaryHarvesterController";
 export { RemoteMinerController } from "./RemoteMinerController";
 export { RemoteHaulerController } from "./RemoteHaulerController";
+export { RemoteBuilderController } from "./RemoteBuilderController";
 
 // Combat roles
 export { AttackerController } from "./AttackerController";

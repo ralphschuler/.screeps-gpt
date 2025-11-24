@@ -69,6 +69,14 @@ export class BodyComposer {
         pattern: [WORK, MOVE]
       },
 
+      // Remote Builder: Balanced work/carry/move for remote construction
+      // Base: 2 WORK, 2 CARRY, 4 MOVE (500 energy)
+      // Pattern: 1 WORK, 1 CARRY, 1 MOVE (balanced scaling for building and gathering)
+      remoteBuilder: {
+        base: [WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE],
+        pattern: [WORK, CARRY, MOVE]
+      },
+
       // Remote Hauler: Carry-heavy for long-distance energy transport
       // Base: 4 CARRY, 4 MOVE (400 energy)
       // Pattern: 2 CARRY, 1 MOVE (prioritize carry capacity for remote hauling)
