@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { ColonyManager, type ColonyManagerMemory, type RoomIntegrationData } from "@runtime/planning/ColonyManager";
+import { ColonyManager, type ColonyManagerMemory } from "@runtime/planning/ColonyManager";
 
 describe("Room Integration", () => {
   describe("ColonyManager Room Integration Tracking", () => {

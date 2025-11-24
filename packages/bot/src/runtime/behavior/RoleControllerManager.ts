@@ -444,6 +444,8 @@ export class RoleControllerManager {
 
     // Check for newly claimed rooms needing workforce deployment
     // These are rooms with controller.my but no operational spawn
+    // Note: We access memory directly because RoleControllerManager doesn't own ColonyManager
+    // (ColonyManager is owned by EmpireManager). The filter logic mirrors ColonyManager.getRoomsNeedingWorkforce()
     const roomsNeedingIntegration =
       memory.colony?.roomsNeedingIntegration?.filter(
         data => data.status === "pending" || data.status === "building"

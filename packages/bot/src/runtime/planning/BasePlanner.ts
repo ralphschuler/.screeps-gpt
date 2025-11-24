@@ -12,6 +12,25 @@ interface StructurePlan {
 }
 
 /**
+ * Spawn placement scoring constants for findBestOpenSpace algorithm.
+ * These values determine optimal spawn location in newly claimed rooms.
+ */
+const SPAWN_PLACEMENT = {
+  /** Minimum distance from walls required for spawn placement (need room for extensions) */
+  MIN_WALL_DISTANCE: 4,
+  /** Weight factor for wall distance in scoring (higher = prefer more open areas) */
+  WALL_DISTANCE_WEIGHT: 2,
+  /** Maximum ideal distance to sources (beyond this, penalty applies) */
+  MAX_IDEAL_SOURCE_DISTANCE: 20,
+  /** Minimum ideal distance to sources (closer than this, penalty applies) */
+  MIN_IDEAL_SOURCE_DISTANCE: 5,
+  /** Penalty multiplier for being too far from sources */
+  FAR_SOURCE_PENALTY: 0.5,
+  /** Penalty multiplier for being too close to sources (stronger to ensure building space) */
+  CLOSE_SOURCE_PENALTY: 2
+} as const;
+
+/**
  * Plans and manages automatic base building using a bunker layout pattern.
  * Based on the Screeps wiki automatic base building guide.
  */
@@ -160,20 +179,17 @@ export class BasePlanner {
     let bestScore = -Infinity;
     let bestPos: RoomPosition | null = null;
 
-    // Minimum distance from walls required for spawn placement (need room for extensions)
-    const MIN_WALL_DISTANCE = 4;
-
     for (let x = 10; x < 40; x++) {
       for (let y = 10; y < 40; y++) {
         const wallDistance = distanceField[x][y];
 
         // Skip positions too close to walls
-        if (wallDistance < MIN_WALL_DISTANCE) {
+        if (wallDistance < SPAWN_PLACEMENT.MIN_WALL_DISTANCE) {
           continue;
         }
 
         // Calculate score: balance wall distance and source proximity
-        let score = wallDistance * 2; // Weight wall distance
+        let score = wallDistance * SPAWN_PLACEMENT.WALL_DISTANCE_WEIGHT;
 
         if (sources.length > 0) {
           // Calculate average distance to sources (lower is better)
@@ -185,12 +201,13 @@ export class BasePlanner {
           }
           const avgSourceDist = totalSourceDist / sources.length;
 
-          // Penalty for being too far from sources (ideal distance is 5-15)
-          // Close enough to reach but far enough to have building space
-          if (avgSourceDist > 20) {
-            score -= (avgSourceDist - 20) * 0.5; // Penalty for being too far
-          } else if (avgSourceDist < 5) {
-            score -= (5 - avgSourceDist) * 2; // Stronger penalty for being too close
+          // Penalty for being too far or too close to sources
+          // Ideal distance is between MIN_IDEAL and MAX_IDEAL
+          if (avgSourceDist > SPAWN_PLACEMENT.MAX_IDEAL_SOURCE_DISTANCE) {
+            score -= (avgSourceDist - SPAWN_PLACEMENT.MAX_IDEAL_SOURCE_DISTANCE) * SPAWN_PLACEMENT.FAR_SOURCE_PENALTY;
+          } else if (avgSourceDist < SPAWN_PLACEMENT.MIN_IDEAL_SOURCE_DISTANCE) {
+            score -=
+              (SPAWN_PLACEMENT.MIN_IDEAL_SOURCE_DISTANCE - avgSourceDist) * SPAWN_PLACEMENT.CLOSE_SOURCE_PENALTY;
           }
         }
 
