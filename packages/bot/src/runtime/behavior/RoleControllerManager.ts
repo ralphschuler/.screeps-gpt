@@ -422,7 +422,10 @@ export class RoleControllerManager {
       : false;
 
     // Check for pending expansion requests and adjust claimer minimum
-    const colonyMemory = memory.colony as { expansionQueue?: Array<{ targetRoom: string; status: string }> };
+    // Access colony memory with type checking for expansion queue
+    const colonyMemory = memory.colony as
+      | { expansionQueue?: Array<{ targetRoom: string; status: string }> }
+      | undefined;
     const pendingExpansions = colonyMemory?.expansionQueue?.filter(req => req.status === "pending") ?? [];
     const needsClaimers = pendingExpansions.length > 0;
 
@@ -482,7 +485,7 @@ export class RoleControllerManager {
           ];
     }
 
-    if (needsClaimers && pendingExpansions.length > 0) {
+    if (needsClaimers) {
       this.logger.log?.(
         `[RoleControllerManager] Expansion pending to ${pendingExpansions.map(e => e.targetRoom).join(", ")} - prioritizing claimer spawning`
       );
@@ -499,8 +502,8 @@ export class RoleControllerManager {
       let targetMinimum = bootstrapMinimums[role] ?? config.minimum;
 
       // Dynamically increase claimer minimum when expansion is pending
+      // Count claimers already assigned to expansions once before role processing
       if (role === "claimer" && needsClaimers) {
-        // Count claimers already assigned to expansions
         const claimersOnExpansion = Object.values(game.creeps).filter(
           creep =>
             creep.memory.role === "claimer" &&
@@ -573,7 +576,7 @@ export class RoleControllerManager {
       const creepMemory = controller.createMemory();
 
       // If spawning a claimer for expansion, assign the target room
-      if (role === "claimer" && needsClaimers && pendingExpansions.length > 0) {
+      if (role === "claimer" && needsClaimers) {
         // Find the first pending expansion without an assigned claimer
         const unassignedExpansion = pendingExpansions.find(
           expansion =>
@@ -583,8 +586,8 @@ export class RoleControllerManager {
         );
 
         if (unassignedExpansion) {
-          // Type assertion to ClaimerMemory since we know this is a claimer
-          (creepMemory as { targetRoom?: string }).targetRoom = unassignedExpansion.targetRoom;
+          // Set targetRoom using explicit property assignment (ClaimerMemory extends CreepMemory with optional targetRoom)
+          (creepMemory as CreepMemory & { targetRoom?: string }).targetRoom = unassignedExpansion.targetRoom;
           this.logger.log?.(
             `[RoleControllerManager] Assigning claimer ${name} to expansion target: ${unassignedExpansion.targetRoom}`
           );
