@@ -23,6 +23,24 @@ export interface InterShardMessage {
 }
 
 /**
+ * Room integration status for newly claimed rooms
+ */
+export type RoomIntegrationStatus = "pending" | "building" | "established";
+
+/**
+ * Tracked room requiring workforce deployment
+ */
+export interface RoomIntegrationData {
+  roomName: string;
+  status: RoomIntegrationStatus;
+  homeRoom: string;
+  claimedAt: number;
+  spawnConstructionStarted?: number;
+  spawnOperational?: number;
+  lastWorkforceCheck: number;
+}
+
+/**
  * Colony manager memory structure
  */
 export interface ColonyManagerMemory {
@@ -30,6 +48,8 @@ export interface ColonyManagerMemory {
   claimedRooms: string[];
   shardMessages: InterShardMessage[];
   lastExpansionCheck: number;
+  /** Rooms needing workforce integration (claimed but no operational spawn) */
+  roomsNeedingIntegration?: RoomIntegrationData[];
 }
 
 /**
@@ -130,6 +150,9 @@ export class ColonyManager {
     // Update claimed rooms list
     this.updateClaimedRooms(rooms);
 
+    // Update room integration tracking for newly claimed rooms
+    this.updateRoomIntegration(rooms, currentTick);
+
     // Clean up old expansion queue entries (every 100 ticks to prevent memory bloat)
     if (currentTick % 100 === 0) {
       this.cleanupExpansionQueue(currentTick);
@@ -166,6 +189,133 @@ export class ColonyManager {
         }
       }
     }
+  }
+
+  /**
+   * Update room integration tracking for newly claimed rooms.
+   * Detects rooms that are owned but lack operational spawns and need workforce deployment.
+   */
+  private updateRoomIntegration(rooms: Record<string, Room>, currentTick: number): void {
+    if (!this.memoryRef) return;
+
+    // Initialize roomsNeedingIntegration if not present
+    this.memoryRef.roomsNeedingIntegration ??= [];
+
+    // Find rooms with controllers we own
+    const ownedRooms = Object.values(rooms).filter(room => room.controller?.my);
+
+    // Identify home rooms (rooms with operational spawns) for workforce sourcing
+    const homeRooms = ownedRooms.filter(room => {
+      const spawns = room.find(FIND_MY_SPAWNS);
+      return spawns.length > 0;
+    });
+
+    if (homeRooms.length === 0) {
+      return; // No home rooms to source workforce from
+    }
+
+    // Check each owned room for integration needs
+    for (const room of ownedRooms) {
+      const spawns = room.find(FIND_MY_SPAWNS);
+      const hasOperationalSpawn = spawns.length > 0;
+
+      // Find existing integration data for this room
+      const existingIdx = this.memoryRef.roomsNeedingIntegration.findIndex(r => r.roomName === room.name);
+      const existing = existingIdx >= 0 ? this.memoryRef.roomsNeedingIntegration[existingIdx] : undefined;
+
+      if (hasOperationalSpawn) {
+        // Room has spawn - mark as established and remove from tracking if previously tracked
+        if (existing && existing.status !== "established") {
+          existing.status = "established";
+          existing.spawnOperational = currentTick;
+          this.logger.log?.(
+            `[ColonyManager] 🏠 Room ${room.name} is now established with operational spawn`
+          );
+        }
+        continue;
+      }
+
+      // Room needs workforce - check if already tracked
+      if (existing) {
+        // Update status based on construction progress
+        const spawnSites = room.find(FIND_CONSTRUCTION_SITES, {
+          filter: (site: ConstructionSite) => site.structureType === STRUCTURE_SPAWN
+        });
+
+        if (spawnSites.length > 0 && existing.status === "pending") {
+          existing.status = "building";
+          existing.spawnConstructionStarted = currentTick;
+          this.logger.log?.(
+            `[ColonyManager] 🔨 Room ${room.name} spawn construction started`
+          );
+        }
+
+        existing.lastWorkforceCheck = currentTick;
+      } else {
+        // New room needing integration - find closest home room
+        const closestHome = this.findClosestHomeRoom(room.name, homeRooms);
+
+        const integrationData: RoomIntegrationData = {
+          roomName: room.name,
+          status: "pending",
+          homeRoom: closestHome?.name ?? homeRooms[0].name,
+          claimedAt: currentTick,
+          lastWorkforceCheck: currentTick
+        };
+
+        this.memoryRef.roomsNeedingIntegration.push(integrationData);
+        this.logger.log?.(
+          `[ColonyManager] 🆕 Detected newly claimed room ${room.name} needing workforce from ${integrationData.homeRoom}`
+        );
+      }
+    }
+
+    // Clean up rooms that are no longer visible or no longer owned
+    this.memoryRef.roomsNeedingIntegration = this.memoryRef.roomsNeedingIntegration.filter(data => {
+      const room = rooms[data.roomName];
+      // Keep if room is not visible (may just be out of visibility)
+      if (!room) return true;
+      // Keep if still owned
+      if (room.controller?.my) return true;
+      // Remove if no longer owned
+      this.logger.log?.(`[ColonyManager] Removing ${data.roomName} from integration tracking (no longer owned)`);
+      return false;
+    });
+  }
+
+  /**
+   * Find the closest home room to a target room for workforce sourcing.
+   */
+  private findClosestHomeRoom(targetRoomName: string, homeRooms: Room[]): Room | null {
+    if (homeRooms.length === 0) return null;
+    if (homeRooms.length === 1) return homeRooms[0];
+
+    // Simple heuristic: use room name distance (works for adjacent rooms)
+    // In a more sophisticated implementation, this would use actual path distance
+    let closest = homeRooms[0];
+    let minDistance = Infinity;
+
+    for (const home of homeRooms) {
+      const distance = Game.map.getRoomLinearDistance(home.name, targetRoomName);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closest = home;
+      }
+    }
+
+    return closest;
+  }
+
+  /**
+   * Get rooms that need workforce deployment (pending or building status).
+   * Used by RoleControllerManager to spawn remote harvesters and builders.
+   */
+  public getRoomsNeedingWorkforce(): RoomIntegrationData[] {
+    if (!this.memoryRef?.roomsNeedingIntegration) return [];
+
+    return this.memoryRef.roomsNeedingIntegration.filter(
+      data => data.status === "pending" || data.status === "building"
+    );
   }
 
   /**

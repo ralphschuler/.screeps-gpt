@@ -442,6 +442,35 @@ export class RoleControllerManager {
       }
     }
 
+    // Check for newly claimed rooms needing workforce deployment
+    // These are rooms with controller.my but no operational spawn
+    const roomsNeedingIntegration =
+      memory.colony?.roomsNeedingIntegration?.filter(
+        data => data.status === "pending" || data.status === "building"
+      ) ?? [];
+    const needsRemoteWorkforce = roomsNeedingIntegration.length > 0;
+
+    // Pre-calculate remote worker assignments for rooms needing integration
+    const assignedRemoteMiners = new Map<string, number>(); // targetRoom -> count
+    const assignedRemoteBuilders = new Map<string, number>(); // targetRoom -> count
+    if (needsRemoteWorkforce) {
+      for (const creep of Object.values(game.creeps)) {
+        const targetRoom = creep.memory.targetRoom;
+        if (!targetRoom) continue;
+
+        if (creep.memory.role === "remoteMiner") {
+          assignedRemoteMiners.set(targetRoom, (assignedRemoteMiners.get(targetRoom) ?? 0) + 1);
+        } else if (creep.memory.role === "builder" && creep.memory.homeRoom !== targetRoom) {
+          // Count builders assigned to remote rooms (not their home room)
+          assignedRemoteBuilders.set(targetRoom, (assignedRemoteBuilders.get(targetRoom) ?? 0) + 1);
+        }
+      }
+
+      this.logger.log?.(
+        `[RoleControllerManager] Rooms needing workforce: ${roomsNeedingIntegration.map(r => r.roomName).join(", ")}`
+      );
+    }
+
     // Determine spawn priority order based on combat status
     // Base role order that will be adjusted based on conditions
     const baseRoleOrder: RoleName[] = [
@@ -483,6 +512,23 @@ export class RoleControllerManager {
       // Normal mode with expansion: prioritize claimers (second after harvesters)
       roleOrder = baseRoleOrder.filter(r => r !== "claimer");
       roleOrder.splice(1, 0, "claimer");
+    } else if (needsRemoteWorkforce) {
+      // Normal mode with room integration: prioritize remote miners (after harvesters and upgraders)
+      roleOrder = [
+        "harvester",
+        "upgrader",
+        "remoteMiner",
+        "builder",
+        "stationaryHarvester",
+        "hauler",
+        "repairer",
+        "remoteHauler",
+        "scout",
+        "attacker",
+        "healer",
+        "dismantler",
+        "claimer"
+      ];
     } else {
       // Normal mode: standard priority order
       roleOrder = baseRoleOrder;
@@ -509,6 +555,18 @@ export class RoleControllerManager {
         // Use pre-calculated claimer count to avoid iterating through all creeps again
         // Spawn one claimer per pending expansion (up to current pending count)
         targetMinimum = Math.max(targetMinimum, pendingExpansions.length - claimersOnExpansionCount);
+      }
+
+      // Dynamically increase remote miner minimum when rooms need workforce integration
+      // Spawn 2 remote miners per room needing workforce (to harvest energy for spawn construction)
+      if (role === "remoteMiner" && needsRemoteWorkforce) {
+        const MINERS_PER_INTEGRATION_ROOM = 2;
+        let neededMiners = 0;
+        for (const integrationRoom of roomsNeedingIntegration) {
+          const assigned = assignedRemoteMiners.get(integrationRoom.roomName) ?? 0;
+          neededMiners += Math.max(0, MINERS_PER_INTEGRATION_ROOM - assigned);
+        }
+        targetMinimum = Math.max(targetMinimum, neededMiners);
       }
 
       // Dynamically reduce upgrader minimum during combat to focus on defense
@@ -584,6 +642,28 @@ export class RoleControllerManager {
           this.logger.log?.(
             `[RoleControllerManager] Assigning claimer ${name} to expansion target: ${unassignedExpansion.targetRoom}`
           );
+        }
+      }
+
+      // If spawning a remote miner for room integration, assign home and target rooms
+      if (role === "remoteMiner" && needsRemoteWorkforce) {
+        const MINERS_PER_INTEGRATION_ROOM = 2;
+        // Find an integration room that needs more miners
+        for (const integrationRoom of roomsNeedingIntegration) {
+          const assigned = assignedRemoteMiners.get(integrationRoom.roomName) ?? 0;
+          if (assigned < MINERS_PER_INTEGRATION_ROOM) {
+            // Assign this miner to the integration room
+            (creepMemory as CreepMemory & { homeRoom?: string; targetRoom?: string }).homeRoom =
+              integrationRoom.homeRoom;
+            (creepMemory as CreepMemory & { homeRoom?: string; targetRoom?: string }).targetRoom =
+              integrationRoom.roomName;
+            // Update pre-calculated count for subsequent iterations
+            assignedRemoteMiners.set(integrationRoom.roomName, assigned + 1);
+            this.logger.log?.(
+              `[RoleControllerManager] Assigning remote miner ${name} to integration room: ${integrationRoom.roomName} (home: ${integrationRoom.homeRoom})`
+            );
+            break;
+          }
         }
       }
 

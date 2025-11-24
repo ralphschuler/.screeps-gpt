@@ -32,6 +32,9 @@ export class BasePlanner {
     dy: number;
     rcl: number;
   }> = [
+    // RCL 1: First spawn (anchor point) - critical for room integration
+    { type: "spawn" as BuildableStructureConstant, dx: 0, dy: 0, rcl: 1 },
+
     // RCL 2: Extensions (5 total) - placed at distance 2 with even-sum coordinates
     { type: "extension" as BuildableStructureConstant, dx: 2, dy: 0, rcl: 2 },
     { type: "extension" as BuildableStructureConstant, dx: 0, dy: 2, rcl: 2 },
@@ -108,7 +111,8 @@ export class BasePlanner {
     }
 
     // If no spawn, find best open space using simplified distance transform
-    const bestPos = this.findBestOpenSpace(terrain);
+    // Also consider proximity to energy sources for optimal spawn placement
+    const bestPos = this.findBestOpenSpace(terrain, room);
     if (bestPos) {
       this.anchor = bestPos;
     }
@@ -118,9 +122,10 @@ export class BasePlanner {
 
   /**
    * Simplified distance transform to find open spaces.
-   * Returns the position furthest from walls.
+   * Returns the position furthest from walls while considering source proximity.
+   * For newly claimed rooms, this determines optimal spawn placement.
    */
-  private findBestOpenSpace(terrain: RoomTerrain, terrainWall: number = 1): RoomPosition | null {
+  private findBestOpenSpace(terrain: RoomTerrain, room?: RoomLike, terrainWall: number = 1): RoomPosition | null {
     const distanceField: number[][] = [];
 
     // Initialize with walls (using terrainWall parameter for testability)
@@ -146,14 +151,51 @@ export class BasePlanner {
       }
     }
 
-    // Find position with maximum distance (prefer center areas)
-    let maxDist = 0;
+    // Get source positions if room is available for proximity scoring
+    const sources = room ? (room.find(FIND_SOURCES) as Array<{ pos: { x: number; y: number } }>) : [];
+
+    // Find position with best combined score:
+    // - High distance from walls (for building space)
+    // - Reasonable proximity to sources (for energy access)
+    let bestScore = -Infinity;
     let bestPos: RoomPosition | null = null;
+
+    // Minimum distance from walls required for spawn placement (need room for extensions)
+    const MIN_WALL_DISTANCE = 4;
 
     for (let x = 10; x < 40; x++) {
       for (let y = 10; y < 40; y++) {
-        if (distanceField[x][y] > maxDist) {
-          maxDist = distanceField[x][y];
+        const wallDistance = distanceField[x][y];
+
+        // Skip positions too close to walls
+        if (wallDistance < MIN_WALL_DISTANCE) {
+          continue;
+        }
+
+        // Calculate score: balance wall distance and source proximity
+        let score = wallDistance * 2; // Weight wall distance
+
+        if (sources.length > 0) {
+          // Calculate average distance to sources (lower is better)
+          let totalSourceDist = 0;
+          for (const source of sources) {
+            const dx = Math.abs(x - source.pos.x);
+            const dy = Math.abs(y - source.pos.y);
+            totalSourceDist += Math.max(dx, dy); // Chebyshev distance
+          }
+          const avgSourceDist = totalSourceDist / sources.length;
+
+          // Penalty for being too far from sources (ideal distance is 5-15)
+          // Close enough to reach but far enough to have building space
+          if (avgSourceDist > 20) {
+            score -= (avgSourceDist - 20) * 0.5; // Penalty for being too far
+          } else if (avgSourceDist < 5) {
+            score -= (5 - avgSourceDist) * 2; // Stronger penalty for being too close
+          }
+        }
+
+        if (score > bestScore) {
+          bestScore = score;
           bestPos = { x, y };
         }
       }
