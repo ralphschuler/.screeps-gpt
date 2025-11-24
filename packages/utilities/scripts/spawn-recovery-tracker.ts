@@ -83,6 +83,13 @@ function getRecentAttempts(state: SpawnRecoveryState): SpawnRecoveryAttempt[] {
 }
 
 /**
+ * Filter attempts to only failed attempts
+ */
+function getFailedAttempts(attempts: SpawnRecoveryAttempt[]): SpawnRecoveryAttempt[] {
+  return attempts.filter(attempt => attempt.action === "failed" || attempt.action === "none");
+}
+
+/**
  * Check if circuit breaker is currently active (read-only check)
  */
 function isCircuitBreakerActive(state: SpawnRecoveryState): boolean {
@@ -113,7 +120,7 @@ function updateCircuitBreakerState(state: SpawnRecoveryState): boolean {
 
   // Check if we should activate based on recent failures
   const recentAttempts = getRecentAttempts(state);
-  const failedAttempts = recentAttempts.filter(attempt => attempt.action === "failed" || attempt.action === "none");
+  const failedAttempts = getFailedAttempts(recentAttempts);
 
   if (failedAttempts.length >= MAX_ATTEMPTS_PER_WINDOW) {
     state.circuitBreakerActive = true;
@@ -151,7 +158,9 @@ export async function recordAttempt(attempt: Omit<SpawnRecoveryAttempt, "timesta
   await saveState(state);
 
   // Log individual attempt to separate file for audit trail
-  const attemptFile = resolve(REPORTS_DIR, `attempt-${fullAttempt.timestamp.replace(/:/g, "-")}.json`);
+  // Use Unix timestamp for filesystem-safe filename
+  const timestamp = new Date(fullAttempt.timestamp).getTime();
+  const attemptFile = resolve(REPORTS_DIR, `attempt-${timestamp}.json`);
   await writeFile(attemptFile, JSON.stringify(fullAttempt, null, 2));
 }
 
@@ -170,9 +179,7 @@ export async function canAttemptRecovery(): Promise<{
   const isBlocked = updateCircuitBreakerState(state);
 
   const recentAttempts = getRecentAttempts(state);
-  const recentFailedAttempts = recentAttempts.filter(
-    attempt => attempt.action === "failed" || attempt.action === "none"
-  );
+  const recentFailedAttempts = getFailedAttempts(recentAttempts);
 
   if (isBlocked) {
     // Save state if circuit breaker was just activated

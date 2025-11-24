@@ -5,7 +5,7 @@
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { existsSync } from "node:fs";
-import { unlink, mkdir, rm } from "node:fs/promises";
+import { unlink, mkdir, rm, readdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import {
   canAttemptRecovery,
@@ -263,7 +263,7 @@ describe("Spawn Recovery Circuit Breaker", () => {
       });
 
       // Check that attempt file was created
-      const files = await import("node:fs/promises").then(fs => fs.readdir(TEST_REPORTS_DIR));
+      const files = await readdir(TEST_REPORTS_DIR);
       const attemptFiles = files.filter(f => f.startsWith("attempt-"));
       expect(attemptFiles.length).toBeGreaterThan(0);
     });
@@ -282,7 +282,7 @@ describe("Spawn Recovery Circuit Breaker", () => {
 
     it("should handle corrupted state file", async () => {
       // Write invalid JSON
-      await import("node:fs/promises").then(fs => fs.writeFile(TEST_STATE_FILE, "invalid json {"));
+      await writeFile(TEST_STATE_FILE, "invalid json {");
 
       const result = await canAttemptRecovery();
       expect(result.allowed).toBe(true);
