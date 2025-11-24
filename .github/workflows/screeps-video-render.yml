@@ -1,0 +1,218 @@
+---
+name: Screeps Video Render
+
+# Workflow for capturing Screeps room history and rendering time-lapse videos
+# Can be triggered manually, on schedule, or by milestone events
+
+on:
+  workflow_dispatch:
+    inputs:
+      rooms:
+        description: "Comma-separated list of rooms to record (e.g., W7N3,E5S8)"
+        required: false
+        type: string
+      time_window:
+        description: "Time window to capture (e.g., 24h, 7d, 30d)"
+        required: false
+        default: "24h"
+        type: string
+      upload_youtube:
+        description: "Upload to YouTube after rendering"
+        required: false
+        default: false
+        type: boolean
+  schedule:
+    # Run weekly on Sunday at 00:00 UTC
+    - cron: "0 0 * * 0"
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  capture-history:
+    name: Capture Room History
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      has-data: ${{ steps.capture.outputs.has-data }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Capture room history
+        id: capture
+        env:
+          SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
+          SCREEPS_HOST: ${{ vars.SCREEPS_HOST || 'screeps.com' }}
+          SCREEPS_SHARD: ${{ vars.SCREEPS_SHARD || 'shard3' }}
+          VIDEO_ROOMS: ${{ inputs.rooms || '' }}
+          VIDEO_TIME_WINDOW: ${{ inputs.time_window || '24h' }}
+        run: |
+          echo "Capturing room history..."
+          npx tsx packages/utilities/scripts/capture-room-history.ts || \
+            echo "::warning::Room history capture failed or no rooms configured"
+
+          # Check if any replay data was captured
+          if [ -d "reports/replay-data" ] && \
+             [ "$(ls -A reports/replay-data/*.json 2>/dev/null)" ]; then
+            echo "has-data=true" >> $GITHUB_OUTPUT
+            echo "✓ Room history captured successfully"
+          else
+            echo "has-data=false" >> $GITHUB_OUTPUT
+            echo "::warning::No room history data captured"
+          fi
+        continue-on-error: true
+
+      - name: Upload replay data
+        if: steps.capture.outputs.has-data == 'true'
+        uses: actions/upload-artifact@v5
+        with:
+          name: replay-data-${{ github.run_id }}
+          path: reports/replay-data/
+          retention-days: 7
+
+  render-video:
+    name: Render Videos
+    runs-on: ubuntu-latest
+    needs: capture-history
+    if: needs.capture-history.outputs.has-data == 'true'
+    timeout-minutes: 60
+    outputs:
+      has-videos: ${{ steps.render.outputs.has-videos }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Download replay data
+        uses: actions/download-artifact@v5
+        with:
+          name: replay-data-${{ github.run_id }}
+          path: reports/replay-data/
+
+      # Note: ffmpeg installation would be required for actual rendering
+      # - name: Install ffmpeg
+      #   run: |
+      #     sudo apt-get update
+      #     sudo apt-get install -y ffmpeg
+
+      - name: Render videos
+        id: render
+        run: |
+          echo "Rendering videos from replay data..."
+          npx tsx packages/utilities/scripts/render-room-video.ts || \
+            echo "::warning::Video rendering failed (stub implementation)"
+
+          # Check if any videos were rendered
+          if [ -d "reports/videos" ] && \
+             [ "$(ls -A reports/videos/*.mp4 2>/dev/null)" ]; then
+            echo "has-videos=true" >> $GITHUB_OUTPUT
+            echo "✓ Videos rendered successfully"
+          else
+            echo "has-videos=false" >> $GITHUB_OUTPUT
+            echo "::warning::No videos were rendered"
+          fi
+        continue-on-error: true
+
+      - name: Upload rendered videos
+        if: steps.render.outputs.has-videos == 'true'
+        uses: actions/upload-artifact@v5
+        with:
+          name: rendered-videos-${{ github.run_id }}
+          path: |
+            reports/videos/*.mp4
+            reports/videos/*.json
+          retention-days: 30
+
+  upload-youtube:
+    name: Upload to YouTube
+    runs-on: ubuntu-latest
+    needs: render-video
+    if: |
+      needs.render-video.outputs.has-videos == 'true' &&
+      (inputs.upload_youtube == true || github.event_name == 'schedule')
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Download rendered videos
+        uses: actions/download-artifact@v5
+        with:
+          name: rendered-videos-${{ github.run_id }}
+          path: reports/videos/
+
+      - name: Upload to YouTube
+        env:
+          YOUTUBE_ENABLED: "true"
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: |
+          echo "Uploading videos to YouTube..."
+          npx tsx packages/utilities/scripts/upload-to-youtube.ts || \
+            echo "::warning::YouTube upload failed \
+            (credentials not configured or stub implementation)"
+        continue-on-error: true
+
+  summary:
+    name: Pipeline Summary
+    runs-on: ubuntu-latest
+    needs: [capture-history, render-video, upload-youtube]
+    if: always()
+    steps:
+      - name: Generate summary
+        run: |
+          SUMMARY=$GITHUB_STEP_SUMMARY
+          echo "# Screeps Video Rendering Pipeline Summary" >> $SUMMARY
+          echo "" >> $SUMMARY
+          echo "## Job Status" >> $SUMMARY
+          echo "- Capture History: \
+          ${{ needs.capture-history.result }}" >> $SUMMARY
+          echo "- Render Video: \
+          ${{ needs.render-video.result }}" >> $SUMMARY
+          echo "- Upload YouTube: \
+          ${{ needs.upload-youtube.result }}" >> $SUMMARY
+          echo "" >> $SUMMARY
+          echo "## Data Status" >> $SUMMARY
+          echo "- Replay Data Captured: \
+          ${{ needs.capture-history.outputs.has-data }}" >> $SUMMARY
+          echo "- Videos Rendered: \
+          ${{ needs.render-video.outputs.has-videos }}" >> $SUMMARY
+          echo "" >> $SUMMARY
+          echo "## Implementation Status" >> $SUMMARY
+          echo "⚠️ **This is a stub implementation**" >> $SUMMARY
+          echo "" >> $SUMMARY
+          echo "Full functionality requires:" >> $SUMMARY
+          echo "- Frame extraction from Screeps replay data" >> $SUMMARY
+          echo "- ffmpeg integration for video encoding" >> $SUMMARY
+          echo "- YouTube Data API v3 credentials" >> $SUMMARY
+          echo "- screeps-world-printer or equivalent" >> $SUMMARY
+          echo "" >> $SUMMARY
+          REPO="${{ github.repository }}"
+          echo "See [issue docs](https://github.com/$REPO/issues)" \
+            >> $SUMMARY
