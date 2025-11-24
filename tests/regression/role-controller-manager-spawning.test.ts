@@ -260,30 +260,31 @@ describe("Regression: RoleControllerManager Spawning", () => {
 
     // Create mock creeps that match the role counts
     const mockCreeps: Record<string, Creep> = {};
-    
-    const createMockCreep = (name: string, role: string): Creep => ({
-      name,
-      memory: { role } as CreepMemory,
-      room: mockRoom,
-      pos: {
-        x: 25,
-        y: 25,
-        roomName: "E54N39",
-        findClosestByPath: vi.fn().mockReturnValue(mockSource),
-        isNearTo: vi.fn().mockReturnValue(false)
-      },
-      store: {
-        getFreeCapacity: vi.fn().mockReturnValue(50),
-        getUsedCapacity: vi.fn().mockReturnValue(0)
-      },
-      harvest: vi.fn(),
-      transfer: vi.fn(),
-      upgradeController: vi.fn(),
-      build: vi.fn(),
-      repair: vi.fn(),
-      moveTo: vi.fn()
-    } as unknown as Creep);
-    
+
+    const createMockCreep = (name: string, role: string): Creep =>
+      ({
+        name,
+        memory: { role } as CreepMemory,
+        room: mockRoom,
+        pos: {
+          x: 25,
+          y: 25,
+          roomName: "E54N39",
+          findClosestByPath: vi.fn().mockReturnValue(mockSource),
+          isNearTo: vi.fn().mockReturnValue(false)
+        },
+        store: {
+          getFreeCapacity: vi.fn().mockReturnValue(50),
+          getUsedCapacity: vi.fn().mockReturnValue(0)
+        },
+        harvest: vi.fn(),
+        transfer: vi.fn(),
+        upgradeController: vi.fn(),
+        build: vi.fn(),
+        repair: vi.fn(),
+        moveTo: vi.fn()
+      }) as unknown as Creep;
+
     for (let i = 0; i < 4; i++) {
       mockCreeps[`harvester-${i}`] = createMockCreep(`harvester-${i}`, "harvester");
     }

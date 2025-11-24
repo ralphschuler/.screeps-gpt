@@ -349,9 +349,7 @@ export class RoleControllerManager {
 
     // CRITICAL: Emergency spawn protection - handle total workforce collapse
     if (isEmergency) {
-      this.logger.log?.(
-        `[EMERGENCY] Total workforce collapse detected - forcing minimal spawn`
-      );
+      this.logger.log?.(`[EMERGENCY] Total workforce collapse detected - forcing minimal spawn`);
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const spawn = this.findAvailableSpawn(game.spawns);
@@ -389,9 +387,7 @@ export class RoleControllerManager {
         );
         return; // Skip normal spawn logic - emergency spawn takes priority
       } else {
-        this.logger.warn?.(
-          `[EMERGENCY] Emergency spawn failed: ${result} - may need manual intervention`
-        );
+        this.logger.warn?.(`[EMERGENCY] Emergency spawn failed: ${result} - may need manual intervention`);
         return; // Prevent fallthrough to normal spawn logic after emergency spawn failure
       }
     }
