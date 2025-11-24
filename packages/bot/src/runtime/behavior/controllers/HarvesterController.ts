@@ -77,6 +77,9 @@ export class HarvesterController extends BaseRoleController<HarvesterMemory> {
       this.machines.set(creep.name, machine);
     }
 
+    // Update creep reference in context every tick to ensure guards evaluate current state
+    machine.getContext().creep = creep as Creep;
+
     const ctx = machine.getContext();
     const currentState = machine.getState();
 
