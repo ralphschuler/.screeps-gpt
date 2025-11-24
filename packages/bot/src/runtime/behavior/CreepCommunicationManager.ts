@@ -6,6 +6,17 @@ import { profile } from "@ralphschuler/screeps-profiler";
 export type CommunicationVerbosity = "disabled" | "minimal" | "normal" | "verbose";
 
 /**
+ * Communication severity levels for message classification
+ */
+export enum CommunicationLevel {
+  SILENT = 0, // No messages
+  ERROR = 1, // Critical failures only
+  WARNING = 2, // Errors + warnings
+  INFO = 3, // Errors + warnings + important status
+  VERBOSE = 4 // All messages (current behavior)
+}
+
+/**
  * Configuration for creep communication system
  */
 export interface CreepCommunicationConfig {
@@ -14,6 +25,12 @@ export interface CreepCommunicationConfig {
    * Default: "normal"
    */
   verbosity?: CommunicationVerbosity;
+
+  /**
+   * Communication severity level (overrides verbosity if set)
+   * Default: undefined (uses verbosity mapping)
+   */
+  level?: CommunicationLevel;
 
   /**
    * Enable room visuals for task goals
@@ -63,6 +80,32 @@ const ACTION_EMOJIS: Record<CreepAction, string> = {
   error: "⚠️"
 };
 
+/**
+ * Default severity mapping for CreepActions
+ * Maps each action to its default communication level
+ */
+const ACTION_SEVERITY: Record<CreepAction, CommunicationLevel> = {
+  // ERROR level - critical failures
+  stuck: CommunicationLevel.ERROR,
+  error: CommunicationLevel.ERROR,
+
+  // WARNING level - caution conditions
+  empty: CommunicationLevel.WARNING,
+  full: CommunicationLevel.WARNING,
+
+  // INFO level - important status
+  gather: CommunicationLevel.INFO,
+
+  // VERBOSE level - routine operations
+  harvest: CommunicationLevel.VERBOSE,
+  deliver: CommunicationLevel.VERBOSE,
+  upgrade: CommunicationLevel.VERBOSE,
+  build: CommunicationLevel.VERBOSE,
+  repair: CommunicationLevel.VERBOSE,
+  travel: CommunicationLevel.VERBOSE,
+  pickup: CommunicationLevel.VERBOSE
+};
+
 interface CreepLike {
   say(message: string, toPublic?: boolean): number;
   name: string;
@@ -87,11 +130,39 @@ export class CreepCommunicationManager {
   private lastTickReset: number = -1;
 
   public constructor(config: CreepCommunicationConfig = {}) {
+    // Map verbosity to severity level if level not explicitly set
+    let level = config.level;
+    if (level === undefined) {
+      const verbosity = config.verbosity ?? "normal";
+      level = this.verbosityToLevel(verbosity);
+    }
+
     this.config = {
       verbosity: config.verbosity ?? "normal",
+      level,
       enableRoomVisuals: config.enableRoomVisuals ?? false,
       cpuBudget: config.cpuBudget ?? 0.1
     };
+  }
+
+  /**
+   * Map verbosity string to CommunicationLevel enum
+   * Note: For backward compatibility, "normal" maps to VERBOSE (shows all messages).
+   * To use the new filtered behavior, explicitly set level: CommunicationLevel.WARNING
+   */
+  private verbosityToLevel(verbosity: CommunicationVerbosity): CommunicationLevel {
+    switch (verbosity) {
+      case "disabled":
+        return CommunicationLevel.SILENT;
+      case "minimal":
+        return CommunicationLevel.ERROR; // Only critical errors (backward compatible)
+      case "normal":
+        return CommunicationLevel.VERBOSE; // Show all messages (backward compatible)
+      case "verbose":
+        return CommunicationLevel.VERBOSE; // Show all messages with extra text
+      default:
+        return CommunicationLevel.VERBOSE;
+    }
   }
 
   /**
@@ -105,10 +176,17 @@ export class CreepCommunicationManager {
   }
 
   /**
-   * Check if communication is enabled based on verbosity level
+   * Check if communication is enabled based on severity level
    */
   private isEnabled(): boolean {
-    return this.config.verbosity !== "disabled";
+    return this.config.level !== CommunicationLevel.SILENT;
+  }
+
+  /**
+   * Check if a message with given severity should be displayed
+   */
+  private shouldDisplay(severity: CommunicationLevel): boolean {
+    return this.isEnabled() && severity <= this.config.level;
   }
 
   /**
@@ -122,9 +200,24 @@ export class CreepCommunicationManager {
 
   /**
    * Make a creep say a message with emoji visual indicator
+   * Uses action's default severity level for filtering
    */
   public say(creep: CreepLike, action: CreepAction, additionalText?: string, cpuGetter?: () => number): void {
-    if (!this.isEnabled()) {
+    const severity = ACTION_SEVERITY[action] ?? CommunicationLevel.INFO;
+    this.sayWithSeverity(creep, action, severity, additionalText, cpuGetter);
+  }
+
+  /**
+   * Make a creep say a message with explicit severity level
+   */
+  public sayWithSeverity(
+    creep: CreepLike,
+    action: CreepAction,
+    severity: CommunicationLevel,
+    additionalText?: string,
+    cpuGetter?: () => number
+  ): void {
+    if (!this.shouldDisplay(severity)) {
       return;
     }
 
@@ -158,30 +251,63 @@ export class CreepCommunicationManager {
   }
 
   /**
-   * Display error or stuck state
+   * Display error message (always visible at ERROR level)
+   */
+  public error(creep: CreepLike, action: CreepAction, message?: string, cpuGetter?: () => number): void {
+    this.sayWithSeverity(creep, action, CommunicationLevel.ERROR, message, cpuGetter);
+  }
+
+  /**
+   * Display warning message (visible at WARNING level and above)
+   */
+  public warn(creep: CreepLike, action: CreepAction, message?: string, cpuGetter?: () => number): void {
+    this.sayWithSeverity(creep, action, CommunicationLevel.WARNING, message, cpuGetter);
+  }
+
+  /**
+   * Display info message (visible at INFO level and above)
+   */
+  public info(creep: CreepLike, action: CreepAction, message?: string, cpuGetter?: () => number): void {
+    this.sayWithSeverity(creep, action, CommunicationLevel.INFO, message, cpuGetter);
+  }
+
+  /**
+   * Display verbose message (only visible at VERBOSE level)
+   */
+  public verbose(creep: CreepLike, action: CreepAction, message?: string, cpuGetter?: () => number): void {
+    this.sayWithSeverity(creep, action, CommunicationLevel.VERBOSE, message, cpuGetter);
+  }
+
+  /**
+   * Display error or stuck state (backward compatibility)
+   * Note: Suppressed in "minimal" verbosity mode for backward compatibility
    */
   public sayError(creep: CreepLike, message?: string, cpuGetter?: () => number): void {
+    // Backward compatibility: minimal mode suppresses sayError
     if (!this.isEnabled() || this.config.verbosity === "minimal") {
       return;
     }
 
     if (creep.memory.stuck) {
-      this.say(creep, "stuck", message, cpuGetter);
+      this.error(creep, "stuck", message, cpuGetter);
     } else {
-      this.say(creep, "error", message, cpuGetter);
+      this.error(creep, "error", message, cpuGetter);
     }
   }
 
   /**
-   * Display resource status (full/empty)
+   * Display resource status (full/empty) (backward compatibility)
+   * Note: Suppressed in "minimal" verbosity mode for backward compatibility
    */
   public sayResourceStatus(creep: CreepLike, isFull: boolean, percentage?: number, cpuGetter?: () => number): void {
+    // Backward compatibility: minimal mode suppresses sayResourceStatus
     if (!this.isEnabled() || this.config.verbosity === "minimal") {
       return;
     }
 
     const action: CreepAction = isFull ? "full" : "empty";
     const text = percentage !== undefined ? `${Math.floor(percentage)}%` : undefined;
+    // Use default severity from ACTION_SEVERITY (WARNING level)
     this.say(creep, action, text, cpuGetter);
   }
 
@@ -229,6 +355,13 @@ export class CreepCommunicationManager {
   public updateConfig(config: Partial<CreepCommunicationConfig>): void {
     if (config.verbosity !== undefined) {
       this.config.verbosity = config.verbosity;
+      // Update level based on verbosity if level not explicitly set
+      if (config.level === undefined) {
+        this.config.level = this.verbosityToLevel(config.verbosity);
+      }
+    }
+    if (config.level !== undefined) {
+      this.config.level = config.level;
     }
     if (config.enableRoomVisuals !== undefined) {
       this.config.enableRoomVisuals = config.enableRoomVisuals;

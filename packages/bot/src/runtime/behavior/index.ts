@@ -1,7 +1,7 @@
 // Core behavior system
 export { BehaviorController } from "./BehaviorController";
 export { RoleControllerManager } from "./RoleControllerManager";
-export { CreepCommunicationManager } from "./CreepCommunicationManager";
+export { CreepCommunicationManager, CommunicationLevel } from "./CreepCommunicationManager";
 export type { CreepCommunicationConfig, CommunicationVerbosity, CreepAction } from "./CreepCommunicationManager";
 export { BodyComposer } from "./BodyComposer";
 export type { BodyPattern } from "./BodyComposer";
