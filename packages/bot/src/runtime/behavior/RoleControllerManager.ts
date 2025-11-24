@@ -364,26 +364,28 @@ export class RoleControllerManager {
       const room = spawn.room as Room;
       const energyAvailable = room.energyAvailable;
 
-      // Minimal viable body: [WORK, CARRY, MOVE] = 200 energy
-      const minimalBody: BodyPartConstant[] = [WORK, CARRY, MOVE];
-      const minimalCost = this.bodyComposer.calculateBodyCost(minimalBody);
+      // Generate minimal viable body using BodyComposer's emergency logic
+      const minimalBody = this.bodyComposer.generateEmergencyBody(energyAvailable);
 
-      if (energyAvailable < minimalCost) {
+      if (minimalBody.length === 0) {
+        const minimalCost = 200; // Minimum required for [WORK, CARRY, MOVE]
         this.logger.warn?.(
           `[EMERGENCY] Insufficient energy (${energyAvailable}) for minimal body (need ${minimalCost})`
         );
         return;
       }
 
-      const name = `emergency-harvester-${game.time}`;
-      const creepMemory = { role: 'harvester' as RoleName };
+      const roleName: RoleName = "harvester";
+      const name = `emergency-${roleName}-${game.time}`;
+      const creepMemory = { role: roleName };
       const result = this.spawnCreepSafely(spawn, minimalBody, name, creepMemory);
 
       if (result === OK) {
         spawned.push(name);
-        roleCounts['harvester'] = 1;
+        roleCounts[roleName] = 1;
+        const spawnCost = this.bodyComposer.calculateBodyCost(minimalBody);
         this.logger.log?.(
-          `[EMERGENCY] Spawned ${name} with minimal body (${minimalBody.length} parts, ${minimalCost} energy)`
+          `[EMERGENCY] Spawned ${name} with minimal body (${minimalBody.length} parts, ${spawnCost} energy)`
         );
         return; // Skip normal spawn logic - emergency spawn takes priority
       } else {
