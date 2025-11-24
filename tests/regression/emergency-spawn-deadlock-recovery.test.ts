@@ -171,9 +171,9 @@ describe("Regression: Emergency Spawn Deadlock Recovery", () => {
   it("should successfully spawn emergency harvester when energy reaches minimum threshold", () => {
     const controller = new BehaviorController({}, logger);
 
-    // Simulate energy regeneration: source regenerated and spawn now has 150+ energy
-    mockRoom.energyAvailable = 150; // Exactly minimum for [WORK, MOVE]
-    mockSpawn.store.getUsedCapacity = vi.fn().mockReturnValue(150);
+    // Simulate energy regeneration: source regenerated and spawn now has 200+ energy
+    mockRoom.energyAvailable = 200; // Minimum for [WORK, CARRY, MOVE]
+    mockSpawn.store.getUsedCapacity = vi.fn().mockReturnValue(200);
 
     const game: GameContext = {
       time: 75093347 + 300, // After source regeneration cycle
@@ -200,17 +200,16 @@ describe("Regression: Emergency Spawn Deadlock Recovery", () => {
     // Verify emergency spawn log message
     expect(logger.log).toHaveBeenCalledWith(expect.stringContaining("EMERGENCY SPAWN"));
     expect(logger.log).toHaveBeenCalledWith(expect.stringContaining("Recovering from total creep loss"));
-    expect(logger.log).toHaveBeenCalledWith(expect.stringContaining("150/1300"));
+    expect(logger.log).toHaveBeenCalledWith(expect.stringContaining("200/1300"));
 
     // Verify spawn was called with minimal emergency body
     expect(mockSpawn.spawnCreep).toHaveBeenCalled();
     const spawnCall = (mockSpawn.spawnCreep as ReturnType<typeof vi.fn>).mock.calls[0];
     const bodyParts = spawnCall[0] as BodyPartConstant[];
 
-    // Emergency body should be [WORK, MOVE] or [WORK, CARRY, MOVE]
+    // Emergency body should be [WORK, CARRY, MOVE]
     expect(bodyParts).toBeDefined();
-    expect(bodyParts.length).toBeGreaterThanOrEqual(2);
-    expect(bodyParts.length).toBeLessThanOrEqual(3);
+    expect(bodyParts).toEqual([WORK, CARRY, MOVE]);
   });
 
   it("should spawn optimal emergency harvester with 200+ energy", () => {

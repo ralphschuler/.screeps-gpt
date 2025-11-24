@@ -152,12 +152,11 @@ describe("Creep Energy Budget - Regression", () => {
     expect(cost).toBe(200);
   });
 
-  it("should return emergency body even when budget would constrain it", () => {
-    // With 150 capacity and 50% budget = 75 energy (too low for normal body)
-    // Falls back to emergency [WORK, MOVE] = 150 energy
-    // FIXED: Emergency bodies now use full energy, not budget-constrained
+  it("should return empty array when energy below minimum threshold", () => {
+    // With 150 capacity - below 200 energy minimum for [WORK, CARRY, MOVE]
+    // Cannot spawn minimal viable body
     const body = composer.generateBody("harvester", 150, mockRoomStable);
-    expect(body).toEqual([WORK, MOVE]);
+    expect(body).toEqual([]);
   });
 
   it("should respect 50% budget even at maximum energy capacity", () => {

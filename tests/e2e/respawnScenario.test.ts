@@ -61,6 +61,24 @@ describe(`Respawn Scenario (${TEST_REALM})`, () => {
     const controller = { id: "controller" } as StructureController;
 
     const spawnCreepMock = vi.fn(() => OK);
+    
+    // Create room first so spawn can reference it
+    const room = {
+      controller,
+      energyAvailable: 300,
+      energyCapacityAvailable: 300,
+      find: (type: FindConstant) => {
+        if (type === FIND_SOURCES_ACTIVE) {
+          return [source];
+        }
+        if (type === FIND_STRUCTURES) {
+          // Will be populated after spawn is created
+          return [];
+        }
+        return [];
+      }
+    };
+    
     const spawn = {
       name: "Spawn1",
       spawning: null,
@@ -69,23 +87,18 @@ describe(`Respawn Scenario (${TEST_REALM})`, () => {
         getFreeCapacity: vi.fn(() => 300),
         getUsedCapacity: vi.fn(() => 0)
       },
-      room: {
-        controller,
-        find: () => [source]
-      }
+      room
     } as unknown as StructureSpawn;
-
-    const room = {
-      controller,
-      find: (type: FindConstant) => {
-        if (type === FIND_SOURCES_ACTIVE) {
-          return [source];
-        }
-        if (type === FIND_STRUCTURES) {
-          return [spawn as unknown as AnyStructure];
-        }
-        return [];
+    
+    // Update room.find to include spawn
+    room.find = (type: FindConstant) => {
+      if (type === FIND_SOURCES_ACTIVE) {
+        return [source];
       }
+      if (type === FIND_STRUCTURES) {
+        return [spawn as unknown as AnyStructure];
+      }
+      return [];
     };
 
     const cpuReadings = { value: 0 };
@@ -127,6 +140,15 @@ describe(`Respawn Scenario (${TEST_REALM})`, () => {
 
     // Game state now has a spawn (player respawned)
     const spawnCreepMock = vi.fn(() => OK);
+    
+    // Create room first so spawn can reference it
+    const room = {
+      controller: { id: "controller" } as StructureController,
+      energyAvailable: 300,
+      energyCapacityAvailable: 300,
+      find: () => []
+    };
+    
     const spawn = {
       name: "Spawn1",
       spawning: null,
@@ -135,10 +157,7 @@ describe(`Respawn Scenario (${TEST_REALM})`, () => {
         getFreeCapacity: vi.fn(() => 300),
         getUsedCapacity: vi.fn(() => 0)
       },
-      room: {
-        controller: { id: "controller" } as StructureController,
-        find: () => []
-      }
+      room
     } as unknown as StructureSpawn;
 
     const cpuReadings = { value: 0 };
@@ -151,7 +170,7 @@ describe(`Respawn Scenario (${TEST_REALM})`, () => {
       },
       creeps: {},
       spawns: { Spawn1: spawn },
-      rooms: { W1N1: spawn.room }
+      rooms: { W1N1: room }
     };
 
     kernel.run(game, memory);
