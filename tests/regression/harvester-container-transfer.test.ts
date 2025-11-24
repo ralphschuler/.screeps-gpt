@@ -14,7 +14,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { CreepLike, RoomLike } from "@runtime/types/GameContext";
 
-// Import the harvester logic indirectly by accessing BehaviorController
+// Import the harvester logic indirectly by accessing the role controller
 // We need to test the actual implementation, not mock it
 const HARVEST_TASK = "harvest" as const;
 const DELIVER_TASK = "deliver" as const;
@@ -83,7 +83,7 @@ describe("Harvester Container Transfer", () => {
   });
 
   it("should transition from HARVEST to DELIVER when energy storage is full", () => {
-    // Mock the BehaviorController's ensureHarvesterTask logic
+    // Mock the harvester controller's ensureHarvesterTask logic
     const memory = mockCreep.memory;
 
     // Initial state: harvesting

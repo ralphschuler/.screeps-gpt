@@ -39,7 +39,7 @@ export async function loadVideoConfig(): Promise<VideoConfig> {
           }
         : DEFAULT_VIDEO_CONFIG.youtube
     };
-  } catch (_error) {
+  } catch {
     // If no config file, use defaults with environment overrides
     console.warn(`No video config found at ${configPath}, using defaults`);
     return applyEnvironmentOverrides(DEFAULT_VIDEO_CONFIG);

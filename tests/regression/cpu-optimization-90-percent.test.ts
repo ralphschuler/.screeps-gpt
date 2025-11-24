@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { BehaviorController } from "@runtime/behavior/BehaviorController";
+import { RoleControllerManager } from "@runtime/behavior/RoleControllerManager";
 import { PerformanceTracker } from "@runtime/metrics/PerformanceTracker";
 import { Kernel } from "@ralphschuler/screeps-kernel";
 import type { GameContext, CreepLike, RoomLike } from "@runtime/types/GameContext";
@@ -20,7 +20,7 @@ import "@runtime/processes";
  * - Account upgrade: chore: account upgraded to lifetime subscription with increased resources
  *
  * Key optimizations verified:
- * 1. BehaviorController uses 85% CPU safety margin by default (updated for 150 CPU limit)
+ * 1. RoleControllerManager uses 85% CPU safety margin by default (updated for 150 CPU limit)
  * 2. PerformanceTracker warns at 75% and critical at 90%
  * 3. Kernel emergency threshold at 90%
  * 4. Movement operations use higher reusePath values (30-50 ticks)
@@ -63,10 +63,10 @@ describe("CPU optimization regression - 90% threshold", () => {
     };
   }
 
-  describe("BehaviorController default CPU safety margin", () => {
+  describe("RoleControllerManager default CPU safety margin", () => {
     it("should use 85% CPU safety margin by default", () => {
       const warn = vi.fn();
-      const controller = new BehaviorController({}, { log: vi.fn(), warn });
+      const controller = new RoleControllerManager({}, { log: vi.fn(), warn });
 
       let cpuUsed = 0;
       const creeps: Record<string, CreepLike> = {
@@ -109,7 +109,7 @@ describe("CPU optimization regression - 90% threshold", () => {
 
     it("should use 1.5 CPU per creep threshold by default", () => {
       const warn = vi.fn();
-      const controller = new BehaviorController({}, { log: vi.fn(), warn });
+      const controller = new RoleControllerManager({}, { log: vi.fn(), warn });
 
       const creeps: Record<string, CreepLike> = {
         expensiveCreep: createMockCreep("expensiveCreep", "harvester")
@@ -250,7 +250,7 @@ describe("CPU optimization regression - 90% threshold", () => {
     it("should use 90% emergency threshold by default", () => {
       const warn = vi.fn();
       const kernel = new Kernel({
-        behavior: new BehaviorController({}),
+        behavior: new RoleControllerManager({}),
         logger: { log: vi.fn(), warn }
       });
 
@@ -292,7 +292,7 @@ describe("CPU optimization regression - 90% threshold", () => {
     it("should process normally at 85% CPU (below 90% emergency threshold)", () => {
       const warn = vi.fn();
       const log = vi.fn();
-      const kernel = new Kernel({ behavior: new BehaviorController({}), logger: { log, warn } });
+      const kernel = new Kernel({ behavior: new RoleControllerManager({}), logger: { log, warn } });
 
       const mockRoom: RoomLike = {
         name: "W0N0",

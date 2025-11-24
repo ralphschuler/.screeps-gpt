@@ -11,12 +11,12 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { BehaviorController } from "@runtime/behavior/BehaviorController";
+import { RoleControllerManager } from "@runtime/behavior/RoleControllerManager";
 import { BodyComposer } from "@runtime/behavior/BodyComposer";
 import type { GameContext } from "@runtime/types/GameContext";
 
 describe("Container Harvesting Workflow", () => {
-  let behaviorController: BehaviorController;
+  let behaviorController: RoleControllerManager;
   let bodyComposer: BodyComposer;
   let memory: Memory;
   let game: GameContext;
@@ -42,7 +42,7 @@ describe("Container Harvesting Workflow", () => {
   };
 
   beforeEach(() => {
-    behaviorController = new BehaviorController(
+    behaviorController = new RoleControllerManager(
       {
         cpuSafetyMargin: 0.85,
         maxCpuPerCreep: 1.5

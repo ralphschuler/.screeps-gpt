@@ -3,15 +3,7 @@ import { process as registerProcess, type ProcessContext } from "@ralphschuler/s
 import type { GameContext } from "@runtime/types/GameContext";
 import type { RuntimeProtocols } from "@runtime/protocols";
 import type { BehaviorSummary } from "@shared/contracts";
-import { BehaviorController } from "@runtime/behavior/BehaviorController";
 import { RoleControllerManager } from "@runtime/behavior/RoleControllerManager";
-
-/**
- * Feature flag to enable modular role controllers.
- * Set to true to use the new RoleControllerManager architecture.
- * Set to false to use the legacy BehaviorController (for rollback if needed).
- */
-const USE_MODULAR_CONTROLLERS = true;
 
 /**
  * Behavior execution process that handles all creep behavior and spawning.
@@ -25,32 +17,19 @@ const USE_MODULAR_CONTROLLERS = true;
  */
 @registerProcess({ name: "BehaviorProcess", priority: 50, singleton: true })
 export class BehaviorProcess {
-  private readonly behavior: BehaviorController | RoleControllerManager;
+  private readonly behavior: RoleControllerManager;
   private readonly logger: Pick<Console, "log" | "warn">;
   private readonly cpuEmergencyThreshold: number;
 
   public constructor() {
     this.logger = console;
-
-    // Use modular role controllers if feature flag is enabled
-    if (USE_MODULAR_CONTROLLERS) {
-      this.behavior = new RoleControllerManager(
-        {
-          cpuSafetyMargin: 0.8,
-          maxCpuPerCreep: 1.5
-        },
-        this.logger
-      );
-    } else {
-      this.behavior = new BehaviorController(
-        {
-          cpuSafetyMargin: 0.8,
-          maxCpuPerCreep: 1.5
-        },
-        this.logger
-      );
-    }
-
+    this.behavior = new RoleControllerManager(
+      {
+        cpuSafetyMargin: 0.8,
+        maxCpuPerCreep: 1.5
+      },
+      this.logger
+    );
     this.cpuEmergencyThreshold = 0.9;
   }
 

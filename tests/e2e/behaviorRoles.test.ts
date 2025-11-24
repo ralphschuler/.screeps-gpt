@@ -29,7 +29,7 @@ function createCreep(role: string, room: RoomLike, store: { free: number; used: 
   };
 }
 
-describe("BehaviorController role integration", () => {
+describe("RoleControllerManager role integration", () => {
   it("spawns missing builder creeps alongside economy roles", () => {
     const controllerRoom: RoomLike = {
       name: "W0N0",

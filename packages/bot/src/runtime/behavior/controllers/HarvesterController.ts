@@ -206,6 +206,11 @@ export class HarvesterController extends BaseRoleController<HarvesterMemory> {
    * This is called on every execute to ensure the machines Map doesn't grow indefinitely.
    */
   private cleanupDeadCreepMachines(): void {
+    // Skip cleanup if Game is not available (e.g., in tests)
+    if (typeof Game === "undefined" || !Game.creeps) {
+      return;
+    }
+
     for (const creepName of this.machines.keys()) {
       if (!Game.creeps[creepName]) {
         this.machines.delete(creepName);

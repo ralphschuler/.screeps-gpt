@@ -28,7 +28,7 @@ describe("Performance optimization documentation", () => {
     it("should contain CPU optimization strategies section", () => {
       expect(content).toMatch(/##\s+CPU Optimization/i);
       expect(content).toContain("CPU Budget Management");
-      expect(content).toContain("BehaviorController Safety Margin");
+      expect(content).toContain("RoleControllerManager Safety Margin");
       expect(content).toContain("PerformanceTracker Thresholds");
       expect(content).toContain("Kernel Emergency Threshold");
     });
@@ -71,7 +71,7 @@ describe("Performance optimization documentation", () => {
     it("should reference existing performance utilities", () => {
       expect(content).toContain("src/runtime/metrics/PerformanceTracker.ts");
       expect(content).toContain("src/runtime/metrics/StatsCollector.ts");
-      expect(content).toContain("src/runtime/behavior/BehaviorController.ts");
+      expect(content).toContain("src/runtime/behavior/RoleControllerManager.ts");
       expect(content).toContain("src/runtime/evaluation/SystemEvaluator.ts");
       expect(content).toContain("src/runtime/memory/MemoryManager.ts");
     });

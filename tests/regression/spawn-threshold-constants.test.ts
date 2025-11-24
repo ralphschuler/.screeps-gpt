@@ -4,7 +4,7 @@ import { SPAWN_THRESHOLDS } from "@runtime/behavior/constants";
 /**
  * Regression test for spawn threshold constant extraction.
  * Validates that extracted constants maintain the expected values that were
- * previously hardcoded in BehaviorController.ts.
+ * previously hardcoded in the legacy behavior controller.
  *
  * Related Issues:
  * - #1267: State machine migration (unblocked by this refactor)

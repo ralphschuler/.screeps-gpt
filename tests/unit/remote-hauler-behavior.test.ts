@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import { BehaviorController } from "@runtime/behavior/BehaviorController";
+import { RoleControllerManager } from "@runtime/behavior/RoleControllerManager";
 import type { CreepLike, GameContext, RoomLike } from "@runtime/types/GameContext";
 
 describe("RemoteHauler Behavior", () => {
   it("should transition from travel to pickup when reaching target room", () => {
-    const controller = new BehaviorController({}, { log: vi.fn(), warn: vi.fn() });
+    const controller = new RoleControllerManager({}, { log: vi.fn(), warn: vi.fn() });
 
     const targetRoom: RoomLike = {
       name: "W1N1",
@@ -70,7 +70,7 @@ describe("RemoteHauler Behavior", () => {
   });
 
   it("should transition from pickup to return when full", () => {
-    const controller = new BehaviorController({}, { log: vi.fn(), warn: vi.fn() });
+    const controller = new RoleControllerManager({}, { log: vi.fn(), warn: vi.fn() });
 
     const targetRoom: RoomLike = {
       name: "W1N1",
@@ -121,7 +121,7 @@ describe("RemoteHauler Behavior", () => {
   });
 
   it("should deliver energy to storage when returning home", () => {
-    const controller = new BehaviorController({}, { log: vi.fn(), warn: vi.fn() });
+    const controller = new RoleControllerManager({}, { log: vi.fn(), warn: vi.fn() });
 
     const homeRoom: RoomLike = {
       name: "W0N0",
