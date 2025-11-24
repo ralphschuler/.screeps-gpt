@@ -803,6 +803,7 @@ The bot is solidly in the **intermediate tier**, capable of operating multiple r
 13. ❌ **Factory Automation** - Commodity production chains
 14. ❌ **Machine Learning** - Predictive spawning, expansion planning
 15. ❌ **Multi-Room Combat** - Coordinated offensive operations
+
 ---
 
 ## Identified Gaps and Opportunities
