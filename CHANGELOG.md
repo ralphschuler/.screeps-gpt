@@ -5,6 +5,9 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.146.0] - 2025-11-24
+
+
 ### Fixed
 
 - **Build Validation**: Added comprehensive test coverage for context-aware size thresholds
@@ -13,6 +16,7 @@ All notable changes to this project are documented here. This changelog now main
   - Tests confirm validation prevents broken or incomplete builds from passing
   - Added 11 regression test cases covering threshold enforcement and edge cases
   - Addresses deployment safety concerns from ralphschuler/.screeps-gpt#729
+
 
 ## [0.143.5] - 2025-11-24
 
