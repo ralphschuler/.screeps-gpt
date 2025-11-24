@@ -1,0 +1,37 @@
+{
+  "timestamp": "2025-11-24T00:03:53.993Z",
+  "cpu": {
+    "used": 0,
+    "limit": 0,
+    "bucket": 0
+  },
+  "rooms": {
+    "count": {
+      "rcl": 0,
+      "energy": 0,
+      "energyCapacity": 0
+    },
+    "E54N39": {
+      "rcl": 2,
+      "energy": 0,
+      "energyCapacity": 0,
+      "controllerProgress": 38708,
+      "controllerProgressTotal": 45000
+    }
+  },
+  "creeps": {
+    "total": 0
+  },
+  "memory": {
+    "used": 2537,
+    "usedPercent": 0.12
+  },
+  "structures": {
+    "containers": 3,
+    "roads": 161
+  },
+  "spawns": {
+    "total": 1,
+    "active": 0
+  }
+}
