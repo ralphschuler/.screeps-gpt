@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.154.0",
+    "date": "2025-11-24",
+    "notes": [
+      "**Memory Management**: Implemented proper memory usage patterns from wiki.screepspl.us/Memory",
+      "Added `GlobalCache` for volatile heap caching (no serialization overhead)",
+      "Added path serialization utilities (`serializePath`, `deserializePath`, etc.) for 85% memory reduction",
+      "Added flag memory cleanup to `MemoryGarbageCollector`",
+      "Updated memory management documentation with advanced patterns",
+      "Covers heap caching, path serialization, and RawMemory segments documentation"
+    ],
+    "anchor": "01540---2025-11-24",
+    "slug": "v0-154-0"
+  },
+  {
     "version": "0.151.1",
     "date": "2025-11-24",
     "notes": [

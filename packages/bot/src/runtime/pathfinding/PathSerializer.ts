@@ -266,7 +266,9 @@ export function isPathValid(serialized: string, currentPos: RoomPosition): boole
   }
 
   // Path is valid if current position matches any position in the path
-  return positions.some(pos => pos.x === currentPos.x && pos.y === currentPos.y && pos.roomName === currentPos.roomName);
+  return positions.some(
+    pos => pos.x === currentPos.x && pos.y === currentPos.y && pos.roomName === currentPos.roomName
+  );
 }
 
 /**
