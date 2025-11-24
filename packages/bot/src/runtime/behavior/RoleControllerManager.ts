@@ -25,6 +25,7 @@ import { RoleTaskQueueManager } from "./RoleTaskQueue";
 import * as TaskDiscovery from "./TaskDiscovery";
 import type { RoleController } from "./controllers/RoleController";
 import { serviceRegistry } from "./controllers/ServiceLocator";
+import type { DefenseMemory } from "@runtime/defense";
 import {
   HarvesterController,
   UpgraderController,
@@ -65,6 +66,13 @@ interface RoleControllerManagerOptions {
   maxCpuPerCreep?: number;
   enableCreepCommunication?: boolean;
 }
+
+/**
+ * Combat mode constants for spawn prioritization
+ */
+const COMBAT_UPGRADER_REDUCTION_FACTOR = 0.3; // Reduce upgrader minimum to 30% during combat
+const COMBAT_MIN_ATTACKERS_HEALERS = 2; // Minimum attackers/healers during combat
+const COMBAT_MIN_REPAIRERS = 1; // Minimum repairers during combat
 
 /**
  * Coordinates spawning and per-tick behavior execution using individual role controllers.
@@ -400,22 +408,58 @@ export class RoleControllerManager {
       roomCreepCounts.set(roomName, (roomCreepCounts.get(roomName) ?? 0) + 1);
     }
 
-    // Determine spawn priority order
-    const roleOrder: RoleName[] = [
-      "harvester",
-      "upgrader",
-      "builder",
-      "stationaryHarvester",
-      "hauler",
-      "repairer",
-      "remoteMiner",
-      "remoteHauler",
-      "scout",
-      "attacker",
-      "healer",
-      "dismantler",
-      "claimer"
-    ];
+    // Check if any room is under defensive posture (alert, defensive, or emergency)
+    const defenseMemory = memory.defense as DefenseMemory | undefined;
+    const roomsUnderCombat = defenseMemory
+      ? Object.entries(defenseMemory.posture)
+          .filter(([_, posture]) => posture === "alert" || posture === "defensive" || posture === "emergency")
+          .map(([roomName, _]) => roomName)
+      : [];
+    const isUnderCombat = roomsUnderCombat.length > 0;
+
+    // Check if any room is in emergency posture (most severe)
+    const hasEmergencyPosture = defenseMemory
+      ? Object.values(defenseMemory.posture).some(posture => posture === "emergency")
+      : false;
+
+    // Determine spawn priority order based on combat status
+    let roleOrder: RoleName[];
+    if (isUnderCombat) {
+      // Combat mode: prioritize defenders, attackers, and repairers over upgraders
+      roleOrder = [
+        "harvester",
+        "attacker",
+        "healer",
+        "repairer",
+        "hauler",
+        "builder",
+        "stationaryHarvester",
+        "upgrader",
+        "remoteMiner",
+        "remoteHauler",
+        "scout",
+        "dismantler",
+        "claimer"
+      ];
+      this.logger.log?.(`[RoleControllerManager] Combat mode active in rooms: ${roomsUnderCombat.join(", ")}`);
+    } else {
+      // Normal mode: standard priority order
+      roleOrder = [
+        "harvester",
+        "upgrader",
+        "builder",
+        "stationaryHarvester",
+        "hauler",
+        "repairer",
+        "remoteMiner",
+        "remoteHauler",
+        "scout",
+        "attacker",
+        "healer",
+        "dismantler",
+        "claimer"
+      ];
+    }
 
     for (const role of roleOrder) {
       const controller = this.getRoleController(role);
@@ -425,7 +469,30 @@ export class RoleControllerManager {
 
       const current = roleCounts[role] ?? 0;
       const config = controller.getConfig();
-      const targetMinimum = bootstrapMinimums[role] ?? config.minimum;
+      let targetMinimum = bootstrapMinimums[role] ?? config.minimum;
+
+      // Dynamically reduce upgrader minimum during combat to focus on defense
+      if (role === "upgrader" && isUnderCombat) {
+        if (hasEmergencyPosture) {
+          // Emergency: Stop spawning upgraders entirely
+          targetMinimum = 0;
+        } else {
+          // Alert/Defensive: Reduce upgrader minimum to 30%
+          targetMinimum = Math.max(0, Math.floor(targetMinimum * COMBAT_UPGRADER_REDUCTION_FACTOR));
+        }
+
+        if (targetMinimum === 0 && current === 0) {
+          continue; // Skip spawning upgraders entirely
+        }
+      }
+
+      // Increase attacker/healer/repairer minimums during combat
+      if ((role === "attacker" || role === "healer") && isUnderCombat) {
+        targetMinimum = Math.max(config.minimum, COMBAT_MIN_ATTACKERS_HEALERS);
+      }
+      if (role === "repairer" && isUnderCombat) {
+        targetMinimum = Math.max(config.minimum, COMBAT_MIN_REPAIRERS);
+      }
 
       if (current >= targetMinimum) {
         continue;
