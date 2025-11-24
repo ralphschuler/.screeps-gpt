@@ -416,6 +416,11 @@ export class RoleControllerManager {
       : [];
     const isUnderCombat = roomsUnderCombat.length > 0;
 
+    // Check if any room is in emergency posture (most severe)
+    const hasEmergencyPosture = defenseMemory
+      ? Object.values(defenseMemory.posture).some(posture => posture === "emergency")
+      : false;
+
     // Determine spawn priority order based on combat status
     let roleOrder: RoleName[];
     if (isUnderCombat) {
@@ -467,9 +472,16 @@ export class RoleControllerManager {
 
       // Dynamically reduce upgrader minimum during combat to focus on defense
       if (role === "upgrader" && isUnderCombat) {
-        targetMinimum = Math.max(0, Math.floor(targetMinimum * COMBAT_UPGRADER_REDUCTION_FACTOR));
+        if (hasEmergencyPosture) {
+          // Emergency: Stop spawning upgraders entirely
+          targetMinimum = 0;
+        } else {
+          // Alert/Defensive: Reduce upgrader minimum to 30%
+          targetMinimum = Math.max(0, Math.floor(targetMinimum * COMBAT_UPGRADER_REDUCTION_FACTOR));
+        }
+
         if (targetMinimum === 0 && current === 0) {
-          continue; // Skip spawning upgraders entirely during combat
+          continue; // Skip spawning upgraders entirely
         }
       }
 

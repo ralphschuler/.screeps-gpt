@@ -7,7 +7,8 @@ import type { GameContext } from "@runtime/types/GameContext";
  *
  * Issue: When under attack, upgraders should stop spawning and combat units should be prioritized
  * Expected behavior:
- * - During defensive postures (alert/defensive/emergency), upgrader minimum is reduced to 30%
+ * - During alert/defensive postures, upgrader minimum is reduced to 30%
+ * - During emergency posture, upgrader minimum is reduced to 0%
  * - Spawn priority order changes to prioritize attackers, healers, and repairers
  * - Upgraders already spawned pause their upgrading behavior (handled by UpgraderController)
  */
