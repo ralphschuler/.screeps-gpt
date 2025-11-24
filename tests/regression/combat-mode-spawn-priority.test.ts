@@ -171,7 +171,7 @@ describe("Regression: Combat Mode Spawn Priority", () => {
     } as unknown as GameContext;
 
     // Execute
-    const result = manager.execute(mockGame, mockMemory, { harvester: 1 }, {});
+    manager.execute(mockGame, mockMemory, { harvester: 1 }, {});
 
     // Assert: Combat mode was logged
     expect(logger.log).toHaveBeenCalledWith(
