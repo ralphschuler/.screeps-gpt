@@ -347,6 +347,52 @@ export class RoleControllerManager {
     const isEmergency = totalCreeps === 0;
     const harvesterCount = roleCounts["harvester"] ?? 0;
 
+    // CRITICAL: Emergency spawn protection - handle total workforce collapse
+    if (isEmergency) {
+      this.logger.log?.(
+        `[EMERGENCY] Total workforce collapse detected - forcing minimal spawn`
+      );
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const spawn = this.findAvailableSpawn(game.spawns);
+      if (!spawn) {
+        this.logger.warn?.(`[EMERGENCY] No spawn available - cannot recover`);
+        return;
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      const room = spawn.room as Room;
+      const energyAvailable = room.energyAvailable;
+
+      // Minimal viable body: [WORK, CARRY, MOVE] = 200 energy
+      const minimalBody: BodyPartConstant[] = [WORK, CARRY, MOVE];
+      const minimalCost = this.bodyComposer.calculateBodyCost(minimalBody);
+
+      if (energyAvailable < minimalCost) {
+        this.logger.warn?.(
+          `[EMERGENCY] Insufficient energy (${energyAvailable}) for minimal body (need ${minimalCost})`
+        );
+        return;
+      }
+
+      const name = `emergency-harvester-${game.time}`;
+      const creepMemory = { role: 'harvester' as RoleName };
+      const result = this.spawnCreepSafely(spawn, minimalBody, name, creepMemory);
+
+      if (result === OK) {
+        spawned.push(name);
+        roleCounts['harvester'] = 1;
+        this.logger.log?.(
+          `[EMERGENCY] Spawned ${name} with minimal body (${minimalBody.length} parts, ${minimalCost} energy)`
+        );
+        return; // Skip normal spawn logic - emergency spawn takes priority
+      } else {
+        this.logger.warn?.(
+          `[EMERGENCY] Emergency spawn failed: ${result} - may need manual intervention`
+        );
+      }
+    }
+
     // Pre-calculate room creep counts to avoid repeated filtering
     // Map room name to creep count for efficient lookup during spawning
     const roomCreepCounts = new Map<string, number>();

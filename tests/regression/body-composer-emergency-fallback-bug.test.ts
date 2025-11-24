@@ -99,14 +99,13 @@ describe("Regression: Emergency Body Fallback Bug", () => {
     expect(composer.calculateBodyCost(body)).toBe(200);
   });
 
-  it("should correctly spawn [WORK, MOVE] only when energy is below 200", () => {
-    // When energy is genuinely low (150-199), [WORK, MOVE] is correct
+  it("should not spawn with insufficient energy (below 200)", () => {
+    // When energy is below 200, cannot spawn minimal viable body
     const body = composer.generateBody("harvester", 180, mockRoom);
 
-    // With 180 energy, should spawn [WORK, MOVE] (150 energy)
-    // Cannot afford [WORK, CARRY, MOVE] (200 energy)
-    expect(body).toEqual([WORK, MOVE]);
-    expect(composer.calculateBodyCost(body)).toBe(150);
+    // With 180 energy, cannot afford [WORK, CARRY, MOVE] (200 energy)
+    // Should return empty array rather than spawning incomplete body
+    expect(body).toEqual([]);
   });
 
   it("should spawn optimal body when emergency mode passes higher energy", () => {
@@ -151,11 +150,11 @@ describe("Regression: Emergency Body Fallback Bug", () => {
   });
 
   it("should handle 199 energy correctly (just below threshold)", () => {
-    // Just below 200 energy - should spawn [WORK, MOVE]
+    // Just below 200 energy - cannot spawn minimal viable body
     const body = composer.generateBody("harvester", 199, mockRoom);
 
-    expect(body).toEqual([WORK, MOVE]);
-    expect(composer.calculateBodyCost(body)).toBe(150);
+    // Should return empty array since 199 < 200 (minimum for [WORK, CARRY, MOVE])
+    expect(body).toEqual([]);
   });
 
   it("should not regress to [WORK, MOVE] with abundant energy", () => {

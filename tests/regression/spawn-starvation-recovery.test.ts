@@ -199,30 +199,29 @@ describe("Spawn Starvation Recovery (Issue #806)", () => {
       expect(result.spawnedCreeps[0]).toMatch(/^harvester-/);
     });
 
-    it("should spawn ultra-minimal creep with 150 energy in emergency", () => {
+    it("should not spawn with insufficient energy (150 energy below minimum)", () => {
       const controller = new BehaviorController({}, console);
 
-      // 150 energy - NEW: can spawn ultra-minimal [WORK, MOVE] body in emergency
+      // 150 energy - below minimum 200 for [WORK, CARRY, MOVE]
       const game = createStarvationGameContext(150, 300, false);
       const memory = { creepCounter: 0, roles: {} } as Memory;
 
       const result = controller.execute(game, memory, {});
 
-      // Should spawn ultra-minimal emergency harvester [WORK, MOVE] = 150 energy
-      expect(result.spawnedCreeps.length).toBe(1);
-      expect(result.spawnedCreeps[0]).toMatch(/^harvester-/);
+      // Cannot spawn - not enough energy for minimal viable body
+      expect(result.spawnedCreeps.length).toBe(0);
     });
 
-    it("should not spawn when energy is below ultra-minimal threshold", () => {
+    it("should not spawn when energy is below minimal threshold", () => {
       const controller = new BehaviorController({}, console);
 
-      // 100 energy (below minimum 150 for ultra-minimal body)
+      // 100 energy (below minimum 200 for minimal body)
       const game = createStarvationGameContext(100, 300, false);
       const memory = { creepCounter: 0, roles: {} } as Memory;
 
       const result = controller.execute(game, memory, {});
 
-      // Cannot spawn - not enough energy even for ultra-minimal body
+      // Cannot spawn - not enough energy for minimal viable body
       expect(result.spawnedCreeps.length).toBe(0);
     });
   });

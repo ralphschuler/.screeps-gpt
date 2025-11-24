@@ -56,7 +56,12 @@ describe("Regression: RoleControllerManager Spawning", () => {
       id: "spawn1" as Id<StructureSpawn>,
       name: "Spawn1",
       structureType: STRUCTURE_SPAWN,
-      pos: { x: 25, y: 25, roomName: "E54N39" },
+      pos: {
+        x: 25,
+        y: 25,
+        roomName: "E54N39",
+        isNearTo: vi.fn().mockReturnValue(false)
+      },
       spawning: null,
       spawnCreep: vi.fn(() => OK),
       store: {
@@ -79,7 +84,7 @@ describe("Regression: RoleControllerManager Spawning", () => {
       energyAvailable: 300,
       energyCapacityAvailable: 300,
       storage: null,
-      find: vi.fn((type: FindConstant) => {
+      find: vi.fn((type: FindConstant, opts?: FilterOptions<any>) => {
         if (type === FIND_SOURCES_ACTIVE || type === FIND_SOURCES) {
           return [mockSource];
         }
@@ -87,9 +92,19 @@ describe("Regression: RoleControllerManager Spawning", () => {
           return [];
         }
         if (type === FIND_MY_STRUCTURES) {
+          // If filter is provided, apply it
+          if (opts?.filter) {
+            const structures = [mockSpawn];
+            return structures.filter(opts.filter);
+          }
           return [mockSpawn];
         }
         if (type === FIND_STRUCTURES) {
+          // If filter is provided, apply it
+          if (opts?.filter) {
+            const structures = [mockSpawn];
+            return structures.filter(opts.filter);
+          }
           return [mockSpawn];
         }
         if (type === FIND_DROPPED_RESOURCES) {
@@ -243,8 +258,42 @@ describe("Regression: RoleControllerManager Spawning", () => {
   it("should not spawn when role minimums are met and not in bootstrap mode", () => {
     const manager = new RoleControllerManager({}, logger);
 
+    // Create mock creeps that match the role counts
+    const mockCreeps: Record<string, Creep> = {};
+    
+    const createMockCreep = (name: string, role: string): Creep => ({
+      name,
+      memory: { role } as CreepMemory,
+      room: mockRoom,
+      pos: {
+        x: 25,
+        y: 25,
+        roomName: "E54N39",
+        findClosestByPath: vi.fn().mockReturnValue(mockSource),
+        isNearTo: vi.fn().mockReturnValue(false)
+      },
+      store: {
+        getFreeCapacity: vi.fn().mockReturnValue(50),
+        getUsedCapacity: vi.fn().mockReturnValue(0)
+      },
+      harvest: vi.fn(),
+      transfer: vi.fn(),
+      upgradeController: vi.fn(),
+      build: vi.fn(),
+      repair: vi.fn(),
+      moveTo: vi.fn()
+    } as unknown as Creep);
+    
+    for (let i = 0; i < 4; i++) {
+      mockCreeps[`harvester-${i}`] = createMockCreep(`harvester-${i}`, "harvester");
+    }
+    mockCreeps["upgrader-0"] = createMockCreep("upgrader-0", "upgrader");
+    mockCreeps["builder-0"] = createMockCreep("builder-0", "builder");
+
+    // Set Game.creeps for controller cleanup
+    global.Game.creeps = mockCreeps;
+
     // When role minimums are met, no spawning should occur
-    // We use empty creeps for this test since we're only testing spawn logic
     const game: GameContext = {
       time: 100,
       cpu: {
@@ -252,7 +301,7 @@ describe("Regression: RoleControllerManager Spawning", () => {
         limit: 20,
         bucket: 1000
       },
-      creeps: {}, // Empty for spawning test
+      creeps: mockCreeps, // Has creeps to avoid emergency spawn
       spawns: { Spawn1: mockSpawn },
       rooms: { E54N39: mockRoom }
     };

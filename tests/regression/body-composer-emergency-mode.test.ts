@@ -52,21 +52,14 @@ describe("Regression: BodyComposer Emergency Mode Failure", () => {
     } as unknown as Room;
   });
 
-  it("should generate ultra-minimal body [WORK, MOVE] with 150 energy in emergency mode", () => {
-    // Emergency mode: BehaviorController passes energyAvailable (150)
+  it("should not spawn with insufficient energy (150 energy below minimum)", () => {
+    // Emergency mode with 150 energy - below minimum viable threshold
     // Room context provided with 0 creeps
     const body = composer.generateBody("harvester", 150, mockRoom);
 
-    // BUG: Returns [] because budget constraints reduce capacity below 150
-    // EXPECTED: Should return [WORK, MOVE] (150 energy)
-    expect(body).not.toEqual([]);
-    expect(body.length).toBeGreaterThanOrEqual(2);
-    expect(body).toContain(WORK);
-    expect(body).toContain(MOVE);
-
-    // Verify body cost
-    const cost = composer.calculateBodyCost(body);
-    expect(cost).toBeLessThanOrEqual(150);
+    // With new requirements, 200 energy is absolute minimum for [WORK, CARRY, MOVE]
+    // Should return empty array since 150 < 200
+    expect(body).toEqual([]);
   });
 
   it("should generate minimal harvester body [WORK, CARRY, MOVE] with 200 energy", () => {
@@ -82,26 +75,24 @@ describe("Regression: BodyComposer Emergency Mode Failure", () => {
 
   it("should handle emergency body generation without room context", () => {
     // Emergency mode without room context (fallback scenario)
+    // With 150 energy - below minimum threshold
     const body = composer.generateBody("harvester", 150);
 
-    // Should still work - no budget constraints without room
-    expect(body).not.toEqual([]);
-    expect(body.length).toBeGreaterThanOrEqual(2);
-
-    const cost = composer.calculateBodyCost(body);
-    expect(cost).toBeLessThanOrEqual(150);
+    // Should return empty array - 150 energy is insufficient for minimal viable body
+    expect(body).toEqual([]);
   });
 
-  it("should bypass budget constraints for emergency roles when room has 0 creeps", () => {
-    // Emergency scenario: 0 creeps, 150 energy
-    // Budget constraint would normally limit to: 150 * 0.5 = 75 (too low!)
-    // EXPECTED: Should bypass constraint for emergency roles
+  it("should bypass budget constraints for emergency roles when room has 0 creeps with 200+ energy", () => {
+    // Emergency scenario: 0 creeps, 200 energy
+    // Budget constraint would normally limit to: 200 * 0.5 = 100 (too low!)
+    // EXPECTED: Should bypass constraint for emergency roles and use full 200
 
-    const body = composer.generateBody("harvester", 150, mockRoom);
+    const body = composer.generateBody("harvester", 200, mockRoom);
 
     expect(body).not.toEqual([]);
+    expect(body).toEqual([WORK, CARRY, MOVE]);
     const cost = composer.calculateBodyCost(body);
-    expect(cost).toBeLessThanOrEqual(150);
+    expect(cost).toBe(200);
   });
 
   it("should fail gracefully when energy is below minimum (< 150)", () => {
@@ -136,22 +127,20 @@ describe("Regression: BodyComposer Emergency Mode Failure", () => {
     expect(cost).toBeLessThanOrEqual(550);
   });
 
-  it("should generate emergency body for upgrader role", () => {
-    // Emergency body generation should work for critical roles
+  it("should not generate emergency body for upgrader role with insufficient energy", () => {
+    // Emergency body generation requires 200 energy minimum
     const body = composer.generateBody("upgrader", 150, mockRoom);
 
-    expect(body).not.toEqual([]);
-    const cost = composer.calculateBodyCost(body);
-    expect(cost).toBeLessThanOrEqual(150);
+    // Should return empty array - 150 energy is insufficient
+    expect(body).toEqual([]);
   });
 
-  it("should generate emergency body for builder role", () => {
-    // Builder is also a critical role
+  it("should not generate emergency body for builder role with insufficient energy", () => {
+    // Builder is a critical role but still requires 200 energy minimum
     const body = composer.generateBody("builder", 150, mockRoom);
 
-    expect(body).not.toEqual([]);
-    const cost = composer.calculateBodyCost(body);
-    expect(cost).toBeLessThanOrEqual(150);
+    // Should return empty array - 150 energy is insufficient
+    expect(body).toEqual([]);
   });
 
   it("should return empty body for non-critical roles with insufficient energy", () => {

@@ -197,17 +197,12 @@ export class BodyComposer {
    */
   public generateEmergencyBody(energyAvailable: number): BodyPartConstant[] {
     // Minimal harvester: [WORK, CARRY, MOVE] = 200 energy
+    // This is the absolute minimum required for functional creep operation
     if (energyAvailable >= 200) {
       return [WORK, CARRY, MOVE];
     }
 
-    // Ultra-minimal worker: [WORK, MOVE] = 150 energy
-    // Can harvest but needs to drop resources on ground
-    if (energyAvailable >= 150) {
-      return [WORK, MOVE];
-    }
-
-    // Cannot spawn anything useful
+    // Cannot spawn anything useful - need at least 200 energy for minimal viable creep
     return [];
   }
 
