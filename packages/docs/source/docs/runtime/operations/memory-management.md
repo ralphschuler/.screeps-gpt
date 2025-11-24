@@ -467,13 +467,18 @@ if (memorySize > 100000) {
 
 ## Best Practices Summary
 
+Based on the [ScreepsPlus Memory Wiki](https://wiki.screepspl.us/Memory/):
+
 ### DO:
 
-- ✓ Prune dead creep memories every tick
-- ✓ Store only essential state in memory
+- ✓ Prune dead creep and flag memories every tick
+- ✓ Store only essential state in memory (IDs, not objects)
 - ✓ Use IDs instead of object references
 - ✓ Validate memory structure before use
 - ✓ Implement version migrations for schema changes
+- ✓ Use `GlobalCache` for volatile, non-persistent data
+- ✓ Serialize paths before storing in creep memory
+- ✓ Clean up flag memories when flags are removed
 
 ### DON'T:
 
@@ -482,6 +487,8 @@ if (memorySize > 100000) {
 - ✗ Store redundant/derivable information
 - ✗ Use long property names unnecessarily
 - ✗ Persist transient state
+- ✗ Store RoomPosition arrays directly (use serialized format)
+- ✗ Store function references or class instances
 
 ### MONITOR:
 
@@ -489,6 +496,80 @@ if (memorySize > 100000) {
 - ⚠ Memory growth rate (should be stable)
 - ⚠ Orphaned memory entries (should be zero)
 - ⚠ CPU cost of memory operations (should be <0.2 CPU/tick)
+
+## Advanced Memory Patterns
+
+### Global Heap Caching
+
+Use `GlobalCache` for volatile data that doesn't need to persist across code reloads:
+
+```typescript
+import { globalCache } from "@runtime/memory";
+
+// Cache expensive calculations
+const pathCacheKey = `path:${from.x},${from.y}->${to.x},${to.y}`;
+let path = globalCache.get<RoomPosition[]>(pathCacheKey);
+if (!path) {
+  path = findPath(from, to);
+  globalCache.set(pathCacheKey, path, 50); // Cache for 50 ticks
+}
+```
+
+Benefits:
+
+- No JSON serialization overhead
+- Can store complex objects, functions, references
+- No impact on Memory size limits
+
+### Path Serialization
+
+Use path serialization to reduce creep memory footprint:
+
+```typescript
+import { serializePositions, deserializePath, getRemainingPath } from "@runtime/pathfinding";
+
+// Store path in memory-efficient format
+const path = creep.pos.findPathTo(target);
+creep.memory.path = serializePositions(positions); // ~85% smaller
+
+// Retrieve and use path
+const remaining = getRemainingPath(creep.memory.path, creep.pos);
+```
+
+Memory savings: ~85% reduction (40 bytes per position → 1 byte per step)
+
+### Flag Memory Cleanup
+
+The garbage collector automatically cleans orphaned flag memories:
+
+```typescript
+// Cleanup happens automatically via MemoryGarbageCollector
+// Manual cleanup if needed:
+for (const name in Memory.flags) {
+  if (!Game.flags[name]) {
+    delete Memory.flags[name];
+  }
+}
+```
+
+### Memory Segments
+
+For large data sets exceeding 2MB limit, consider RawMemory segments:
+
+- Up to 100 segments × 100KB = 10MB total
+- Requires manual serialization/deserialization
+- Only 10 segments can be active per tick
+
+```typescript
+// Activate segments (up to 10 per tick)
+RawMemory.setActiveSegments([0, 1, 2]);
+
+// Read segment (available next tick after activation)
+const data = RawMemory.segments[0];
+
+// Write segment
+RawMemory.segments[0] = JSON.stringify(largeData);
+```
 
 ## Related Documentation
 
