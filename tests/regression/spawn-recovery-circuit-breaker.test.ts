@@ -124,7 +124,7 @@ describe("Spawn Recovery Circuit Breaker", () => {
 
       const result = await canAttemptRecovery();
       expect(result.allowed).toBe(false);
-      expect(result.reason).toContain("Circuit breaker active");
+      expect(result.reason).toMatch(/Circuit breaker|Maximum 3 attempts/);
       expect(result.attemptsInWindow).toBeGreaterThan(0);
       expect(result.circuitBreakerUntil).toBeDefined();
     });

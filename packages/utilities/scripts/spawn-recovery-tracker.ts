@@ -83,26 +83,38 @@ function getRecentAttempts(state: SpawnRecoveryState): SpawnRecoveryAttempt[] {
 }
 
 /**
- * Check if circuit breaker should be active
+ * Check if circuit breaker is currently active (read-only check)
  */
-function shouldActivateCircuitBreaker(state: SpawnRecoveryState): boolean {
-  // Check if already active and still within duration
-  if (state.circuitBreakerActive && state.circuitBreakerUntil) {
-    const now = Date.now();
-    const breakerEnd = new Date(state.circuitBreakerUntil).getTime();
-    if (now < breakerEnd) {
-      return true;
-    }
-    // Circuit breaker expired, deactivate
+function isCircuitBreakerActive(state: SpawnRecoveryState): boolean {
+  if (!state.circuitBreakerActive || !state.circuitBreakerUntil) {
+    return false;
+  }
+
+  const now = Date.now();
+  const breakerEnd = new Date(state.circuitBreakerUntil).getTime();
+  return now < breakerEnd;
+}
+
+/**
+ * Update circuit breaker state based on recent failed attempts
+ * Returns true if circuit breaker should be active
+ */
+function updateCircuitBreakerState(state: SpawnRecoveryState): boolean {
+  // Clear expired circuit breaker
+  if (state.circuitBreakerActive && !isCircuitBreakerActive(state)) {
     state.circuitBreakerActive = false;
     state.circuitBreakerUntil = undefined;
   }
 
-  // Check recent attempts
+  // If already active and not expired, keep it active
+  if (isCircuitBreakerActive(state)) {
+    return true;
+  }
+
+  // Check if we should activate based on recent failures
   const recentAttempts = getRecentAttempts(state);
   const failedAttempts = recentAttempts.filter(attempt => attempt.action === "failed" || attempt.action === "none");
 
-  // Activate if we've had MAX_ATTEMPTS failures in the window
   if (failedAttempts.length >= MAX_ATTEMPTS_PER_WINDOW) {
     state.circuitBreakerActive = true;
     state.circuitBreakerUntil = new Date(Date.now() + CIRCUIT_BREAKER_DURATION_MS).toISOString();
@@ -133,8 +145,8 @@ export async function recordAttempt(attempt: Omit<SpawnRecoveryAttempt, "timesta
     state.circuitBreakerUntil = undefined;
   }
 
-  // Check if we should activate circuit breaker
-  shouldActivateCircuitBreaker(state);
+  // Update circuit breaker state based on new attempt
+  updateCircuitBreakerState(state);
 
   await saveState(state);
 
@@ -154,31 +166,24 @@ export async function canAttemptRecovery(): Promise<{
 }> {
   const state = await loadState();
 
-  // Check circuit breaker
-  if (shouldActivateCircuitBreaker(state)) {
-    return {
-      allowed: false,
-      reason: "Circuit breaker active - too many failed attempts",
-      attemptsInWindow: getRecentAttempts(state).length,
-      circuitBreakerUntil: state.circuitBreakerUntil
-    };
-  }
+  // Update and check circuit breaker state
+  const isBlocked = updateCircuitBreakerState(state);
 
-  // Check attempt count in current window (only count attempts, not successes)
   const recentAttempts = getRecentAttempts(state);
   const recentFailedAttempts = recentAttempts.filter(
     attempt => attempt.action === "failed" || attempt.action === "none"
   );
 
-  if (recentFailedAttempts.length >= MAX_ATTEMPTS_PER_WINDOW) {
-    // Activate circuit breaker
-    state.circuitBreakerActive = true;
-    state.circuitBreakerUntil = new Date(Date.now() + CIRCUIT_BREAKER_DURATION_MS).toISOString();
+  if (isBlocked) {
+    // Save state if circuit breaker was just activated
     await saveState(state);
 
     return {
       allowed: false,
-      reason: `Maximum ${MAX_ATTEMPTS_PER_WINDOW} attempts per 24 hours exceeded`,
+      reason:
+        recentFailedAttempts.length >= MAX_ATTEMPTS_PER_WINDOW
+          ? `Maximum ${MAX_ATTEMPTS_PER_WINDOW} attempts per 24 hours exceeded`
+          : "Circuit breaker active - too many failed attempts",
       attemptsInWindow: recentFailedAttempts.length,
       circuitBreakerUntil: state.circuitBreakerUntil
     };
@@ -211,7 +216,7 @@ export async function getRecoveryStats(): Promise<{
     successfulAttempts: state.attempts.filter(a => a.action === "respawned" || a.action === "spawn_placed").length,
     failedAttempts: state.attempts.filter(a => a.action === "failed").length,
     lastSuccessfulRecovery: state.lastSuccessfulRecovery,
-    circuitBreakerActive: shouldActivateCircuitBreaker(state),
+    circuitBreakerActive: isCircuitBreakerActive(state),
     circuitBreakerUntil: state.circuitBreakerUntil
   };
 }
