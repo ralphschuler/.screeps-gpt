@@ -34,6 +34,7 @@ import {
   StationaryHarvesterController,
   RemoteMinerController,
   RemoteHaulerController,
+  RemoteBuilderController,
   AttackerController,
   HealerController,
   DismantlerController,
@@ -47,6 +48,7 @@ type RoleName =
   | "builder"
   | "remoteMiner"
   | "remoteHauler"
+  | "remoteBuilder"
   | "stationaryHarvester"
   | "hauler"
   | "repairer"
@@ -77,6 +79,7 @@ const COMBAT_MIN_REPAIRERS = 1; // Minimum repairers during combat
  * Room integration constants for workforce deployment
  */
 const MINERS_PER_INTEGRATION_ROOM = 2; // Remote miners spawned per room needing integration
+const BUILDERS_PER_INTEGRATION_ROOM = 2; // Remote builders spawned per room needing integration
 
 /**
  * Coordinates spawning and per-tick behavior execution using individual role controllers.
@@ -129,6 +132,7 @@ export class RoleControllerManager {
     this.registerRoleController(new StationaryHarvesterController());
     this.registerRoleController(new RemoteMinerController());
     this.registerRoleController(new RemoteHaulerController());
+    this.registerRoleController(new RemoteBuilderController());
 
     // Combat roles
     this.registerRoleController(new AttackerController());
@@ -466,8 +470,8 @@ export class RoleControllerManager {
 
         if (creep.memory.role === "remoteMiner") {
           assignedRemoteMiners.set(targetRoom, (assignedRemoteMiners.get(targetRoom) ?? 0) + 1);
-        } else if (creep.memory.role === "builder" && creep.memory.homeRoom !== targetRoom) {
-          // Count builders assigned to remote rooms (not their home room)
+        } else if (creep.memory.role === "remoteBuilder") {
+          // Count remote builders assigned to integration rooms
           assignedRemoteBuilders.set(targetRoom, (assignedRemoteBuilders.get(targetRoom) ?? 0) + 1);
         }
       }
@@ -488,6 +492,7 @@ export class RoleControllerManager {
       "repairer",
       "remoteMiner",
       "remoteHauler",
+      "remoteBuilder",
       "scout",
       "attacker",
       "healer",
@@ -509,6 +514,7 @@ export class RoleControllerManager {
         "upgrader",
         "remoteMiner",
         "remoteHauler",
+        "remoteBuilder",
         "scout",
         "dismantler",
         "claimer"
@@ -519,11 +525,12 @@ export class RoleControllerManager {
       roleOrder = baseRoleOrder.filter(r => r !== "claimer");
       roleOrder.splice(1, 0, "claimer");
     } else if (needsRemoteWorkforce) {
-      // Normal mode with room integration: prioritize remote miners (after harvesters and upgraders)
+      // Normal mode with room integration: prioritize remote miners and builders (after harvesters and upgraders)
       roleOrder = [
         "harvester",
         "upgrader",
         "remoteMiner",
+        "remoteBuilder",
         "builder",
         "stationaryHarvester",
         "hauler",
@@ -572,6 +579,17 @@ export class RoleControllerManager {
           neededMiners += Math.max(0, MINERS_PER_INTEGRATION_ROOM - assigned);
         }
         targetMinimum = Math.max(targetMinimum, neededMiners);
+      }
+
+      // Dynamically increase remote builder minimum when rooms need workforce integration
+      // Spawn remote builders per room needing workforce (to build spawn and structures)
+      if (role === "remoteBuilder" && needsRemoteWorkforce) {
+        let neededBuilders = 0;
+        for (const integrationRoom of roomsNeedingIntegration) {
+          const assigned = assignedRemoteBuilders.get(integrationRoom.roomName) ?? 0;
+          neededBuilders += Math.max(0, BUILDERS_PER_INTEGRATION_ROOM - assigned);
+        }
+        targetMinimum = Math.max(targetMinimum, neededBuilders);
       }
 
       // Dynamically reduce upgrader minimum during combat to focus on defense
@@ -665,6 +683,27 @@ export class RoleControllerManager {
             assignedRemoteMiners.set(integrationRoom.roomName, assigned + 1);
             this.logger.log?.(
               `[RoleControllerManager] Assigning remote miner ${name} to integration room: ${integrationRoom.roomName} (home: ${integrationRoom.homeRoom})`
+            );
+            break;
+          }
+        }
+      }
+
+      // If spawning a remote builder for room integration, assign home and target rooms
+      if (role === "remoteBuilder" && needsRemoteWorkforce) {
+        // Find an integration room that needs more builders
+        for (const integrationRoom of roomsNeedingIntegration) {
+          const assigned = assignedRemoteBuilders.get(integrationRoom.roomName) ?? 0;
+          if (assigned < BUILDERS_PER_INTEGRATION_ROOM) {
+            // Assign this builder to the integration room
+            (creepMemory as CreepMemory & { homeRoom?: string; targetRoom?: string }).homeRoom =
+              integrationRoom.homeRoom;
+            (creepMemory as CreepMemory & { homeRoom?: string; targetRoom?: string }).targetRoom =
+              integrationRoom.roomName;
+            // Update pre-calculated count for subsequent iterations
+            assignedRemoteBuilders.set(integrationRoom.roomName, assigned + 1);
+            this.logger.log?.(
+              `[RoleControllerManager] Assigning remote builder ${name} to integration room: ${integrationRoom.roomName} (home: ${integrationRoom.homeRoom})`
             );
             break;
           }
