@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { BehaviorController } from "@runtime/behavior/BehaviorController";
+import { RoleControllerManager } from "@runtime/behavior/RoleControllerManager";
 import type { GameContext } from "@runtime/types/GameContext";
 
 /**
@@ -135,7 +135,7 @@ describe("Regression: Emergency Spawn Deadlock Recovery", () => {
   });
 
   it("should detect emergency deadlock and log diagnostic information", () => {
-    const controller = new BehaviorController({}, logger);
+    const controller = new RoleControllerManager({}, logger);
 
     // Create game state with 0 creeps and critically low energy
     const game: GameContext = {
@@ -169,7 +169,7 @@ describe("Regression: Emergency Spawn Deadlock Recovery", () => {
   });
 
   it("should successfully spawn emergency harvester when energy reaches minimum threshold", () => {
-    const controller = new BehaviorController({}, logger);
+    const controller = new RoleControllerManager({}, logger);
 
     // Simulate energy regeneration: source regenerated and spawn now has 200+ energy
     mockRoom.energyAvailable = 200; // Minimum for [WORK, CARRY, MOVE]
@@ -213,7 +213,7 @@ describe("Regression: Emergency Spawn Deadlock Recovery", () => {
   });
 
   it("should spawn optimal emergency harvester with 200+ energy", () => {
-    const controller = new BehaviorController({}, logger);
+    const controller = new RoleControllerManager({}, logger);
 
     // Simulate full energy recovery: spawn now has 200+ energy
     mockRoom.energyAvailable = 200; // Minimum for full [WORK, CARRY, MOVE]
@@ -248,7 +248,7 @@ describe("Regression: Emergency Spawn Deadlock Recovery", () => {
   });
 
   it("should continue spawning harvesters until minimum count reached", () => {
-    const controller = new BehaviorController({}, logger);
+    const controller = new RoleControllerManager({}, logger);
 
     // Start with sufficient energy
     mockRoom.energyAvailable = 300;
@@ -302,7 +302,7 @@ describe("Regression: Emergency Spawn Deadlock Recovery", () => {
   });
 
   it("should handle room with no containers gracefully", () => {
-    const controller = new BehaviorController({}, logger);
+    const controller = new RoleControllerManager({}, logger);
 
     // Remove container from room
     mockRoom.find = vi.fn((type: FindConstant) => {
@@ -342,7 +342,7 @@ describe("Regression: Emergency Spawn Deadlock Recovery", () => {
   });
 
   it("should bypass energy reserve requirements in emergency mode", () => {
-    const controller = new BehaviorController({}, logger);
+    const controller = new RoleControllerManager({}, logger);
 
     // Set energy to exactly 200 (minimum spawn cost)
     // This would normally be blocked by 20% reserve requirement (260 needed)
@@ -374,7 +374,7 @@ describe("Regression: Emergency Spawn Deadlock Recovery", () => {
   });
 
   it("should mark emergency creeps with emergency flag", () => {
-    const controller = new BehaviorController({}, logger);
+    const controller = new RoleControllerManager({}, logger);
 
     // Set sufficient energy for spawn
     mockRoom.energyAvailable = 200;

@@ -39,17 +39,17 @@ The Screeps game engine enforces strict CPU limits per tick:
 
 Our bot implements multi-layered CPU protection:
 
-#### 1. BehaviorController Safety Margin (80%)
+#### 1. RoleControllerManager Safety Margin (80%)
 
-The `BehaviorController` stops processing creeps when CPU usage reaches 80% of the limit:
+The `RoleControllerManager` stops processing creeps when CPU usage reaches 80% of the limit:
 
 ```typescript
-// Default configuration in BehaviorController
+// Default configuration in RoleControllerManager
 const cpuSafetyMargin = 0.8; // Stop at 80% CPU usage
 const maxCpuPerCreep = 1.5; // Warn if single creep exceeds 1.5 CPU
 ```
 
-**Implementation**: [`src/runtime/behavior/BehaviorController.ts`](../../src/runtime/behavior/BehaviorController.ts)
+**Implementation**: [`src/runtime/behavior/RoleControllerManager.ts`](../../src/runtime/behavior/RoleControllerManager.ts)
 
 **Benefits**:
 
@@ -142,7 +142,7 @@ for (const creep of creeps) {
 }
 ```
 
-**Current Implementation**: The `BehaviorController` implements this pattern to prevent timeout.
+**Current Implementation**: The `RoleControllerManager` implements this pattern to prevent timeout.
 
 #### Strategy 3: Defer Non-Critical Work
 
@@ -333,7 +333,7 @@ creep.moveTo(source, { range: 1, reusePath: 40 });
 creep.moveTo(targetRoom, { reusePath: 50 });
 ```
 
-**Implementation**: See `BehaviorController.ts` role behaviors
+**Implementation**: See `RoleControllerManager.ts` role behaviors
 
 **Trade-offs**:
 
@@ -779,7 +779,7 @@ Our repository includes comprehensive performance regression tests to prevent de
 
 **What They Test**:
 
-- BehaviorController stops at 80% CPU by default
+- RoleControllerManager stops at 80% CPU by default
 - PerformanceTracker warns at 70%, critical at 90%
 - Kernel aborts at 90% emergency threshold
 - Per-creep CPU tracking detects expensive behaviors
@@ -831,7 +831,7 @@ console.log(`Average CPU over ${ticksElapsed} ticks: ${(endCPU - startCPU) / tic
 
 - **CPU Tracking**: [`src/runtime/metrics/PerformanceTracker.ts`](../../src/runtime/metrics/PerformanceTracker.ts)
 - **Stats Collection**: [`src/runtime/metrics/StatsCollector.ts`](../../src/runtime/metrics/StatsCollector.ts)
-- **Behavior Control**: [`src/runtime/behavior/BehaviorController.ts`](../../src/runtime/behavior/BehaviorController.ts)
+- **Behavior Control**: [`src/runtime/behavior/RoleControllerManager.ts`](../../src/runtime/behavior/RoleControllerManager.ts)
 - **System Evaluation**: [`src/runtime/evaluation/SystemEvaluator.ts`](../../src/runtime/evaluation/SystemEvaluator.ts)
 - **Memory Management**: [`src/runtime/memory/MemoryManager.ts`](../../src/runtime/memory/MemoryManager.ts)
 

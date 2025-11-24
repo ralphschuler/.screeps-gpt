@@ -16,7 +16,7 @@
  */
 
 import { describe, it, expect, vi } from "vitest";
-import { BehaviorController } from "@runtime/behavior/BehaviorController";
+import { RoleControllerManager } from "@runtime/behavior/RoleControllerManager";
 import type { GameContext, SpawnLike, RoomLike } from "@runtime/types/GameContext";
 
 describe("Spawn Starvation Recovery (Issue #806)", () => {
@@ -74,7 +74,7 @@ describe("Spawn Starvation Recovery (Issue #806)", () => {
         warn: (msg: string) => logMessages.push(msg)
       };
 
-      const controller = new BehaviorController({}, mockLogger);
+      const controller = new RoleControllerManager({}, mockLogger);
 
       // Scenario: 0 harvesters, 250 energy available (barely enough for harvester)
       // Reserve would be 60 energy (20% of 300), blocking spawn
@@ -94,7 +94,7 @@ describe("Spawn Starvation Recovery (Issue #806)", () => {
     });
 
     it("should prioritize harvester spawning when critically low on harvesters (< 2)", () => {
-      const controller = new BehaviorController({}, console);
+      const controller = new RoleControllerManager({}, console);
 
       // Scenario: 1 harvester exists, 300 energy available
       // Should still prioritize spawning more harvesters
@@ -113,7 +113,7 @@ describe("Spawn Starvation Recovery (Issue #806)", () => {
     });
 
     it("should not spawn upgraders or builders when harvesters are below minimum", () => {
-      const controller = new BehaviorController({}, console);
+      const controller = new RoleControllerManager({}, console);
 
       // Scenario: 0 creeps, limited energy
       const game = createStarvationGameContext(300, 300, false);
@@ -134,7 +134,7 @@ describe("Spawn Starvation Recovery (Issue #806)", () => {
 
   describe("Energy Reserve Bypass Logic", () => {
     it("should bypass energy reserve for harvesters when count is 0", () => {
-      const controller = new BehaviorController({}, console);
+      const controller = new RoleControllerManager({}, console);
 
       // Scenario: 220 energy (enough for 1 harvester at 200 cost)
       // Reserve would be 60 energy (20% of 300), requiring 260 total
@@ -149,7 +149,7 @@ describe("Spawn Starvation Recovery (Issue #806)", () => {
     });
 
     it("should enforce energy reserve when harvesters are at or above minimum", () => {
-      const controller = new BehaviorController({}, console);
+      const controller = new RoleControllerManager({}, console);
 
       // Scenario: 4 harvesters exist (at minimum), low energy
       const game = createStarvationGameContext(220, 300, true);
@@ -167,7 +167,7 @@ describe("Spawn Starvation Recovery (Issue #806)", () => {
 
   describe("Bootstrap Phase Integration", () => {
     it("should activate emergency spawn during bootstrap with 0 harvesters", () => {
-      const controller = new BehaviorController({}, console);
+      const controller = new RoleControllerManager({}, console);
 
       // Bootstrap phase with 0 harvesters
       const game = createStarvationGameContext(250, 300, false);
@@ -187,7 +187,7 @@ describe("Spawn Starvation Recovery (Issue #806)", () => {
 
   describe("Low Energy Scenarios", () => {
     it("should spawn minimum body harvester when energy is critically low (< 250)", () => {
-      const controller = new BehaviorController({}, console);
+      const controller = new RoleControllerManager({}, console);
 
       // Exactly 200 energy (minimum harvester cost)
       const game = createStarvationGameContext(200, 300, false);
@@ -200,7 +200,7 @@ describe("Spawn Starvation Recovery (Issue #806)", () => {
     });
 
     it("should not spawn with insufficient energy (150 energy below minimum)", () => {
-      const controller = new BehaviorController({}, console);
+      const controller = new RoleControllerManager({}, console);
 
       // 150 energy - below minimum 200 for [WORK, CARRY, MOVE]
       const game = createStarvationGameContext(150, 300, false);
@@ -213,7 +213,7 @@ describe("Spawn Starvation Recovery (Issue #806)", () => {
     });
 
     it("should not spawn when energy is below minimal threshold", () => {
-      const controller = new BehaviorController({}, console);
+      const controller = new RoleControllerManager({}, console);
 
       // 100 energy (below minimum 200 for minimal body)
       const game = createStarvationGameContext(100, 300, false);
@@ -228,7 +228,7 @@ describe("Spawn Starvation Recovery (Issue #806)", () => {
 
   describe("Recovery Progression", () => {
     it("should spawn harvesters first, then upgraders, then builders", () => {
-      const controller = new BehaviorController({}, console);
+      const controller = new RoleControllerManager({}, console);
 
       // Adequate energy for multiple spawns
       const game = createStarvationGameContext(600, 600, false);

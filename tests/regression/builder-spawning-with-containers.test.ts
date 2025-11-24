@@ -7,11 +7,11 @@
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
-import { BehaviorController } from "@runtime/behavior/BehaviorController";
+import { RoleControllerManager } from "@runtime/behavior/RoleControllerManager";
 import type { GameContext, RoomLike, SpawnLike, SourceLike, StructureLike } from "@runtime/types/GameContext";
 
 describe("Builder Spawning with Containers", () => {
-  let behaviorController: BehaviorController;
+  let behaviorController: RoleControllerManager;
   let mockGame: GameContext;
   let mockMemory: Memory;
   let mockRoom: RoomLike;
@@ -50,7 +50,7 @@ describe("Builder Spawning with Containers", () => {
   };
 
   beforeEach(() => {
-    behaviorController = new BehaviorController();
+    behaviorController = new RoleControllerManager();
 
     // Mock RCL 2 room with 2 sources and containers near each source
     mockSource1 = {

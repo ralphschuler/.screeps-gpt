@@ -1,5 +1,4 @@
 // Core behavior system
-export { BehaviorController } from "./BehaviorController";
 export { RoleControllerManager } from "./RoleControllerManager";
 export { CreepCommunicationManager, CommunicationLevel } from "./CreepCommunicationManager";
 export type { CreepCommunicationConfig, CommunicationVerbosity, CreepAction } from "./CreepCommunicationManager";

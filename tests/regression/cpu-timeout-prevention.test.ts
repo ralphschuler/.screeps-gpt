@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { BehaviorController } from "@runtime/behavior/BehaviorController";
+import { RoleControllerManager } from "@runtime/behavior/RoleControllerManager";
 import { Kernel } from "@ralphschuler/screeps-kernel";
 import type { GameContext, CreepLike, RoomLike } from "@runtime/types/GameContext";
 
@@ -11,7 +11,7 @@ import "@runtime/processes";
 /**
  * Regression test for issue #138: CPU timeout prevention
  *
- * This test verifies that the BehaviorController and Kernel implement
+ * This test verifies that the RoleControllerManager and Kernel implement
  * CPU budget management to prevent script execution timeouts when
  * CPU usage approaches the limit.
  *
@@ -54,10 +54,10 @@ describe("CPU timeout prevention regression", () => {
     };
   }
 
-  describe("BehaviorController CPU budget management", () => {
+  describe("RoleControllerManager CPU budget management", () => {
     it("should stop processing creeps when CPU budget is exceeded", () => {
       const warn = vi.fn();
-      const controller = new BehaviorController({ cpuSafetyMargin: 0.9 }, { log: vi.fn(), warn });
+      const controller = new RoleControllerManager({ cpuSafetyMargin: 0.9 }, { log: vi.fn(), warn });
 
       let cpuUsed = 0;
       const creeps: Record<string, CreepLike> = {
@@ -111,7 +111,7 @@ describe("CPU timeout prevention regression", () => {
 
     it("should log warning when a single creep consumes excessive CPU", () => {
       const warn = vi.fn();
-      const controller = new BehaviorController({ maxCpuPerCreep: 1.0 }, { log: vi.fn(), warn });
+      const controller = new RoleControllerManager({ maxCpuPerCreep: 1.0 }, { log: vi.fn(), warn });
 
       let cpuUsed = 0;
       const creeps: Record<string, CreepLike> = {
@@ -169,7 +169,7 @@ describe("CPU timeout prevention regression", () => {
 
     it("should successfully process all creeps when CPU budget is not exceeded", () => {
       const warn = vi.fn();
-      const controller = new BehaviorController({}, { log: vi.fn(), warn });
+      const controller = new RoleControllerManager({}, { log: vi.fn(), warn });
 
       const creeps: Record<string, CreepLike> = {
         creep1: createMockCreep("creep1", "harvester"),
@@ -203,7 +203,7 @@ describe("CPU timeout prevention regression", () => {
     it("should abort tick when emergency CPU threshold is exceeded", () => {
       const warn = vi.fn();
       const kernel = new Kernel({
-        behavior: new BehaviorController({}),
+        behavior: new RoleControllerManager({}),
         cpuEmergencyThreshold: 0.95,
         logger: { log: vi.fn(), warn }
       });
@@ -252,7 +252,7 @@ describe("CPU timeout prevention regression", () => {
       const warn = vi.fn();
       const log = vi.fn();
       const kernel = new Kernel({
-        behavior: new BehaviorController({}),
+        behavior: new RoleControllerManager({}),
         cpuEmergencyThreshold: 0.95,
         logger: { log, warn }
       });

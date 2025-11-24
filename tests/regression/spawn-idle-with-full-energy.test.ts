@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { BehaviorController } from "@runtime/behavior/BehaviorController";
+import { RoleControllerManager } from "@runtime/behavior/RoleControllerManager";
 import type { GameContext } from "@runtime/types/GameContext";
 
 /**
@@ -42,7 +42,7 @@ describe("Spawn Idle with Full Energy (Regression #1027)", () => {
   });
 
   it("should spawn upgraders when energy is maxed at RCL2", () => {
-    const controller = new BehaviorController({}, { log: vi.fn(), warn: vi.fn() });
+    const controller = new RoleControllerManager({}, { log: vi.fn(), warn: vi.fn() });
 
     const source = {
       id: "source1" as Id<Source>,
@@ -141,7 +141,7 @@ describe("Spawn Idle with Full Energy (Regression #1027)", () => {
   });
 
   it("should spawn additional upgraders when energy is maxed at RCL2", () => {
-    const controller = new BehaviorController({}, { log: vi.fn(), warn: vi.fn() });
+    const controller = new RoleControllerManager({}, { log: vi.fn(), warn: vi.fn() });
 
     const source = {
       id: "source1" as Id<Source>,
@@ -231,7 +231,7 @@ describe("Spawn Idle with Full Energy (Regression #1027)", () => {
   });
 
   it("should not spawn when workforce is optimal and energy is low", () => {
-    const controller = new BehaviorController({}, { log: vi.fn(), warn: vi.fn() });
+    const controller = new RoleControllerManager({}, { log: vi.fn(), warn: vi.fn() });
 
     const source = {
       id: "source1" as Id<Source>,
@@ -321,7 +321,7 @@ describe("Spawn Idle with Full Energy (Regression #1027)", () => {
   });
 
   it("should handle RCL4 with high energy similar to RCL2", () => {
-    const controller = new BehaviorController({}, { log: vi.fn(), warn: vi.fn() });
+    const controller = new RoleControllerManager({}, { log: vi.fn(), warn: vi.fn() });
 
     const source = {
       id: "source1" as Id<Source>,

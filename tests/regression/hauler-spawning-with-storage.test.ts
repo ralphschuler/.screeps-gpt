@@ -14,16 +14,16 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { BehaviorController } from "@runtime/behavior/BehaviorController";
+import { RoleControllerManager } from "@runtime/behavior/RoleControllerManager";
 import type { GameContext, RoomLike, SpawnLike } from "@runtime/types/GameContext";
 
 describe("Hauler Spawning with Storage/Towers", () => {
-  let behaviorController: BehaviorController;
+  let behaviorController: RoleControllerManager;
   let memory: Memory;
   let mockSpawn: SpawnLike;
 
   beforeEach(() => {
-    behaviorController = new BehaviorController(
+    behaviorController = new RoleControllerManager(
       {
         cpuSafetyMargin: 0.85,
         maxCpuPerCreep: 1.5

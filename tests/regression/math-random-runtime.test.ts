@@ -2,7 +2,7 @@
  * Regression test for deterministic runtime behavior
  *
  * Related to issue: ralphschuler/.screeps-gpt#174
- * Root cause: Math.random() usage in BehaviorController broke deterministic AI behavior
+ * Root cause: Math.random() usage in behavior controller broke deterministic AI behavior
  * Required for: reliable testing, debugging consistency, autonomous validation
  *
  * This test ensures no Math.random() usage exists in runtime code to maintain
@@ -51,8 +51,8 @@ describe("Deterministic runtime requirements", () => {
   });
 
   it("should use deterministic naming for creeps", () => {
-    const behaviorControllerPath = resolve(__dirname, "../../packages/bot/src/runtime/behavior/BehaviorController.ts");
-    const content = readFileSync(behaviorControllerPath, "utf-8");
+    const roleControllerManagerPath = resolve(__dirname, "../../packages/bot/src/runtime/behavior/RoleControllerManager.ts");
+    const content = readFileSync(roleControllerManagerPath, "utf-8");
 
     // Verify the creep naming pattern uses memory counter
     expect(content).toContain("memory.creepCounter");

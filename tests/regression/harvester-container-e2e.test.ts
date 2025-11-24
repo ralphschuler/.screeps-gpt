@@ -2,15 +2,15 @@
  * End-to-end regression test for harvester container transfer behavior.
  *
  * Issue: ralphschuler/.screeps-gpt#566
- * Tests the complete BehaviorController flow with actual role execution
+ * Tests the complete RoleControllerManager flow with actual role execution
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { BehaviorController } from "@runtime/behavior/BehaviorController";
+import { RoleControllerManager } from "@runtime/behavior/RoleControllerManager";
 import type { GameContext } from "@runtime/types/GameContext";
 
 describe("Harvester Container Transfer E2E", () => {
-  let behaviorController: BehaviorController;
+  let behaviorController: RoleControllerManager;
   let memory: Memory;
   let game: GameContext;
   let mockHarvester: Creep;
@@ -19,7 +19,7 @@ describe("Harvester Container Transfer E2E", () => {
 
   beforeEach(() => {
     // Create behavior controller for testing
-    behaviorController = new BehaviorController(
+    behaviorController = new RoleControllerManager(
       {
         cpuSafetyMargin: 0.85,
         maxCpuPerCreep: 1.5
@@ -191,7 +191,7 @@ describe("Harvester Container Transfer E2E", () => {
     // Then a container becomes available
 
     // Setup: Harvester has energy and is in UPGRADE_TASK
-    // Note: "upgrade" is a valid HarvesterTask value as defined in BehaviorController
+    // Note: "upgrade" is a valid HarvesterTask value as defined in the harvester controller
     mockHarvester.memory.task = "upgrade";
     (mockHarvester.store.getFreeCapacity as ReturnType<typeof vi.fn>).mockReturnValue(0);
     (mockHarvester.store.getUsedCapacity as ReturnType<typeof vi.fn>).mockReturnValue(50);
@@ -228,6 +228,6 @@ describe("Harvester Container Transfer E2E", () => {
   });
 });
 
-// Type augmentation matching BehaviorController's HarvesterTask definition
+// Type augmentation matching the harvester controller's HarvesterTask definition
 // HarvesterTask = typeof HARVEST_TASK | typeof DELIVER_TASK | typeof UPGRADE_TASK
 // where HARVEST_TASK = "harvest", DELIVER_TASK = "deliver", UPGRADE_TASK = "upgrade"

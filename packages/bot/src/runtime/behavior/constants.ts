@@ -1,6 +1,6 @@
 /**
  * Strategic spawn thresholds and ratios.
- * These values were extracted from legacy BehaviorController during state machine migration.
+ * These values were extracted from legacy behavior controller during state machine migration.
  *
  * @see Issue #1267 - State machine migration
  * @see Issue #1105 - Energy threshold adjustment for spawn idle bug
