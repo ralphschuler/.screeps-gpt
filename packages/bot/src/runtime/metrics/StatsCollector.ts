@@ -1,5 +1,8 @@
 import type { PerformanceSnapshot } from "@shared/contracts";
 import { profile } from "@ralphschuler/screeps-profiler";
+import { createComponentLogger } from "@runtime/utils/logger";
+
+const logger = createComponentLogger("StatsCollector");
 
 interface RoomStats {
   energyAvailable: number;
@@ -176,7 +179,7 @@ export class StatsCollector {
     const shouldLog: boolean = diagnosticsEnabled && game.time - this.lastLogTick >= this.LOG_INTERVAL;
 
     if (shouldLog) {
-      console.log(`[StatsCollector] Starting stats collection for tick ${game.time}`);
+      logger.info(`Starting stats collection for tick ${game.time}`);
       this.lastLogTick = game.time;
     }
 
@@ -191,7 +194,7 @@ export class StatsCollector {
         rooms: { count: 0 }
       };
       if (shouldLog) {
-        console.log(`[StatsCollector] Initialized Memory.stats structure`);
+        logger.info("Initialized Memory.stats structure");
       }
     }
 
@@ -224,7 +227,7 @@ export class StatsCollector {
         }
       } catch (error) {
         if (shouldLog) {
-          console.log(`[StatsCollector] Error collecting creeps by role: ${String(error)}`);
+          logger.errorObject(error, "Error collecting creeps by role:");
         }
       }
 
@@ -238,7 +241,7 @@ export class StatsCollector {
         }
       } catch (error) {
         if (shouldLog) {
-          console.log(`[StatsCollector] Error collecting memory usage: ${String(error)}`);
+          logger.errorObject(error, "Error collecting memory usage:");
         }
       }
 
@@ -274,7 +277,7 @@ export class StatsCollector {
           }
         } catch (error) {
           if (shouldLog) {
-            console.log(`[StatsCollector] Error collecting structure counts: ${String(error)}`);
+            logger.errorObject(error, "Error collecting structure counts:");
           }
         }
 
@@ -305,7 +308,7 @@ export class StatsCollector {
           }
         } catch (error) {
           if (shouldLog) {
-            console.log(`[StatsCollector] Error collecting construction sites: ${String(error)}`);
+            logger.errorObject(error, "Error collecting construction sites:");
           }
         }
 
@@ -328,7 +331,7 @@ export class StatsCollector {
           }
         } catch (error) {
           if (shouldLog) {
-            console.log(`[StatsCollector] Error collecting spawn stats: ${String(error)}`);
+            logger.errorObject(error, "Error collecting spawn stats:");
           }
         }
       }
@@ -347,24 +350,24 @@ export class StatsCollector {
       }
 
       if (shouldLog) {
-        console.log(
-          `[StatsCollector] Base stats: time=${stats.time}, cpu=${stats.cpu.used.toFixed(2)}/${stats.cpu.limit}, ` +
+        logger.info(
+          `Base stats: time=${stats.time}, cpu=${stats.cpu.used.toFixed(2)}/${stats.cpu.limit}, ` +
             `bucket=${stats.cpu.bucket}, creeps=${stats.creeps.count}, rooms=${stats.rooms.count}`
         );
         if (stats.creeps.byRole) {
-          console.log(`[StatsCollector] Creeps by role: ${JSON.stringify(stats.creeps.byRole)}`);
+          logger.info(`Creeps by role: ${JSON.stringify(stats.creeps.byRole)}`);
         }
         if (stats.memory) {
-          console.log(`[StatsCollector] Memory used: ${stats.memory.used} bytes`);
+          logger.info(`Memory used: ${stats.memory.used} bytes`);
         }
         if (stats.structures) {
-          console.log(`[StatsCollector] Structures: ${JSON.stringify(stats.structures)}`);
+          logger.info(`Structures: ${JSON.stringify(stats.structures)}`);
         }
         if (stats.constructionSites) {
-          console.log(`[StatsCollector] Construction sites: ${stats.constructionSites.count}`);
+          logger.info(`Construction sites: ${stats.constructionSites.count}`);
         }
         if (stats.spawns) {
-          console.log(`[StatsCollector] Spawns: ${stats.activeSpawns}/${stats.spawns} active`);
+          logger.info(`Spawns: ${stats.activeSpawns}/${stats.spawns} active`);
         }
       }
 
@@ -423,10 +426,10 @@ export class StatsCollector {
         }
 
         if (shouldLog && roomsProcessed > 0) {
-          console.log(`[StatsCollector] Processed ${roomsProcessed} room(s)`);
+          logger.info(`Processed ${roomsProcessed} room(s)`);
         }
       } catch (roomError) {
-        console.log(`[StatsCollector] Error collecting room stats: ${String(roomError)}`);
+        logger.errorObject(roomError, "Error collecting room stats:");
       }
 
       // Add spawn statistics if available
@@ -466,11 +469,11 @@ export class StatsCollector {
       // Validate write succeeded
       if (shouldLog) {
         const writeSuccessful = memory.stats !== undefined && memory.stats.time === game.time;
-        console.log(`[StatsCollector] Memory.stats write: ${writeSuccessful ? "SUCCESS" : "FAILED"}`);
+        logger.info(`Memory.stats write: ${writeSuccessful ? "SUCCESS" : "FAILED"}`);
 
         if (writeSuccessful) {
           const statsSize = JSON.stringify(memory.stats).length;
-          console.log(`[StatsCollector] Stats data size: ${statsSize} bytes`);
+          logger.info(`Stats data size: ${statsSize} bytes`);
         }
       }
 
@@ -478,10 +481,10 @@ export class StatsCollector {
       const cpuCost = endCpu - startCpu;
 
       if (shouldLog) {
-        console.log(`[StatsCollector] Collection completed in ${cpuCost.toFixed(3)} CPU`);
+        logger.info(`Collection completed in ${cpuCost.toFixed(3)} CPU`);
       }
     } catch (error) {
-      console.log(`[StatsCollector] CRITICAL: Failed to collect stats: ${String(error)}`);
+      logger.errorObject(error, "CRITICAL: Failed to collect stats:");
       // Ensure Memory.stats exists even if collection fails
       memory.stats = {
         time: game?.time ?? 0,
@@ -491,7 +494,7 @@ export class StatsCollector {
       };
 
       if (shouldLog) {
-        console.log(`[StatsCollector] Fallback stats written to Memory.stats`);
+        logger.info("Fallback stats written to Memory.stats");
       }
     }
   }

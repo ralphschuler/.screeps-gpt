@@ -151,4 +151,56 @@ describe("Logger", () => {
       expect(secondCall).toContain("[INFO] Test message");
     });
   });
+
+  describe("Error Object Logging", () => {
+    it("should safely serialize Error objects with errorObject method", () => {
+      const logger = new Logger({}, mockConsole);
+      const error = new Error("Test error");
+
+      logger.errorObject(error, "Failed:");
+
+      expect(mockConsole.log).toHaveBeenCalledOnce();
+      const loggedMessage = mockConsole.log.mock.calls[0]?.[0] as string;
+      expect(loggedMessage).toContain("[ERROR]");
+      expect(loggedMessage).toContain("Failed:");
+      expect(loggedMessage).toContain("Test error");
+    });
+
+    it("should handle Zod-like errors in errorObject", () => {
+      const logger = new Logger({}, mockConsole);
+      const zodError = Object.assign(new Error("Validation failed"), {
+        issues: [{ code: "invalid_type", message: "Invalid" }]
+      });
+
+      logger.errorObject(zodError);
+
+      expect(mockConsole.log).toHaveBeenCalledOnce();
+      const loggedMessage = mockConsole.log.mock.calls[0]?.[0] as string;
+      expect(loggedMessage).toContain("Validation failed");
+      expect(loggedMessage).toContain("issues");
+    });
+
+    it("should handle circular references in errorObject", () => {
+      const logger = new Logger({}, mockConsole);
+      const obj: Record<string, unknown> = { a: 1 };
+      obj.self = obj;
+
+      expect(() => {
+        logger.errorObject(obj);
+      }).not.toThrow();
+
+      expect(mockConsole.log).toHaveBeenCalledOnce();
+      const loggedMessage = mockConsole.log.mock.calls[0]?.[0] as string;
+      expect(loggedMessage).toContain("[Circular]");
+    });
+
+    it("should not cause primitive conversion errors", () => {
+      const logger = new Logger({}, mockConsole);
+      const error = new Error("Test");
+
+      expect(() => {
+        logger.errorObject(error, "Prefix:");
+      }).not.toThrow();
+    });
+  });
 });
