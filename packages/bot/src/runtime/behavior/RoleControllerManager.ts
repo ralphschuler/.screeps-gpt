@@ -392,6 +392,7 @@ export class RoleControllerManager {
         this.logger.warn?.(
           `[EMERGENCY] Emergency spawn failed: ${result} - may need manual intervention`
         );
+        return; // Prevent fallthrough to normal spawn logic after emergency spawn failure
       }
     }
 

@@ -95,7 +95,7 @@ describe("Regression: BodyComposer Emergency Mode Failure", () => {
     expect(cost).toBe(200);
   });
 
-  it("should fail gracefully when energy is below minimum (< 150)", () => {
+  it("should fail gracefully when energy is below minimum (< 200)", () => {
     // Not enough energy for even minimal body
     const body = composer.generateBody("harvester", 100, mockRoom);
 
