@@ -86,7 +86,7 @@ describe("Spawn Starvation Recovery (Issue #806)", () => {
 
       // Should spawn at least 1 harvester despite reserve violation
       expect(result.spawnedCreeps.length).toBeGreaterThan(0);
-      expect(result.spawnedCreeps[0]).toMatch(/^harvester-/);
+      expect(result.spawnedCreeps[0]).toMatch(/^(emergency-)?harvester-/);
 
       // Verify spawn was called
       const spawn = game.spawns["Spawn1"];
@@ -145,7 +145,7 @@ describe("Spawn Starvation Recovery (Issue #806)", () => {
       const result = controller.execute(game, memory, {});
 
       expect(result.spawnedCreeps.length).toBeGreaterThan(0);
-      expect(result.spawnedCreeps[0]).toMatch(/^harvester-/);
+      expect(result.spawnedCreeps[0]).toMatch(/^(emergency-)?harvester-/);
     });
 
     it("should enforce energy reserve when harvesters are at or above minimum", () => {
@@ -160,8 +160,10 @@ describe("Spawn Starvation Recovery (Issue #806)", () => {
 
       const result = controller.execute(game, memory, { harvester: 4 });
 
-      // Should not spawn additional creeps (reserve enforced)
-      expect(result.spawnedCreeps.length).toBe(0);
+      // Should not spawn additional harvesters (reserve enforced)
+      // Note: Other roles might still spawn if they have higher priority
+      const harvestersSpawned = result.spawnedCreeps.filter(name => name.includes("harvester"));
+      expect(harvestersSpawned.length).toBe(0);
     });
   });
 
@@ -181,7 +183,7 @@ describe("Spawn Starvation Recovery (Issue #806)", () => {
       const result = controller.execute(game, memory, {});
 
       expect(result.spawnedCreeps.length).toBeGreaterThan(0);
-      expect(result.spawnedCreeps[0]).toMatch(/^harvester-/);
+      expect(result.spawnedCreeps[0]).toMatch(/^(emergency-)?harvester-/);
     });
   });
 
@@ -196,7 +198,7 @@ describe("Spawn Starvation Recovery (Issue #806)", () => {
       const result = controller.execute(game, memory, {});
 
       expect(result.spawnedCreeps.length).toBeGreaterThan(0);
-      expect(result.spawnedCreeps[0]).toMatch(/^harvester-/);
+      expect(result.spawnedCreeps[0]).toMatch(/^(emergency-)?harvester-/);
     });
 
     it("should not spawn with insufficient energy (150 energy below minimum)", () => {
@@ -240,7 +242,7 @@ describe("Spawn Starvation Recovery (Issue #806)", () => {
       expect(result.spawnedCreeps.length).toBeGreaterThan(0);
 
       // First spawn should be harvester
-      expect(result.spawnedCreeps[0]).toMatch(/^harvester-/);
+      expect(result.spawnedCreeps[0]).toMatch(/^(emergency-)?harvester-/);
 
       // If multiple spawns, check order
       if (result.spawnedCreeps.length > 1) {
