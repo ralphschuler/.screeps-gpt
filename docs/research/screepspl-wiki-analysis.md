@@ -783,12 +783,26 @@ The bot is solidly in the **intermediate tier**, capable of operating multiple r
 2. ✅ **CPU Bucket Monitoring** - Add to MetricsManager for bucket tracking
 3. ✅ **Visual Debugging** - Add creep speech bubbles for runtime visibility
 
-**Tier 2: High-Value Optimizations (Phase 2 Completion)** 4. ⚠️ **Path Caching** - Reuse pathfinding results across ticks 5. ⚠️ **Dynamic Spawn Parts** - Scale body parts with available energy 6. ⚠️ **Task Queue System** - Centralized task assignment with priorities 7. ⚠️ **Repair Cache** - Priority-based repair queue
+**Tier 2: High-Value Optimizations (Phase 2 Completion)**
 
-**Tier 3: Strategic Enhancements (Phase 3 Features)** 8. ❌ **Mineral Economy** - Harvesting, labs, compound production 9. ❌ **Terminal Network** - Inter-room resource sharing 10. ❌ **Advanced Scouting** - Systematic room scanning and memory 11. ❌ **Defensive Spawning** - Threat-aware defensive creep generation
+4. ⚠️ **Path Caching** - Reuse pathfinding results across ticks
+5. ⚠️ **Dynamic Spawn Parts** - Scale body parts with available energy
+6. ⚠️ **Task Queue System** - Centralized task assignment with priorities
+7. ⚠️ **Repair Cache** - Priority-based repair queue
 
-**Tier 4: Long-Term Optimizations (Phase 4+)** 12. ❌ **Market Integration** - Automated trading and price monitoring 13. ❌ **Factory Automation** - Commodity production chains 14. ❌ **Machine Learning** - Predictive spawning, expansion planning 15. ❌ **Multi-Room Combat** - Coordinated offensive operations
+**Tier 3: Strategic Enhancements (Phase 3 Features)**
 
+8. ❌ **Mineral Economy** - Harvesting, labs, compound production
+9. ❌ **Terminal Network** - Inter-room resource sharing
+10. ❌ **Advanced Scouting** - Systematic room scanning and memory
+11. ❌ **Defensive Spawning** - Threat-aware defensive creep generation
+
+**Tier 4: Long-Term Optimizations (Phase 4+)**
+
+12. ❌ **Market Integration** - Automated trading and price monitoring
+13. ❌ **Factory Automation** - Commodity production chains
+14. ❌ **Machine Learning** - Predictive spawning, expansion planning
+15. ❌ **Multi-Room Combat** - Coordinated offensive operations
 ---
 
 ## Identified Gaps and Opportunities
