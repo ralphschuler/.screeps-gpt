@@ -114,7 +114,7 @@ async function getCurrentTick(api: ScreepsAPI, shard: string): Promise<number> {
     // Fetch shard info to get current tick
     const shardInfo = await api.raw.game.shards.info(shard);
     return shardInfo.tick || 0;
-  } catch (_error) {
+  } catch {
     console.warn("Could not fetch current tick, using timestamp estimate");
     // Fallback: estimate tick from timestamp
     // Screeps launched ~2016, approximate tick calculation
