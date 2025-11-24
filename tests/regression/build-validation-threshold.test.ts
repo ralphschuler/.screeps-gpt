@@ -30,6 +30,7 @@ describe("Build Validation Threshold Regression", () => {
         "tiny-main.js",
         "small-main.js",
         "valid-main.js",
+        "main-no-loop.js",
         "tiny-module.js",
         "valid-module-500b.js",
         "valid-type-module.js",
@@ -64,9 +65,10 @@ describe("Build Validation Threshold Regression", () => {
     });
 
     it("should accept main.js at 50KB or larger", async () => {
-      // Create a 50KB file with loop export
+      // Create a 50KB file with loop export (exactly 50,000 bytes)
       const validMainPath = resolve(TEST_DIR, "valid-main.js");
-      const validContent = "exports.loop = () => {};\n" + "a".repeat(50 * 1024);
+      const loopExport = "exports.loop = () => {};\n";
+      const validContent = loopExport + "a".repeat(50000 - loopExport.length);
       await writeFile(validMainPath, validContent);
 
       await expect(validateFile(validMainPath, "main.js", true)).resolves.not.toThrow();
@@ -74,11 +76,11 @@ describe("Build Validation Threshold Regression", () => {
 
     it("should reject main.js without loop export", async () => {
       // Create a 50KB file WITHOUT loop export
-      const validMainPath = resolve(TEST_DIR, "valid-main.js");
-      const invalidContent = "// No loop export\n" + "a".repeat(50 * 1024);
-      await writeFile(validMainPath, invalidContent);
+      const noLoopMainPath = resolve(TEST_DIR, "main-no-loop.js");
+      const invalidContent = "// No loop export\n" + "a".repeat(50000);
+      await writeFile(noLoopMainPath, invalidContent);
 
-      await expect(validateFile(validMainPath, "main.js", true)).rejects.toThrow(/does not export loop function/);
+      await expect(validateFile(noLoopMainPath, "main.js", true)).rejects.toThrow(/does not export loop function/);
     });
 
     it("should reject empty main.js", async () => {
