@@ -46,7 +46,7 @@ Your task is to convert the latest CHANGELOG.md entry for version ${VERSION} int
 
 3. **Write to File**
    - Transform VERSION to VERSION_SLUG by replacing dots with hyphens (e.g., "0.12.0" becomes "0-12-0")
-   - Create file at: `packages/docs/source/_posts/release-${VERSION_SLUG}.md`
+   - Create file at: `packages/docs/source/_posts/release-${VERSION_SLUG}.md` (Hexo blog post location)
    - Ensure proper UTF-8 encoding
 
 4. **Commit Changes**

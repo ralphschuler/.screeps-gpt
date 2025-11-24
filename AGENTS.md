@@ -55,12 +55,18 @@ All agents should reference these documents before making changes:
 
 2. **Structured Knowledge Base (`packages/docs/source/docs/`)**
    - **CRITICAL**: All new documentation MUST be created in `packages/docs/source/docs/`, NOT in root `docs/`
-   - [`packages/docs/source/docs/index.md`](packages/docs/source/docs/index.md) - Documentation hub with quick start and documentation rules
-   - [`packages/docs/source/docs/automation/overview.md`](packages/docs/source/docs/automation/overview.md) - Detailed workflow specifications and local validation
-   - [`packages/docs/source/docs/operations/stats-monitoring.md`](packages/docs/source/docs/operations/stats-monitoring.md) - PTR monitoring pipeline and Copilot analysis
-   - [`packages/docs/source/docs/operations/respawn-handling.md`](packages/docs/source/docs/operations/respawn-handling.md) - Automatic respawn detection and handling
-   - [`packages/docs/source/docs/changelog/versions.md`](packages/docs/source/docs/changelog/versions.md) - Generated release history (do not edit manually)
-   - **Note**: Root `docs/` contains legacy documentation being migrated out
+   - **Monorepo Structure**: Following the monorepo migration (issue #539), documentation is organized under `packages/docs/` with Hexo static site generator
+   - **Documentation Site**: Deployed via `.github/workflows/docs-pages.yml` to GitHub Pages
+   - **Theme**: Uses Hexo Cactus theme with custom navigation configured in `packages/docs/_config.cactus.yml`
+   - Key documentation files:
+     - [`packages/docs/source/docs/index.md`](packages/docs/source/docs/index.md) - Documentation hub with quick start and documentation rules
+     - [`packages/docs/source/docs/documentation/writing-docs.md`](packages/docs/source/docs/documentation/writing-docs.md) - Guidelines for writing and organizing documentation
+     - [`packages/docs/source/docs/automation/overview.md`](packages/docs/source/docs/automation/overview.md) - Detailed workflow specifications and local validation
+     - [`packages/docs/source/docs/operations/stats-monitoring.md`](packages/docs/source/docs/operations/stats-monitoring.md) - PTR monitoring pipeline and Copilot analysis
+     - [`packages/docs/source/docs/operations/respawn-handling.md`](packages/docs/source/docs/operations/respawn-handling.md) - Automatic respawn detection and handling
+     - [`packages/docs/source/docs/changelog/versions.md`](packages/docs/source/docs/changelog/versions.md) - Generated release history (do not edit manually)
+   - **Blog Posts**: Generated from CHANGELOG.md releases and placed in `packages/docs/source/_posts/`
+   - **Note**: Root `docs/` contains legacy documentation (primarily `docs/strategy/` for strategic planning)
 
 3. **Strategic Documentation (`docs/strategy/`)**
    - [`docs/strategy/roadmap.md`](docs/strategy/roadmap.md) - Current phase status, success metrics, and strategic priorities
@@ -137,6 +143,38 @@ Agents working on runtime code should understand:
 - **CRITICAL**: Keep `packages/docs/source/docs/` in sync with any workflow, runtime, or operational changes - NOT root `docs/`
 - Document bug investigations and incident learnings in `packages/docs/source/docs/operations/` before merging fixes.
 - Maintain `TASKS.md` by adding new tasks and marking completed items with a completion note instead of removing them immediately.
+
+**Documentation Location Guidelines (Post-Monorepo Migration #539):**
+
+- **Primary Location**: `packages/docs/source/docs/` - All Hexo-based documentation
+  - Operations runbooks: `packages/docs/source/docs/operations/`
+  - Automation specifications: `packages/docs/source/docs/automation/`
+  - Runtime documentation: `packages/docs/source/docs/runtime/`
+  - Security guidelines: `packages/docs/source/docs/security/`
+  - Changelog and analytics: `packages/docs/source/docs/changelog/`, `packages/docs/source/docs/analytics/`
+  - Meta-documentation: `packages/docs/source/docs/documentation/`
+
+- **Blog Posts**: `packages/docs/source/_posts/` - Generated from CHANGELOG.md via changelog-to-blog workflow
+
+- **Root `docs/` Directory**: Legacy location retained for:
+  - Strategic planning: `docs/strategy/` (roadmap, phases, learning, decisions)
+  - Quick-reference guides that don't fit Hexo structure
+  - Backwards compatibility with existing links
+
+- **Agent Rules**:
+  - When creating new documentation, **always use `packages/docs/source/docs/`**
+  - When updating existing documentation, check both locations and consolidate to `packages/docs/source/docs/` when possible
+  - Update agent prompts to reference correct paths
+  - Build documentation site with `cd packages/docs && yarn build`
+
+**Documentation Site:**
+
+- Built with Hexo static site generator + Cactus theme
+- Configuration: `packages/docs/_config.yml` (main), `packages/docs/_config.cactus.yml` (theme)
+- Navigation customization in `_config.cactus.yml`
+- Deployed via `.github/workflows/docs-pages.yml` to GitHub Pages
+- Local preview: `cd packages/docs && yarn server` (http://localhost:4000)
+- E2E tests: `tests/e2e/docs-site.test.ts`
 
 **Changelog requirements:**
 

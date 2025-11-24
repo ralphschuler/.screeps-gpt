@@ -47,8 +47,8 @@ Follow this process:
    - **Code Context Gathering:**
      - Extract key technical terms, file names, and domain concepts from the issue title and body
      - Use the GitHub MCP server `search_code` function to find related code in the repository
-     - Search for relevant files in key directories: `.github/workflows/`, `.github/actions/`, `src/`, `tests/`
-     - Note any related configuration files, implementation files, or test files
+     - Search for relevant files in key directories: `.github/workflows/`, `.github/actions/`, `src/`, `tests/`, `packages/docs/source/`
+     - Note any related configuration files, implementation files, test files, or documentation files
    - **Issue Cross-Referencing:**
      - Use the GitHub MCP server to search for related issues (both open and closed)
      - Look for issues with similar keywords, labels, or technical context
@@ -101,7 +101,7 @@ Follow this process:
        - **Problem/Requirement:** What needs to be addressed
        - **Proposed Changes:** Specific changes or implementation approach
        - **Acceptance Criteria:** Clear success conditions
-       - **Related Code:** List relevant files, workflows, or modules discovered during context gathering
+       - **Related Code:** List relevant files, workflows, modules, or documentation (prefer `packages/docs/source/` for structured docs) discovered during context gathering
        - **Related Issues:** Links to related, parent, or blocking issues (if detected)
        - **Related PRs:** Links to relevant pull requests that provide context or touch related areas
        - **Additional Context:** Any relevant technical details, constraints, or references
