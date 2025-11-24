@@ -51,7 +51,10 @@ describe("Deterministic runtime requirements", () => {
   });
 
   it("should use deterministic naming for creeps", () => {
-    const roleControllerManagerPath = resolve(__dirname, "../../packages/bot/src/runtime/behavior/RoleControllerManager.ts");
+    const roleControllerManagerPath = resolve(
+      __dirname,
+      "../../packages/bot/src/runtime/behavior/RoleControllerManager.ts"
+    );
     const content = readFileSync(roleControllerManagerPath, "utf-8");
 
     // Verify the creep naming pattern uses memory counter
