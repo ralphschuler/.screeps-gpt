@@ -67,6 +67,13 @@ interface RoleControllerManagerOptions {
 }
 
 /**
+ * Combat mode constants for spawn prioritization
+ */
+const COMBAT_UPGRADER_REDUCTION_FACTOR = 0.3; // Reduce upgrader minimum to 30% during combat
+const COMBAT_MIN_ATTACKERS_HEALERS = 2; // Minimum attackers/healers during combat
+const COMBAT_MIN_REPAIRERS = 1; // Minimum repairers during combat
+
+/**
  * Coordinates spawning and per-tick behavior execution using individual role controllers.
  */
 @profile
@@ -460,7 +467,7 @@ export class RoleControllerManager {
 
       // Dynamically reduce upgrader minimum during combat to focus on defense
       if (role === "upgrader" && isUnderCombat) {
-        targetMinimum = Math.max(0, Math.floor(targetMinimum * 0.3));
+        targetMinimum = Math.max(0, Math.floor(targetMinimum * COMBAT_UPGRADER_REDUCTION_FACTOR));
         if (targetMinimum === 0 && current === 0) {
           continue; // Skip spawning upgraders entirely during combat
         }
@@ -468,10 +475,10 @@ export class RoleControllerManager {
 
       // Increase attacker/healer/repairer minimums during combat
       if ((role === "attacker" || role === "healer") && isUnderCombat) {
-        targetMinimum = Math.max(config.minimum, 2); // Ensure at least 2 combat units
+        targetMinimum = Math.max(config.minimum, COMBAT_MIN_ATTACKERS_HEALERS);
       }
       if (role === "repairer" && isUnderCombat) {
-        targetMinimum = Math.max(config.minimum, 1); // Ensure at least 1 repairer during combat
+        targetMinimum = Math.max(config.minimum, COMBAT_MIN_REPAIRERS);
       }
 
       if (current >= targetMinimum) {
