@@ -50,7 +50,7 @@ jobs:
           yarn packages/utilities/scripts/fetch-room-analysis.ts
 
       - name: Upload room analysis artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always()
         with:
           name: room-analysis-${{ github.run_number }}
