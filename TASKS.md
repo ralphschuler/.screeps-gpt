@@ -274,6 +274,101 @@
 
 **Note:** See full analysis in `docs/research/overmind-rl-analysis.md` for comprehensive architecture evaluation, cost breakdown, use case analysis, and integration roadmap.
 
+### The International Architecture Research (2025-11-24)
+
+**Research Documentation:** [`docs/research/the-international-analysis.md`](docs/research/the-international-analysis.md)
+
+**Key Findings:**
+
+- Modular, accessible architecture with clear separation of concerns
+- CPU-efficient caching strategies for pathfinding and base planning
+- Finite State Machine pattern for creep role management
+- Automated base planning with stamp-based layouts and terrain analysis
+- Federal resource balancing across multi-room empire
+- Tower defense with threat evaluation and coordinated fire
+- Focus on documentation and customization for community learning
+
+**Phase 1: Critical CPU Optimizations (Immediate - High Value)**
+
+- [ ] Memory-centric Caching Infrastructure - ⭐⭐⭐⭐⭐ - Related: #392, #426, #494
+  - Create @cache decorator for automatic cache management
+  - Cache pathfinding, base planning, role assignments
+  - Implement smart invalidation strategies
+  - Target: 20-30% CPU reduction, 80%+ cache hit rate
+- [ ] Hauling Optimization System - ⭐⭐⭐⭐⭐ - Related: #493, #607, #614, #638
+  - Implement TransportRequestGroup pattern
+  - Add anti-ping-pong logic for purposeful movement
+  - Dynamic hauler scaling based on throughput
+  - Target: <10% idle hauler time, improved energy flow
+
+**Phase 2: Core Infrastructure (Short-term - High Value)**
+
+- [ ] Finite State Machine for Creeps - ⭐⭐⭐⭐ - Related: #478
+  - Create FSM base class with state/transition methods
+  - Define states for each creep role
+  - Add state visualization for debugging
+  - Migrate existing behavior controllers to FSM
+- [ ] Automated Base Planning System - ⭐⭐⭐⭐⭐ - Related: #478
+  - Implement stamp-based layouts (bunker, extensions, labs)
+  - Add terrain analysis with distance transforms
+  - Create anchor calculation algorithm
+  - Build progressive planning by RCL
+  - Visual debugging for planned layouts
+- [ ] Tower Defense Enhancement - ⭐⭐⭐⭐
+  - Implement threat evaluation and priority targeting
+  - Add coordinated fire for multiple towers
+  - Enhance repair prioritization (critical/normal/low thresholds)
+  - Create visual indicators for tower operations
+
+**Phase 3: Multi-room Scaling (Medium-term - Medium-High Value)**
+
+- [ ] Remote Mining Enhancement - ⭐⭐⭐⭐ - Related: #607, #614, #638
+  - Dedicated miner/hauler roles with optimal body composition
+  - Dynamic hauler scaling based on distance and throughput
+  - Automated road building and maintenance
+  - Safety checks and invader response
+- [ ] Federal Resource Balancing - ⭐⭐⭐⭐ - Related: #607, #614
+  - Declarative resource config (min/max per structure type)
+  - Automatic balancing across empire
+  - Terminal coordination for inter-room transfers
+  - Distribution efficiency metrics
+- [ ] Energy Management State Machine - ⭐⭐⭐⭐ - Related: #607, #614, #638
+  - Supply/demand monitoring with state machine
+  - Link network optimization for energy highways
+  - Task memory to avoid duplicate work
+  - Energy routing algorithms
+
+**Phase 4: Advanced Features (Long-term - Medium Value)**
+
+- [ ] Defensive Infrastructure - ⭐⭐⭐⭐
+  - Strategic rampart placement in base planning
+  - Repair threshold system (critical > 300 HP)
+  - Observer network for early threat detection
+  - Pathing manipulation with walls
+- [ ] Military Operations Manager - ⭐⭐⭐
+  - Specialized combat roles (defender, healer, ranger, attacker)
+  - Formation support (quads and duos)
+  - Automated threat response
+  - Manual override via console
+
+**Comparison with Overmind:**
+
+- **Accessibility:** International simpler and more customizable, Overmind more sophisticated
+- **Cooperation:** International basic inter-bot communication, Overmind advanced Assimilator hivemind
+- **Combat:** International functional defense, Overmind adaptive swarm intelligence
+- **CPU:** International more efficient baseline, Overmind historically higher but improving
+- **Integration:** Use International patterns for clarity and efficiency, Overmind patterns for advanced automation
+
+**Integration Strategy:**
+
+1. Start with high-value, low-risk patterns (FSM, tower defense)
+2. Implement critical CPU optimizations early (caching, hauling)
+3. Build complex systems incrementally (base planning, balancing)
+4. Test and measure impact at every phase
+5. Maintain compatibility with existing systems
+
+**Note:** See full analysis in `docs/research/the-international-analysis.md` for detailed patterns, comparison with Overmind and other bots, compatibility assessment, and comprehensive implementation roadmap.
+
 ## In Progress
 
 - [ ] Measure Copilot-driven change quality and feed outcomes into system evaluation reports.
