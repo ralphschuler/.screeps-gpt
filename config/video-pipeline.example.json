@@ -1,0 +1,33 @@
+{
+  "rooms": ["W7N3", "E5S8"],
+  "shard": "shard3",
+  "timeWindow": {
+    "start": "24h",
+    "end": "now"
+  },
+  "rendering": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "codec": "libx264",
+    "ticksPerFrame": 10
+  },
+  "overlays": {
+    "showTimestamp": true,
+    "showTick": true,
+    "showVersion": true,
+    "showRoomName": true
+  },
+  "storage": {
+    "replayRetentionDays": 30,
+    "keepVideos": true
+  },
+  "youtube": {
+    "enabled": false,
+    "titleTemplate": "Screeps Bot - {room} - {startTick} to {endTick}",
+    "descriptionTemplate": "Autonomous Screeps AI gameplay recording\n\nRoom: {room}\nShard: {shard}\nTicks: {startTick} to {endTick}\nBot Version: {version}\n\nGenerated automatically by screeps-gpt",
+    "tags": ["screeps", "ai", "automation", "gameplay", "screeps-bot"],
+    "visibility": "unlisted",
+    "playlistId": ""
+  }
+}

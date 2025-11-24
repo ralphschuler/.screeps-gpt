@@ -136,6 +136,12 @@ packages/docs/public/
 !/reports/monitoring/strategic-analysis-*.md
 !/reports/monitoring/monitoring-summary-*.json
 
+# Video rendering pipeline artifacts
+/reports/replay-data/
+/reports/video-frames/
+/reports/videos/
+config/video-pipeline.json
+
 # TypeScript declaration files generated in source directories
 packages/*/vitest.config.d.ts
 packages/*/tests/**/*.d.ts
