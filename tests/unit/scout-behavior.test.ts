@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import { BehaviorController } from "@runtime/behavior/BehaviorController";
+import { RoleControllerManager } from "@runtime/behavior/RoleControllerManager";
 import type { CreepLike, GameContext, RoomLike } from "@runtime/types/GameContext";
 
 describe("Scout Behavior", () => {
   it("should initialize home room and target rooms on first run", () => {
-    const controller = new BehaviorController({}, { log: vi.fn(), warn: vi.fn() });
+    const controller = new RoleControllerManager({}, { log: vi.fn(), warn: vi.fn() });
 
     const homeRoom: RoomLike = {
       name: "W5N5",
@@ -62,7 +62,7 @@ describe("Scout Behavior", () => {
   });
 
   it("should move to target room when not there", () => {
-    const controller = new BehaviorController({}, { log: vi.fn(), warn: vi.fn() });
+    const controller = new RoleControllerManager({}, { log: vi.fn(), warn: vi.fn() });
 
     const homeRoom: RoomLike = {
       name: "W5N5",
@@ -117,7 +117,7 @@ describe("Scout Behavior", () => {
   });
 
   it("should move to room center when in target room", () => {
-    const controller = new BehaviorController({}, { log: vi.fn(), warn: vi.fn() });
+    const controller = new RoleControllerManager({}, { log: vi.fn(), warn: vi.fn() });
 
     const targetRoom: RoomLike = {
       name: "W4N5",
@@ -172,7 +172,7 @@ describe("Scout Behavior", () => {
   });
 
   it("should cycle to next target room after brief stay at center", () => {
-    const controller = new BehaviorController({}, { log: vi.fn(), warn: vi.fn() });
+    const controller = new RoleControllerManager({}, { log: vi.fn(), warn: vi.fn() });
 
     const targetRoom: RoomLike = {
       name: "W4N5",
@@ -231,7 +231,7 @@ describe("Scout Behavior", () => {
   });
 
   it("should spawn scout at RCL 2+", () => {
-    const controller = new BehaviorController({}, { log: vi.fn(), warn: vi.fn() });
+    const controller = new RoleControllerManager({}, { log: vi.fn(), warn: vi.fn() });
 
     const homeRoom: RoomLike = {
       name: "W5N5",
