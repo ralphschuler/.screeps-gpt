@@ -156,16 +156,11 @@ export class EnergyValidator {
     });
 
     // Add production/consumption details below
-    room.visual.text(
-      `↑${metrics.productionRate.toFixed(1)}/t ↓${metrics.consumptionRate.toFixed(1)}/t`,
-      x,
-      y + 0.6,
-      {
-        align: "left",
-        font: 0.4,
-        opacity: 0.7
-      }
-    );
+    room.visual.text(`↑${metrics.productionRate.toFixed(1)}/t ↓${metrics.consumptionRate.toFixed(1)}/t`, x, y + 0.6, {
+      align: "left",
+      font: 0.4,
+      opacity: 0.7
+    });
   }
 
   /**
@@ -196,7 +191,7 @@ export class EnergyValidator {
    */
   private updateMemoryMetrics(roomName: string, metrics: EnergyEconomyMetrics): void {
     Memory.rooms ??= {};
-    
+
     const roomMemory = Memory.rooms[roomName];
     // Always preserve existing properties and update energyMetrics
     Memory.rooms[roomName] = { ...roomMemory, energyMetrics: metrics };

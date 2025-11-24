@@ -419,7 +419,7 @@ describe("EnergyValidator", () => {
       validator.renderEnergyStatus(mockRoom);
 
       const statusText = (mockRoom.visual.text as ReturnType<typeof vi.fn>).mock.calls[0][0] as string;
-      
+
       // Should contain one of the status emojis
       const hasStatusEmoji =
         statusText.includes("✅") ||
@@ -427,7 +427,7 @@ describe("EnergyValidator", () => {
         statusText.includes("🟡") ||
         statusText.includes("🟠") ||
         statusText.includes("⚠️");
-      
+
       expect(hasStatusEmoji).toBe(true);
       expect(statusText).toContain("Energy:");
     });
