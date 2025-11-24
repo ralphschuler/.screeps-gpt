@@ -35,6 +35,7 @@ describe("Workflow concurrency controls", () => {
     "screeps-monitoring.yml",
     "screeps-spawn-monitor.yml",
     "screeps-room-analysis.yml",
+    "screeps-video-render.yml",
     // Notification workflows
     "email-notification.yml",
     // Quality gate workflows
