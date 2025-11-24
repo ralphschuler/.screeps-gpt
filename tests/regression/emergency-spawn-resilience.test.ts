@@ -155,12 +155,8 @@ describe("Emergency Spawn Resilience", () => {
     expect(bodyParts).toEqual([WORK, CARRY, MOVE]);
 
     // Verify emergency log message
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining("[EMERGENCY] Total workforce collapse detected")
-    );
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining("[EMERGENCY] Spawned emergency-harvester")
-    );
+    expect(logger.log).toHaveBeenCalledWith(expect.stringContaining("[EMERGENCY] Total workforce collapse detected"));
+    expect(logger.log).toHaveBeenCalledWith(expect.stringContaining("[EMERGENCY] Spawned emergency-harvester"));
   });
 
   it("spawns minimal harvester with 250 energy", () => {
@@ -227,12 +223,8 @@ describe("Emergency Spawn Resilience", () => {
     expect(summary.spawnedCreeps.length).toBe(0);
 
     // Verify warning was logged
-    expect(logger.warn).toHaveBeenCalledWith(
-      expect.stringContaining("[EMERGENCY] Insufficient energy (100)")
-    );
-    expect(logger.warn).toHaveBeenCalledWith(
-      expect.stringContaining("need 200")
-    );
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("[EMERGENCY] Insufficient energy (100)"));
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("need 200"));
   });
 
   it("prioritizes emergency spawn over normal queue", () => {
@@ -343,9 +335,7 @@ describe("Emergency Spawn Resilience", () => {
     expect(summary.spawnedCreeps.length).toBe(0);
 
     // Verify warning was logged
-    expect(logger.warn).toHaveBeenCalledWith(
-      expect.stringContaining("[EMERGENCY] No spawn available")
-    );
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("[EMERGENCY] No spawn available"));
   });
 
   it("logs failure when spawn returns error", () => {
@@ -376,11 +366,7 @@ describe("Emergency Spawn Resilience", () => {
     expect(summary.spawnedCreeps.length).toBe(0);
 
     // Verify failure warning was logged
-    expect(logger.warn).toHaveBeenCalledWith(
-      expect.stringContaining("[EMERGENCY] Emergency spawn failed")
-    );
-    expect(logger.warn).toHaveBeenCalledWith(
-      expect.stringContaining("may need manual intervention")
-    );
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("[EMERGENCY] Emergency spawn failed"));
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("may need manual intervention"));
   });
 });
