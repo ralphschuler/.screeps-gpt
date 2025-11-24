@@ -147,19 +147,21 @@ export class CreepCommunicationManager {
 
   /**
    * Map verbosity string to CommunicationLevel enum
+   * Note: For backward compatibility, "normal" maps to VERBOSE (shows all messages).
+   * To use the new filtered behavior, explicitly set level: CommunicationLevel.WARNING
    */
   private verbosityToLevel(verbosity: CommunicationVerbosity): CommunicationLevel {
     switch (verbosity) {
       case "disabled":
         return CommunicationLevel.SILENT;
       case "minimal":
-        return CommunicationLevel.WARNING; // Show warnings and errors
+        return CommunicationLevel.ERROR; // Only critical errors (backward compatible)
       case "normal":
-        return CommunicationLevel.WARNING; // Default to WARNING per requirements
+        return CommunicationLevel.VERBOSE; // Show all messages (backward compatible)
       case "verbose":
-        return CommunicationLevel.VERBOSE;
+        return CommunicationLevel.VERBOSE; // Show all messages with extra text
       default:
-        return CommunicationLevel.WARNING;
+        return CommunicationLevel.VERBOSE;
     }
   }
 
@@ -278,8 +280,14 @@ export class CreepCommunicationManager {
 
   /**
    * Display error or stuck state (backward compatibility)
+   * Note: Suppressed in "minimal" verbosity mode for backward compatibility
    */
   public sayError(creep: CreepLike, message?: string, cpuGetter?: () => number): void {
+    // Backward compatibility: minimal mode suppresses sayError
+    if (!this.isEnabled() || this.config.verbosity === "minimal") {
+      return;
+    }
+
     if (creep.memory.stuck) {
       this.error(creep, "stuck", message, cpuGetter);
     } else {
@@ -289,8 +297,14 @@ export class CreepCommunicationManager {
 
   /**
    * Display resource status (full/empty) (backward compatibility)
+   * Note: Suppressed in "minimal" verbosity mode for backward compatibility
    */
   public sayResourceStatus(creep: CreepLike, isFull: boolean, percentage?: number, cpuGetter?: () => number): void {
+    // Backward compatibility: minimal mode suppresses sayResourceStatus
+    if (!this.isEnabled() || this.config.verbosity === "minimal") {
+      return;
+    }
+
     const action: CreepAction = isFull ? "full" : "empty";
     const text = percentage !== undefined ? `${Math.floor(percentage)}%` : undefined;
     // Use default severity from ACTION_SEVERITY (WARNING level)

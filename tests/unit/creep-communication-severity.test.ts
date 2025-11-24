@@ -32,16 +32,16 @@ describe("CreepCommunicationManager Severity System", () => {
   });
 
   describe("CommunicationLevel Configuration", () => {
-    it("should default to WARNING level for 'normal' verbosity", () => {
+    it("should default to VERBOSE level for 'normal' verbosity (backward compatibility)", () => {
       manager = new CreepCommunicationManager({ verbosity: "normal" });
       const config = manager.getConfig();
-      expect(config.level).toBe(CommunicationLevel.WARNING);
+      expect(config.level).toBe(CommunicationLevel.VERBOSE);
     });
 
-    it("should map 'minimal' verbosity to WARNING level", () => {
+    it("should map 'minimal' verbosity to ERROR level (backward compatibility)", () => {
       manager = new CreepCommunicationManager({ verbosity: "minimal" });
       const config = manager.getConfig();
-      expect(config.level).toBe(CommunicationLevel.WARNING);
+      expect(config.level).toBe(CommunicationLevel.ERROR);
     });
 
     it("should map 'verbose' verbosity to VERBOSE level", () => {

@@ -27,7 +27,9 @@ enum CommunicationLevel {
 
 ### Default Configuration
 
-The system defaults to **WARNING** level, showing only errors and warnings while suppressing routine operational messages.
+**For backward compatibility**, the system defaults to **VERBOSE** level when using string verbosity modes ("normal", "verbose"), showing all messages as before.
+
+To enable the new filtered behavior, explicitly set `level: CommunicationLevel.WARNING` in the configuration to show only errors and warnings while suppressing routine operational messages.
 
 ## Message Classification
 
@@ -130,11 +132,18 @@ comm?.sayWithSeverity(
 Configure the manager at creation:
 
 ```typescript
+// Backward compatible mode (shows all messages)
 const comm = new CreepCommunicationManager({
-  verbosity: "normal",              // String verbosity (backward compatible)
-  level: CommunicationLevel.WARNING, // Explicit severity level (overrides verbosity)
+  verbosity: "normal",              // String verbosity (shows all messages)
   enableRoomVisuals: false,         // Room visual indicators
   cpuBudget: 0.1                    // CPU limit per tick
+});
+
+// New filtered mode (suppress routine operations)
+const filteredComm = new CreepCommunicationManager({
+  level: CommunicationLevel.WARNING, // Explicit severity level (errors + warnings only)
+  enableRoomVisuals: false,
+  cpuBudget: 0.1
 });
 ```
 
@@ -155,14 +164,16 @@ comm.updateConfig({ enableRoomVisuals: true });
 
 ### Verbosity to Level Mapping
 
-String verbosity values automatically map to severity levels:
+String verbosity values automatically map to severity levels (backward compatible):
 
 | Verbosity | Level | Behavior |
 |-----------|-------|----------|
 | `disabled` | SILENT | No messages |
-| `minimal` | WARNING | Errors + warnings |
-| `normal` | WARNING | Errors + warnings (default) |
-| `verbose` | VERBOSE | All messages |
+| `minimal` | ERROR | Critical errors only (backward compatible) |
+| `normal` | VERBOSE | All messages (backward compatible, default) |
+| `verbose` | VERBOSE | All messages with additional text |
+
+**Note:** For the new filtered behavior, explicitly set `level: CommunicationLevel.WARNING` to suppress routine operations while showing errors and warnings.
 
 ### Environment-Based Configuration
 
