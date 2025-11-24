@@ -35,7 +35,7 @@
 - Bot respawned (RCL reset to 2)
 - Creep count dropped to 0
 - Spawn structure present but inactive
-- Energy capacity reset to 0/0
+- Energy capacity reset to 0/0 (current energy / maximum capacity)
 
 ### Nov 21-24 - Silent Failure Period
 
@@ -64,7 +64,7 @@ Spawn structure exists but no spawning activity. Likely causes:
 
 1. Process registration order: `BehaviorProcess` not executing
 2. Bootstrap phase detection: Emergency mode not triggering
-3. Energy threshold check: Spawn requiring capacity not available energy
+3. Energy threshold check: Spawn logic checking energy capacity instead of available energy
 
 **Code Path Analysis:**
 
