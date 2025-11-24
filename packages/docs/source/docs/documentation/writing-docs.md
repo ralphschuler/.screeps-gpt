@@ -49,6 +49,7 @@ Current navigation structure:
 - Runtime (/docs/runtime/)
 - Security (/docs/security/)
 - Changelog (/docs/changelog/)
+- Writing Docs (/docs/documentation/)
 - Blog (/archives/)
 - Repository (external link to GitHub)
 
