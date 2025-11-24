@@ -287,9 +287,9 @@ Potential improvements for the energy economy system:
 
 ## References
 
-- [Energy Balance Calculator](../../../../bot/src/runtime/behavior/EnergyBalanceCalculator.ts)
-- [Energy Validator](../../../../bot/src/runtime/energy/EnergyValidation.ts)
-- [Body Composer](../../../../bot/src/runtime/behavior/BodyComposer.ts)
-- [Role Controller Manager](../../../../bot/src/runtime/behavior/RoleControllerManager.ts)
+- [Energy Balance Calculator](https://github.com/ralphschuler/.screeps-gpt/blob/main/packages/bot/src/runtime/behavior/EnergyBalanceCalculator.ts)
+- [Energy Validator](https://github.com/ralphschuler/.screeps-gpt/blob/main/packages/bot/src/runtime/energy/EnergyValidation.ts)
+- [Body Composer](https://github.com/ralphschuler/.screeps-gpt/blob/main/packages/bot/src/runtime/behavior/BodyComposer.ts)
+- [Role Controller Manager](https://github.com/ralphschuler/.screeps-gpt/blob/main/packages/bot/src/runtime/behavior/RoleControllerManager.ts)
 - [Memory Management](./memory-management.md)
 - [Logging and Visuals](./logging-and-visuals.md)

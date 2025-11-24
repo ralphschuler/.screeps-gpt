@@ -8,7 +8,7 @@ import type { EnergyBalance } from "@runtime/behavior/EnergyBalanceCalculator";
 export interface EnergyEconomyMetrics {
   /** Energy production per tick from harvesters */
   productionRate: number;
-  /** Current energy consumption per tick for upkeep */
+  /** Current energy consumption per tick from spawning */
   consumptionRate: number;
   /** Total energy storage available in room */
   storageCapacity: number;
@@ -198,13 +198,8 @@ export class EnergyValidator {
     Memory.rooms ??= {};
     
     const roomMemory = Memory.rooms[roomName];
-    if (roomMemory) {
-      // Type-safe access using interface extension
-      const typedRoomMemory = roomMemory as typeof roomMemory & { energyMetrics?: EnergyEconomyMetrics };
-      typedRoomMemory.energyMetrics = metrics;
-    } else {
-      Memory.rooms[roomName] = { energyMetrics: metrics };
-    }
+    // Always preserve existing properties and update energyMetrics
+    Memory.rooms[roomName] = { ...roomMemory, energyMetrics: metrics };
   }
 
   /**
