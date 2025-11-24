@@ -12,6 +12,52 @@ interface StructurePlan {
 }
 
 /**
+ * Spawn placement scoring constants for findBestOpenSpace algorithm.
+ * These values determine optimal spawn location in newly claimed rooms.
+ */
+const SPAWN_PLACEMENT = {
+  /**
+   * Minimum distance from walls required for spawn placement.
+   * Rationale: 4 tiles allows a 3x3 extension cluster around the spawn, which is the
+   * minimum needed for efficient early base layouts. This distance ensures enough
+   * buildable space for extensions and infrastructure.
+   */
+  MIN_WALL_DISTANCE: 4,
+  /**
+   * Weight factor for wall distance in scoring.
+   * Rationale: Higher values prioritize open areas over proximity to sources,
+   * reducing risk of cramped layouts. A value of 2 balances buildable space
+   * with reasonable travel distances for creeps.
+   */
+  WALL_DISTANCE_WEIGHT: 2,
+  /**
+   * Maximum ideal distance to sources (beyond this, penalty applies).
+   * Rationale: 20 tiles is roughly the maximum distance a hauler can travel
+   * efficiently without excessive travel time. Based on typical room dimensions.
+   */
+  MAX_IDEAL_SOURCE_DISTANCE: 20,
+  /**
+   * Minimum ideal distance to sources (closer than this, penalty applies).
+   * Rationale: 5 tiles ensures the spawn is not placed directly adjacent to sources,
+   * which can block building space and create traffic jams. This buffer allows for
+   * extension clusters and roads between spawn and sources.
+   */
+  MIN_IDEAL_SOURCE_DISTANCE: 5,
+  /**
+   * Penalty multiplier for being too far from sources.
+   * Rationale: A moderate penalty (0.5) discourages excessive travel distance for
+   * haulers, but does not outweigh the need for buildable space.
+   */
+  FAR_SOURCE_PENALTY: 0.5,
+  /**
+   * Penalty multiplier for being too close to sources.
+   * Rationale: A stronger penalty (2) ensures the spawn is not placed so close to
+   * sources that it blocks extension clusters or causes pathing issues.
+   */
+  CLOSE_SOURCE_PENALTY: 2
+} as const;
+
+/**
  * Plans and manages automatic base building using a bunker layout pattern.
  * Based on the Screeps wiki automatic base building guide.
  */
@@ -32,6 +78,9 @@ export class BasePlanner {
     dy: number;
     rcl: number;
   }> = [
+    // RCL 1: First spawn (anchor point) - critical for room integration
+    { type: "spawn" as BuildableStructureConstant, dx: 0, dy: 0, rcl: 1 },
+
     // RCL 2: Extensions (5 total) - placed at distance 2 with even-sum coordinates
     { type: "extension" as BuildableStructureConstant, dx: 2, dy: 0, rcl: 2 },
     { type: "extension" as BuildableStructureConstant, dx: 0, dy: 2, rcl: 2 },
@@ -108,7 +157,8 @@ export class BasePlanner {
     }
 
     // If no spawn, find best open space using simplified distance transform
-    const bestPos = this.findBestOpenSpace(terrain);
+    // Also consider proximity to energy sources for optimal spawn placement
+    const bestPos = this.findBestOpenSpace(terrain, room);
     if (bestPos) {
       this.anchor = bestPos;
     }
@@ -117,10 +167,28 @@ export class BasePlanner {
   }
 
   /**
-   * Simplified distance transform to find open spaces.
-   * Returns the position furthest from walls.
+   * Calculate the source proximity penalty for spawn placement scoring.
+   * Returns a penalty value based on average distance to sources.
+   * 
+   * @param avgSourceDist - The average Chebyshev distance from position to all sources
+   * @returns A penalty value (higher = worse position). Returns 0 if within ideal range,
+   *          positive penalty if too far or too close to sources.
    */
-  private findBestOpenSpace(terrain: RoomTerrain, terrainWall: number = 1): RoomPosition | null {
+  private calculateSourceProximityPenalty(avgSourceDist: number): number {
+    if (avgSourceDist > SPAWN_PLACEMENT.MAX_IDEAL_SOURCE_DISTANCE) {
+      return (avgSourceDist - SPAWN_PLACEMENT.MAX_IDEAL_SOURCE_DISTANCE) * SPAWN_PLACEMENT.FAR_SOURCE_PENALTY;
+    } else if (avgSourceDist < SPAWN_PLACEMENT.MIN_IDEAL_SOURCE_DISTANCE) {
+      return (SPAWN_PLACEMENT.MIN_IDEAL_SOURCE_DISTANCE - avgSourceDist) * SPAWN_PLACEMENT.CLOSE_SOURCE_PENALTY;
+    }
+    return 0;
+  }
+
+  /**
+   * Simplified distance transform to find open spaces.
+   * Returns the position furthest from walls while considering source proximity.
+   * For newly claimed rooms, this determines optimal spawn placement.
+   */
+  private findBestOpenSpace(terrain: RoomTerrain, room?: RoomLike, terrainWall: number = 1): RoomPosition | null {
     const distanceField: number[][] = [];
 
     // Initialize with walls (using terrainWall parameter for testability)
@@ -146,14 +214,44 @@ export class BasePlanner {
       }
     }
 
-    // Find position with maximum distance (prefer center areas)
-    let maxDist = 0;
+    // Pre-compute source positions to avoid repeated property access
+    const sources = room ? (room.find(FIND_SOURCES) as Array<{ pos: { x: number; y: number } }>) : [];
+    const sourcePositions = sources.map(s => ({ x: s.pos.x, y: s.pos.y }));
+
+    // Find position with best combined score:
+    // - High distance from walls (for building space)
+    // - Reasonable proximity to sources (for energy access)
+    let bestScore = -Infinity;
     let bestPos: RoomPosition | null = null;
 
     for (let x = 10; x < 40; x++) {
       for (let y = 10; y < 40; y++) {
-        if (distanceField[x][y] > maxDist) {
-          maxDist = distanceField[x][y];
+        const wallDistance = distanceField[x][y];
+
+        // Skip positions too close to walls
+        if (wallDistance < SPAWN_PLACEMENT.MIN_WALL_DISTANCE) {
+          continue;
+        }
+
+        // Calculate score: balance wall distance and source proximity
+        let score = wallDistance * SPAWN_PLACEMENT.WALL_DISTANCE_WEIGHT;
+
+        if (sourcePositions.length > 0) {
+          // Calculate average distance to sources (lower is better)
+          let totalSourceDist = 0;
+          for (const sourcePos of sourcePositions) {
+            const dx = Math.abs(x - sourcePos.x);
+            const dy = Math.abs(y - sourcePos.y);
+            totalSourceDist += Math.max(dx, dy); // Chebyshev distance
+          }
+          const avgSourceDist = totalSourceDist / sourcePositions.length;
+
+          // Apply proximity penalty using helper function
+          score -= this.calculateSourceProximityPenalty(avgSourceDist);
+        }
+
+        if (score > bestScore) {
+          bestScore = score;
           bestPos = { x, y };
         }
       }
