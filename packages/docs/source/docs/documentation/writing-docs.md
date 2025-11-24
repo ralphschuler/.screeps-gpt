@@ -51,8 +51,6 @@ Current navigation structure:
 - Changelog (/docs/changelog/)
 - Writing Docs (/docs/documentation/)
 - Blog (/archives/)
-- Repository (external link to GitHub)
-
 To add new navigation items:
 1. Add entry to `_config.cactus.yml` `nav` section
 2. Create corresponding content in `source/docs/` directory
