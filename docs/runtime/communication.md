@@ -17,11 +17,11 @@ The system uses the `CommunicationLevel` enum to classify messages:
 
 ```typescript
 enum CommunicationLevel {
-  SILENT = 0,    // No messages
-  ERROR = 1,     // Critical failures only
-  WARNING = 2,   // Errors + warnings
-  INFO = 3,      // Errors + warnings + important status
-  VERBOSE = 4    // All messages (includes routine operations)
+  SILENT = 0, // No messages
+  ERROR = 1, // Critical failures only
+  WARNING = 2, // Errors + warnings
+  INFO = 3, // Errors + warnings + important status
+  VERBOSE = 4 // All messages (includes routine operations)
 }
 ```
 
@@ -34,7 +34,9 @@ To enable the new filtered behavior, explicitly set `level: CommunicationLevel.W
 ## Message Classification
 
 ### ERROR Level (Always Visible)
+
 Critical failures that require immediate attention:
+
 - Stuck/blocked creeps (`stuck`)
 - Pathfinding failures (`error`)
 - Invalid target references
@@ -42,7 +44,9 @@ Critical failures that require immediate attention:
 - Memory corruption detection
 
 ### WARNING Level (Visible at WARNING+)
+
 Caution conditions indicating potential issues:
+
 - Energy depletion (`empty`)
 - Resource capacity full (`full`)
 - Low TTL (< 50 ticks)
@@ -50,13 +54,17 @@ Caution conditions indicating potential issues:
 - Resource container full/empty
 
 ### INFO Level (Visible at INFO+)
+
 Important status changes:
+
 - Task completion notifications
 - Target selection changes (`gather`)
 - Energy state transitions
 
 ### VERBOSE Level (Debug Mode Only)
+
 Routine operational messages:
+
 - Normal actions: `harvest`, `deliver`, `upgrade`, `build`, `repair`
 - Movement commands (`travel`)
 - Resource operations (`pickup`)
@@ -134,9 +142,9 @@ Configure the manager at creation:
 ```typescript
 // Backward compatible mode (shows all messages)
 const comm = new CreepCommunicationManager({
-  verbosity: "normal",              // String verbosity (shows all messages)
-  enableRoomVisuals: false,         // Room visual indicators
-  cpuBudget: 0.1                    // CPU limit per tick
+  verbosity: "normal", // String verbosity (shows all messages)
+  enableRoomVisuals: false, // Room visual indicators
+  cpuBudget: 0.1 // CPU limit per tick
 });
 
 // New filtered mode (suppress routine operations)
@@ -166,12 +174,12 @@ comm.updateConfig({ enableRoomVisuals: true });
 
 String verbosity values automatically map to severity levels (backward compatible):
 
-| Verbosity | Level | Behavior |
-|-----------|-------|----------|
-| `disabled` | SILENT | No messages |
-| `minimal` | ERROR | Critical errors only (backward compatible) |
-| `normal` | VERBOSE | All messages (backward compatible, default) |
-| `verbose` | VERBOSE | All messages with additional text |
+| Verbosity  | Level   | Behavior                                    |
+| ---------- | ------- | ------------------------------------------- |
+| `disabled` | SILENT  | No messages                                 |
+| `minimal`  | ERROR   | Critical errors only (backward compatible)  |
+| `normal`   | VERBOSE | All messages (backward compatible, default) |
+| `verbose`  | VERBOSE | All messages with additional text           |
 
 **Note:** For the new filtered behavior, explicitly set `level: CommunicationLevel.WARNING` to suppress routine operations while showing errors and warnings.
 
@@ -199,20 +207,20 @@ if (Memory.creepCommunication?.level !== undefined) {
 
 Default severity for each `CreepAction`:
 
-| Action | Severity | Visibility at WARNING Level |
-|--------|----------|---------------------------|
-| `stuck` | ERROR | ✅ Visible |
-| `error` | ERROR | ✅ Visible |
-| `empty` | WARNING | ✅ Visible |
-| `full` | WARNING | ✅ Visible |
-| `gather` | INFO | ❌ Hidden |
-| `harvest` | VERBOSE | ❌ Hidden |
-| `deliver` | VERBOSE | ❌ Hidden |
-| `upgrade` | VERBOSE | ❌ Hidden |
-| `build` | VERBOSE | ❌ Hidden |
-| `repair` | VERBOSE | ❌ Hidden |
-| `travel` | VERBOSE | ❌ Hidden |
-| `pickup` | VERBOSE | ❌ Hidden |
+| Action    | Severity | Visibility at WARNING Level |
+| --------- | -------- | --------------------------- |
+| `stuck`   | ERROR    | ✅ Visible                  |
+| `error`   | ERROR    | ✅ Visible                  |
+| `empty`   | WARNING  | ✅ Visible                  |
+| `full`    | WARNING  | ✅ Visible                  |
+| `gather`  | INFO     | ❌ Hidden                   |
+| `harvest` | VERBOSE  | ❌ Hidden                   |
+| `deliver` | VERBOSE  | ❌ Hidden                   |
+| `upgrade` | VERBOSE  | ❌ Hidden                   |
+| `build`   | VERBOSE  | ❌ Hidden                   |
+| `repair`  | VERBOSE  | ❌ Hidden                   |
+| `travel`  | VERBOSE  | ❌ Hidden                   |
+| `pickup`  | VERBOSE  | ❌ Hidden                   |
 
 ## CPU Budget Management
 
@@ -368,7 +376,7 @@ const warningComm = new CreepCommunicationManager({
   level: CommunicationLevel.WARNING
 });
 warningComm.say(creep, "harvest"); // Not shown
-warningComm.warn(creep, "empty");  // Shown
+warningComm.warn(creep, "empty"); // Shown
 warningComm.error(creep, "error"); // Shown
 
 // Test VERBOSE level (all messages)
@@ -430,11 +438,13 @@ comm?.sayWithSeverity(creep, "gather", CommunicationLevel.INFO, "custom");
 ### Messages Not Appearing
 
 1. Check severity level configuration:
+
    ```typescript
    console.log(comm.getConfig().level); // Should be >= message severity
    ```
 
 2. Verify communication is enabled:
+
    ```typescript
    const config = comm.getConfig();
    console.log(config.verbosity !== "disabled");
@@ -464,7 +474,7 @@ Adjust CPU budget and disable room visuals:
 
 ```typescript
 comm.updateConfig({
-  cpuBudget: 0.05,         // Reduce CPU budget
+  cpuBudget: 0.05, // Reduce CPU budget
   enableRoomVisuals: false // Disable visual indicators
 });
 ```
