@@ -50,7 +50,13 @@ export function validateProfilerEnabled(): boolean {
 const RUNTIME_DEFINES = {
   __PROFILER_ENABLED__: validateProfilerEnabled() ? "true" : "false",
   __ROOM_VISUALS_ENABLED__: JSON.stringify(process.env.ROOM_VISUALS_ENABLED ?? "false"),
-  __PLAYER_USERNAME__: JSON.stringify(process.env.PLAYER_USERNAME ?? "ralphschuler")
+  __PLAYER_USERNAME__: JSON.stringify(process.env.PLAYER_USERNAME ?? "ralphschuler"),
+  // Map globalThis to global for Screeps runtime compatibility (ES2020 -> ES5)
+  // esbuild will replace ALL occurrences of globalThis (including from dependencies like zod)
+  // with the identifier 'global' at build time. This is necessary because Screeps runtime
+  // does not support the ES2020 globalThis feature.
+  // Related: ralphschuler/.screeps-gpt#1314 - ReferenceError: globalThis is not defined
+  globalThis: "global"
 } as const;
 
 async function prepare() {

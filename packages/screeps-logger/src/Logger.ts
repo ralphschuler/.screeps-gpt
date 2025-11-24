@@ -1,3 +1,6 @@
+// Declare global for Screeps compatibility (available in both Node.js and Screeps)
+declare const global: any;
+
 /**
  * Console interface for logging output
  */
@@ -65,8 +68,9 @@ export class Logger {
       includeLevel: options.includeLevel ?? true
     };
     // Use provided console implementation or create a safe default
+    // Access console from global for Screeps compatibility
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.consoleImpl = consoleImpl ?? ((globalThis as any).console || { log: () => {} });
+    this.consoleImpl = consoleImpl ?? ((typeof global !== "undefined" ? (global as any).console : undefined) || { log: () => {} });
   }
 
   /**

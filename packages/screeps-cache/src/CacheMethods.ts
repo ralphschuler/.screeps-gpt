@@ -9,9 +9,6 @@ const getMemory = (): any => {
   if (typeof global !== "undefined" && (global as any).Memory) {
     return (global as any).Memory;
   }
-  if (typeof globalThis !== "undefined" && (globalThis as any).Memory) {
-    return (globalThis as any).Memory;
-  }
   return undefined;
 };
 
