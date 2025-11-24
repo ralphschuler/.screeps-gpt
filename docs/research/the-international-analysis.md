@@ -22,12 +22,14 @@ The International is a well-established, community-maintained open-source Screep
 ### Comparison with Overmind
 
 **Similarities:**
+
 - Manager-based architecture for task delegation
 - Memory optimization with caching strategies
 - Automated expansion and room management
 - Support for manual intervention via console
 
 **Key Differences:**
+
 - **Philosophy:** International prioritizes accessibility and customization; Overmind focuses on sophistication and swarm intelligence
 - **Cooperation:** International has basic inter-bot communication; Overmind has advanced "Assimilator" hivemind mode
 - **Combat:** International has functional but simpler combat; Overmind has advanced adaptive combat systems
@@ -631,29 +633,34 @@ Well-commented code designed for learning and modification:
 ### vs. Overmind (#617)
 
 **Architecture Similarities:**
+
 - Manager-based delegation
 - Memory optimization strategies
 - Automated expansion and room management
 
 **Architecture Differences:**
+
 - **Complexity:** International simpler, Overmind more sophisticated
 - **Cooperation:** International basic, Overmind advanced Assimilator
 - **Combat:** International functional, Overmind adaptive swarm
 - **CPU:** International more efficient, Overmind historically higher
 
 **Best Aspects of International:**
+
 - Accessibility and customization focus
 - Clear, documented code structure
 - Modular design for easy forking
 - CPU-efficient base implementation
 
 **Best Aspects of Overmind:**
+
 - Advanced swarm intelligence
 - Sophisticated task system
 - Cooperative hivemind capabilities
 - Adaptive combat strategies
 
-**Recommendation:** 
+**Recommendation:**
+
 - Use International's patterns for accessibility and CPU efficiency
 - Use Overmind's patterns for advanced automation and scaling
 - Combine strengths: International's clarity + Overmind's sophistication
@@ -661,33 +668,39 @@ Well-commented code designed for learning and modification:
 ### vs. creep-tasks Library (#625)
 
 **Task Management:**
+
 - **International:** Built-in FSM-based task system
 - **creep-tasks:** Standalone, reusable task library
 - **Integration:** International's FSM + creep-tasks abstraction = powerful combination
 
 **Recommendation:**
+
 - Consider integrating creep-tasks library with International's FSM pattern
 - Use creep-tasks for task definition, FSM for state management
 
 ### vs. screeps-packrat (#626)
 
 **Memory Management:**
+
 - **International:** Manual caching in Memory object
 - **screeps-packrat:** Automatic compression library
 - **Integration:** International's caching + packrat compression = memory savings
 
 **Recommendation:**
+
 - Implement International's caching patterns first
 - Add screeps-packrat if memory pressure becomes issue
 
 ### vs. overmind-rl (#624)
 
 **Decision Making:**
+
 - **International:** Rule-based logic with FSMs
 - **overmind-rl:** Reinforcement learning integration
 - **Integration:** International's FSM provides structure for RL state/action space
 
 **Recommendation:**
+
 - Use International's FSM as foundation
 - Explore RL integration in later phases for optimization
 
@@ -879,17 +892,20 @@ Well-commented code designed for learning and modification:
 ### Compatibility with Current Architecture
 
 **Strong Compatibility:**
+
 - FSM pattern fits naturally with existing behavior controllers
 - Manager patterns align with current architecture
 - Caching integrates with existing memory helpers
 - Defense enhancements extend existing tower logic
 
 **Requires Refactoring:**
+
 - Automated base planning needs new infrastructure
 - Hauling optimization requires logistics system redesign
 - Resource balancing needs empire-level coordination
 
 **Low Priority/Not Applicable:**
+
 - Commune thematic naming (organizational preference)
 - Inter-bot communication (multiplayer features)
 - Some military features (competitive play focus)
@@ -897,16 +913,19 @@ Well-commented code designed for learning and modification:
 ### Dependencies and Sequencing
 
 **Must Implement First:**
+
 1. Memory caching infrastructure
 2. FSM base pattern
 3. Enhanced metrics for tracking improvements
 
 **Build On Foundation:**
+
 1. Base planning uses caching
 2. Hauling optimization uses FSM
 3. Resource balancing uses metrics
 
 **Later Phases:**
+
 1. Military operations (after defense and economy stable)
 2. Advanced expansion (after core systems optimized)
 3. Alliance features (if needed at all)
@@ -916,21 +935,25 @@ Well-commented code designed for learning and modification:
 ### Implementation Risks
 
 **High Complexity Patterns:**
+
 - Automated base planning (algorithmic complexity)
 - Hauling optimization (NP-hard problem)
 - Memory caching (invalidation complexity)
 
 **Mitigation:**
+
 - Implement incrementally with frequent testing
 - Start with simple versions, add sophistication gradually
 - Use existing libraries where applicable (screeps-cartographer)
 
 **Integration Risks:**
+
 - Breaking existing functionality
 - CPU regression during transition
 - Memory structure changes
 
 **Mitigation:**
+
 - Comprehensive testing at each phase
 - Feature flags for gradual rollout
 - Performance benchmarking before/after
@@ -939,12 +962,14 @@ Well-commented code designed for learning and modification:
 ### Resource Constraints
 
 **Development Time:**
+
 - Phase 1: 2-3 weeks (caching + hauling)
 - Phase 2: 3-4 weeks (FSM + base planning + defense)
 - Phase 3: 2-3 weeks (remote mining + balancing + energy)
 - Phase 4+: Ongoing as needed
 
 **Testing Requirements:**
+
 - Unit tests for all new patterns
 - Integration tests for system interactions
 - Performance tests for CPU impact
@@ -965,6 +990,7 @@ The International Screeps Bot provides valuable patterns for improving .screeps-
 ### Key Takeaways
 
 **Strengths to Adopt:**
+
 - Clear, accessible code structure
 - CPU-efficient caching strategies
 - Modular, extensible design
@@ -972,12 +998,14 @@ The International Screeps Bot provides valuable patterns for improving .screeps-
 - Practical, proven patterns
 
 **Avoid:**
+
 - Over-complication of simple systems
 - Thematic naming that doesn't add value
 - Features not relevant to core gameplay
 - Patterns that don't fit existing architecture
 
 **Integration Strategy:**
+
 - Start with high-value, low-risk patterns (FSM, tower defense)
 - Implement critical CPU optimizations early (caching, hauling)
 - Build complex systems incrementally (base planning, balancing)
@@ -1011,4 +1039,4 @@ The International Screeps Bot provides valuable patterns for improving .screeps-
 
 ---
 
-*This analysis provides a comprehensive roadmap for integrating The International's proven patterns into .screeps-gpt, prioritizing CPU efficiency, base planning, and logistics optimization for competitive gameplay.*
+_This analysis provides a comprehensive roadmap for integrating The International's proven patterns into .screeps-gpt, prioritizing CPU efficiency, base planning, and logistics optimization for competitive gameplay._
