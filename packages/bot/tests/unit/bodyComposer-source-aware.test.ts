@@ -264,9 +264,10 @@ describe("BodyComposer - Source-Aware Body Composition", () => {
       } as unknown as Game;
     });
 
-    it("should handle very low energy capacity", () => {
+    it("should handle very low energy capacity (below 200 minimum)", () => {
       const body = composer.generateBody("harvester", 150, mockRoom);
-      expect(body.length).toBeGreaterThan(0);
+      // 150 energy is below the 200 energy minimum for [WORK, CARRY, MOVE]
+      expect(body.length).toBe(0);
     });
 
     it("should handle very high creep count", () => {

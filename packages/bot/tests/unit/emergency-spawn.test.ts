@@ -179,10 +179,10 @@ describe("Emergency Spawn Logic", () => {
       expect(body).toEqual([WORK, CARRY, MOVE]);
     });
 
-    it("should generate ultra-minimal body with 150 energy", () => {
+    it("should return empty array with insufficient energy (150 < 200 minimum)", () => {
       const body = composer.generateEmergencyBody(150);
-      expect(body).toEqual([WORK, MOVE]);
-      expect(composer.calculateBodyCost(body)).toBe(150);
+      // 150 energy is below the 200 energy minimum for [WORK, CARRY, MOVE]
+      expect(body).toEqual([]);
     });
 
     it("should return empty body if energy too low", () => {
@@ -309,11 +309,11 @@ describe("Emergency Spawn Logic", () => {
       expect(result.spawnedCreeps.length).toBeGreaterThanOrEqual(0);
     });
 
-    it("should handle ultra-low energy emergency (150 energy)", () => {
+    it("should not spawn with insufficient energy (150 < 200 minimum)", () => {
       const spawnCreepMock = vi.fn().mockReturnValue(OK);
       const game = createEmergencyGameContext({
         time: 1000,
-        energyAvailable: 150, // Ultra-minimal energy
+        energyAvailable: 150, // Below 200 energy minimum
         energyCapacity: 550,
         creepCount: 0,
         harvesterCount: 0
@@ -327,10 +327,8 @@ describe("Emergency Spawn Logic", () => {
 
       controller.execute(game, memory, roleCounts);
 
-      // Should spawn ultra-minimal body [WORK, MOVE]
-      expect(spawnCreepMock).toHaveBeenCalled();
-      const spawnedBody = spawnCreepMock.mock.calls[0][0];
-      expect(spawnedBody).toEqual([WORK, MOVE]);
+      // Should not spawn - insufficient energy for minimal viable body [WORK, CARRY, MOVE]
+      expect(spawnCreepMock).not.toHaveBeenCalled();
     });
 
     it("should transition from emergency to normal spawning", () => {
