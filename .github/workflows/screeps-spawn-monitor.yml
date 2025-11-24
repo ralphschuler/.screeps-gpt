@@ -78,7 +78,8 @@ jobs:
           body: >-
             Spawn recovery blocked by circuit breaker.
             Too many failed attempts. Manual intervention required.
-            Circuit breaker until: ${{ steps.autospawn.outputs.circuit_breaker_until }}
+            Circuit breaker until:
+            ${{ steps.autospawn.outputs.circuit_breaker_until }}
           link: >-
             https://github.com/${{ github.repository }}/actions/runs/${{
             github.run_id }}
@@ -89,19 +90,26 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const title = '🚫 Spawn Recovery Circuit Breaker Active - Manual Intervention Required';
+            const title = '🚫 Spawn Recovery Circuit Breaker Active' +
+              ' - Manual Intervention Required';
             const body = `## Circuit Breaker Escalation
 
-            The autonomous spawn recovery system has activated its circuit breaker due to repeated failures.
+            The autonomous spawn recovery system has activated its
+            circuit breaker due to repeated failures.
 
             **Details:**
-            - Circuit breaker active until: \`${{ steps.autospawn.outputs.circuit_breaker_until }}\`
-            - Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            - Circuit breaker active until: \`${{
+              steps.autospawn.outputs.circuit_breaker_until }}\`
+            - Workflow run: ${{ github.server_url }}/${{
+              github.repository }}/actions/runs/${{ github.run_id }}
 
             **Required Actions:**
-            1. **Manually place spawn** via Screeps web interface at https://screeps.com
-            2. **Investigate root cause** of repeated spawn placement failures
-            3. **Reset circuit breaker** after manual recovery (if needed)
+            1. **Manually place spawn** via Screeps web interface at
+               https://screeps.com
+            2. **Investigate root cause** of repeated spawn placement
+               failures
+            3. **Reset circuit breaker** after manual recovery
+               (if needed)
 
             **To reset circuit breaker:**
             \`\`\`bash
@@ -113,7 +121,10 @@ jobs:
             - Review recent workflow runs for failure patterns
 
             **Context:**
-            This circuit breaker prevents infinite spawn placement loops by limiting automatic recovery to 3 attempts per 24-hour window. Manual intervention is now required to restore bot operation.`;
+            This circuit breaker prevents infinite spawn placement loops
+            by limiting automatic recovery to 3 attempts per 24-hour
+            window. Manual intervention is now required to restore bot
+            operation.`;
 
             // Check if issue already exists
             const issues = await github.rest.issues.listForRepo({
@@ -123,7 +134,7 @@ jobs:
               labels: 'automation,priority/critical,state/blocked'
             });
 
-            const existingIssue = issues.data.find(issue => 
+            const existingIssue = issues.data.find(issue =>
               issue.title.includes('Circuit Breaker Active')
             );
 
@@ -133,9 +144,11 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: existingIssue.number,
-                body: `Circuit breaker still active as of ${new Date().toISOString()}.\n\n${body}`
+                body: `Circuit breaker still active as of ${
+                  new Date().toISOString()}.\n\n${body}`
               });
-              console.log(`Updated existing issue #${existingIssue.number}`);
+              console.log(
+                `Updated existing issue #${existingIssue.number}`);
             } else {
               // Create new issue
               const issue = await github.rest.issues.create({
@@ -143,9 +156,11 @@ jobs:
                 repo: context.repo.repo,
                 title: title,
                 body: body,
-                labels: ['automation', 'priority/critical', 'state/blocked', 'monitoring']
+                labels: ['automation', 'priority/critical',
+                  'state/blocked', 'monitoring']
               });
-              console.log(`Created escalation issue #${issue.data.number}`);
+              console.log(
+                `Created escalation issue #${issue.data.number}`);
             }
 
       - name: Notify on spawn check failure
