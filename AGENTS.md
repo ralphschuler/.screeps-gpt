@@ -53,12 +53,14 @@ All agents should reference these documents before making changes:
    - [`TASKS.md`](TASKS.md) - Active, in-progress, and recently completed tasks
    - [`AGENTS.md`](AGENTS.md) - This file; agent rules and knowledge base
 
-2. **Structured Knowledge Base (`packages/docs/`)**
-   - [`docs/index.md`](docs/index.md) - Documentation hub with quick start and documentation rules
+2. **Structured Knowledge Base (`packages/docs/source/docs/`)**
+   - **CRITICAL**: All new documentation MUST be created in `packages/docs/source/docs/`, NOT in root `docs/`
+   - [`packages/docs/source/docs/index.md`](packages/docs/source/docs/index.md) - Documentation hub with quick start and documentation rules
    - [`packages/docs/source/docs/automation/overview.md`](packages/docs/source/docs/automation/overview.md) - Detailed workflow specifications and local validation
-   - [`docs/operations/stats-monitoring.md`](docs/operations/stats-monitoring.md) - PTR monitoring pipeline and Copilot analysis
-   - [`docs/operations/respawn-handling.md`](docs/operations/respawn-handling.md) - Automatic respawn detection and handling
-   - [`docs/changelog/versions.md`](docs/changelog/versions.md) - Generated release history (do not edit manually)
+   - [`packages/docs/source/docs/operations/stats-monitoring.md`](packages/docs/source/docs/operations/stats-monitoring.md) - PTR monitoring pipeline and Copilot analysis
+   - [`packages/docs/source/docs/operations/respawn-handling.md`](packages/docs/source/docs/operations/respawn-handling.md) - Automatic respawn detection and handling
+   - [`packages/docs/source/docs/changelog/versions.md`](packages/docs/source/docs/changelog/versions.md) - Generated release history (do not edit manually)
+   - **Note**: Root `docs/` contains legacy documentation being migrated out
 
 3. **Strategic Documentation (`docs/strategy/`)**
    - [`docs/strategy/roadmap.md`](docs/strategy/roadmap.md) - Current phase status, success metrics, and strategic priorities
@@ -132,21 +134,29 @@ Agents working on runtime code should understand:
 **Update triggers:**
 
 - Update `README.md` when user-facing behaviour, workflows, or automation steps change.
-- Keep `docs/` in sync with any workflow, runtime, or operational changes.
-- Document bug investigations and incident learnings in `docs/operations/` before merging fixes.
+- **CRITICAL**: Keep `packages/docs/source/docs/` in sync with any workflow, runtime, or operational changes - NOT root `docs/`
+- Document bug investigations and incident learnings in `packages/docs/source/docs/operations/` before merging fixes.
 - Maintain `TASKS.md` by adding new tasks and marking completed items with a completion note instead of removing them immediately.
 
 **Changelog requirements:**
 
 - Update the `[Unreleased]` section of `CHANGELOG.md` with every pull request.
-- Run `yarn versions:update` after editing `CHANGELOG.md` to refresh `docs/changelog/versions.{json,md}`.
+- Run `yarn versions:update` after editing `CHANGELOG.md` to refresh `packages/docs/source/docs/changelog/versions.{json,md}`.
 - Regenerate the documentation site with `yarn build:docs-site` when previewing changes.
 
 **Cross-references:**
 
-- Link new documents from `README.md`, `DOCS.md`, or `docs/index.md` for discoverability.
+- Link new documents from `README.md`, `DOCS.md`, or `packages/docs/source/docs/index.md` for discoverability.
 - Reference related files at the end of operational documents.
 - Ensure agents can navigate from any documentation entry point to relevant information.
+
+**Documentation Location Rules (MANDATORY):**
+
+- ✅ **ALWAYS** create new documentation in `packages/docs/source/docs/`
+- ✅ Structure: `packages/docs/source/docs/{category}/{filename}.md`
+- ✅ Categories: `automation/`, `operations/`, `runtime/`, `changelog/`, `security/`, `analytics/`
+- ❌ **NEVER** create documentation in root `docs/` (legacy location being phased out)
+- ❌ **NEVER** create documentation in `packages/docs/docs/` (generated output)
 
 ### 4. Workflow Guidelines
 
@@ -231,7 +241,7 @@ The configuration files in `.github/mcp/` define MCP server commands and environ
 **Bug fix protocol:**
 
 1. **Capture first**: Add or update a regression test demonstrating the bug before implementing a fix.
-2. **Document**: Record the root cause, regression test name, and remediation in `docs/operations/`.
+2. **Document**: Record the root cause, regression test name, and remediation in `packages/docs/source/docs/operations/`.
 3. **Update changelog**: Add to `CHANGELOG.md` `[Unreleased]` section and run `yarn versions:update`.
 4. **Reference**: Link the regression test in both documentation and changelog.
 

@@ -151,7 +151,7 @@ yarn deploy             # Deploy to Screeps (requires secrets)
 ### Bug Fix Protocol
 
 1. **Capture first**: Add/update regression test demonstrating the bug
-2. **Document**: Record root cause, test name, and remediation in `docs/operations/`
+2. **Document**: Record root cause, test name, and remediation in `packages/docs/source/docs/operations/`
 3. **Update changelog**: Add to `CHANGELOG.md` `[Unreleased]` section
 4. **Reference**: Link regression test in documentation and changelog
 
@@ -170,16 +170,19 @@ yarn deploy             # Deploy to Screeps (requires secrets)
 ### When to Update Docs
 
 - **README.md**: User-facing behavior, workflows, or automation changes
-- **docs/**: Any workflow, runtime, or operational changes
+- **packages/docs/source/docs/**: **CRITICAL** - Any workflow, runtime, or operational changes MUST go here, NOT in root `docs/`
 - **TASKS.md**: Add new tasks, mark completed items (don't delete immediately)
 - **AGENTS.md**: Changes to agent guidelines or automation behavior
 
 ### Documentation Structure
 
 - Keep main documentation in root (`README.md`, `DOCS.md`, `AGENTS.md`, `TASKS.md`)
-- Place detailed runbooks in `docs/` subdirectories
-- Link new documents from `README.md`, `DOCS.md`, or `docs/index.md`
+- **CRITICAL**: Place detailed runbooks in `packages/docs/source/docs/` subdirectories (NOT root `docs/`)
+- Structure: `packages/docs/source/docs/{category}/{filename}.md`
+- Categories: `automation/`, `operations/`, `runtime/`, `changelog/`, `security/`, `analytics/`
+- Link new documents from `README.md`, `DOCS.md`, or `packages/docs/source/docs/index.md`
 - Generate documentation site with `yarn build:docs-site`
+- **Root `docs/` is legacy** and being phased out - DO NOT add new documentation there
 
 ## Automation & Workflows
 
@@ -200,7 +203,7 @@ This repository has extensive GitHub Actions automation. Key workflows:
 - Use the `copilot-exec` composite action for Copilot CLI operations
 - Maintain least-privilege permissions (follow Graphite's guidance)
 - Document new secrets in `README.md`
-- Keep automation promises aligned with `docs/automation/overview.md`
+- Keep automation promises aligned with `packages/docs/source/docs/automation/overview.md`
 
 ## Security & Best Practices
 
@@ -239,6 +242,6 @@ For comprehensive guidelines, architecture details, and agent-specific instructi
 - **[AGENTS.md](../AGENTS.md)** - Complete agent guidelines and knowledge base
 - **[README.md](../README.md)** - Repository overview and automation summary
 - **[DOCS.md](../DOCS.md)** - Developer guide and learning resources
-- **[docs/automation/overview.md](../docs/automation/overview.md)** - Detailed workflow specifications
+- **[packages/docs/source/docs/automation/overview.md](../packages/docs/source/docs/automation/overview.md)** - Detailed workflow specifications
 
 These documents are the authoritative source for repository conventions, automation behavior, and development practices.

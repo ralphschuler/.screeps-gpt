@@ -174,6 +174,21 @@ declare global {
         phaseActivatedAt?: number;
         storageBuilt?: boolean;
         linkNetworkActive?: boolean;
+        /**
+         * Energy economy metrics for sustainable spawning.
+         * Tracks production, consumption, and sustainability ratio.
+         * @see src/runtime/energy/EnergyValidation.ts
+         */
+        energyMetrics?: {
+          productionRate: number;
+          consumptionRate: number;
+          storageCapacity: number;
+          currentReserves: number;
+          sustainabilityRatio: number;
+          lastUpdate: number;
+          sourceCount: number;
+          maxSpawnBudget: number;
+        };
       }
     >;
     stats?: {
