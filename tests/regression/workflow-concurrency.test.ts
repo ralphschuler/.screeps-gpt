@@ -56,7 +56,11 @@ describe("Workflow concurrency controls", () => {
     // Agent workflows
     "screeps-agent.yml",
     // Testing workflows
-    "performance-test.yml"
+    "performance-test.yml",
+    // Docker workflows
+    "docker-mcp-server.yml",
+    // Copilot setup workflow
+    "copilot-setup-steps.yml"
   ];
 
   for (const workflowFile of expectedWorkflows) {

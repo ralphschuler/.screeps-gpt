@@ -13,6 +13,10 @@ on:
     paths:
       - .github/workflows/copilot-setup-steps.yml
 
+concurrency:
+  group: copilot-setup-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
 
