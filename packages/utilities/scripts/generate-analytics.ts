@@ -89,9 +89,7 @@ function generateAnalytics(): void {
 
       // Extract room metrics (filter out non-room entries like "count")
       if (snapshot.rooms) {
-        const roomEntries = Object.entries(snapshot.rooms).filter(
-          ([name]) => /^[EW]\d+[NS]\d+$/.test(name)
-        );
+        const roomEntries = Object.entries(snapshot.rooms).filter(([name]) => /^[EW]\d+[NS]\d+$/.test(name));
         const rooms = roomEntries.map(([, data]) => data);
         dataPoint.roomCount = rooms.length;
 
