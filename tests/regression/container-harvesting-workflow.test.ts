@@ -497,7 +497,10 @@ describe("Container Harvesting Workflow", () => {
           })
         } as RoomPosition,
         hits: 2000, // 40% health
-        hitsMax: 5000
+        hitsMax: 5000,
+        store: {
+          getUsedCapacity: vi.fn().mockReturnValue(0)
+        } as StoreDefinition
       } as StructureContainer;
 
       const mockControllerContainer = {
@@ -513,7 +516,10 @@ describe("Container Harvesting Workflow", () => {
           })
         } as RoomPosition,
         hits: 2000, // 40% health (same as source container)
-        hitsMax: 5000
+        hitsMax: 5000,
+        store: {
+          getUsedCapacity: vi.fn().mockReturnValue(0)
+        } as StoreDefinition
       } as StructureContainer;
 
       const mockRepairer = {
