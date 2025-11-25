@@ -1,0 +1,20 @@
+# Configuration with secrets
+config.json
+.env
+
+# Node modules (if installed locally)
+node_modules/
+
+# Build artifacts
+dist/
+
+# IDE
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker volumes
+dashboard-data/

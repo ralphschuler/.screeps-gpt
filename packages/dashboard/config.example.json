@@ -1,0 +1,5 @@
+{
+  "token": "YOUR_SCREEPS_API_TOKEN",
+  "grafana": "",
+  "shard": ["shard3"]
+}
