@@ -24,7 +24,8 @@ export class VisualsProcess {
     this.visualManager = new RoomVisualManager({
       enabled:
         __ROOM_VISUALS_ENABLED__ === "true" ||
-        (typeof Memory !== "undefined" && Memory.experimentalFeatures?.roomVisuals === true)
+        (typeof Memory !== "undefined" && Memory.experimentalFeatures?.roomVisuals === true) ||
+        (typeof Memory !== "undefined" && Memory.experimentalFeatures?.roomVisuals !== false)
     });
     this.cpuEmergencyThreshold = 0.9;
   }

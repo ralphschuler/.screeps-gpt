@@ -1,6 +1,8 @@
 import { profile } from "@ralphschuler/screeps-profiler";
 import { WallUpgradeManager } from "@runtime/defense/WallUpgradeManager";
 import { EnergyValidator } from "@runtime/energy/EnergyValidation";
+import { FlagCommandInterpreter } from "@runtime/commands/FlagCommandInterpreter";
+import type { GameContext } from "@runtime/types/GameContext";
 
 /**
  * Configuration options for room visuals
@@ -8,7 +10,7 @@ import { EnergyValidator } from "@runtime/energy/EnergyValidation";
 export interface RoomVisualConfig {
   /**
    * Enable/disable all visuals
-   * Default: false (to minimize CPU usage)
+   * Default: true (provides operational visibility)
    */
   enabled?: boolean;
 
@@ -55,6 +57,12 @@ export interface RoomVisualConfig {
   showEnergyEconomy?: boolean;
 
   /**
+   * Show flag command status
+   * Default: true (if enabled)
+   */
+  showFlagCommands?: boolean;
+
+  /**
    * Maximum CPU budget for visuals per tick
    * Default: 2.0
    */
@@ -84,6 +92,7 @@ interface GameLike {
       name: string;
     }
   >;
+  flags: Record<string, Flag>;
 }
 
 /**
@@ -96,10 +105,11 @@ export class RoomVisualManager {
   private readonly config: Required<RoomVisualConfig>;
   private readonly wallUpgradeManager: WallUpgradeManager;
   private readonly energyValidator: EnergyValidator;
+  private readonly flagCommandInterpreter: FlagCommandInterpreter;
 
   public constructor(config: RoomVisualConfig = {}, wallUpgradeManager?: WallUpgradeManager) {
     this.config = {
-      enabled: config.enabled ?? false,
+      enabled: config.enabled ?? true,
       showCreepPaths: config.showCreepPaths ?? true,
       showEnergyFlow: config.showEnergyFlow ?? true,
       showConstructionTargets: config.showConstructionTargets ?? true,
@@ -107,10 +117,12 @@ export class RoomVisualManager {
       showCpuUsage: config.showCpuUsage ?? true,
       showWallUpgrade: config.showWallUpgrade ?? true,
       showEnergyEconomy: config.showEnergyEconomy ?? true,
+      showFlagCommands: config.showFlagCommands ?? true,
       cpuBudget: config.cpuBudget ?? 2.0
     };
     this.wallUpgradeManager = wallUpgradeManager ?? new WallUpgradeManager();
     this.energyValidator = new EnergyValidator();
+    this.flagCommandInterpreter = new FlagCommandInterpreter();
   }
 
   /**
@@ -160,6 +172,10 @@ export class RoomVisualManager {
 
       if (this.config.showEnergyEconomy) {
         this.renderEnergyEconomy(room);
+      }
+
+      if (this.config.showFlagCommands) {
+        this.renderFlagCommands(game, room);
       }
     }
   }
@@ -397,6 +413,44 @@ export class RoomVisualManager {
 
     // Render energy status at position (1, 3) to avoid overlap with wall upgrade
     this.energyValidator.renderEnergyStatus(actualRoom, { x: 1, y: 3 });
+  }
+
+  /**
+   * Render flag command status near flags
+   */
+  private renderFlagCommands(game: GameLike, room: { visual: RoomVisual; name: string }): void {
+    // Get all flags in this room
+    for (const flagName in game.flags) {
+      const flag: Flag | undefined = game.flags[flagName];
+      if (!flag || flag.pos.roomName !== room.name) {
+        continue;
+      }
+
+      // GameLike is a duck-typed interface for testability - structurally compatible with GameContext
+      // The cast is safe as GameLike includes all properties needed by FlagCommandInterpreter
+      const gameContext: GameContext = game as GameContext & GameLike;
+
+      // Parse flag command
+      const commands = this.flagCommandInterpreter.parseFlags(gameContext);
+      const command = commands.find(cmd => cmd.name === flagName);
+
+      if (!command) {
+        continue;
+      }
+
+      // Get status text
+      const statusText = this.flagCommandInterpreter.getCommandStatusText(command, gameContext, Memory);
+
+      // Display text near flag
+      room.visual.text(statusText, flag.pos.x + 1, flag.pos.y, {
+        color: "#ffffff",
+        font: 0.5,
+        align: "left",
+        opacity: 0.9,
+        backgroundColor: "#000000",
+        backgroundPadding: 0.1
+      });
+    }
   }
 
   /**
