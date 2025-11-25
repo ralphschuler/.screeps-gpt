@@ -42,3 +42,4 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
           scope: '@ralphschuler'
           cache: "npm"
+          token: ${{ secrets.GITHUB_TOKEN }}
