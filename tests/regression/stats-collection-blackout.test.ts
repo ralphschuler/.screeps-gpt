@@ -25,8 +25,8 @@ describe("Regression: Stats Collection Blackout (#550, #523)", () => {
     // Reset memory to simulate fresh state
     memory = {} as Memory;
 
-    // Defensive initialization of Memory.stats (matches main.ts behavior)
-    // This ensures stats structure exists before kernel runs
+    // Initialize Memory.stats to match StatsCollector's defensive initialization
+    // StatsCollector owns Memory.stats lifecycle and initializes it if missing
     memory.stats = {
       time: 0,
       cpu: { used: 0, limit: 0, bucket: 0 },

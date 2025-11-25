@@ -3,11 +3,11 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 /**
  * Regression test for issue #863
  *
- * Ensures Memory.stats is defensively initialized on every tick in the loop() function
+ * Ensures Memory.stats is defensively initialized during kernel execution
  * to prevent telemetry blackout when Memory is reset between script loads.
  *
- * Root Cause: Kernel constructor initializes Memory.stats only once at module load time,
- * but Memory may be reset by Screeps server between loads. The loop() function must
+ * Root Cause: Memory may be reset by Screeps server between loads, causing
+ * Memory.stats to become undefined. StatsCollector (the domain owner) must
  * defensively re-initialize Memory.stats if it's missing to ensure /api/user/stats
  * endpoint always receives fresh telemetry data.
  *
@@ -15,9 +15,10 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
  * - Issue #863: Memory.stats collection failure causing complete telemetry blackout
  * - Issue #684: Similar Memory.stats interface conflict
  * - Issue #722, #711, #800: Previous stats collection failures
+ * - Consolidation: StatsCollector is now the sole owner of Memory.stats lifecycle
  *
- * Solution: Add defensive Memory.stats initialization in loop() function using nullish
- * coalescing assignment operator (??=), matching the pattern used for Memory.profiler.
+ * Solution: StatsCollector defensively initializes Memory.stats if missing
+ * during its collect() method, which runs every tick via MetricsProcess.
  */
 describe("Regression: Memory.stats Defensive Initialization (#863)", () => {
   // Store original global state to restore after each test
@@ -65,11 +66,10 @@ describe("Regression: Memory.stats Defensive Initialization (#863)", () => {
     // Mock __PROFILER_ENABLED__ as false to skip profiler initialization
     (global as unknown as { __PROFILER_ENABLED__: boolean }).__PROFILER_ENABLED__ = false;
 
-    // Execute loop - this should defensively initialize Memory.stats
+    // Execute loop - StatsCollector will defensively initialize Memory.stats
     mainModule.loop();
 
     // Verify Memory.stats was initialized and populated by StatsCollector
-    // The defensive init provides the structure, then kernel.run() updates it with real data
     expect(mockMemory.stats).toBeDefined();
     expect(mockMemory.stats?.time).toBe(12345); // Updated by StatsCollector to current tick
     expect(mockMemory.stats?.cpu).toBeDefined();
@@ -115,13 +115,10 @@ describe("Regression: Memory.stats Defensive Initialization (#863)", () => {
     // Mock __PROFILER_ENABLED__ as false
     (global as unknown as { __PROFILER_ENABLED__: boolean }).__PROFILER_ENABLED__ = false;
 
-    // Execute loop - defensive init should skip since stats already exists (??= operator)
-    // However, StatsCollector will replace it with fresh data during kernel.run()
+    // Execute loop - StatsCollector replaces stats with fresh data during kernel.run()
     mainModule.loop();
 
-    // Verify stats are still defined and updated by kernel
-    // The defensive init (??=) didn't replace it because it was already defined,
-    // but StatsCollector did replace it with current tick data (this is expected)
+    // Verify stats are still defined and updated by StatsCollector
     expect(mockMemory.stats).toBeDefined();
     expect(mockMemory.stats?.time).toBe(12345); // Updated by StatsCollector to current tick
     expect(mockMemory.stats?.cpu).toBeDefined();
@@ -149,7 +146,7 @@ describe("Regression: Memory.stats Defensive Initialization (#863)", () => {
     // Mock __PROFILER_ENABLED__ as false
     (global as unknown as { __PROFILER_ENABLED__: boolean }).__PROFILER_ENABLED__ = false;
 
-    // First execution - Memory.stats will be initialized
+    // First execution - Memory.stats will be initialized by StatsCollector
     const mockMemory1 = {} as Memory;
     (global as unknown as { Memory: Memory }).Memory = mockMemory1;
     mainModule.loop();
@@ -159,7 +156,7 @@ describe("Regression: Memory.stats Defensive Initialization (#863)", () => {
     const mockMemory2 = {} as Memory;
     (global as unknown as { Memory: Memory }).Memory = mockMemory2;
 
-    // Second execution - Memory.stats should be re-initialized
+    // Second execution - StatsCollector should re-initialize Memory.stats
     mainModule.loop();
     expect(mockMemory2.stats).toBeDefined();
     expect(mockMemory2.stats?.time).toBeDefined();
@@ -168,7 +165,7 @@ describe("Regression: Memory.stats Defensive Initialization (#863)", () => {
     expect(mockMemory2.stats?.rooms).toBeDefined();
   });
 
-  it("should match Memory.profiler defensive initialization pattern", async () => {
+  it("should initialize both Memory.profiler and Memory.stats via kernel", async () => {
     // Import the main module
     const mainModule = await import("../../packages/bot/src/main");
 
@@ -190,17 +187,14 @@ describe("Regression: Memory.stats Defensive Initialization (#863)", () => {
 
     (global as unknown as { Memory: Memory }).Memory = mockMemory;
 
-    // Enable profiler to test both defensive initializations
+    // Enable profiler to test both initializations
     (global as unknown as { __PROFILER_ENABLED__: boolean }).__PROFILER_ENABLED__ = true;
 
     // Execute loop
     mainModule.loop();
 
-    // Both Memory.profiler and Memory.stats should be initialized
+    // Both Memory.profiler (main.ts) and Memory.stats (StatsCollector) should be initialized
     expect(mockMemory.profiler).toBeDefined();
     expect(mockMemory.stats).toBeDefined();
-
-    // Both should use the same defensive pattern (??=)
-    // This means they only initialize if undefined, not null or existing values
   });
 });

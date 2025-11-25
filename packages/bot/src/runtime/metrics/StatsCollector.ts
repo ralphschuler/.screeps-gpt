@@ -120,6 +120,12 @@ interface GameLike {
  * The Screeps API endpoint /api/user/stats retrieves data from Memory.stats for
  * PTR telemetry and automated monitoring workflows.
  *
+ * **Memory.stats Lifecycle Ownership:**
+ * StatsCollector is the sole owner of Memory.stats initialization and updates.
+ * The collect() method performs defensive initialization if Memory.stats is missing,
+ * ensuring telemetry data is always available even after Memory resets.
+ * This follows single-responsibility principle - main.ts delegates stats management here.
+ *
  * **Performance Optimization:**
  * - Critical stats (CPU, creeps, energy) are collected every tick for real-time monitoring
  * - Detailed stats (structures, construction sites, spawns) are collected every 10 ticks
