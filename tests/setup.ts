@@ -76,7 +76,7 @@ globals.BODYPART_COST = {
   tough: 10
 };
 
-// Mock Game object for screeps-cartographer
+// Mock Game object for Screeps and pathfinding libraries
 globals.Game = {
   time: 0,
   cpu: {
@@ -87,17 +87,38 @@ globals.Game = {
   }
 };
 
-// Mock Memory object for screeps-cartographer
+// Mock Memory object for Screeps and pathfinding libraries
 globals.Memory = {};
 
-// Mock PathFinder for screeps-cartographer
+// Mock PathFinder for pathfinding libraries
 globals.PathFinder = {
   search: () => ({
     path: [],
     ops: 0,
     cost: 0,
     incomplete: false
-  })
+  }),
+  CostMatrix: class CostMatrix {
+    private _bits: Uint8Array = new Uint8Array(2500);
+
+    public get(x: number, y: number): number {
+      return this._bits[x * 50 + y];
+    }
+
+    public set(x: number, y: number, value: number): void {
+      this._bits[x * 50 + y] = value;
+    }
+
+    public setFast(x: number, y: number, value: number): void {
+      this._bits[x * 50 + y] = value;
+    }
+
+    public clone(): CostMatrix {
+      const copy = new CostMatrix();
+      copy._bits = new Uint8Array(this._bits);
+      return copy;
+    }
+  }
 };
 
 // Mock RoomPosition class for test compatibility
