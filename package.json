@@ -124,7 +124,7 @@
     "rimraf": "^6.1.0",
     "tsx": "^4.20.6",
     "typescript": "^5.4.3",
-    "vitest": "^4.0.12",
+    "vitest": "^4.0.13",
     "yaml": "^2.8.1"
   },
   "overrides": {
