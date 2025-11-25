@@ -1,0 +1,43 @@
+{
+  "name": "@ralphschuler/screeps-wiki-mcp",
+  "version": "0.1.0",
+  "description": "Model Context Protocol (MCP) server for accessing the Screeps community wiki at wiki.screepspl.us",
+  "license": "MIT",
+  "author": "OpenAI Automations",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": "./dist/server.js",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "scripts": {
+    "build": "tsc",
+    "postinstall": "npm run build",
+    "prepublishOnly": "npm run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "docker:build": "docker build -t screeps-wiki-mcp:latest .",
+    "docker:run": "docker run --rm -i -e WIKI_CACHE_TTL screeps-wiki-mcp:latest",
+    "docker:push": "docker tag screeps-wiki-mcp:latest ghcr.io/ralphschuler/screeps-wiki-mcp:latest && docker push ghcr.io/ralphschuler/screeps-wiki-mcp:latest"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "cheerio": "^1.0.0",
+    "node-fetch": "^3.3.2",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.1",
+    "typescript": "^5.4.3",
+    "vitest": "^4.0.13"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
