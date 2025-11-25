@@ -23,32 +23,18 @@ jobs:
         test-suite:
           - name: unit
             command: yarn test:unit
-            env: {}
-            paths: []
           - name: e2e
             command: yarn test:e2e
-            env:
-              SCREEPS_TEST_REALM: PTR
-              SCREEPS_HOST: ptr.screeps.com
-            paths: []
           - name: regression
             command: yarn test:regression
-            env: {}
-            paths: []
           - name: docs
             command: yarn test:docs
-            env: {}
-            paths:
-              - "packages/docs/**"
-              - "packages/utilities/scripts/build-hexo-site.ts"
-              - "packages/utilities/scripts/validate-docs-links.ts"
-              - "tests/unit/build-hexo-site.test.ts"
-              - "tests/regression/hexo-documentation-build.test.ts"
-              - "tests/regression/documentation-workflow.test.ts"
-              - "tests/e2e/docs-site.test.ts"
-              - ".github/workflows/docs-pages.yml"
-              - ".github/workflows/guard-tests.yml"
     name: ${{ matrix.test-suite.name }}
+    env:
+      SCREEPS_TEST_REALM: >-
+        ${{ matrix.test-suite.name == 'e2e' && 'PTR' || '' }}
+      SCREEPS_HOST: >-
+        ${{ matrix.test-suite.name == 'e2e' && 'ptr.screeps.com' || '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -84,7 +70,6 @@ jobs:
           fi
 
       - name: Run ${{ matrix.test-suite.name }} tests
-        env: ${{ matrix.test-suite.env }}
         run: ${{ matrix.test-suite.command }}
 
       - name: Validate documentation links
