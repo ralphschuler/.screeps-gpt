@@ -1,0 +1,35 @@
+{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"]
+    },
+    "screeps-mcp": {
+      "command": "npx",
+      "args": ["-y", "@ralphschuler/screeps-api-mcp@latest"],
+      "env": {
+        "SCREEPS_TOKEN": "${SCREEPS_TOKEN}",
+        "SCREEPS_SHARD": "${SCREEPS_SHARD:-shard1}"
+      }
+    },
+    "screeps-docs": {
+      "command": "npx",
+      "args": ["-y", "@ralphschuler/screeps-docs-mcp@latest"],
+      "env": {
+        "DOCS_CACHE_TTL": "${DOCS_CACHE_TTL:-3600}"
+      }
+    },
+    "screeps-wiki": {
+      "command": "npx",
+      "args": ["-y", "@ralphschuler/screeps-wiki-mcp@latest"],
+      "env": {
+        "WIKI_CACHE_TTL": "${WIKI_CACHE_TTL:-3600}"
+      }
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@executeautomation/playwright-mcp-server@latest"],
+      "env": {}
+    }
+  }
+}

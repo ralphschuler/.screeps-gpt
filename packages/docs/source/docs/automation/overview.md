@@ -204,6 +204,145 @@ This will output:
 - The final selected model
 - Cache key information
 
+### MCP Server Integration
+
+The `copilot-exec` action supports Model Context Protocol (MCP) servers, which extend Copilot's capabilities with additional tools and context providers. MCP servers enable workflows to access real-time game data, documentation, browser automation, and more.
+
+#### Available MCP Servers
+
+The repository includes pre-configured MCP servers in `.github/mcp/`:
+
+**Individual Server Configurations:**
+- **`screeps-mcp.json`** - Screeps API access (simplified configuration)
+- **`screeps-api.json`** - Screeps API access (full configuration with additional env vars)
+- **`screeps-docs-mcp.json`** - Screeps official documentation
+- **`screeps-wiki-mcp.json`** - Screeps community wiki knowledge base
+- **`playwright.json`** - Browser automation capabilities
+
+**Consolidated Configuration:**
+- **`all-servers.json`** - All MCP servers combined for maximum capability (uses `screeps-mcp` naming)
+
+#### MCP Server Capabilities
+
+**Screeps MCP Server** (`@ralphschuler/screeps-api-mcp`):
+- Execute console commands
+- Query game memory
+- Fetch performance metrics
+- Access room and structure data
+
+**Screeps Documentation Server** (`@ralphschuler/screeps-docs-mcp`):
+- Search official Screeps documentation
+- Retrieve API reference for game objects
+- Access game mechanics documentation
+
+**Screeps Wiki Server** (`@ralphschuler/screeps-wiki-mcp`):
+- Search community wiki articles
+- Retrieve strategic guides and best practices
+- Access structured data from wiki tables
+
+**Playwright Server** (`@executeautomation/playwright-mcp-server`):
+- Navigate web pages
+- Take screenshots
+- Execute browser automation
+
+**GitHub Server** (`@modelcontextprotocol/server-github`):
+- Automatically included by copilot-exec
+- Search code, issues, and pull requests
+- Retrieve repository information
+
+#### Usage in Workflows
+
+Add MCP servers to any workflow using the `additional-mcp-config` parameter:
+
+**Using consolidated configuration:**
+```yaml
+- name: Run Copilot with all MCP servers
+  uses: ./.github/actions/copilot-exec
+  env:
+    SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
+    SCREEPS_SHARD: ${{ vars.SCREEPS_SHARD || 'shard1' }}
+  with:
+    copilot-token: ${{ secrets.COPILOT_TOKEN }}
+    prompt-path: .github/copilot/prompts/my-prompt
+    additional-mcp-config: '@.github/mcp/all-servers.json'
+```
+
+**Using specific MCP servers:**
+```yaml
+- name: Run Copilot with specific servers
+  uses: ./.github/actions/copilot-exec
+  env:
+    SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
+    SCREEPS_SHARD: ${{ vars.SCREEPS_SHARD || 'shard1' }}
+  with:
+    copilot-token: ${{ secrets.COPILOT_TOKEN }}
+    prompt-path: .github/copilot/prompts/my-prompt
+    additional-mcp-config: '@.github/mcp/screeps-wiki-mcp.json'
+```
+
+**Using inline JSON:**
+```yaml
+- name: Run Copilot with inline MCP config
+  uses: ./.github/actions/copilot-exec
+  with:
+    copilot-token: ${{ secrets.COPILOT_TOKEN }}
+    prompt-path: .github/copilot/prompts/my-prompt
+    additional-mcp-config: |
+      {
+        "mcpServers": {
+          "custom-server": {
+            "command": "npx",
+            "args": ["-y", "my-mcp-server@latest"]
+          }
+        }
+      }
+```
+
+#### Required Environment Variables
+
+**Screeps MCP Server:**
+```yaml
+env:
+  SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}              # Required - API token for Screeps
+  SCREEPS_SHARD: ${{ vars.SCREEPS_SHARD || 'shard1' }}     # Optional - defaults to shard1
+```
+
+**Cache Configuration (Optional):**
+```yaml
+env:
+  DOCS_CACHE_TTL: "3600"  # Documentation cache lifetime in seconds (default: 3600)
+  WIKI_CACHE_TTL: "3600"  # Wiki cache lifetime in seconds (default: 3600)
+```
+
+#### Workflows Using MCP Servers
+
+The following workflows leverage MCP servers for enhanced capabilities:
+
+- **`copilot-strategic-planner.yml`** - Uses all MCP servers for comprehensive strategic analysis with real-time game data
+- **`copilot-todo-daily.yml`** - Uses all MCP servers for informed Todo prioritization with access to documentation
+
+#### Security Considerations
+
+- MCP servers run in isolated environments during workflow execution
+- `SCREEPS_TOKEN` secret required for Screeps API access - configure in repository secrets
+- MCP server packages executed via `npx -y` to ensure package integrity
+- Environment variables properly isolated per MCP server configuration
+- No credentials stored in MCP configuration files
+
+#### Benefits
+
+**Enhanced Workflow Intelligence:**
+- Access to real-time Screeps game state during analysis
+- Validation against official documentation and community knowledge
+- Browser automation for testing and verification
+- Comprehensive context for decision-making
+
+**Use Cases:**
+- Strategic planning with current game metrics
+- Issue triage with documentation validation
+- Automated testing with browser verification
+- Monitoring workflows with API data collection
+
 ## Specialized Copilot Agent Actions
 
 The repository uses a specialized agent architecture for Copilot automation, where each agent handles a specific type of task with focused functionality and minimal input requirements.

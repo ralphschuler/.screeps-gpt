@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "screeps-wiki": {
+      "command": "npx",
+      "args": ["-y", "@ralphschuler/screeps-wiki-mcp@latest"],
+      "env": {
+        "WIKI_CACHE_TTL": "${WIKI_CACHE_TTL:-3600}"
+      }
+    }
+  }
+}

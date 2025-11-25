@@ -29,6 +29,8 @@ jobs:
           RUN_URL: >-
             https://github.com/${{ github.repository }}/actions/runs/${{
             github.run_id }}
+          SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
+          SCREEPS_SHARD: ${{ vars.SCREEPS_SHARD || 'shard1' }}
         with:
           force-response: true
           copilot-token: ${{ secrets.COPILOT_TOKEN }}
@@ -37,3 +39,4 @@ jobs:
           output-path: >-
             reports/copilot/todo-daily-prioritization-${{
             github.run_id }}.log
+          additional-mcp-config: '@.github/mcp/all-servers.json'
