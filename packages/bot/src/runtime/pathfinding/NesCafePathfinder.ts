@@ -65,7 +65,10 @@ export interface NesCafePathfindingOptions extends PathfindingOptions {
  */
 interface IPathingManager {
   moveTo(creep: Creep, target: RoomPosition | { pos: RoomPosition }, options?: NesCafePathfindingOptions): number;
-  moveOffRoad(creep: Creep, options?: { priority?: number; moveOffContainer?: boolean; moveOffExit?: boolean }): boolean;
+  moveOffRoad(
+    creep: Creep,
+    options?: { priority?: number; moveOffContainer?: boolean; moveOffExit?: boolean }
+  ): boolean;
   findPath(
     startPos: RoomPosition,
     targetPos: RoomPosition,
@@ -349,7 +352,13 @@ export class NesCafePathfinder implements PathfindingProvider {
    */
   public moveOffRoad(
     creep: Creep,
-    options: { target?: RoomPosition; range?: number; priority?: number; moveOffContainer?: boolean; moveOffExit?: boolean } = {}
+    options: {
+      target?: RoomPosition;
+      range?: number;
+      priority?: number;
+      moveOffContainer?: boolean;
+      moveOffExit?: boolean;
+    } = {}
   ): boolean {
     if (this.ensureInitialized() && this.pathingManager) {
       return this.pathingManager.moveOffRoad(creep, options);

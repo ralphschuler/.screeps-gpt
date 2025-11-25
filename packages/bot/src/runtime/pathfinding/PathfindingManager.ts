@@ -112,7 +112,13 @@ export class PathfindingManager {
    */
   public moveOffRoad(
     creep: Creep,
-    options?: { target?: RoomPosition; range?: number; priority?: number; moveOffContainer?: boolean; moveOffExit?: boolean }
+    options?: {
+      target?: RoomPosition;
+      range?: number;
+      priority?: number;
+      moveOffContainer?: boolean;
+      moveOffExit?: boolean;
+    }
   ): boolean {
     return this.provider.moveOffRoad(creep, options);
   }

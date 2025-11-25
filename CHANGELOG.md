@@ -5,6 +5,27 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Added
+
+- **Pathfinding**: Integrated screeps-pathfinding library by NesCafe62
+  - Added NesCafePathfinder as the default pathfinding provider
+  - Added traffic management with priority-based movement (`runMoves()`)
+  - Added `moveOffRoad()` to move creeps off roads when finished working
+  - Added `reservePos()` for position reservations
+  - Added `priority` option in `moveTo()` for traffic management
+  - Added move off exit behavior
+  - Added terrain and cost matrix caching
+
+### Changed
+
+- **Pathfinding**: Replaced DefaultPathfinder and CartographerPathfinder with NesCafePathfinder
+  - Automatic fallback to native Screeps pathfinding when library is unavailable
+
+### Removed
+
+- **Pathfinding**: Removed DefaultPathfinder implementation
+- **Pathfinding**: Removed CartographerPathfinder implementation
+
 ## [0.154.0] - 2025-11-24
 
 ### Added
