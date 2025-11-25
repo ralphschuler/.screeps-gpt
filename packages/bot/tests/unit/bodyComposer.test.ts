@@ -72,19 +72,21 @@ describe("BodyComposer", () => {
       });
     });
 
-    describe("remoteMiner role", () => {
-      it("should generate work-heavy body for remote mining", () => {
-        const body = composer.generateBody("remoteMiner", 550);
+    describe("remoteUpgrader role", () => {
+      it("should generate work-heavy body for remote upgrading", () => {
+        const body = composer.generateBody("remoteUpgrader", 550);
         const workParts = body.filter(p => p === WORK).length;
+        const carryParts = body.filter(p => p === CARRY).length;
         const moveParts = body.filter(p => p === MOVE).length;
 
         expect(workParts).toBeGreaterThanOrEqual(2);
+        expect(carryParts).toBeGreaterThanOrEqual(2);
         expect(moveParts).toBeGreaterThanOrEqual(2);
         expect(composer.calculateBodyCost(body)).toBeLessThanOrEqual(550);
       });
 
       it("should return empty array if insufficient energy for base body", () => {
-        const body = composer.generateBody("remoteMiner", 300);
+        const body = composer.generateBody("remoteUpgrader", 300);
         expect(body).toEqual([]);
       });
     });
@@ -265,7 +267,7 @@ describe("BodyComposer", () => {
         "harvester",
         "upgrader",
         "builder",
-        "remoteMiner",
+        "remoteUpgrader",
         "stationaryHarvester",
         "hauler",
         "repairer",
@@ -294,7 +296,7 @@ describe("BodyComposer", () => {
       expect(roles).toContain("harvester");
       expect(roles).toContain("upgrader");
       expect(roles).toContain("builder");
-      expect(roles).toContain("remoteMiner");
+      expect(roles).toContain("remoteUpgrader");
       expect(roles).toContain("stationaryHarvester");
       expect(roles).toContain("hauler");
       expect(roles).toContain("repairer");
