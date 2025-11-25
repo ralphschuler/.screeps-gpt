@@ -214,17 +214,17 @@ The repository includes pre-configured MCP servers in `.github/mcp/`:
 
 **Individual Server Configurations:**
 - **`screeps-mcp.json`** - Screeps API access (simplified configuration)
-- **`screeps-api.json`** - Screeps API access (full configuration with stats)
+- **`screeps-api.json`** - Screeps API access (full configuration with additional env vars)
 - **`screeps-docs-mcp.json`** - Screeps official documentation
 - **`screeps-wiki-mcp.json`** - Screeps community wiki knowledge base
 - **`playwright.json`** - Browser automation capabilities
 
 **Consolidated Configuration:**
-- **`all-servers.json`** - All MCP servers combined for maximum capability
+- **`all-servers.json`** - All MCP servers combined for maximum capability (uses `screeps-mcp` naming)
 
 #### MCP Server Capabilities
 
-**Screeps API Server** (`@ralphschuler/screeps-api-mcp`):
+**Screeps MCP Server** (`@ralphschuler/screeps-api-mcp`):
 - Execute console commands
 - Query game memory
 - Fetch performance metrics
@@ -260,8 +260,7 @@ Add MCP servers to any workflow using the `additional-mcp-config` parameter:
   uses: ./.github/actions/copilot-exec
   env:
     SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
-    SCREEPS_HOST: ${{ secrets.SCREEPS_HOST }}
-    SCREEPS_SHARD: ${{ secrets.SCREEPS_SHARD }}
+    SCREEPS_SHARD: ${{ vars.SCREEPS_SHARD || 'shard1' }}
   with:
     copilot-token: ${{ secrets.COPILOT_TOKEN }}
     prompt-path: .github/copilot/prompts/my-prompt
@@ -274,6 +273,7 @@ Add MCP servers to any workflow using the `additional-mcp-config` parameter:
   uses: ./.github/actions/copilot-exec
   env:
     SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
+    SCREEPS_SHARD: ${{ vars.SCREEPS_SHARD || 'shard1' }}
   with:
     copilot-token: ${{ secrets.COPILOT_TOKEN }}
     prompt-path: .github/copilot/prompts/my-prompt
@@ -300,21 +300,18 @@ Add MCP servers to any workflow using the `additional-mcp-config` parameter:
 
 #### Required Environment Variables
 
-**Screeps API Access:**
+**Screeps MCP Server:**
 ```yaml
 env:
-  SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}     # Required
-  SCREEPS_HOST: ${{ secrets.SCREEPS_HOST }}       # Optional, defaults to screeps.com
-  SCREEPS_SHARD: ${{ secrets.SCREEPS_SHARD }}     # Optional, defaults to shard3
-  SCREEPS_PORT: ${{ secrets.SCREEPS_PORT }}       # Optional, defaults to 443
-  SCREEPS_PROTOCOL: ${{ secrets.SCREEPS_PROTOCOL }} # Optional, defaults to https
+  SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}              # Required - API token for Screeps
+  SCREEPS_SHARD: ${{ vars.SCREEPS_SHARD || 'shard1' }}     # Optional - defaults to shard1
 ```
 
-**Cache Configuration:**
+**Cache Configuration (Optional):**
 ```yaml
 env:
-  DOCS_CACHE_TTL: "3600"  # Documentation cache lifetime in seconds
-  WIKI_CACHE_TTL: "3600"  # Wiki cache lifetime in seconds
+  DOCS_CACHE_TTL: "3600"  # Documentation cache lifetime in seconds (default: 3600)
+  WIKI_CACHE_TTL: "3600"  # Wiki cache lifetime in seconds (default: 3600)
 ```
 
 #### Workflows Using MCP Servers

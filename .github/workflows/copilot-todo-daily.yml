@@ -30,8 +30,7 @@ jobs:
             https://github.com/${{ github.repository }}/actions/runs/${{
             github.run_id }}
           SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
-          SCREEPS_HOST: ${{ secrets.SCREEPS_HOST }}
-          SCREEPS_SHARD: ${{ secrets.SCREEPS_SHARD }}
+          SCREEPS_SHARD: ${{ vars.SCREEPS_SHARD || 'shard1' }}
         with:
           force-response: true
           copilot-token: ${{ secrets.COPILOT_TOKEN }}

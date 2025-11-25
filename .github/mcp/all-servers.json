@@ -9,22 +9,7 @@
       "args": ["-y", "@ralphschuler/screeps-api-mcp@latest"],
       "env": {
         "SCREEPS_TOKEN": "${SCREEPS_TOKEN}",
-        "SCREEPS_HOST": "${SCREEPS_HOST:-screeps.com}",
-        "SCREEPS_SHARD": "${SCREEPS_SHARD:-shard3}"
-      }
-    },
-    "screeps-api": {
-      "command": "npx",
-      "args": ["-y", "@ralphschuler/screeps-api-mcp@latest"],
-      "env": {
-        "SCREEPS_TOKEN": "${SCREEPS_TOKEN}",
-        "SCREEPS_EMAIL": "${SCREEPS_EMAIL}",
-        "SCREEPS_PASSWORD": "${SCREEPS_PASSWORD}",
-        "SCREEPS_HOST": "${SCREEPS_HOST:-screeps.com}",
-        "SCREEPS_PORT": "${SCREEPS_PORT:-443}",
-        "SCREEPS_PROTOCOL": "${SCREEPS_PROTOCOL:-https}",
-        "SCREEPS_STATS_HOST": "${SCREEPS_STATS_HOST}",
-        "SCREEPS_STATS_API": "${SCREEPS_STATS_API}"
+        "SCREEPS_SHARD": "${SCREEPS_SHARD:-shard1}"
       }
     },
     "screeps-docs": {
