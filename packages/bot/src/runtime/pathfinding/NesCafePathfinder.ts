@@ -67,7 +67,7 @@ interface IPathingManager {
   moveTo(creep: Creep, target: RoomPosition | { pos: RoomPosition }, options?: NesCafePathfindingOptions): number;
   moveOffRoad(
     creep: Creep,
-    options?: { priority?: number; moveOffContainer?: boolean; moveOffExit?: boolean }
+    options?: { target?: RoomPosition; range?: number; priority?: number; moveOffContainer?: boolean; moveOffExit?: boolean }
   ): boolean;
   findPath(
     startPos: RoomPosition,
@@ -293,9 +293,13 @@ export class NesCafePathfinder implements PathfindingProvider {
       priority: opts.priority ?? 0,
       moveOffExit: opts.moveOffExit,
       moveOffRoad: opts.moveOffRoad,
+      moveOffContainer: opts.moveOffContainer,
       findRoute: opts.findRoute,
+      ignoreCreeps: opts.ignoreCreeps,
+      ignoreStructures: opts.ignoreStructures,
       ignoreRoads: opts.ignoreRoads,
       offRoads: opts.offRoads,
+      ignoreTunnels: opts.ignoreTunnels,
       ignoreContainers: opts.ignoreContainers,
       containerCost: opts.containerCost,
       heuristicWeight: opts.heuristicWeight,
@@ -310,7 +314,8 @@ export class NesCafePathfinder implements PathfindingProvider {
       costCallback: opts.costCallback,
       routeCallback: opts.routeCallback,
       plainCost: opts.plainCost,
-      swampCost: opts.swampCost
+      swampCost: opts.swampCost,
+      onRoomEnter: opts.onRoomEnter
     });
 
     // Map screeps-pathfinding result codes to Screeps return codes
@@ -430,6 +435,6 @@ export class NesCafePathfinder implements PathfindingProvider {
     }
     // Fallback implementation
     const { x, y } = pos;
-    return x <= 0 || y <= 0 || x >= 49 || y >= 49;
+    return x === 0 || y === 0 || x === 49 || y === 49;
   }
 }

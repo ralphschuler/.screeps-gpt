@@ -1247,7 +1247,6 @@ __metadata:
     prettier: "npm:^3.6.2"
     rimraf: "npm:^6.1.0"
     screeps-api: "npm:^1.16.1"
-    screeps-cartographer: "npm:^1.8.13"
     screeps-pathfinding: "npm:^2.3.1"
     semver: "npm:^7.7.3"
     tsx: "npm:^4.20.6"
