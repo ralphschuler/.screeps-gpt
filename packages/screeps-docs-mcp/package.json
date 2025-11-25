@@ -21,7 +21,10 @@
     "prepublishOnly": "npm run build",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "docker:build": "docker build -t screeps-docs-mcp:latest .",
+    "docker:run": "docker run --rm -i -e DOCS_CACHE_TTL screeps-docs-mcp:latest",
+    "docker:push": "docker tag screeps-docs-mcp:latest ghcr.io/ralphschuler/screeps-docs-mcp:latest && docker push ghcr.io/ralphschuler/screeps-docs-mcp:latest"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4",

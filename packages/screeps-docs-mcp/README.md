@@ -36,6 +36,54 @@ Configure in your MCP client (e.g., Claude Desktop, GitHub Copilot):
 }
 ```
 
+### Docker Usage
+
+The MCP server is available as a Docker image for containerized deployments.
+
+**Pull from GHCR:**
+
+```bash
+docker pull ghcr.io/ralphschuler/screeps-docs-mcp:latest
+```
+
+**Run with environment variables:**
+
+```bash
+docker run --rm -i \
+  -e DOCS_CACHE_TTL=3600 \
+  ghcr.io/ralphschuler/screeps-docs-mcp:latest
+```
+
+**Build locally:**
+
+```bash
+cd packages/screeps-docs-mcp
+npm run docker:build
+npm run docker:run
+```
+
+### Docker stdio Transport Configuration
+
+For MCP clients like Claude Desktop or Cursor, configure the Docker-based server:
+
+```json
+{
+  "mcpServers": {
+    "screeps-docs-docker": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "-e",
+        "DOCS_CACHE_TTL=${DOCS_CACHE_TTL:-3600}",
+        "ghcr.io/ralphschuler/screeps-docs-mcp:latest"
+      ]
+    }
+  }
+}
+```
+
 ### Programmatic Usage
 
 ```typescript
