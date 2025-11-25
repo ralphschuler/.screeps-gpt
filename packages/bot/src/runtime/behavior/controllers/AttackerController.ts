@@ -105,8 +105,8 @@ export class AttackerController extends BaseRoleController<AttackerMemory> {
       const target: Creep | null = creep.pos.findClosestByPath(hostileCreeps);
       const actualTarget: Creep = target ?? hostileCreeps[0];
       machine.send({ type: "ENGAGE", targetId: actualTarget.id });
-      const result = creep.attack(actualTarget);
-      if (result === ERR_NOT_IN_RANGE) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      if (creep.attack(actualTarget) === ERR_NOT_IN_RANGE) {
         creep.moveTo(actualTarget, { reusePath: 10 });
       }
       memory.stateMachine = serialize(machine);
@@ -123,8 +123,8 @@ export class AttackerController extends BaseRoleController<AttackerMemory> {
       const target: AnyOwnedStructure | null = creep.pos.findClosestByPath(hostileStructures);
       const actualTarget: AnyOwnedStructure = target ?? hostileStructures[0];
       machine.send({ type: "ENGAGE", targetId: actualTarget.id });
-      const result = creep.attack(actualTarget);
-      if (result === ERR_NOT_IN_RANGE) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      if (creep.attack(actualTarget) === ERR_NOT_IN_RANGE) {
         creep.moveTo(actualTarget, { reusePath: 10 });
       }
       memory.stateMachine = serialize(machine);

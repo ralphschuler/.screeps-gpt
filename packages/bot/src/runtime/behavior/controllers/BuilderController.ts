@@ -84,7 +84,6 @@ export class BuilderController extends BaseRoleController<BuilderMemory> {
     // Update creep reference in context every tick
     machine.getContext().creep = creep as Creep;
 
-    const ctx = machine.getContext();
     const currentState = machine.getState();
 
     // CRITICAL: Check if spawn needs immediate refilling BEFORE any other task

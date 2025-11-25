@@ -107,9 +107,10 @@ export class HealerController extends BaseRoleController<HealerMemory> {
       const target: Creep | null = creep.pos.findClosestByPath(damagedCreeps);
       const actualTarget: Creep = target ?? damagedCreeps[0];
       machine.send({ type: "HEAL", targetId: actualTarget.id });
-      const result = creep.heal(actualTarget);
-      if (result === ERR_NOT_IN_RANGE) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      if (creep.heal(actualTarget) === ERR_NOT_IN_RANGE) {
         creep.moveTo(actualTarget, { reusePath: 10 });
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         creep.rangedHeal(actualTarget);
       } else if (actualTarget.hits >= actualTarget.hitsMax) {
         machine.send({ type: "TARGET_HEALED" });

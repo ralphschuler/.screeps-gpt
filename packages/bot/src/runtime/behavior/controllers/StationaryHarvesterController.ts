@@ -84,8 +84,8 @@ export class StationaryHarvesterController extends BaseRoleController<Stationary
     }
 
     // Update creep reference in context every tick
+    machine.getContext().creep = creep as Creep;
     const ctx = machine.getContext();
-    ctx.creep = creep as Creep;
 
     comm?.say(creep, "⛏️");
 

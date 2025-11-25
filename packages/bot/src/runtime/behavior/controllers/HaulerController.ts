@@ -109,7 +109,7 @@ export class HaulerController extends BaseRoleController<HaulerMemory> {
       if (containers.length > 0) {
         const closest = creep.pos.findClosestByPath(containers);
         const target = closest ?? containers[0];
-        machine.send({ type: "START_PICKUP", targetId: target.id as Id<StructureContainer> });
+        machine.send({ type: "START_PICKUP", targetId: target.id });
         const result = creep.withdraw(target, RESOURCE_ENERGY);
         if (result === ERR_NOT_IN_RANGE) {
           creep.moveTo(target, { range: 1, reusePath: 30 });
