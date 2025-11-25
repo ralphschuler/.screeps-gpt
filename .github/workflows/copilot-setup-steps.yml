@@ -42,4 +42,4 @@ jobs:
           registry-url: "https://npm.pkg.github.com"
           scope: "@ralphschuler"
           cache: "npm"
-          token: "${{ secrets.COPILOT_MCP_GH_TOKEN }}"
+          token: "${{ secrets.GH_TOKEN }}"
