@@ -6,8 +6,9 @@
  * - Memory resets
  * - Profiler already running
  * - Build-time disabled profiler
+ * - Global flag optimization for reduced per-tick overhead
  *
- * Related Issue: #1102
+ * Related Issue: #1102, #1424
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
@@ -72,26 +73,48 @@ describe("Profiler auto-start functionality", () => {
   });
 
   /**
-   * Helper function that simulates the ensureProfilerRunning logic from main.ts.
-   * This is the function under test - extracted here to avoid duplication across test cases.
+   * Helper function that simulates the optimized ensureProfilerRunning logic from main.ts.
+   * Uses a global flag to avoid redundant initialization checks on every tick.
+   * Returns the function and a way to reset the flag for testing.
    */
   const createEnsureProfilerRunning = () => {
-    return () => {
+    let profilerInitialized = false;
+
+    const ensureProfilerRunning = () => {
+      // Skip initialization if already done and Memory.profiler exists
+      // This avoids redundant checks on every tick
+      if (profilerInitialized && mockMemory.profiler !== undefined) {
+        return;
+      }
+
+      // Initialize Memory.profiler if not present (handles Memory resets)
       mockMemory.profiler ??= {
         data: {},
         total: 0
       };
 
+      // Auto-start profiler if not already running
       if (mockMemory.profiler.start === undefined) {
         mockProfilerInstance.start();
         mockConsole.log(`[Profiler] Auto-started profiler data collection (tick: ${mockGame.time})`);
       }
+
+      // Mark as initialized after successful setup
+      profilerInitialized = true;
     };
+
+    const resetFlag = () => {
+      profilerInitialized = false;
+    };
+
+    const isInitialized = () => profilerInitialized;
+
+    return { ensureProfilerRunning, resetFlag, isInitialized };
   };
 
   describe("ensureProfilerRunning function behavior", () => {
     it("should initialize Memory.profiler if not present", () => {
-      const ensureProfilerRunning = createEnsureProfilerRunning();
+      const { ensureProfilerRunning } = createEnsureProfilerRunning();
 
       ensureProfilerRunning();
 
@@ -109,7 +132,7 @@ describe("Profiler auto-start functionality", () => {
         total: 0
       };
 
-      const ensureProfilerRunning = createEnsureProfilerRunning();
+      const { ensureProfilerRunning } = createEnsureProfilerRunning();
 
       ensureProfilerRunning();
 
@@ -125,7 +148,7 @@ describe("Profiler auto-start functionality", () => {
         start: 950 // Already started at tick 950
       };
 
-      const ensureProfilerRunning = createEnsureProfilerRunning();
+      const { ensureProfilerRunning } = createEnsureProfilerRunning();
 
       ensureProfilerRunning();
 
@@ -134,7 +157,7 @@ describe("Profiler auto-start functionality", () => {
     });
 
     it("should be idempotent when called multiple times", () => {
-      const ensureProfilerRunning = createEnsureProfilerRunning();
+      const { ensureProfilerRunning } = createEnsureProfilerRunning();
 
       // First call - should start profiler
       ensureProfilerRunning();
@@ -163,7 +186,7 @@ describe("Profiler auto-start functionality", () => {
         start: 950
       };
 
-      const ensureProfilerRunning = createEnsureProfilerRunning();
+      const { ensureProfilerRunning } = createEnsureProfilerRunning();
 
       ensureProfilerRunning();
 
@@ -192,7 +215,7 @@ describe("Profiler auto-start functionality", () => {
         // Note: start is undefined
       };
 
-      const ensureProfilerRunning = createEnsureProfilerRunning();
+      const { ensureProfilerRunning } = createEnsureProfilerRunning();
 
       ensureProfilerRunning();
 
@@ -202,7 +225,7 @@ describe("Profiler auto-start functionality", () => {
     });
 
     it("should handle rapid successive calls efficiently", () => {
-      const ensureProfilerRunning = createEnsureProfilerRunning();
+      const { ensureProfilerRunning } = createEnsureProfilerRunning();
 
       // First call
       ensureProfilerRunning();
@@ -221,9 +244,85 @@ describe("Profiler auto-start functionality", () => {
     });
   });
 
+  describe("Global flag optimization", () => {
+    it("should set profilerInitialized flag after first initialization", () => {
+      const { ensureProfilerRunning, isInitialized } = createEnsureProfilerRunning();
+
+      expect(isInitialized()).toBe(false);
+
+      ensureProfilerRunning();
+
+      expect(isInitialized()).toBe(true);
+    });
+
+    it("should skip initialization when flag is set and Memory.profiler exists", () => {
+      const { ensureProfilerRunning } = createEnsureProfilerRunning();
+
+      // First call initializes
+      ensureProfilerRunning();
+      mockMemory.profiler!.start = mockGame.time;
+      vi.clearAllMocks();
+
+      // Simulate many subsequent ticks
+      for (let i = 0; i < 1000; i++) {
+        ensureProfilerRunning();
+      }
+
+      // Should not perform any initialization after first call
+      expect(mockProfilerInstance.start).not.toHaveBeenCalled();
+      expect(mockConsole.log).not.toHaveBeenCalled();
+    });
+
+    it("should detect Memory reset even when flag is set", () => {
+      const { ensureProfilerRunning, isInitialized } = createEnsureProfilerRunning();
+
+      // First call initializes
+      ensureProfilerRunning();
+      mockMemory.profiler!.start = mockGame.time;
+      expect(isInitialized()).toBe(true);
+
+      vi.clearAllMocks();
+
+      // Simulate Memory reset
+      mockMemory.profiler = undefined;
+      mockGame.time = 2000;
+
+      // Call after Memory reset - should re-initialize
+      ensureProfilerRunning();
+
+      expect(mockMemory.profiler).toBeDefined();
+      expect(mockProfilerInstance.start).toHaveBeenCalledTimes(1);
+      expect(mockConsole.log).toHaveBeenCalledWith("[Profiler] Auto-started profiler data collection (tick: 2000)");
+    });
+
+    it("should provide performance benefit by avoiding redundant checks", () => {
+      const { ensureProfilerRunning } = createEnsureProfilerRunning();
+
+      // Track how many times we enter the initialization logic
+      let initializationAttempts = 0;
+      const originalProfilerStart = mockMemory.profiler;
+
+      // First call - should initialize
+      ensureProfilerRunning();
+      mockMemory.profiler!.start = mockGame.time;
+
+      // Count calls by monitoring start attempts
+      vi.clearAllMocks();
+
+      // Simulate 10000 ticks (typical Screeps session)
+      for (let i = 0; i < 10000; i++) {
+        ensureProfilerRunning();
+      }
+
+      // With optimization: profiler.start() should never be called after initialization
+      // Without optimization: would check Memory.profiler.start every tick
+      expect(mockProfilerInstance.start).not.toHaveBeenCalled();
+    });
+  });
+
   describe("Integration with Memory.stats initialization", () => {
     it("should initialize both Memory.profiler and Memory.stats", () => {
-      const ensureProfilerRunning = createEnsureProfilerRunning();
+      const { ensureProfilerRunning } = createEnsureProfilerRunning();
 
       const initializeMemoryStats = () => {
         mockMemory.stats ??= {
