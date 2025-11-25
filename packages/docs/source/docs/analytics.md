@@ -59,6 +59,21 @@ This page displays performance metrics for the Screeps GPT bot over the last 30 
         <h2>Room Statistics</h2>
         <canvas id="roomChart"></canvas>
       </div>
+      
+      <div class="chart-container">
+        <h2>Controller Progress</h2>
+        <canvas id="controllerChart"></canvas>
+      </div>
+      
+      <div class="chart-container">
+        <h2>Infrastructure</h2>
+        <canvas id="infrastructureChart"></canvas>
+      </div>
+      
+      <div class="chart-container">
+        <h2>Memory Usage</h2>
+        <canvas id="memoryChart"></canvas>
+      </div>
     `;
     
     // CPU Usage Chart
@@ -256,6 +271,211 @@ This page displays performance metrics for the Screeps GPT bot over the last 30 
               title: {
                 display: true,
                 text: 'Average RCL'
+              },
+              grid: {
+                drawOnChartArea: false,
+              },
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Date'
+              }
+            }
+          }
+        }
+      });
+    }
+    
+    // Controller Progress Chart
+    if (data.dataPoints.some(d => d.controllerProgress !== undefined)) {
+      new Chart(document.getElementById('controllerChart'), {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Controller Progress',
+            data: data.dataPoints.map(d => d.controllerProgress),
+            borderColor: 'rgb(46, 204, 113)',
+            backgroundColor: 'rgba(46, 204, 113, 0.1)',
+            fill: true,
+            tension: 0.3
+          }, {
+            label: 'Progress Goal',
+            data: data.dataPoints.map(d => d.controllerProgressTotal),
+            borderColor: 'rgb(231, 76, 60)',
+            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+            borderDash: [5, 5],
+            tension: 0.3
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            title: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Progress Points'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Date'
+              }
+            }
+          }
+        }
+      });
+    }
+    
+    // Infrastructure Chart
+    if (data.dataPoints.some(d => d.containerCount !== undefined || d.roadCount !== undefined || d.towerCount !== undefined || d.extensionCount !== undefined)) {
+      const infraDatasets = [];
+      
+      if (data.dataPoints.some(d => d.extensionCount !== undefined)) {
+        infraDatasets.push({
+          label: 'Extensions',
+          data: data.dataPoints.map(d => d.extensionCount),
+          backgroundColor: 'rgba(255, 206, 86, 0.7)',
+          borderColor: 'rgb(255, 206, 86)',
+          borderWidth: 1
+        });
+      }
+      
+      if (data.dataPoints.some(d => d.containerCount !== undefined)) {
+        infraDatasets.push({
+          label: 'Containers',
+          data: data.dataPoints.map(d => d.containerCount),
+          backgroundColor: 'rgba(54, 162, 235, 0.7)',
+          borderColor: 'rgb(54, 162, 235)',
+          borderWidth: 1
+        });
+      }
+      
+      if (data.dataPoints.some(d => d.towerCount !== undefined)) {
+        infraDatasets.push({
+          label: 'Towers',
+          data: data.dataPoints.map(d => d.towerCount),
+          backgroundColor: 'rgba(255, 99, 132, 0.7)',
+          borderColor: 'rgb(255, 99, 132)',
+          borderWidth: 1
+        });
+      }
+      
+      if (data.dataPoints.some(d => d.spawnCount !== undefined)) {
+        infraDatasets.push({
+          label: 'Spawns',
+          data: data.dataPoints.map(d => d.spawnCount),
+          backgroundColor: 'rgba(153, 102, 255, 0.7)',
+          borderColor: 'rgb(153, 102, 255)',
+          borderWidth: 1
+        });
+      }
+      
+      new Chart(document.getElementById('infrastructureChart'), {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: infraDatasets
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            title: {
+              display: false
+            }
+          },
+          scales: {
+            x: {
+              stacked: true,
+              title: {
+                display: true,
+                text: 'Date'
+              }
+            },
+            y: {
+              stacked: true,
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Count'
+              }
+            }
+          }
+        }
+      });
+    }
+    
+    // Memory Usage Chart
+    if (data.dataPoints.some(d => d.memoryUsed !== undefined)) {
+      new Chart(document.getElementById('memoryChart'), {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Memory Used (bytes)',
+            data: data.dataPoints.map(d => d.memoryUsed),
+            borderColor: 'rgb(155, 89, 182)',
+            backgroundColor: 'rgba(155, 89, 182, 0.1)',
+            fill: true,
+            tension: 0.3,
+            yAxisID: 'y'
+          }, {
+            label: 'Memory Used (%)',
+            data: data.dataPoints.map(d => d.memoryUsedPercent),
+            borderColor: 'rgb(52, 73, 94)',
+            backgroundColor: 'rgba(52, 73, 94, 0.1)',
+            tension: 0.3,
+            yAxisID: 'y1'
+          }]
+        },
+        options: {
+          responsive: true,
+          interaction: {
+            mode: 'index',
+            intersect: false,
+          },
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            title: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              type: 'linear',
+              display: true,
+              position: 'left',
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Bytes'
+              }
+            },
+            y1: {
+              type: 'linear',
+              display: true,
+              position: 'right',
+              beginAtZero: true,
+              max: 100,
+              title: {
+                display: true,
+                text: 'Percent'
               },
               grid: {
                 drawOnChartArea: false,
