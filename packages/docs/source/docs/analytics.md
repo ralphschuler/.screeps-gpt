@@ -15,7 +15,7 @@ This page displays performance metrics for the Screeps GPT bot over the last 30 
      Version 4.4.0 is explicitly specified for stability and predictability.
      When a new major version is released, review breaking changes before updating.
      SRI hash ensures the script hasn't been tampered with. -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" integrity="sha384-OLBgp1GsljhM2TJ+sbHjaiH9txEUvgdDTAzHv2P24donTt6/529l+9Ua0vFImLlb" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" integrity="sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pmYW5d1g" crossorigin="anonymous"></script>
 <script>
 (async function() {
   try {
