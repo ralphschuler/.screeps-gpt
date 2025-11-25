@@ -258,11 +258,7 @@ export class FlagCommandInterpreter {
   private hasAttackCreeps(game: GameContext): boolean {
     for (const name in game.creeps) {
       const creep = game.creeps[name];
-      if (
-        creep?.memory?.role === "attacker" ||
-        creep?.memory?.role === "warrior" ||
-        creep?.memory?.role === "ranger"
-      ) {
+      if (creep?.memory?.role === "attacker" || creep?.memory?.role === "warrior" || creep?.memory?.role === "ranger") {
         return true;
       }
     }
