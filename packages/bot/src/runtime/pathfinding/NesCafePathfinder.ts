@@ -227,10 +227,12 @@ export class NesCafePathfinder implements PathfindingProvider {
    */
   private fallbackFindPath(origin: RoomPosition, goalPos: RoomPosition, opts: PathfindingOptions): PathfindingResult {
     const cpuStart = Game.cpu.getUsed();
+    const range = opts.range ?? 1;
+    const currentTick = Game.time;
 
     const result = PathFinder.search(
       origin,
-      { pos: goalPos, range: opts.range ?? 1 },
+      { pos: goalPos, range },
       {
         roomCallback: opts.costCallback,
         plainCost: opts.plainCost,
@@ -241,6 +243,16 @@ export class NesCafePathfinder implements PathfindingProvider {
     );
 
     const cpuCost = Game.cpu.getUsed() - cpuStart;
+
+    // Cache successful paths (same as main findPath)
+    if (!result.incomplete) {
+      this.pathCache.setPath(origin, goalPos, result.path, currentTick, {
+        ops: result.ops,
+        cpuCost,
+        incomplete: result.incomplete,
+        range
+      });
+    }
 
     return {
       path: result.path,
