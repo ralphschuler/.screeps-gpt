@@ -106,18 +106,18 @@ export function createMCPServer(config: MCPServerConfig) {
     const { name, arguments: toolArgs } = request.params;
 
     try {
-      if (name === "search") {
+      if (name === "screeps_docs_search") {
         const validated = toolSchemas.search.parse(toolArgs);
         return await handleSearch(validated);
-      } else if (name === "get_api") {
+      } else if (name === "screeps_docs_get_api") {
         const validated = toolSchemas.getAPI.parse(toolArgs);
         return await handleGetAPI(validated);
-      } else if (name === "get_mechanics") {
+      } else if (name === "screeps_docs_get_mechanics") {
         const validated = toolSchemas.getMechanics.parse(toolArgs);
         return await handleGetMechanics(validated);
-      } else if (name === "list_apis") {
+      } else if (name === "screeps_docs_list_apis") {
         return await handleListAPIs();
-      } else if (name === "list_mechanics") {
+      } else if (name === "screeps_docs_list_mechanics") {
         return await handleListMechanics();
       } else {
         throw new Error(`Unknown tool: ${name}`);
