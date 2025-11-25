@@ -53,7 +53,7 @@ jobs:
             ${{ inputs.body }}
         with:
           force-response: true
-          codex-token: ${{ secrets.COPILOT_TOKEN }}
+          codex-token: ${{ secrets.OPENAI_API_KEY }}
           prompt-path: .github/copilot/prompts/email-triage
           output-path: >-
             reports/copilot/email-triage-${{ github.run_id }}.log

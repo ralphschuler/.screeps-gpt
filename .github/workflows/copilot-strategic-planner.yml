@@ -35,7 +35,7 @@ jobs:
           SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
           SCREEPS_SHARD: ${{ vars.SCREEPS_SHARD || 'shard1' }}
         with:
-          codex-token: ${{ secrets.COPILOT_TOKEN }}
+          codex-token: ${{ secrets.OPENAI_API_KEY }}
           prompt-path: .github/copilot/prompts/strategic-planner
           output-path: >-
             reports/copilot/strategic-planner-${{ github.run_id }}.log

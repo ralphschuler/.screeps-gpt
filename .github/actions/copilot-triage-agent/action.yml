@@ -59,7 +59,7 @@ runs:
   steps:
     - name: Run Copilot triage
       id: triage
-      uses: ./.github/actions/copilot-exec
+      uses: ./.github/actions/codex-exec
       env:
         REPO_NAME: ${{ inputs.repository }}
         ISSUE_NUMBER: ${{ inputs.issue-number }}
@@ -69,7 +69,7 @@ runs:
         ISSUE_AUTHOR: ${{ inputs.issue-author }}
       with:
         force-response: true
-        copilot-token: ${{ inputs.copilot-token }}
+        codex-token: ${{ inputs.copilot-token }}
         prompt-path: .github/copilot/prompts/issue-triage
         output-path: reports/copilot/issue-triage-${{ inputs.issue-number }}.log
         verbose: ${{ inputs.verbose }}

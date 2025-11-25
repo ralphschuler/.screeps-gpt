@@ -85,7 +85,7 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
           CURRENT_DATE: ${{ github.event.created_at || github.run_started_at }}
         with:
-          codex-token: ${{ secrets.COPILOT_TOKEN }}
+          codex-token: ${{ secrets.OPENAI_API_KEY }}
           prompt-path: .github/copilot/prompts/changelog-to-blog
           output-path: >-
             reports/copilot/changelog-to-blog-${{
