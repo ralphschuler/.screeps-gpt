@@ -110,3 +110,9 @@ ports:
 ## License
 
 MIT - Based on [canisminor1990/screeps-dashboard](https://github.com/canisminor1990/screeps-dashboard)
+
+## Technical Notes
+
+- Uses Node.js 18 for compatibility with screeps-dashboard dependencies (roadhog, older React/Babel versions)
+- The dashboard is pinned to a specific commit for reproducible builds
+- Frontend is pre-built in the Docker image; the API server runs at port 9000

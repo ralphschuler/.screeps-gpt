@@ -1,7 +1,7 @@
 # Development Dockerfile for screeps-dashboard
 # This image is used for local development with hot-reload support
-
-FROM node:16-alpine
+# Note: Using Node.js 18 for compatibility with screeps-dashboard dependencies
+FROM node:18-alpine
 
 WORKDIR /app
 

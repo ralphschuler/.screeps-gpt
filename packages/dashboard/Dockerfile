@@ -1,5 +1,7 @@
 # Build stage for the React frontend
-FROM node:16-alpine AS builder
+# Note: Using Node.js 18 for compatibility with screeps-dashboard dependencies
+# (roadhog, older React/Babel versions require Node.js 16-18)
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 
@@ -19,7 +21,8 @@ RUN npm install --legacy-peer-deps
 RUN npm run build
 
 # Production stage
-FROM node:16-alpine
+# Note: Using Node.js 18 for compatibility with screeps-dashboard dependencies
+FROM node:18-alpine
 
 WORKDIR /app
 
