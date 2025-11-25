@@ -44,39 +44,47 @@ describe("Copilot-Exec Force-Response Feature", () => {
     expect(description).toContain("fresh");
   });
 
+  it("should delegate to codex-exec action", () => {
+    // Verify copilot-exec now delegates to codex-exec
+    expect(actionContent).toContain("uses: ./.github/actions/codex-exec");
+  });
+
+  it("should pass force-response parameter to codex-exec", () => {
+    // Verify force-response is forwarded to codex-exec
+    expect(actionContent).toContain("force-response: ${{ inputs.force-response }}");
+  });
+
+  it("should maintain backward compatibility with copilot-token input", () => {
+    // Verify copilot-token input is mapped to codex-token
+    expect(action.inputs).toHaveProperty("copilot-token");
+    expect(actionContent).toContain("codex-token: ${{ inputs.copilot-token }}");
+  });
+});
+
+describe("Codex-Exec Implementation", () => {
+  const codexActionPath = join(process.cwd(), ".github/actions/codex-exec/action.yml");
+  const codexActionContent = readFileSync(codexActionPath, "utf-8");
+  const codexAction = parse(codexActionContent) as Action;
+
+  it("should have force-response input parameter", () => {
+    // Verify force-response parameter exists in codex-exec
+    expect(codexAction.inputs).toHaveProperty("force-response");
+  });
+
   it("should conditionally skip cache restoration when force-response is true", () => {
     // Verify cache restoration step has conditional logic
-    expect(actionContent).toContain("name: Restore result cache");
-    expect(actionContent).toContain("if: inputs.force-response != 'true'");
+    expect(codexActionContent).toContain("name: Restore result cache");
+    expect(codexActionContent).toContain("if: inputs.force-response != 'true'");
   });
 
-  it("should maintain cache-result step id for backward compatibility", () => {
-    // Verify step id is preserved for existing workflows
-    expect(actionContent).toMatch(/id:\s+cache-result/);
+  it("should cache fresh responses for future use", () => {
+    // Verify execution saves to cache directory
+    expect(codexActionContent).toContain(".codex-cache/output.txt");
   });
 
-  it("should preserve existing cache key structure", () => {
-    // Verify cache key format unchanged
-    expect(actionContent).toContain(
-      "key: copilot-result-${{ steps.render.outputs.prompt-sha }}-${{ steps.resolve-model.outputs.model }}-${{ runner.os }}"
-    );
-  });
-
-  it("should still allow cached output to be used when cache hits", () => {
-    // Verify short-circuit logic still references cache-result
-    expect(actionContent).toContain("if: steps.cache-result.outputs.cache-hit == 'true'");
-  });
-
-  it("should still cache fresh responses for future use", () => {
-    // Verify copilot execution still saves to cache directory
-    expect(actionContent).toContain(".copilot-cache/output.txt");
-    expect(actionContent).toContain("tee .copilot-cache/output.txt");
-  });
-
-  it("should preserve verbose logging for cache status", () => {
-    // Verify verbose logging step still exists
-    expect(actionContent).toContain("name: Log cache status");
-    expect(actionContent).toContain("CACHE_HIT:");
+  it("should use openai/codex-action", () => {
+    // Verify codex-exec uses the official OpenAI action
+    expect(codexActionContent).toContain("uses: openai/codex-action@v1");
   });
 });
 
