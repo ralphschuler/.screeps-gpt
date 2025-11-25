@@ -7,7 +7,6 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [0.155.21] - 2025-11-25
 
-
 ### Added
 
 - **Pathfinding**: Integrated screeps-pathfinding library by NesCafe62
@@ -28,7 +27,6 @@ All notable changes to this project are documented here. This changelog now main
 
 - **Pathfinding**: Removed DefaultPathfinder implementation
 - **Pathfinding**: Removed CartographerPathfinder implementation
-
 
 ## [0.154.0] - 2025-11-24
 
