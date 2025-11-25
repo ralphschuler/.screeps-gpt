@@ -186,10 +186,19 @@ module.exports.calculateTwoWay = function(source, destination, opts) {
 3. **Format:** Adopt similar compact string format
 4. **Enhancement:** Add TTL for path invalidation on room changes
 
-**Proposed Implementation:**
+**Proposed Implementation (Conceptual Pseudocode):**
 
 ```typescript
-// PathSerializer.ts (proposed)
+// PathSerializer.ts - Conceptual implementation sketch
+// Note: This is pseudocode showing the pattern approach. Actual implementation
+// would need to import Screeps types and implement helper methods.
+
+interface PathStep {
+  x: number;
+  y: number;
+  direction: DirectionConstant;
+}
+
 export class PathSerializer {
   private static readonly WAYPOINT = 'w';
 
@@ -208,15 +217,15 @@ export class PathSerializer {
 
   public static deserialize(serialized: string, roomName: string): RoomPosition[] {
     const positions: RoomPosition[] = [];
-    const startX = parseInt(serialized.substr(0, 2));
-    const startY = parseInt(serialized.substr(2, 2));
+    const startX = parseInt(serialized.substring(0, 2));
+    const startY = parseInt(serialized.substring(2, 4));
     
     let pos = new RoomPosition(startX, startY, roomName);
     positions.push(pos);
     
     for (let i = 4; i < serialized.length; i++) {
       if (serialized[i] === this.WAYPOINT) continue;
-      pos = this.movePos(pos, parseInt(serialized[i]));
+      pos = this.applyDirection(pos, parseInt(serialized[i]) as DirectionConstant);
       positions.push(pos);
     }
     
@@ -225,6 +234,13 @@ export class PathSerializer {
 
   private static padPosition(n: number): string {
     return n.toString().padStart(2, '0');
+  }
+
+  private static applyDirection(pos: RoomPosition, direction: DirectionConstant): RoomPosition {
+    // Implementation would apply direction offset to position
+    // See Screeps documentation for direction constants
+    const offsets = { /* direction -> {dx, dy} mapping */ };
+    // Return new RoomPosition with applied offset
   }
 }
 ```
