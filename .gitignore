@@ -153,3 +153,4 @@ packages/*/vitest.config.js.map
 packages/*/vitest.config.d.ts.map
 node_modules/.vite/
 **/node_modules/
+packages/pserver/.env

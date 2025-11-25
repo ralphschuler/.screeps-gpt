@@ -1,0 +1,23 @@
+{
+  "mods": [
+    "node_modules/screepsmod-auth/index.js",
+    "node_modules/screepsmod-admin-utils/index.js",
+    "node_modules/screepsmod-mongo/index.js",
+    "node_modules/screepsmod-bots/index.js",
+    "node_modules/screepsmod-history/index.js",
+    "node_modules/screepsmod-stats/index.js",
+    "node_modules/screepsmod-visualize/index.js",
+    "node_modules/screepsmod-dynamicmarket/index.js",
+    "node_modules/screepsmod-features/index.js",
+    "node_modules/screepsmod-portals/dist/index.js",
+    "node_modules/screepsmod-timeout/index.js",
+    "node_modules/@screepsmod/serverinfo/index.js",
+    "node_modules/screepsmod-gcltocpu/index.js",
+    "mods/screeps-launcher-cli.js"
+  ],
+  "bots": {
+    "choreographer": "node_modules/screeps-bot-choreographer/dist",
+    "overmind": "node_modules/screeps-bot-overmind/src",
+    "toolangle": "node_modules/screeps-bot-tooangel/src"
+  }
+}
