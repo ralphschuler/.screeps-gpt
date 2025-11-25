@@ -40,7 +40,7 @@ describe("MCP Protocol Compliance", () => {
     it("should define all required Screeps tools", () => {
       const tools = listTools();
 
-      const requiredTools = ["screeps.console", "screeps.memory.get", "screeps.memory.set", "screeps.stats"];
+      const requiredTools = ["screeps_console", "screeps_memory_get", "screeps_memory_set", "screeps_stats"];
 
       requiredTools.forEach(toolName => {
         const tool = tools.find(t => t.name === toolName);
@@ -62,7 +62,7 @@ describe("MCP Protocol Compliance", () => {
 
     it("should define console tool with command parameter", () => {
       const tools = listTools();
-      const consoleTool = tools.find(t => t.name === "screeps.console");
+      const consoleTool = tools.find(t => t.name === "screeps_console");
 
       expect(consoleTool).toBeDefined();
       expect(consoleTool?.inputSchema.properties).toHaveProperty("command");
@@ -71,7 +71,7 @@ describe("MCP Protocol Compliance", () => {
 
     it("should define memory.get tool with path parameter", () => {
       const tools = listTools();
-      const getTool = tools.find(t => t.name === "screeps.memory.get");
+      const getTool = tools.find(t => t.name === "screeps_memory_get");
 
       expect(getTool).toBeDefined();
       expect(getTool?.inputSchema.properties).toHaveProperty("path");
@@ -80,7 +80,7 @@ describe("MCP Protocol Compliance", () => {
 
     it("should define memory.set tool with path and value parameters", () => {
       const tools = listTools();
-      const setTool = tools.find(t => t.name === "screeps.memory.set");
+      const setTool = tools.find(t => t.name === "screeps_memory_set");
 
       expect(setTool).toBeDefined();
       expect(setTool?.inputSchema.properties).toHaveProperty("path");
@@ -91,7 +91,7 @@ describe("MCP Protocol Compliance", () => {
 
     it("should define stats tool with no required parameters", () => {
       const tools = listTools();
-      const statsTool = tools.find(t => t.name === "screeps.stats");
+      const statsTool = tools.find(t => t.name === "screeps_stats");
 
       expect(statsTool).toBeDefined();
       expect(statsTool?.inputSchema.required).toHaveLength(0);
@@ -103,7 +103,7 @@ describe("MCP Protocol Compliance", () => {
       const tools = listTools();
 
       tools.forEach(tool => {
-        expect(tool.name).toMatch(/^screeps\./);
+        expect(tool.name).toMatch(/^screeps_/);
       });
     });
 
@@ -120,8 +120,8 @@ describe("MCP Protocol Compliance", () => {
       const tools = listTools();
 
       tools.forEach(tool => {
-        // Tool names should be lowercase with dots as separators
-        expect(tool.name).toMatch(/^[a-z]+(\.[a-z]+)*$/);
+        // Tool names should be lowercase with underscores as separators
+        expect(tool.name).toMatch(/^[a-z]+(_[a-z]+)*$/);
       });
     });
   });
@@ -129,7 +129,7 @@ describe("MCP Protocol Compliance", () => {
   describe("Security considerations", () => {
     it("should document safety checks for memory.set", () => {
       const tools = listTools();
-      const setTool = tools.find(t => t.name === "screeps.memory.set");
+      const setTool = tools.find(t => t.name === "screeps_memory_set");
 
       expect(setTool?.description).toContain("safety checks");
     });
