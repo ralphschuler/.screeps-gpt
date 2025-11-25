@@ -1,4 +1,5 @@
 // Declare global for Screeps compatibility (available in both Node.js and Screeps)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const global: any;
 
 import { safeSerialize } from "./safeSerialize";
@@ -71,8 +72,8 @@ export class Logger {
     };
     // Use provided console implementation or create a safe default
     // Access console from global for Screeps compatibility
-
     this.consoleImpl =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       consoleImpl ?? ((typeof global !== "undefined" ? (global as any).console : undefined) || { log: () => {} });
   }
 

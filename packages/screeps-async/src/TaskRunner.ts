@@ -3,7 +3,7 @@ import type { TaskState, TaskStatus, TaskGeneratorFn, TaskOptions, TaskRunnerCon
 import { Logger } from "@ralphschuler/screeps-logger";
 
 /**
- *
+ * Manages and executes async tasks across multiple game ticks.
  */
 export class TaskRunner {
   private tasks: Map<string, Task<unknown>> = new Map();

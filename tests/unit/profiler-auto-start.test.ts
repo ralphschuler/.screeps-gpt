@@ -298,10 +298,6 @@ describe("Profiler auto-start functionality", () => {
     it("should provide performance benefit by avoiding redundant checks", () => {
       const { ensureProfilerRunning } = createEnsureProfilerRunning();
 
-      // Track how many times we enter the initialization logic
-      let initializationAttempts = 0;
-      const originalProfilerStart = mockMemory.profiler;
-
       // First call - should initialize
       ensureProfilerRunning();
       mockMemory.profiler!.start = mockGame.time;

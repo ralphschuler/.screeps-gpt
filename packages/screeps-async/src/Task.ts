@@ -1,7 +1,7 @@
 import type { TaskState, TaskGenerator, TaskGeneratorFn, TaskOptions } from "./types";
 
 /**
- *
+ * Represents an asynchronous task that can be paused and resumed across ticks.
  */
 export class Task<T = unknown> {
   private generator: TaskGenerator<T> | null = null;

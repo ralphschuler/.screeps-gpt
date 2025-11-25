@@ -32,7 +32,7 @@ interface RemoteBuilderMemory extends CreepMemory {
 }
 
 /**
- *
+ * Controller for remote builder creeps that construct structures in remote rooms.
  */
 export class RemoteBuilderController extends BaseRoleController<RemoteBuilderMemory> {
   public constructor() {

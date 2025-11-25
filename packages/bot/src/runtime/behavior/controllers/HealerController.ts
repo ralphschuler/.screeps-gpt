@@ -23,7 +23,7 @@ interface HealerMemory extends CreepMemory {
 }
 
 /**
- *
+ * Controller for healer creeps that heal allied creeps.
  */
 export class HealerController extends BaseRoleController<HealerMemory> {
   public constructor() {

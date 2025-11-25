@@ -29,7 +29,7 @@ interface RemoteMinerMemory extends CreepMemory {
 }
 
 /**
- *
+ * Controller for remote miner creeps that harvest resources in remote rooms.
  */
 export class RemoteMinerController extends BaseRoleController<RemoteMinerMemory> {
   public constructor() {

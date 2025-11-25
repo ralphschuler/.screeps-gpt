@@ -30,7 +30,7 @@ interface RemoteHaulerMemory extends CreepMemory {
 }
 
 /**
- *
+ * Controller for remote hauler creeps that transport resources from remote rooms.
  */
 export class RemoteHaulerController extends BaseRoleController<RemoteHaulerMemory> {
   public constructor() {

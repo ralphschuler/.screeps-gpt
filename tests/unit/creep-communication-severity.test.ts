@@ -5,8 +5,22 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { CreepCommunicationManager, CommunicationLevel } from "@runtime/behavior";
 
+interface MockCreep {
+  name: string;
+  say: ReturnType<typeof vi.fn>;
+  pos: RoomPosition;
+  room: {
+    name: string;
+    visual: {
+      line: ReturnType<typeof vi.fn>;
+      circle: ReturnType<typeof vi.fn>;
+    };
+  };
+  memory: Record<string, unknown>;
+}
+
 // Mock creep for testing
-function createMockCreep(name = "testCreep"): any {
+function createMockCreep(name = "testCreep"): MockCreep {
   const sayMock = vi.fn().mockReturnValue(OK);
   return {
     name,

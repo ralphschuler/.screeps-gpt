@@ -1,6 +1,7 @@
 import type { Action } from "../types.js";
 
 // Declare global for Screeps compatibility (available in both Node.js and Screeps)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const global: any;
 
 /**
