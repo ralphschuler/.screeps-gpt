@@ -7,30 +7,35 @@
  * - Repairing damaged structures
  * - Upgrading controller as fallback
  * - Emergency spawn refilling when needed
+ *
+ * Uses state machine from screeps-xstate for declarative behavior management.
  */
 
 import { BaseRoleController, type RoleConfig } from "./RoleController";
 import type { CreepLike } from "@runtime/types/GameContext";
 import { serviceRegistry } from "./ServiceLocator";
 import { tryPickupDroppedEnergy, isValidEnergySource } from "./helpers";
-
-// Task constants
-const BUILDER_GATHER_TASK = "gather" as const;
-const BUILDER_BUILD_TASK = "build" as const;
-const BUILDER_MAINTAIN_TASK = "maintain" as const;
-
-type BuilderTask = typeof BUILDER_GATHER_TASK | typeof BUILDER_BUILD_TASK | typeof BUILDER_MAINTAIN_TASK;
+import { StateMachine, serialize, restore } from "@ralphschuler/screeps-xstate";
+import {
+  builderStates,
+  BUILDER_INITIAL_STATE,
+  type BuilderContext,
+  type BuilderEvent
+} from "../stateMachines/builder";
 
 interface BuilderMemory extends CreepMemory {
   role: "builder";
-  task: BuilderTask;
+  task: string;
   version: number;
+  stateMachine?: unknown;
 }
 
 /**
- * Builder role controller implementation
+ * Builder role controller implementation using state machines
  */
 export class BuilderController extends BaseRoleController<BuilderMemory> {
+  private machines: Map<string, StateMachine<BuilderContext, BuilderEvent>> = new Map();
+
   public constructor() {
     const config: RoleConfig<BuilderMemory> = {
       minimum: 2,
@@ -38,7 +43,7 @@ export class BuilderController extends BaseRoleController<BuilderMemory> {
       version: 1,
       createMemory: () => ({
         role: "builder",
-        task: BUILDER_GATHER_TASK,
+        task: "gather",
         version: 1
       })
     };
@@ -49,11 +54,38 @@ export class BuilderController extends BaseRoleController<BuilderMemory> {
     return "builder";
   }
 
+  private lastCleanupTick = 0;
+
   public execute(creep: CreepLike): string {
     const memory = creep.memory as BuilderMemory;
     const comm = serviceRegistry.getCommunicationManager();
     const energyMgr = serviceRegistry.getEnergyPriorityManager();
     const wallMgr = serviceRegistry.getWallUpgradeManager();
+
+    // Clean up machines for dead creeps every 10 ticks to prevent memory leaks
+    if (typeof Game !== "undefined" && Game.time - this.lastCleanupTick >= 10) {
+      this.cleanupDeadCreepMachines();
+      this.lastCleanupTick = Game.time;
+    }
+
+    // Get or create state machine for this creep
+    let machine = this.machines.get(creep.name);
+    if (!machine) {
+      if (memory.stateMachine) {
+        machine = restore<BuilderContext, BuilderEvent>(memory.stateMachine, builderStates);
+      } else {
+        machine = new StateMachine<BuilderContext, BuilderEvent>(BUILDER_INITIAL_STATE, builderStates, {
+          creep: creep as Creep
+        });
+      }
+      this.machines.set(creep.name, machine);
+    }
+
+    // Update creep reference in context every tick
+    machine.getContext().creep = creep as Creep;
+
+    const ctx = machine.getContext();
+    const currentState = machine.getState();
 
     // CRITICAL: Check if spawn needs immediate refilling BEFORE any other task
     const hasEnergy = creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
@@ -74,18 +106,31 @@ export class BuilderController extends BaseRoleController<BuilderMemory> {
         if (result === ERR_NOT_IN_RANGE) {
           creep.moveTo(spawn, { range: 1, reusePath: 10, visualizePathStyle: { stroke: "#ff0000" } });
         }
-        return BUILDER_BUILD_TASK; // Return current task to avoid state confusion
+        // Check if empty after transfer
+        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+          machine.send({ type: "ENERGY_EMPTY" });
+        }
+        // Save state to memory and return current state
+        memory.stateMachine = serialize(machine);
+        memory.task = machine.getState();
+        return memory.task;
       }
     }
 
-    const task = this.ensureTask(memory, creep);
-
-    if (task === BUILDER_GATHER_TASK) {
+    // Execute behavior based on current state
+    if (currentState === "gather") {
       comm?.say(creep, "gather");
 
       // Priority 1: Pick up dropped energy
       if (tryPickupDroppedEnergy(creep)) {
-        return BUILDER_GATHER_TASK;
+        // Check if full after pickup
+        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+          machine.send({ type: "ENERGY_FULL" });
+        }
+        // Save state to memory and return current state
+        memory.stateMachine = serialize(machine);
+        memory.task = machine.getState();
+        return memory.task;
       }
 
       // Priority 2: Use energy priority manager to get available sources (respecting reserves)
@@ -101,7 +146,14 @@ export class BuilderController extends BaseRoleController<BuilderMemory> {
         if (result === ERR_NOT_IN_RANGE) {
           creep.moveTo(target, { range: 1, reusePath: 30 });
         }
-        return BUILDER_GATHER_TASK;
+        // Check if full after withdrawal
+        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+          machine.send({ type: "ENERGY_FULL" });
+        }
+        // Save state to memory and return current state
+        memory.stateMachine = serialize(machine);
+        memory.task = machine.getState();
+        return memory.task;
       }
 
       // Priority 3: Harvest from sources directly if no other options
@@ -112,12 +164,12 @@ export class BuilderController extends BaseRoleController<BuilderMemory> {
         if (harvestResult === ERR_NOT_IN_RANGE) {
           creep.moveTo(source, { range: 1, reusePath: 30 });
         }
+        // Check if full after harvest
+        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+          machine.send({ type: "ENERGY_FULL" });
+        }
       }
-
-      return BUILDER_GATHER_TASK;
-    }
-
-    if (task === BUILDER_BUILD_TASK) {
+    } else if (currentState === "build") {
       comm?.say(creep, "build");
 
       // Prioritize construction sites by structure type
@@ -145,77 +197,89 @@ export class BuilderController extends BaseRoleController<BuilderMemory> {
       }
 
       if (site) {
+        machine.send({ type: "START_BUILD", targetId: site.id });
         const result = creep.build(site);
         if (result === ERR_NOT_IN_RANGE) {
           creep.moveTo(site, { range: 3, reusePath: 30 });
         }
-        return BUILDER_BUILD_TASK;
+        // Check if empty after building
+        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+          machine.send({ type: "ENERGY_EMPTY" });
+        }
+      } else {
+        // No construction sites available, switch to maintain
+        machine.send({ type: "NO_CONSTRUCTION" });
       }
+    } else if (currentState === "maintain") {
+      // Maintain (repair/upgrade) fallback
+      comm?.say(creep, "repair");
 
-      memory.task = BUILDER_MAINTAIN_TASK;
+      const targetHits = wallMgr?.getTargetHits(creep.room) ?? 0;
+      const repairTargets = creep.room.find(FIND_STRUCTURES, {
+        filter: (structure: AnyStructure) => {
+          if (!("hits" in structure) || typeof structure.hits !== "number") {
+            return false;
+          }
+
+          if (structure.structureType === STRUCTURE_WALL) {
+            return structure.hits < targetHits;
+          }
+
+          if (structure.structureType === STRUCTURE_RAMPART) {
+            return structure.hits < targetHits;
+          }
+
+          return structure.hits < structure.hitsMax;
+        }
+      }) as Structure[];
+
+      const target = repairTargets.length > 0 ? (creep.pos.findClosestByPath(repairTargets) ?? repairTargets[0]) : null;
+      if (target) {
+        machine.send({ type: "START_MAINTAIN", targetId: target.id });
+        const result = creep.repair(target);
+        if (result === ERR_NOT_IN_RANGE) {
+          creep.moveTo(target, { range: 3, reusePath: 30 });
+        }
+        // Check if empty after repair
+        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+          machine.send({ type: "ENERGY_EMPTY" });
+        }
+      } else {
+        // No repair targets, upgrade controller as fallback
+        const controller = creep.room.controller;
+        if (controller) {
+          const upgrade = creep.upgradeController(controller);
+          if (upgrade === ERR_NOT_IN_RANGE) {
+            creep.moveTo(controller, { range: 3, reusePath: 30 });
+          }
+          // Check if empty after upgrade
+          if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+            machine.send({ type: "ENERGY_EMPTY" });
+          }
+        }
+      }
     }
 
-    // Maintain (repair/upgrade) fallback
-    comm?.say(creep, "repair");
+    // Save state to memory
+    memory.stateMachine = serialize(machine);
+    memory.task = machine.getState();
 
-    const targetHits = wallMgr?.getTargetHits(creep.room) ?? 0;
-    const repairTargets = creep.room.find(FIND_STRUCTURES, {
-      filter: (structure: AnyStructure) => {
-        if (!("hits" in structure) || typeof structure.hits !== "number") {
-          return false;
-        }
-
-        if (structure.structureType === STRUCTURE_WALL) {
-          return structure.hits < targetHits;
-        }
-
-        if (structure.structureType === STRUCTURE_RAMPART) {
-          return structure.hits < targetHits;
-        }
-
-        return structure.hits < structure.hitsMax;
-      }
-    }) as Structure[];
-
-    const target = repairTargets.length > 0 ? (creep.pos.findClosestByPath(repairTargets) ?? repairTargets[0]) : null;
-    if (target) {
-      const result = creep.repair(target);
-      if (result === ERR_NOT_IN_RANGE) {
-        creep.moveTo(target, { range: 3, reusePath: 30 });
-      }
-      return BUILDER_MAINTAIN_TASK;
-    }
-
-    const controller = creep.room.controller;
-    if (controller) {
-      const upgrade = creep.upgradeController(controller);
-      if (upgrade === ERR_NOT_IN_RANGE) {
-        creep.moveTo(controller, { range: 3, reusePath: 30 });
-      }
-    }
-
-    return BUILDER_MAINTAIN_TASK;
+    return memory.task;
   }
 
   /**
-   * Ensure builder task is valid and transitions properly between states
+   * Clean up state machines for dead creeps to prevent memory leaks.
    */
-  private ensureTask(memory: BuilderMemory, creep: CreepLike): BuilderTask {
-    if (
-      memory.task !== BUILDER_GATHER_TASK &&
-      memory.task !== BUILDER_BUILD_TASK &&
-      memory.task !== BUILDER_MAINTAIN_TASK
-    ) {
-      memory.task = BUILDER_GATHER_TASK;
-      return memory.task;
+  private cleanupDeadCreepMachines(): void {
+    // Skip cleanup if Game is not available (e.g., in tests)
+    if (typeof Game === "undefined" || !Game.creeps) {
+      return;
     }
 
-    if (memory.task === BUILDER_GATHER_TASK && creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
-      memory.task = BUILDER_BUILD_TASK;
-    } else if (memory.task !== BUILDER_GATHER_TASK && creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
-      memory.task = BUILDER_GATHER_TASK;
+    for (const creepName of this.machines.keys()) {
+      if (!Game.creeps[creepName]) {
+        this.machines.delete(creepName);
+      }
     }
-
-    return memory.task;
   }
 }
