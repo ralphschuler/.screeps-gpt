@@ -66,16 +66,16 @@ This runs the backend API at http://localhost:9000
 
 ### config.json
 
-| Field | Description |
-|-------|-------------|
-| `token` | Your Screeps API authentication token |
+| Field     | Description                                     |
+| --------- | ----------------------------------------------- |
+| `token`   | Your Screeps API authentication token           |
 | `grafana` | (Optional) Grafana token for additional metrics |
-| `shard` | Array of shards to monitor (e.g., `["shard3"]`) |
+| `shard`   | Array of shards to monitor (e.g., `["shard3"]`) |
 
 ### Environment Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
+| Variable   | Default      | Description      |
+| ---------- | ------------ | ---------------- |
 | `NODE_ENV` | `production` | Environment mode |
 
 ## Integration with Main Project
@@ -104,7 +104,7 @@ If port 9000 is in use, modify `docker-compose.yml`:
 
 ```yaml
 ports:
-  - "9001:9000"  # Change 9001 to an available port
+  - "9001:9000" # Change 9001 to an available port
 ```
 
 ## License
