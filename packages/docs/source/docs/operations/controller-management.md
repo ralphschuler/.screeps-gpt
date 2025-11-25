@@ -23,7 +23,7 @@ The issue was in the state transition logic. The old implementation checked ener
 
 #### Fix Applied
 
-**PR:** [#PR_NUMBER]
+**PR:** [To be updated when PR is created]
 **Commit:** 963cc44
 
 The fix involved:
@@ -66,7 +66,7 @@ if (currentState === "upgrading") {
 
 #### Related Issues
 
-- Issue #[ISSUE_NUMBER] - W1N4 controller downgrade alert
+- Issue: W1N4 controller downgrade alert (to be linked when issue is created)
 - Issue #1383 - Monitoring: Add proactive controller downgrade alerts
 - Issue #1327 - RCL 4→2 downgrade with workforce collapse (Nov 17-24)
 - Issue #1218 - Bot death spiral recovery - RCL 4→2 (closed Nov 22)

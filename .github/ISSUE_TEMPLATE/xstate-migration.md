@@ -13,7 +13,7 @@ Migrate all remaining role controllers to use xstate state machines for consiste
 ## Motivation
 
 **Context:**
-- Issue #[ISSUE_NUMBER] (W1N4 controller downgrade) revealed that UpgraderController was not using xstate properly
+- W1N4 controller downgrade incident revealed that UpgraderController was not using xstate properly
 - After migrating UpgraderController to xstate, the energy depletion issue was fixed
 - Currently only 3/14 controllers use xstate state machines
 - Inconsistent patterns across controllers make maintenance and debugging harder
@@ -238,7 +238,7 @@ For each migrated controller:
 
 ## Related Issues
 
-- #[ISSUE_NUMBER] - W1N4 controller downgrade alert (fixed by UpgraderController migration)
+- W1N4 controller downgrade alert (fixed by UpgraderController migration)
 - #1383 - Monitoring: Add proactive controller downgrade alerts
 - #1327 - RCL 4→2 downgrade with workforce collapse
 

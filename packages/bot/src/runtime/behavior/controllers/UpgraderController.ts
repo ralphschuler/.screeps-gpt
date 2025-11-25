@@ -53,13 +53,18 @@ export class UpgraderController extends BaseRoleController<UpgraderMemory> {
     return "upgrader";
   }
 
+  private lastCleanupTick = 0;
+
   public execute(creep: CreepLike): string {
     const memory = creep.memory as UpgraderMemory;
     const comm = serviceRegistry.getCommunicationManager();
     const energyMgr = serviceRegistry.getEnergyPriorityManager();
 
-    // Clean up machines for dead creeps to prevent memory leaks
-    this.cleanupDeadCreepMachines();
+    // Clean up machines for dead creeps every 10 ticks to prevent memory leaks without impacting performance
+    if (typeof Game !== "undefined" && Game.time && Game.time - this.lastCleanupTick >= 10) {
+      this.cleanupDeadCreepMachines();
+      this.lastCleanupTick = Game.time;
+    }
 
     // Get or create state machine for this creep
     let machine = this.machines.get(creep.name);
