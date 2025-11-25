@@ -3,12 +3,17 @@ import { RoleControllerManager } from "@runtime/behavior/RoleControllerManager";
 import type { CreepLike, GameContext, RoomLike } from "@runtime/types/GameContext";
 
 describe("Regression: creeps cycling at room exits", () => {
-  it("remote miner should not cycle when at edge of target room", () => {
+  it("remote upgrader should not cycle when at edge of target room", () => {
     const controller = new RoleControllerManager({ log: vi.fn(), warn: vi.fn() });
 
     const targetRoom: RoomLike = {
       name: "W1N1",
-      controller: null,
+      controller: { 
+        id: "controller-1", 
+        my: true,
+        progress: 0,
+        progressTotal: 1000
+      } as unknown as StructureController,
       find: (type: FindConstant) => {
         if (type === FIND_SOURCES_ACTIVE) {
           return [
@@ -25,10 +30,10 @@ describe("Regression: creeps cycling at room exits", () => {
     };
 
     // Creep is at the edge of the target room (position y=1)
-    const remoteMiner: CreepLike = {
-      name: "remoteMiner-edge",
+    const remoteUpgrader: CreepLike = {
+      name: "remoteUpgrader-edge",
       memory: {
-        role: "remoteMiner",
+        role: "remoteUpgrader",
         task: "travel",
         version: 1,
         homeRoom: "W0N0",
@@ -56,29 +61,29 @@ describe("Regression: creeps cycling at room exits", () => {
     const game: GameContext = {
       time: 600,
       cpu: { getUsed: () => 0, limit: 20, bucket: 1000 },
-      creeps: { remote: remoteMiner },
+      creeps: { remote: remoteUpgrader },
       spawns: {},
       rooms: { W1N1: targetRoom }
     };
 
     const memory = { creepCounter: 0 } as Memory;
-    const roleCounts = { harvester: 4, upgrader: 3, builder: 2, remoteMiner: 1 };
+    const roleCounts = { harvester: 4, upgrader: 3, builder: 2, remoteUpgrader: 1 };
 
     // Execute behavior - should stay in travel task when near edge
     controller.execute(game, memory, roleCounts);
 
     // The creep should stay in travel task because it's near the edge
-    expect(remoteMiner.memory.task).toBe("travel");
+    expect(remoteUpgrader.memory.task).toBe("travel");
     // Should have called moveTo to continue toward center
-    expect(remoteMiner.moveTo).toHaveBeenCalled();
+    expect(remoteUpgrader.moveTo).toHaveBeenCalled();
 
     // Move creep away from edge
-    remoteMiner.pos.y = 10; // Now well inside the room
+    remoteUpgrader.pos.y = 10; // Now well inside the room
     game.time = 601;
     controller.execute(game, memory, roleCounts);
 
-    // Now it should transition to mine task
-    expect(remoteMiner.memory.task).toBe("mine");
+    // Now it should transition to gather task (since it has no energy)
+    expect(remoteUpgrader.memory.task).toBe("gather");
   });
 
   it.skip("remote hauler should not cycle when at edge of target room", () => {
@@ -165,21 +170,25 @@ describe("Regression: creeps cycling at room exits", () => {
     expect(remoteHauler.memory.task).toBe("remotePickup");
   });
 
-  it("remote miner should not cycle when returning at edge of home room", () => {
+  it("remote upgrader should stay in remote room and cycle between gather and upgrade", () => {
     const controller = new RoleControllerManager({ log: vi.fn(), warn: vi.fn() });
 
-    const homeRoom: RoomLike = {
-      name: "W0N0",
-      controller: { id: "home-controller", progress: 0, progressTotal: 0 } as unknown as StructureController,
+    const targetRoom: RoomLike = {
+      name: "W1N1",
+      controller: { 
+        id: "target-controller", 
+        my: true,
+        progress: 0,
+        progressTotal: 1000
+      } as unknown as StructureController,
       find: (type: FindConstant) => {
-        if (type === FIND_STRUCTURES) {
+        if (type === FIND_SOURCES_ACTIVE) {
           return [
             {
-              structureType: STRUCTURE_STORAGE,
-              store: {
-                getFreeCapacity: vi.fn(() => 10000)
-              },
-              pos: { x: 25, y: 25 }
+              id: "source-1" as Id<Source>,
+              pos: { x: 25, y: 25 },
+              energy: 3000,
+              energyCapacity: 3000
             }
           ];
         }
@@ -187,31 +196,28 @@ describe("Regression: creeps cycling at room exits", () => {
       }
     };
 
-    // Creep is at the edge of the home room (position x=0) while returning
-    const remoteMiner: CreepLike = {
-      name: "remoteMiner-returning",
+    // Remote upgrader in target room with energy, should upgrade
+    const remoteUpgrader: CreepLike = {
+      name: "remoteUpgrader-cycle",
       memory: {
-        role: "remoteMiner",
-        task: "return",
+        role: "remoteUpgrader",
+        task: "upgrade",
         version: 1,
         homeRoom: "W0N0",
         targetRoom: "W1N1"
       },
       store: {
-        getFreeCapacity: vi.fn(() => 0),
-        getUsedCapacity: vi.fn(() => 50)
+        getFreeCapacity: vi.fn(() => 50),
+        getUsedCapacity: vi.fn(() => 0) // Empty energy
       },
       pos: {
-        x: 0, // At edge of room
+        x: 25,
         y: 25,
-        findClosestByPath: vi.fn(() => ({
-          structureType: STRUCTURE_STORAGE,
-          pos: { x: 25, y: 25 }
-        }))
+        findClosestByPath: vi.fn(() => ({ id: "source-1", pos: { x: 25, y: 25 } }))
       },
-      room: homeRoom, // In the home room
+      room: targetRoom, // In the target room
       harvest: vi.fn(() => OK),
-      transfer: vi.fn(() => ERR_NOT_IN_RANGE),
+      transfer: vi.fn(() => OK),
       moveTo: vi.fn(() => OK),
       upgradeController: vi.fn(() => OK),
       withdraw: vi.fn(() => OK),
@@ -222,28 +228,25 @@ describe("Regression: creeps cycling at room exits", () => {
     const game: GameContext = {
       time: 600,
       cpu: { getUsed: () => 0, limit: 20, bucket: 1000 },
-      creeps: { remote: remoteMiner },
+      creeps: { remote: remoteUpgrader },
       spawns: {},
-      rooms: { W0N0: homeRoom }
+      rooms: { W1N1: targetRoom }
     };
 
     const memory = { creepCounter: 0 } as Memory;
-    const roleCounts = { harvester: 4, upgrader: 3, builder: 2, remoteMiner: 1 };
+    const roleCounts = { harvester: 4, upgrader: 3, builder: 2, remoteUpgrader: 1 };
 
-    // Execute behavior - creep should stay in return task and move toward center
+    // Execute behavior - should switch to gather when empty
     controller.execute(game, memory, roleCounts);
-    expect(remoteMiner.memory.task).toBe("return");
+    expect(remoteUpgrader.memory.task).toBe("gather");
 
-    // Should move toward center (to avoid cycling back to target room)
-    expect(remoteMiner.moveTo).toHaveBeenCalled();
-
-    // Move creep away from edge
-    remoteMiner.pos.x = 15; // Now well inside the room
+    // Simulate gathering energy
+    remoteUpgrader.store.getUsedCapacity = vi.fn(() => 50);
+    remoteUpgrader.store.getFreeCapacity = vi.fn(() => 0);
     game.time = 601;
     controller.execute(game, memory, roleCounts);
-    expect(remoteMiner.memory.task).toBe("return");
 
-    // Should continue normal delivery behavior
-    expect(remoteMiner.transfer).toHaveBeenCalled();
+    // Should switch back to upgrade when full
+    expect(remoteUpgrader.memory.task).toBe("upgrade");
   });
 });

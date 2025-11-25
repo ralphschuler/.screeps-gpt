@@ -61,12 +61,12 @@ export class BodyComposer {
         pattern: [WORK, CARRY, MOVE]
       },
 
-      // Remote Miner: Work-heavy for efficient remote mining
-      // Base: 2 WORK, 1 CARRY, 2 MOVE (350 energy)
-      // Pattern: 1 WORK, 1 MOVE (prioritize work and movement)
-      remoteMiner: {
-        base: [WORK, WORK, CARRY, MOVE, MOVE],
-        pattern: [WORK, MOVE]
+      // Remote Upgrader: Work-heavy for upgrading remote controllers
+      // Base: 2 WORK, 2 CARRY, 3 MOVE (400 energy)
+      // Pattern: 1 WORK, 1 CARRY, 1 MOVE (balanced scaling for upgrading and gathering)
+      remoteUpgrader: {
+        base: [WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE],
+        pattern: [WORK, CARRY, MOVE]
       },
 
       // Remote Builder: Balanced work/carry/move for remote construction

@@ -32,10 +32,10 @@ import {
   REPAIRER_INITIAL_STATE,
   type RepairerContext,
   type RepairerEvent,
-  remoteMinerStates,
-  REMOTE_MINER_INITIAL_STATE,
-  type RemoteMinerContext,
-  type RemoteMinerEvent,
+  remoteUpgraderStates,
+  REMOTE_UPGRADER_INITIAL_STATE,
+  type RemoteUpgraderContext,
+  type RemoteUpgraderEvent,
   remoteHaulerStates,
   REMOTE_HAULER_INITIAL_STATE,
   type RemoteHaulerContext,
@@ -66,7 +66,7 @@ type CreepContext =
   | HaulerContext
   | StationaryHarvesterContext
   | RepairerContext
-  | RemoteMinerContext
+  | RemoteUpgraderContext
   | RemoteHaulerContext
   | AttackerContext
   | HealerContext
@@ -81,7 +81,7 @@ type CreepEvent =
   | HaulerEvent
   | StationaryHarvesterEvent
   | RepairerEvent
-  | RemoteMinerEvent
+  | RemoteUpgraderEvent
   | RemoteHaulerEvent
   | AttackerEvent
   | HealerEvent
@@ -93,7 +93,7 @@ type RoleName =
   | "harvester"
   | "upgrader"
   | "builder"
-  | "remoteMiner"
+  | "remoteUpgrader"
   | "remoteHauler"
   | "stationaryHarvester"
   | "hauler"
@@ -134,9 +134,9 @@ const ROLE_CONFIGS: Record<RoleName, RoleConfig> = {
     states: repairerStates as Record<string, StateConfig<CreepContext, CreepEvent>>,
     initialState: REPAIRER_INITIAL_STATE
   },
-  remoteMiner: {
-    states: remoteMinerStates as Record<string, StateConfig<CreepContext, CreepEvent>>,
-    initialState: REMOTE_MINER_INITIAL_STATE
+  remoteUpgrader: {
+    states: remoteUpgraderStates as Record<string, StateConfig<CreepContext, CreepEvent>>,
+    initialState: REMOTE_UPGRADER_INITIAL_STATE
   },
   remoteHauler: {
     states: remoteHaulerStates as Record<string, StateConfig<CreepContext, CreepEvent>>,
@@ -243,12 +243,12 @@ export class StateMachineManager {
 
     // Add role-specific context properties
     switch (role) {
-      case "remoteMiner":
+      case "remoteUpgrader":
         return {
           ...baseContext,
           homeRoom: creep.memory.homeRoom ?? creep.room.name,
           targetRoom: creep.memory.targetRoom ?? creep.room.name
-        } as RemoteMinerContext;
+        } as RemoteUpgraderContext;
 
       case "remoteHauler":
         return {
