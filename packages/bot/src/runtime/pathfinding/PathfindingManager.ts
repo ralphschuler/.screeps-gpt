@@ -1,4 +1,3 @@
-import type { PathfindingOptions } from "./PathfindingProvider";
 import { NesCafePathfinder, type NesCafePathfindingOptions } from "./NesCafePathfinder";
 import { PathCache, type PathCacheConfig, type PathCacheMetrics } from "./PathCache";
 
