@@ -67,7 +67,13 @@ interface IPathingManager {
   moveTo(creep: Creep, target: RoomPosition | { pos: RoomPosition }, options?: NesCafePathfindingOptions): number;
   moveOffRoad(
     creep: Creep,
-    options?: { target?: RoomPosition; range?: number; priority?: number; moveOffContainer?: boolean; moveOffExit?: boolean }
+    options?: {
+      target?: RoomPosition;
+      range?: number;
+      priority?: number;
+      moveOffContainer?: boolean;
+      moveOffExit?: boolean;
+    }
   ): boolean;
   findPath(
     startPos: RoomPosition,
