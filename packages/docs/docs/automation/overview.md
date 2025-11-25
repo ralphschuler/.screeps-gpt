@@ -418,7 +418,7 @@ Quality checks are consolidated into efficient guard workflows using strategy ma
   - **regression** - Regression test validation
   - **docs** - Documentation build and validation tests
 - Benefits: Single workflow file, parallel test execution, faster feedback
-- Notes: E2E tests require PTR secrets. Regression test failures must be reproduced with a regression test before applying fixes (see repository rules in [README](../../README.md)).
+- Notes: E2E tests in `tests/e2e/` are mocked and do not require PTR secrets; they only use environment variables for labeling test output. Regression test failures must be reproduced with a regression test before applying fixes (see repository rules in [README](../../README.md)).
 
 ### Guard - Version Index (`guard-version.yml`)
 
