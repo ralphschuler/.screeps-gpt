@@ -165,10 +165,10 @@ describe("Tool Handlers", () => {
       const tools = listTools();
 
       expect(tools).toHaveLength(4);
-      expect(tools.some(t => t.name === "screeps.console")).toBe(true);
-      expect(tools.some(t => t.name === "screeps.memory.get")).toBe(true);
-      expect(tools.some(t => t.name === "screeps.memory.set")).toBe(true);
-      expect(tools.some(t => t.name === "screeps.stats")).toBe(true);
+      expect(tools.some(t => t.name === "screeps_console")).toBe(true);
+      expect(tools.some(t => t.name === "screeps_memory_get")).toBe(true);
+      expect(tools.some(t => t.name === "screeps_memory_set")).toBe(true);
+      expect(tools.some(t => t.name === "screeps_stats")).toBe(true);
     });
 
     it("should include input schemas for all tools", () => {
