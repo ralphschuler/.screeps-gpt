@@ -18,7 +18,7 @@ export { RepairerController } from "./RepairerController";
 
 // Specialized roles
 export { StationaryHarvesterController } from "./StationaryHarvesterController";
-export { RemoteMinerController } from "./RemoteMinerController";
+export { RemoteUpgraderController } from "./RemoteUpgraderController";
 export { RemoteHaulerController } from "./RemoteHaulerController";
 export { RemoteBuilderController } from "./RemoteBuilderController";
 

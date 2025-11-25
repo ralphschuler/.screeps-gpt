@@ -10,7 +10,7 @@ export * from "./builder";
 export * from "./hauler";
 export * from "./stationaryHarvester";
 export * from "./repairer";
-export * from "./remoteMiner";
+export * from "./remoteUpgrader";
 export * from "./remoteHauler";
 export * from "./attacker";
 export * from "./healer";
