@@ -10,6 +10,12 @@ All notable changes to this project are documented here. This changelog now main
 
 ### Added
 
+- **Documentation**: Comprehensive Screeps wiki topic research
+  - Created `docs/research/screepspl-wiki-comprehensive-topics.md` covering all major wiki.screepspl.us topics
+  - Documented 17 major topic areas: RCL progression, creep body parts, combat strategies, CPU optimization, minerals/labs, pathfinding, market economy, private servers, power mechanics, remote harvesting, links, observers, spawning, safe mode, room claiming, factories, and API constants
+  - Added implementation priority matrix for .screeps-gpt integration
+  - Cross-referenced current bot implementation status with wiki best practices
+  - Supplements existing `screepspl-wiki-analysis.md` with detailed topic coverage
 - **Documentation**: Created GitHub Models in Actions migration assessment
   - Comprehensive comparison between Copilot CLI and `actions/ai-inference`
   - Identified workflows suitable for migration vs. those requiring Copilot CLI
