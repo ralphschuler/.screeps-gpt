@@ -1,0 +1,39 @@
+services:
+  # Screeps Dashboard - React frontend and Express backend
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./config.json:/app/server/config.json:ro
+      - dashboard-data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+
+  # Development mode - mounts source for hot reload
+  dashboard-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    environment:
+      - NODE_ENV=development
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./config.json:/app/server/config.json:ro
+    stdin_open: true
+    tty: true
+    profiles:
+      - dev
+
+volumes:
+  dashboard-data:

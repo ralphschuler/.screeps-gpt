@@ -1,0 +1,31 @@
+# Development Dockerfile for screeps-dashboard
+# This image is used for local development with hot-reload support
+# Note: Using Node.js 18 for compatibility with screeps-dashboard dependencies
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install git and process manager
+RUN apk add --no-cache git
+
+# Clone the screeps-dashboard repository at a specific commit for reproducibility
+# Pinned to commit 5e50869cf1e1789158a10e9673b8a6d6a5906148
+ARG DASHBOARD_COMMIT=5e50869cf1e1789158a10e9673b8a6d6a5906148
+RUN git clone https://github.com/canisminor1990/screeps-dashboard.git . && \
+    git checkout ${DASHBOARD_COMMIT}
+
+# Install all dependencies (including dev dependencies)
+RUN npm install --legacy-peer-deps
+
+# Install server dependencies
+WORKDIR /app/server
+RUN npm install --legacy-peer-deps
+
+WORKDIR /app
+
+# Expose ports for frontend dev server and backend API
+EXPOSE 8000 9000
+
+# Use npm-run-all pattern to run both services properly
+# Start server first, then frontend
+CMD ["sh", "-c", "node server/server.js"]
