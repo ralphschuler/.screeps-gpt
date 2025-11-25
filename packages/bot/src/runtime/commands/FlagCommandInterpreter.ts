@@ -87,8 +87,9 @@ export class FlagCommandInterpreter {
   public parseFlags(game: GameContext): FlagCommand[] {
     const commands: FlagCommand[] = [];
 
-    for (const flagName in game.flags) {
-      const flag: Flag | undefined = game.flags[flagName];
+    const flags = game.flags as Record<string, Flag | undefined>;
+    for (const flagName in flags) {
+      const flag = flags[flagName];
       if (!flag) continue;
 
       const command = this.parseSingleFlag(flag);
@@ -233,8 +234,9 @@ export class FlagCommandInterpreter {
   private hasGCL(game: GameContext, memory: Memory): boolean {
     const controlledRooms = Object.values(game.rooms).filter(room => room.controller?.my).length;
     // GCL level determines max rooms (simplified check)
-    const gclLevel = memory.gcl?.level as number | undefined;
-    return controlledRooms < (gclLevel ?? 1);
+    const gclMemory = memory.gcl as { level?: number } | undefined;
+    const gclLevel = gclMemory?.level ?? 1;
+    return controlledRooms < gclLevel;
   }
 
   /**

@@ -157,7 +157,7 @@ Memory.flagCommands = {
 
 ## Visual Feedback
 
-When room visuals are enabled (`Memory.experimentalFeatures.roomVisuals = true`):
+Room visuals are enabled by default and show flag command status near each flag:
 
 **Valid Command:**
 ```
@@ -325,9 +325,9 @@ Flag commands can be tested without deployment:
 
 **Problem:** Flag command status not displayed
 **Solutions:**
-- Enable room visuals: `Memory.experimentalFeatures.roomVisuals = true`
+- Verify room visuals not disabled: Check `Memory.experimentalFeatures.roomVisuals !== false`
 - Verify `showFlagCommands` config enabled (default: true)
-- Check CPU budget not exhausted
+- Check CPU budget not exhausted (visuals skip if CPU usage > 90%)
 
 ## Related Documentation
 
