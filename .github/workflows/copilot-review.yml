@@ -24,7 +24,7 @@ jobs:
       - name: Run Copilot repository audit
         uses: ./.github/actions/copilot-audit-agent
         with:
-          copilot-token: ${{ secrets.COPILOT_TOKEN }}
+          copilot-token: ${{ secrets.OPENAI_API_KEY }}
           run-url: >-
             https://github.com/${{ github.repository }}/actions/runs/${{
             github.run_id }}
