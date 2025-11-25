@@ -1,9 +1,9 @@
 ---
 name: Migrate All Role Controllers to xstate
 about: Track the migration of all role controllers to use xstate state machines for consistency
-title: 'refactor(runtime): Migrate remaining role controllers to xstate state machines'
-labels: 'type/enhancement, runtime, refactor, state-machine'
-assignees: ''
+title: "refactor(runtime): Migrate remaining role controllers to xstate state machines"
+labels: "type/enhancement, runtime, refactor, state-machine"
+assignees: ""
 ---
 
 ## Summary
@@ -13,12 +13,14 @@ Migrate all remaining role controllers to use xstate state machines for consiste
 ## Motivation
 
 **Context:**
+
 - W1N4 controller downgrade incident revealed that UpgraderController was not using xstate properly
 - After migrating UpgraderController to xstate, the energy depletion issue was fixed
 - Currently only 3/14 controllers use xstate state machines
 - Inconsistent patterns across controllers make maintenance and debugging harder
 
 **Benefits of xstate migration:**
+
 1. **Declarative state management**: Clear, testable state definitions
 2. **Event-driven transitions**: Predictable behavior changes based on events
 3. **Guard conditions**: Safe state transitions with validation
@@ -79,12 +81,7 @@ Based on the successful UpgraderController migration, each controller should fol
 
 ```typescript
 import { StateMachine, serialize, restore } from "@ralphschuler/screeps-xstate";
-import {
-  roleStates,
-  ROLE_INITIAL_STATE,
-  type RoleContext,
-  type RoleEvent
-} from "../stateMachines/role";
+import { roleStates, ROLE_INITIAL_STATE, type RoleContext, type RoleEvent } from "../stateMachines/role";
 ```
 
 ### 2. Add State Machine Property
@@ -112,10 +109,10 @@ interface RoleMemory extends CreepMemory {
 ```typescript
 public execute(creep: CreepLike): string {
   const memory = creep.memory as RoleMemory;
-  
+
   // Clean up dead creeps
   this.cleanupDeadCreepMachines();
-  
+
   // Get or create state machine
   let machine = this.machines.get(creep.name);
   if (!machine) {
@@ -130,10 +127,10 @@ public execute(creep: CreepLike): string {
     }
     this.machines.set(creep.name, machine);
   }
-  
+
   // Update creep reference
   machine.getContext().creep = creep as Creep;
-  
+
   const currentState = machine.getState();
   // ...
 }
