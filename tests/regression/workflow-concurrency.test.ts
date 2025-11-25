@@ -11,17 +11,12 @@ describe("Workflow concurrency controls", () => {
   const expectedWorkflows = [
     // Guard workflows
     "guard-build.yml",
+    "guard-code-quality.yml",
     "guard-coverage.yml",
     "guard-deprecation.yml",
-    "guard-format.yml",
-    "guard-lint.yml",
     "guard-security-audit.yml",
-    "guard-test-docs.yml",
-    "guard-test-e2e.yml",
-    "guard-test-regression.yml",
-    "guard-test-unit.yml",
+    "guard-tests.yml",
     "guard-version.yml",
-    "guard-yaml-lint.yml",
     // Copilot automation workflows
     "copilot-changelog-to-blog.yml",
     "ci-auto-issue.yml",
@@ -87,15 +82,10 @@ describe("Workflow concurrency controls", () => {
   describe("Guard workflows", () => {
     const guardWorkflows = [
       "guard-build.yml",
+      "guard-code-quality.yml",
       "guard-coverage.yml",
-      "guard-format.yml",
-      "guard-lint.yml",
-      "guard-test-docs.yml",
-      "guard-test-e2e.yml",
-      "guard-test-regression.yml",
-      "guard-test-unit.yml",
-      "guard-version.yml",
-      "guard-yaml-lint.yml"
+      "guard-tests.yml",
+      "guard-version.yml"
     ];
 
     for (const workflowFile of guardWorkflows) {
