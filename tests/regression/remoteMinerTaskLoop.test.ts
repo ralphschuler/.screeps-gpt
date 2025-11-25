@@ -8,20 +8,22 @@ describe("Regression: remote upgrader task loop", () => {
 
     const targetRoom: RoomLike = {
       name: "W1N1",
-      controller: { 
-        id: "target-controller", 
-        progress: 0, 
+      controller: {
+        id: "target-controller",
+        progress: 0,
         progressTotal: 0,
-        my: true 
+        my: true
       } as unknown as StructureController,
       find: (type: FindConstant) => {
         if (type === FIND_SOURCES_ACTIVE) {
-          return [{
-            id: "source-1" as Id<Source>,
-            pos: { x: 25, y: 25 },
-            energy: 3000,
-            energyCapacity: 3000
-          }];
+          return [
+            {
+              id: "source-1" as Id<Source>,
+              pos: { x: 25, y: 25 },
+              energy: 3000,
+              energyCapacity: 3000
+            }
+          ];
         }
         if (type === FIND_STRUCTURES || type === FIND_CONSTRUCTION_SITES) {
           return [];
@@ -43,10 +45,10 @@ describe("Regression: remote upgrader task loop", () => {
         getFreeCapacity: vi.fn(() => 50),
         getUsedCapacity: vi.fn(() => 0)
       },
-      pos: { 
+      pos: {
         x: 25,
         y: 25,
-        findClosestByPath: vi.fn(() => null) 
+        findClosestByPath: vi.fn(() => null)
       },
       room: targetRoom,
       harvest: vi.fn(() => OK),

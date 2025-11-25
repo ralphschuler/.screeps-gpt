@@ -8,8 +8,8 @@ describe("Regression: creeps cycling at room exits", () => {
 
     const targetRoom: RoomLike = {
       name: "W1N1",
-      controller: { 
-        id: "controller-1", 
+      controller: {
+        id: "controller-1",
         my: true,
         progress: 0,
         progressTotal: 1000
@@ -175,8 +175,8 @@ describe("Regression: creeps cycling at room exits", () => {
 
     const targetRoom: RoomLike = {
       name: "W1N1",
-      controller: { 
-        id: "target-controller", 
+      controller: {
+        id: "target-controller",
         my: true,
         progress: 0,
         progressTotal: 1000
