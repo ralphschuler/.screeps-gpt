@@ -11,6 +11,8 @@ on:
     paths:
       - .github/workflows/copilot-setup-steps.yml
 
+env:
+  SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
 
 permissions:
   id-token: write
