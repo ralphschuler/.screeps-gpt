@@ -35,7 +35,31 @@ import {
 } from "./handlers/tools.js";
 
 /**
- * Create and configure the MCP server
+ * Create and configure the MCP server for Screeps integration.
+ *
+ * This factory function creates a configured MCP server instance that:
+ * - Exposes Screeps game resources (rooms, creeps, spawns, memory, stats)
+ * - Provides tools for console commands and memory operations
+ * - Handles lazy connection initialization to the Screeps API
+ *
+ * @param config - Server configuration including name, version, and Screeps credentials
+ * @returns Configured MCP Server instance ready for connection
+ *
+ * @example
+ * ```typescript
+ * const config: MCPServerConfig = {
+ *   name: "screeps-mcp",
+ *   version: "0.1.0",
+ *   screeps: {
+ *     token: process.env.SCREEPS_TOKEN,
+ *     host: "screeps.com",
+ *     shard: "shard3"
+ *   }
+ * };
+ *
+ * const server = createMCPServer(config);
+ * await server.connect(new StdioServerTransport());
+ * ```
  */
 export function createMCPServer(config: MCPServerConfig) {
   /**
@@ -174,7 +198,19 @@ export function createMCPServer(config: MCPServerConfig) {
 }
 
 /**
- * Main function to start the server
+ * Main function to start the MCP server.
+ *
+ * Loads configuration from environment variables and starts the server with
+ * stdio transport for communication with MCP clients.
+ *
+ * Required environment variables:
+ * - `SCREEPS_TOKEN` or `SCREEPS_EMAIL` + `SCREEPS_PASSWORD`: Authentication
+ *
+ * Optional environment variables:
+ * - `SCREEPS_HOST`: Server hostname (default: screeps.com)
+ * - `SCREEPS_PORT`: Server port (default: 443)
+ * - `SCREEPS_PROTOCOL`: Protocol (default: https)
+ * - `SCREEPS_SHARD`: Target shard (default: shard3)
  */
 async function main() {
   // Load configuration from environment variables

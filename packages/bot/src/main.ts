@@ -1,3 +1,22 @@
+/**
+ * Screeps Bot - Main Entry Point
+ *
+ * This module serves as the application entry point for the Screeps AI bot.
+ * It initializes core systems (kernel, profiler, event bus) and defines the main
+ * game loop that executes every tick.
+ *
+ * Key responsibilities:
+ * - Initialize and configure the runtime kernel
+ * - Set up profiler for CPU monitoring (when enabled)
+ * - Subscribe to runtime events for debugging
+ * - Expose global utilities for console access (Profiler, Diagnostics, EventBus)
+ * - Execute the main game loop with proper error handling
+ *
+ * @module main
+ * @see {@link Kernel} for process scheduling and lifecycle management
+ * @see {@link packages/README.md} for TSDoc documentation standards
+ */
+
 import { Kernel } from "@ralphschuler/screeps-kernel";
 import type { GameContext } from "@runtime/types/GameContext";
 import { init as initProfiler } from "@ralphschuler/screeps-profiler";
@@ -104,6 +123,25 @@ function ensureProfilerRunning(): void {
   }
 }
 
+/**
+ * Main game loop executed by the Screeps runtime every tick.
+ *
+ * This function is the entry point for all bot logic. It performs:
+ * 1. Profiler initialization (if enabled at build time)
+ * 2. Memory.stats defensive initialization for telemetry
+ * 3. Game context validation
+ * 4. Kernel execution with all registered processes
+ *
+ * Errors are caught and logged to prevent the bot from crashing.
+ * The kernel manages process scheduling and CPU budget protection.
+ *
+ * @example
+ * ```typescript
+ * // This function is called automatically by the Screeps runtime
+ * // Export it from main.ts:
+ * export { loop };
+ * ```
+ */
 export const loop = (): void => {
   try {
     // Ensure profiler is running on every tick

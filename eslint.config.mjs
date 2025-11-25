@@ -8,6 +8,7 @@
 import tsParser from "@typescript-eslint/parser";
 import tsPlugin from "@typescript-eslint/eslint-plugin";
 import importPlugin from "eslint-plugin-import";
+import jsdocPlugin from "eslint-plugin-jsdoc";
 import prettierConfig from "eslint-config-prettier";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
@@ -56,7 +57,8 @@ export default [
     },
     plugins: {
       "@typescript-eslint": tsPlugin,
-      import: importPlugin
+      import: importPlugin,
+      jsdoc: jsdocPlugin
     },
     rules: {
       // TypeScript recommended rules (without expensive type-checking rules)
@@ -71,6 +73,23 @@ export default [
 
       // Deprecation detection rules
       "@typescript-eslint/no-deprecated": "warn",
+
+      // JSDoc/TSDoc documentation rules (set to warn for incremental adoption)
+      // See packages/README.md for documentation style guide
+      "jsdoc/require-jsdoc": [
+        "warn",
+        {
+          require: {
+            FunctionDeclaration: false,
+            ClassDeclaration: true,
+            MethodDefinition: false
+          },
+          publicOnly: true,
+          checkConstructors: false,
+          contexts: ["ExportNamedDeclaration > ClassDeclaration"]
+        }
+      ],
+      "jsdoc/require-description": ["warn", { contexts: ["ClassDeclaration"] }],
 
       // Prettier integration (disable conflicting rules)
       ...prettierConfig.rules

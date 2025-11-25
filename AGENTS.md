@@ -114,6 +114,31 @@ Agents working on runtime code should understand:
 - Keep runtime code deterministic; guard use of `Math.random()` behind helper utilities if predictable output matters for tests.
 - Node.js 18.x–22.x is the supported runtime window (see `.nvmrc` for the default Node 20 toolchain).
 
+**Code Documentation Standards:**
+
+All exported classes, interfaces, and public methods require TSDoc comments. See [`packages/README.md`](packages/README.md) for the detailed style guide.
+
+- **Purpose**: What does this code do?
+- **Parameters**: What inputs does it accept?
+- **Returns**: What does it produce?
+- **Examples**: How should it be used? (for complex APIs)
+- **Side Effects**: What state does it modify?
+
+Example:
+
+```typescript
+/**
+ * Validates Game object at runtime to ensure it conforms to GameContext interface.
+ *
+ * @param game - Game object from Screeps API
+ * @returns Validated GameContext object
+ * @throws {TypeError} if Game object is missing required properties
+ */
+function validateGameContext(game: Game): GameContext {
+  // ...
+}
+```
+
 **Feature Enablement Policy:**
 
 - **All new features and capabilities must be enabled by default** from the point of implementation.

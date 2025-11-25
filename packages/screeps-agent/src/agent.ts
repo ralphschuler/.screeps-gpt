@@ -1,8 +1,21 @@
 #!/usr/bin/env node
 /**
- * Screeps Agent - Main Orchestration
+ * Screeps Agent - Main Orchestration Module
  *
- * Autonomous agent for Screeps bot development with Docker-based MCP server interaction.
+ * This module provides the autonomous agent implementation for Screeps bot development.
+ * The agent connects to a Docker-based MCP server and can execute various development
+ * tasks including code review, feature implementation, testing, and deployment.
+ *
+ * Key capabilities:
+ * - Pull request review and code analysis
+ * - Autonomous feature implementation
+ * - Test execution and validation
+ * - Performance optimization recommendations
+ * - Documentation updates
+ *
+ * @module screeps-agent
+ * @see {@link ScreensAgent} for the main agent class
+ * @see {@link MCPClient} for MCP server communication
  */
 
 import { MCPClient } from "./mcp/client.js";
@@ -20,7 +33,25 @@ import {
 } from "./types.js";
 
 /**
- * Main agent class for orchestrating development tasks
+ * Main agent class for orchestrating Screeps development tasks.
+ *
+ * The ScreensAgent provides autonomous capabilities for various development workflows.
+ * It connects to the Screeps game via MCP server and can perform code reviews,
+ * implement features, run tests, and deploy changes.
+ *
+ * @example
+ * ```typescript
+ * const agent = new ScreensAgent({
+ *   name: "my-agent",
+ *   version: "1.0.0",
+ *   screeps: { token: process.env.SCREEPS_TOKEN, shard: "shard3" },
+ *   autonomyLevel: AutonomyLevel.SemiAutonomous
+ * });
+ *
+ * await agent.initialize();
+ * const result = await agent.executeTask({ task: AgentTask.ReviewPR, parameters: {} });
+ * await agent.shutdown();
+ * ```
  */
 export class ScreensAgent {
   private config: AgentConfig;
@@ -40,7 +71,12 @@ export class ScreensAgent {
   }
 
   /**
-   * Initialize the agent
+   * Initialize the agent and connect to the MCP server.
+   *
+   * This method must be called before executing any tasks. It establishes
+   * the connection to the Screeps MCP server and verifies connectivity.
+   *
+   * @throws {Error} if MCP connection cannot be established
    */
   public async initialize(): Promise<void> {
     console.log(`🤖 Initializing Screeps Agent: ${this.config.name}`);
@@ -59,7 +95,14 @@ export class ScreensAgent {
   }
 
   /**
-   * Execute a task
+   * Execute a development task.
+   *
+   * Routes the task to the appropriate capability handler and returns the result.
+   * Supports code review, feature implementation, testing, performance analysis,
+   * code analysis, and documentation updates.
+   *
+   * @param context - Task execution context with task type and parameters
+   * @returns Task result with success status, message, and optional data
    */
   public async executeTask(context: TaskContext): Promise<TaskResult> {
     console.log(`\n📋 Executing task: ${context.task}`);
@@ -202,7 +245,10 @@ export class ScreensAgent {
   }
 
   /**
-   * Shutdown the agent
+   * Shutdown the agent and disconnect from MCP server.
+   *
+   * This method should be called when the agent is no longer needed
+   * to properly clean up resources and close connections.
    */
   public async shutdown(): Promise<void> {
     console.log("\n🛑 Shutting down agent...");
