@@ -41,17 +41,17 @@ The Room Controller Level (RCL) determines which structures you can build and ho
 
 ### Structure Unlocks by RCL
 
-| RCL | Extensions | Towers | Rampart Max HP | Key Unlocks |
-|-----|------------|--------|----------------|-------------|
-| 0 | 0 | 0 | - | Roads, Containers (5) |
-| 1 | 0 | 0 | - | Spawn (1) |
-| 2 | 5 | 0 | 300K | Extensions, Ramparts, Walls |
-| 3 | 10 | 1 | 1M | Tower (1) |
-| 4 | 20 | 1 | 3M | Storage |
-| 5 | 30 | 2 | 10M | Links (2) |
-| 6 | 40 | 2 | 30M | Extractor, Labs (3), Terminal |
-| 7 | 50 | 3 | 100M | Factory, Labs (6), 3 Spawns, Observer |
-| 8 | 60 | 6 | 300M | Power Spawn, Nuker, 10 Labs |
+| RCL | Extensions | Towers | Rampart Max HP | Key Unlocks                           |
+| --- | ---------- | ------ | -------------- | ------------------------------------- |
+| 0   | 0          | 0      | -              | Roads, Containers (5)                 |
+| 1   | 0          | 0      | -              | Spawn (1)                             |
+| 2   | 5          | 0      | 300K           | Extensions, Ramparts, Walls           |
+| 3   | 10         | 1      | 1M             | Tower (1)                             |
+| 4   | 20         | 1      | 3M             | Storage                               |
+| 5   | 30         | 2      | 10M            | Links (2)                             |
+| 6   | 40         | 2      | 30M            | Extractor, Labs (3), Terminal         |
+| 7   | 50         | 3      | 100M           | Factory, Labs (6), 3 Spawns, Observer |
+| 8   | 60         | 6      | 300M           | Power Spawn, Nuker, 10 Labs           |
 
 ### Extension Capacity Progression
 
@@ -62,10 +62,12 @@ The Room Controller Level (RCL) determines which structures you can build and ho
 ### Applicability to .screeps-gpt
 
 **Current Implementation:**
+
 - ✅ RCL-based structure placement in BasePlanner
 - ✅ Phase system aligns with RCL milestones
 
 **Recommendations:**
+
 - Ensure extension placement maximizes energy capacity per RCL
 - Plan for increased extension capacity at RCL 7/8
 - Use RCL as primary trigger for phase transitions
@@ -76,20 +78,21 @@ The Room Controller Level (RCL) determines which structures you can build and ho
 
 ### Body Part Functions
 
-| Part | Function | Cost | Notes |
-|------|----------|------|-------|
-| WORK | Harvest/Build/Repair/Upgrade | 100 | Core for miners, builders, upgraders |
-| CARRY | Transport resources | 50 | 50 capacity per part |
-| MOVE | Movement | 50 | 1 part offsets fatigue from 1 other part |
-| ATTACK | Melee damage (30/tick) | 80 | Range 1 only |
-| RANGED_ATTACK | Ranged damage (10/tick) | 150 | Range 1-3 |
-| HEAL | Heal creeps (12/tick) | 250 | Adjacent or 4/tick at range |
-| TOUGH | Damage absorption | 10 | No function, absorbs damage first |
-| CLAIM | Controller operations | 600 | Claim/reserve/attack controllers |
+| Part          | Function                     | Cost | Notes                                    |
+| ------------- | ---------------------------- | ---- | ---------------------------------------- |
+| WORK          | Harvest/Build/Repair/Upgrade | 100  | Core for miners, builders, upgraders     |
+| CARRY         | Transport resources          | 50   | 50 capacity per part                     |
+| MOVE          | Movement                     | 50   | 1 part offsets fatigue from 1 other part |
+| ATTACK        | Melee damage (30/tick)       | 80   | Range 1 only                             |
+| RANGED_ATTACK | Ranged damage (10/tick)      | 150  | Range 1-3                                |
+| HEAL          | Heal creeps (12/tick)        | 250  | Adjacent or 4/tick at range              |
+| TOUGH         | Damage absorption            | 10   | No function, absorbs damage first        |
+| CLAIM         | Controller operations        | 600  | Claim/reserve/attack controllers         |
 
 ### Body Part Order Matters
 
 **Damage Application:**
+
 - Parts are damaged in order from first to last
 - TOUGH parts should always be first (damage sponge)
 - HEAL parts should be last (survive longer)
@@ -98,34 +101,42 @@ The Room Controller Level (RCL) determines which structures you can build and ho
 ### Standard Role Compositions
 
 **Harvester (Basic):** `[WORK, CARRY, MOVE]`
+
 - Cost: 200 energy
 - Use: Early game energy collection
 
 **Static Miner:** `[WORK×5, MOVE]`
+
 - Cost: 550 energy
 - Use: Stationary source mining with container
 
 **Hauler:** `[CARRY×N, MOVE×N]`
+
 - Cost: 100 per unit
 - Note: Empty CARRY generates no fatigue
 
 **Upgrader:** `[WORK×N, CARRY, MOVE×N]`
+
 - Maximize WORK parts for upgrade speed
 
 **Builder:** `[WORK×N, CARRY×N, MOVE×N]`
+
 - Balance between building and transport
 
 **Combat Defender:** `[TOUGH×N, ATTACK/RANGED×N, MOVE×N, HEAL×N]`
+
 - TOUGH first, HEAL last
 
 ### Applicability to .screeps-gpt
 
 **Current Implementation:**
+
 - ✅ Role-based creep system exists
 - ⚠️ Fixed body compositions per role
 - ⚠️ No dynamic scaling with available energy
 
 **Recommendations:**
+
 - Implement dynamic body generation based on `room.energyAvailable`
 - Add body part ordering optimization for combat creeps
 - Consider specialized body compositions for different phases
@@ -137,12 +148,14 @@ The Room Controller Level (RCL) determines which structures you can build and ho
 ### Passive Defense: Walls and Ramparts
 
 **Walls:**
+
 - Block all movement (friendly and hostile)
 - Can be fortified up to 300M HP
 - Build at room entrances/choke points
 - Multiple layers provide resilience
 
 **Ramparts:**
+
 - Allow friendly movement, block hostiles
 - Can be fortified like walls
 - Creeps on ramparts are invulnerable until rampart destroyed
@@ -151,6 +164,7 @@ The Room Controller Level (RCL) determines which structures you can build and ho
 ### Active Defense: Towers
 
 **Tower Mechanics:**
+
 - Attack, heal, and repair within room
 - Effectiveness scales with distance:
   - Max damage/healing at range ≤5
@@ -158,6 +172,7 @@ The Room Controller Level (RCL) determines which structures you can build and ho
 - Energy consumption: 10 energy per action
 
 **Tower Strategy:**
+
 - Priority: Attack > Heal > Repair
 - Conserve energy for attacks
 - Multiple towers multiply effectiveness
@@ -166,6 +181,7 @@ The Room Controller Level (RCL) determines which structures you can build and ho
 ### Defensive Creeps
 
 **Defender Composition:**
+
 - TOUGH parts absorb damage first
 - Position on ramparts for protection
 - Coordinate with tower support
@@ -180,12 +196,14 @@ The Room Controller Level (RCL) determines which structures you can build and ho
 ### Applicability to .screeps-gpt
 
 **Current Implementation:**
+
 - ✅ TowerManager exists with attack/heal/repair logic
 - ⚠️ No threat assessment system
 - ⚠️ No defensive creep spawning
 - ❌ No rampart/wall management automation
 
 **Recommendations:**
+
 - Add threat scoring to TowerManager
 - Implement DefenseManager for coordinated defense
 - Add rampart HP management to repair system
@@ -198,18 +216,21 @@ The Room Controller Level (RCL) determines which structures you can build and ho
 ### Memory Management
 
 **Best Practices:**
+
 - Limit small objects in Memory (parsing cost)
 - Consolidate data into larger objects
 - Use custom serialization for RoomPosition objects
 - Store only essential persistent data
 
 **Heap vs Memory:**
+
 - Heap: Faster, persists between ticks, lost on global reset
 - Memory: Persistent, parsed from JSON each tick, more expensive
 
 ### Caching Strategies
 
 **Cache `room.find()` Results:**
+
 ```javascript
 // Cache find results per tick
 if (!room._cachedSources) {
@@ -219,12 +240,13 @@ return room._cachedSources;
 ```
 
 **Path Caching:**
+
 ```javascript
 // Cache paths with TTL
 const cacheKey = `${start.x},${start.y}-${end.x},${end.y}`;
 if (!Memory.paths[cacheKey] || Game.time > Memory.paths[cacheKey].expires) {
   Memory.paths[cacheKey] = {
-    path: room.findPath(start, end, {serialize: true}),
+    path: room.findPath(start, end, { serialize: true }),
     expires: Game.time + 100
   };
 }
@@ -233,6 +255,7 @@ if (!Memory.paths[cacheKey] || Game.time > Memory.paths[cacheKey].expires) {
 ### CPU Profiling
 
 **Measurement Pattern:**
+
 ```javascript
 const startCPU = Game.cpu.getUsed();
 // ... expensive operation ...
@@ -257,12 +280,14 @@ console.log(`Operation took ${cpuUsed.toFixed(2)} CPU`);
 ### Applicability to .screeps-gpt
 
 **Current Implementation:**
+
 - ✅ CPUProfiler exists
 - ⚠️ No bucket-aware scheduling
 - ⚠️ Limited path caching
 - ⚠️ No find result caching
 
 **Recommendations:**
+
 - Implement bucket monitoring in MetricsManager
 - Add adaptive throttling based on bucket level
 - Implement path cache with TTL
@@ -275,34 +300,38 @@ console.log(`Operation took ${cpuUsed.toFixed(2)} CPU`);
 ### Mineral Mining
 
 **Requirements:**
+
 - RCL 6 for Extractor structure
 - Mineral deposits regenerate after depletion
 
 **Mining Approaches:**
+
 1. **Container Style:** Large miner (many WORK parts), drops to container
 2. **Carry Style:** Miner with WORK+CARRY, slower but self-sufficient
 
 ### Lab System
 
 **Lab Requirements:**
+
 - 3+ labs minimum: 2 source labs, 1 target lab
 - All within range 2 of each other
 - RCL 6: 3 labs, RCL 7: 6 labs, RCL 8: 10 labs
 
 **Reaction Process:**
+
 ```javascript
 targetLab.runReaction(sourceLab1, sourceLab2);
 ```
 
 ### Compound Tiers
 
-| Tier | Components | Example | Use |
-|------|------------|---------|-----|
-| Base | Raw minerals | H, O, U, K, L, Z, X | Reaction inputs |
-| Tier 1 | Base + H/O | UH, UO, ZH, etc. | Basic boosts |
-| Tier 2 | Tier 1 + OH | UH2O, UHO2, etc. | Enhanced boosts |
-| Tier 3 | Tier 2 + X | XUH2O, XKHO2, etc. | Maximum boosts |
-| Special | Complex | Ghodium (G) | Nukes, Safe Mode |
+| Tier    | Components   | Example             | Use              |
+| ------- | ------------ | ------------------- | ---------------- |
+| Base    | Raw minerals | H, O, U, K, L, Z, X | Reaction inputs  |
+| Tier 1  | Base + H/O   | UH, UO, ZH, etc.    | Basic boosts     |
+| Tier 2  | Tier 1 + OH  | UH2O, UHO2, etc.    | Enhanced boosts  |
+| Tier 3  | Tier 2 + X   | XUH2O, XKHO2, etc.  | Maximum boosts   |
+| Special | Complex      | Ghodium (G)         | Nukes, Safe Mode |
 
 ### Boosting Mechanics
 
@@ -312,6 +341,7 @@ targetLab.runReaction(sourceLab1, sourceLab2);
 - Boost effects multiply base part effectiveness
 
 **Key Boosts:**
+
 - XGH2O: 4× upgrade speed (WORK)
 - XGHO2: 70% damage reduction (TOUGH)
 - XLHO2: 4× healing (HEAL)
@@ -320,11 +350,13 @@ targetLab.runReaction(sourceLab1, sourceLab2);
 ### Applicability to .screeps-gpt
 
 **Current Implementation:**
+
 - ❌ No mineral harvesting
 - ❌ No lab automation
 - ❌ No boosting system
 
 **Recommendations:**
+
 - Plan mineral economy for Phase 3
 - Prioritize XGH2O production for upgraders
 - Design lab network automation
@@ -337,12 +369,14 @@ targetLab.runReaction(sourceLab1, sourceLab2);
 ### MoveTo Options
 
 **Key Parameters:**
+
 - `reusePath`: Ticks to reuse cached path (default: 5)
 - `maxOps`: Maximum operations for path search
 - `maxRooms`: Limit rooms searched
 - `plainCost`/`swampCost`: Terrain movement costs
 
 **Optimization Pattern:**
+
 ```javascript
 creep.moveTo(target, {
   reusePath: 20,
@@ -354,18 +388,18 @@ creep.moveTo(target, {
 ### Path Caching
 
 **Benefits:**
+
 - Major CPU reduction for frequently traveled routes
 - Reduces pathfinding recalculation overhead
 - Enables path reuse across multiple creeps
 
 **Implementation:**
+
 ```javascript
 // Calculate once, reuse many times
 const pathKey = `${source.id}-${target.id}`;
 if (!Memory.paths[pathKey]) {
-  Memory.paths[pathKey] = PathFinder.search(
-    source.pos, {pos: target.pos, range: 1}
-  ).path;
+  Memory.paths[pathKey] = PathFinder.search(source.pos, { pos: target.pos, range: 1 }).path;
 }
 creep.moveByPath(Memory.paths[pathKey]);
 ```
@@ -373,16 +407,19 @@ creep.moveByPath(Memory.paths[pathKey]);
 ### Advanced Libraries
 
 **Traveler:**
+
 - Improved stuck detection
 - Better traffic management
 - Efficient path reuse
 
 **Cartographer:**
+
 - Multi-room path optimization
 - Priority-based movement
 - Coordinated creep movement
 
 **screeps-pathfinding:**
+
 - Traffic management
 - Custom prioritization
 - Robust caching
@@ -406,12 +443,14 @@ if (creep.pos.isEqualTo(creep.memory.lastPos)) {
 ### Applicability to .screeps-gpt
 
 **Current Implementation:**
+
 - ✅ PathfindingManager exists
 - ✅ Basic cost matrices
 - ⚠️ No path caching
 - ⚠️ No stuck detection
 
 **Recommendations:**
+
 - Implement path cache with TTL
 - Add stuck detection logic
 - Consider Traveler integration
@@ -430,10 +469,12 @@ if (creep.pos.isEqualTo(creep.memory.lastPos)) {
 ### Creating Orders
 
 **Order Types:**
+
 - **Buy Order:** Willing to pay credits for resources
 - **Sell Order:** Offering resources for credits
 
 **Costs:**
+
 - 5% credit fee on order creation
 - Energy cost for transfers (distance-based)
 
@@ -441,7 +482,7 @@ if (creep.pos.isEqualTo(creep.memory.lastPos)) {
 
 ```javascript
 // Check market prices
-const orders = Game.market.getAllOrders({type: ORDER_BUY, resourceType: RESOURCE_ENERGY});
+const orders = Game.market.getAllOrders({ type: ORDER_BUY, resourceType: RESOURCE_ENERGY });
 
 // Execute deal
 Game.market.deal(orderId, amount, roomName);
@@ -452,21 +493,24 @@ Game.market.createOrder({
   resourceType: RESOURCE_OXYGEN,
   price: 0.5,
   totalAmount: 10000,
-  roomName: 'W1N1'
+  roomName: "W1N1"
 });
 ```
 
 ### Trading Strategy
 
 **Early Game:**
+
 - Focus on energy production
 - Sell excess minerals if accessible
 
 **Mid Game:**
+
 - Monitor market for needed minerals
 - Trade for missing compound ingredients
 
 **Late Game:**
+
 - Optimize commodity chains
 - Arbitrage opportunities
 - Automated trading bots
@@ -474,10 +518,12 @@ Game.market.createOrder({
 ### Applicability to .screeps-gpt
 
 **Current Implementation:**
+
 - ❌ No terminal operations
 - ❌ No market integration
 
 **Recommendations:**
+
 - Design terminal network for Phase 3
 - Implement basic resource transfer
 - Add market price monitoring
@@ -490,6 +536,7 @@ Game.market.createOrder({
 ### Installation Methods
 
 **Official npm Package:**
+
 ```bash
 npm install -g screeps
 npx screeps init
@@ -497,6 +544,7 @@ npx screeps start
 ```
 
 **Community Launchers:**
+
 - Screepers Launcher: Docker-based, mod-friendly
 - Jomik's Server: Simplified setup
 
@@ -510,11 +558,13 @@ npx screeps start
 ### Configuration
 
 **Essential Settings:**
+
 - Steam API key for authentication
 - Database connection (MongoDB/Redis or LokiJS)
 - Server hostname and port
 
 **Recommended Mods:**
+
 - `screepsmod-auth`: Authentication
 - `screepsmod-admin-utils`: Admin tools
 - `screepsmod-mongo`: MongoDB driver
@@ -522,10 +572,12 @@ npx screeps start
 ### Applicability to .screeps-gpt
 
 **Current Implementation:**
+
 - ✅ Docker-based testing environment
 - ✅ screeps-server-mockup for E2E tests
 
 **Recommendations:**
+
 - Document private server setup for contributors
 - Consider CI/CD testing on private server
 - Use for performance benchmarking
@@ -544,10 +596,12 @@ npx screeps start
 ### Power Processing
 
 **Requirements:**
+
 - RCL 8 for Power Spawn
 - 1 power + 50 energy = 1 GPL point
 
 **Process:**
+
 ```javascript
 powerSpawn.processPower();
 ```
@@ -555,11 +609,13 @@ powerSpawn.processPower();
 ### Power Creeps
 
 **Classes:**
+
 - Operator: Economy and base support
 - Commander: Team buffs
 - Executor: Solo combat power
 
 **Key Powers:**
+
 - Operate Factory: Enable high-tier production
 - Generate Ops: Create power resources
 - Operate Tower: Enhance tower actions
@@ -573,11 +629,13 @@ powerSpawn.processPower();
 ### Applicability to .screeps-gpt
 
 **Current Implementation:**
+
 - ❌ No power harvesting
 - ❌ No power processing
 - ❌ No Power Creep support
 
 **Recommendations:**
+
 - Add to Phase 4+ roadmap
 - Design power bank harvesting system
 - Plan GPL progression strategy
@@ -589,21 +647,25 @@ powerSpawn.processPower();
 ### Remote Harvesting
 
 **Strategy:**
+
 - Mine sources in unowned rooms
 - Transport energy back to owned rooms
 - Reserved rooms provide 2× energy
 
 **Creep Roles:**
+
 - **Remote Miner:** Stationary harvester at source
 - **Remote Hauler:** Transport between rooms
 
 ### Room Reservation
 
 **Benefits:**
+
 - 3000 energy per source (vs 1500 unreserved)
 - Blocks other players from claiming
 
 **Mechanics:**
+
 - CLAIM part required
 - 1 point per tick per CLAIM part
 - Max 5000 reservation points
@@ -611,12 +673,14 @@ powerSpawn.processPower();
 ### Source Keeper Rooms
 
 **Characteristics:**
+
 - Center 9 rooms of each sector
 - Source Keepers spawn from Lairs
 - Defend sources and minerals
 - Respawn 300 ticks after killed
 
 **Harvesting SK Rooms:**
+
 - Combat creeps required
 - Coordinate timing with SK spawns
 - Lucrative but dangerous
@@ -624,6 +688,7 @@ powerSpawn.processPower();
 ### Highway Rooms
 
 **Deposits:**
+
 - Metal, Silicon, Biomass, Mist
 - Require special extraction
 - Used for commodity production
@@ -631,11 +696,13 @@ powerSpawn.processPower();
 ### Applicability to .screeps-gpt
 
 **Current Implementation:**
+
 - ⚠️ Basic scout role exists
 - ❌ No remote harvesting automation
 - ❌ No SK room handling
 
 **Recommendations:**
+
 - Design remote harvesting for Phase 2 completion
 - Plan SK room harvesting for Phase 3
 - Implement reservation management
@@ -647,6 +714,7 @@ powerSpawn.processPower();
 ### Link Mechanics
 
 **Properties:**
+
 - Instant energy transfer within room
 - 3% energy loss per transfer (rounded up)
 - Cooldown = distance between links
@@ -664,9 +732,7 @@ powerSpawn.processPower();
 ```javascript
 // Send when above threshold, receive below
 if (sourceLink.store[RESOURCE_ENERGY] > 400) {
-  const target = storageLink.store[RESOURCE_ENERGY] < 400 
-    ? storageLink 
-    : controllerLink;
+  const target = storageLink.store[RESOURCE_ENERGY] < 400 ? storageLink : controllerLink;
   sourceLink.transferEnergy(target);
 }
 ```
@@ -674,10 +740,12 @@ if (sourceLink.store[RESOURCE_ENERGY] > 400) {
 ### Applicability to .screeps-gpt
 
 **Current Implementation:**
+
 - ✅ LinkManager exists
 - ✅ Basic transfer logic
 
 **Recommendations:**
+
 - Optimize transfer thresholds
 - Add priority-based link routing
 - Consider cooldown management
@@ -693,19 +761,22 @@ if (sourceLink.store[RESOURCE_ENERGY] > 400) {
 - One room per tick observation
 
 **Usage:**
+
 ```javascript
-observer.observeRoom('W5N5');
+observer.observeRoom("W5N5");
 // Room visible next tick
 ```
 
 ### Scouting Strategy
 
 **Systematic Scanning:**
+
 - Rotate observer focus
 - Build room memory database
 - Track enemy movements
 
 **Scout Creeps:**
+
 - Minimal body (MOVE only)
 - Persistent room visibility
 - Cheaper than Observer for nearby rooms
@@ -713,6 +784,7 @@ observer.observeRoom('W5N5');
 ### Map Intelligence
 
 **Track Per Room:**
+
 - Owner/reservation status
 - Controller level
 - Mineral type
@@ -722,11 +794,13 @@ observer.observeRoom('W5N5');
 ### Applicability to .screeps-gpt
 
 **Current Implementation:**
+
 - ⚠️ Basic scout role
 - ❌ No Observer automation
 - ❌ Limited room memory
 
 **Recommendations:**
+
 - Design scouting automation for Phase 3
 - Implement room memory database
 - Add Observer rotation logic
@@ -755,6 +829,7 @@ if (available >= creepCost) {
 ### Extension Placement
 
 **Best Practices:**
+
 - Cluster near spawn for efficient filling
 - Use roads for hauler access
 - Balance distance vs. defense
@@ -762,6 +837,7 @@ if (available >= creepCost) {
 ### Spawning Strategy
 
 **Dynamic Body Generation:**
+
 ```javascript
 function generateBody(template, energy) {
   const unitCost = template.reduce((sum, p) => sum + BODYPART_COST[p], 0);
@@ -773,11 +849,13 @@ function generateBody(template, energy) {
 ### Applicability to .screeps-gpt
 
 **Current Implementation:**
+
 - ✅ SpawnManager with queue
 - ✅ Extension placement in BasePlanner
 - ⚠️ Fixed body compositions
 
 **Recommendations:**
+
 - Implement dynamic body scaling
 - Optimize extension fill patterns
 - Add spawn priority tuning
@@ -789,6 +867,7 @@ function generateBody(template, energy) {
 ### Safe Mode Mechanics
 
 **Activation:**
+
 ```javascript
 room.controller.activateSafeMode();
 ```
@@ -796,6 +875,7 @@ room.controller.activateSafeMode();
 **Duration:** 20,000 ticks (~20 hours)
 
 **Effects:**
+
 - Blocks all hostile actions
 - Protects structures and creeps
 - Your creeps can still operate
@@ -816,6 +896,7 @@ creep.generateSafeMode(controller);
 ### Automatic Activation
 
 **Trigger Conditions (example):**
+
 ```javascript
 const hostiles = room.find(FIND_HOSTILE_CREEPS);
 const criticalWall = room.find(FIND_STRUCTURES, {
@@ -830,10 +911,12 @@ if (hostiles.length > 0 && criticalWall.length > 0) {
 ### Applicability to .screeps-gpt
 
 **Current Implementation:**
+
 - ❌ No Safe Mode automation
 - ❌ No controller attack detection
 
 **Recommendations:**
+
 - Add emergency Safe Mode trigger
 - Implement threat level assessment
 - Consider Ghodium reserve for generation
@@ -845,10 +928,12 @@ if (hostiles.length > 0 && criticalWall.length > 0) {
 ### Claiming Rooms
 
 **Requirements:**
+
 - Creep with CLAIM part
 - GCL allows additional room
 
 **Process:**
+
 ```javascript
 claimCreep.claimController(room.controller);
 ```
@@ -856,11 +941,13 @@ claimCreep.claimController(room.controller);
 ### Reservation
 
 **Purpose:**
+
 - Block others from claiming
 - Double source energy output
 - Cheaper than full claim
 
 **Mechanics:**
+
 - 1 point per tick per CLAIM part
 - Max 5000 points
 - Decays at 1 point per tick
@@ -868,6 +955,7 @@ claimCreep.claimController(room.controller);
 ### Expansion Strategy
 
 **Room Selection Criteria:**
+
 - Source count (2 preferred)
 - Mineral type (for diversity)
 - Distance from existing rooms
@@ -876,11 +964,13 @@ claimCreep.claimController(room.controller);
 ### Applicability to .screeps-gpt
 
 **Current Implementation:**
+
 - ⚠️ Basic room expansion logic
 - ❌ No reservation automation
 - ❌ Limited room evaluation
 
 **Recommendations:**
+
 - Enhance room selection algorithm
 - Add mineral coverage consideration
 - Implement reservation management
@@ -898,30 +988,36 @@ claimCreep.claimController(room.controller);
 ### Compression
 
 **Resource Bars:**
+
 - Compact storage format
 - Trade-friendly
 - Produced at level 0
 
 **Examples:**
+
 - Battery: Energy compression
 - Utrium Bar: Utrium compression
 
 ### Commodity Production
 
 **Tiers:**
+
 - Level 0: Basic, no empowerment needed
 - Level 1-5: Require factory empowerment
 
 **NPC Market:**
+
 - Sell commodities for credits
 - Higher tiers = higher value
 
 ### Applicability to .screeps-gpt
 
 **Current Implementation:**
+
 - ❌ No factory automation
 
 **Recommendations:**
+
 - Add to Phase 4 roadmap
 - Design commodity production chains
 - Integrate with market system
@@ -932,43 +1028,43 @@ claimCreep.claimController(room.controller);
 
 ### Find Constants
 
-| Constant | Value | Use |
-|----------|-------|-----|
-| FIND_CREEPS | 1 | All creeps |
-| FIND_MY_CREEPS | 2 | Own creeps |
-| FIND_HOSTILE_CREEPS | 3 | Enemy creeps |
-| FIND_SOURCES | 5 | Energy sources |
-| FIND_STRUCTURES | 8 | All structures |
-| FIND_MY_STRUCTURES | 9 | Own structures |
-| FIND_CONSTRUCTION_SITES | 11 | Construction sites |
-| FIND_MY_SPAWNS | 12 | Own spawns |
-| FIND_DROPPED_RESOURCES | 14 | Dropped resources |
+| Constant                | Value | Use                |
+| ----------------------- | ----- | ------------------ |
+| FIND_CREEPS             | 1     | All creeps         |
+| FIND_MY_CREEPS          | 2     | Own creeps         |
+| FIND_HOSTILE_CREEPS     | 3     | Enemy creeps       |
+| FIND_SOURCES            | 5     | Energy sources     |
+| FIND_STRUCTURES         | 8     | All structures     |
+| FIND_MY_STRUCTURES      | 9     | Own structures     |
+| FIND_CONSTRUCTION_SITES | 11    | Construction sites |
+| FIND_MY_SPAWNS          | 12    | Own spawns         |
+| FIND_DROPPED_RESOURCES  | 14    | Dropped resources  |
 
 ### Error Codes
 
-| Code | Value | Meaning |
-|------|-------|---------|
-| OK | 0 | Success |
-| ERR_NOT_OWNER | -1 | Not your object |
-| ERR_NO_PATH | -2 | No path found |
-| ERR_BUSY | -4 | Object is busy |
-| ERR_NOT_ENOUGH_ENERGY | -6 | Insufficient energy |
-| ERR_NOT_ENOUGH_RESOURCES | -6 | Insufficient resources |
-| ERR_INVALID_TARGET | -7 | Invalid target |
-| ERR_FULL | -8 | Storage full |
-| ERR_NOT_IN_RANGE | -9 | Not in range |
+| Code                     | Value | Meaning                |
+| ------------------------ | ----- | ---------------------- |
+| OK                       | 0     | Success                |
+| ERR_NOT_OWNER            | -1    | Not your object        |
+| ERR_NO_PATH              | -2    | No path found          |
+| ERR_BUSY                 | -4    | Object is busy         |
+| ERR_NOT_ENOUGH_ENERGY    | -6    | Insufficient energy    |
+| ERR_NOT_ENOUGH_RESOURCES | -6    | Insufficient resources |
+| ERR_INVALID_TARGET       | -7    | Invalid target         |
+| ERR_FULL                 | -8    | Storage full           |
+| ERR_NOT_IN_RANGE         | -9    | Not in range           |
 
 ### Game Object Access
 
 ```javascript
-Game.creeps           // All your creeps
-Game.spawns           // All your spawns
-Game.rooms            // Visible rooms
-Game.structures       // All your structures
-Game.getObjectById(id) // Get any object by ID
-Game.time             // Current tick
-Game.cpu.getUsed()    // CPU used this tick
-Game.cpu.bucket       // CPU bucket level
+Game.creeps; // All your creeps
+Game.spawns; // All your spawns
+Game.rooms; // Visible rooms
+Game.structures; // All your structures
+Game.getObjectById(id); // Get any object by ID
+Game.time; // Current tick
+Game.cpu.getUsed(); // CPU used this tick
+Game.cpu.bucket; // CPU bucket level
 ```
 
 ---
@@ -977,25 +1073,25 @@ Game.cpu.bucket       // CPU bucket level
 
 ### Coverage Matrix
 
-| Topic | Wiki Coverage | Bot Implementation | Status |
-|-------|---------------|-------------------|--------|
-| RCL Progression | ✅ | ✅ Phase system | Complete |
-| Creep Body Parts | ✅ | ⚠️ Fixed compositions | Needs dynamic |
-| Combat/Defense | ✅ | ⚠️ TowerManager only | Needs expansion |
-| CPU Optimization | ✅ | ⚠️ Basic profiler | Needs bucket awareness |
-| Minerals/Labs | ✅ | ❌ Not implemented | Phase 3 |
-| Pathfinding | ✅ | ⚠️ No caching | High priority |
-| Market/Trading | ✅ | ❌ Not implemented | Phase 3 |
-| Private Server | ✅ | ✅ Docker tests | Complete |
-| Power Mechanics | ✅ | ❌ Not implemented | Phase 4 |
-| Remote Harvesting | ✅ | ❌ Not implemented | Phase 2 |
-| Links | ✅ | ✅ LinkManager | Complete |
-| Observers | ✅ | ⚠️ Basic scout | Needs automation |
-| Spawning | ✅ | ✅ SpawnManager | Complete |
-| Safe Mode | ✅ | ❌ Not implemented | Phase 2 |
-| Claiming/Reservation | ✅ | ⚠️ Basic expansion | Needs enhancement |
-| Factories | ✅ | ❌ Not implemented | Phase 4 |
-| API Constants | ✅ | ✅ TypeScript types | Complete |
+| Topic                | Wiki Coverage | Bot Implementation    | Status                 |
+| -------------------- | ------------- | --------------------- | ---------------------- |
+| RCL Progression      | ✅            | ✅ Phase system       | Complete               |
+| Creep Body Parts     | ✅            | ⚠️ Fixed compositions | Needs dynamic          |
+| Combat/Defense       | ✅            | ⚠️ TowerManager only  | Needs expansion        |
+| CPU Optimization     | ✅            | ⚠️ Basic profiler     | Needs bucket awareness |
+| Minerals/Labs        | ✅            | ❌ Not implemented    | Phase 3                |
+| Pathfinding          | ✅            | ⚠️ No caching         | High priority          |
+| Market/Trading       | ✅            | ❌ Not implemented    | Phase 3                |
+| Private Server       | ✅            | ✅ Docker tests       | Complete               |
+| Power Mechanics      | ✅            | ❌ Not implemented    | Phase 4                |
+| Remote Harvesting    | ✅            | ❌ Not implemented    | Phase 2                |
+| Links                | ✅            | ✅ LinkManager        | Complete               |
+| Observers            | ✅            | ⚠️ Basic scout        | Needs automation       |
+| Spawning             | ✅            | ✅ SpawnManager       | Complete               |
+| Safe Mode            | ✅            | ❌ Not implemented    | Phase 2                |
+| Claiming/Reservation | ✅            | ⚠️ Basic expansion    | Needs enhancement      |
+| Factories            | ✅            | ❌ Not implemented    | Phase 4                |
+| API Constants        | ✅            | ✅ TypeScript types   | Complete               |
 
 ---
 
@@ -1030,6 +1126,7 @@ Game.cpu.bucket       // CPU bucket level
 ## References
 
 ### Official Documentation
+
 - [Screeps API](https://docs.screeps.com/api/)
 - [Game Guide](https://docs.screeps.com/index.html)
 - [Creeps Documentation](https://docs.screeps.com/creeps.html)
@@ -1040,6 +1137,7 @@ Game.cpu.bucket       // CPU bucket level
 - [Resources Guide](https://docs.screeps.com/resources.html)
 
 ### Community Resources
+
 - [ScreepsPlus Wiki](https://wiki.screepspl.us/)
 - [Screeps Fandom Wiki](https://screeps.fandom.com/)
 - [Screeps Forum](https://screeps.com/forum/)
@@ -1052,6 +1150,7 @@ Game.cpu.bucket       // CPU bucket level
 **Document Version:** 1.0
 **Last Updated:** November 2025
 **Related Documents:**
+
 - `screepspl-wiki-analysis.md` - Maturity and debugging analysis
 - `overmind-analysis.md` - Overmind bot patterns
 - `the-international-analysis.md` - Competitive bot strategies
