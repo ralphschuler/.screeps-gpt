@@ -3,7 +3,7 @@
 # This Dockerfile creates a container for running the Screeps documentation
 # MCP server using stdio transport for integration with MCP clients.
 
-FROM node:20-alpine
+FROM node:20.19-alpine
 
 # Set working directory
 WORKDIR /app
