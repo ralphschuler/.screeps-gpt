@@ -429,57 +429,41 @@ Task system behavior is validated by regression tests in `tests/regression/task-
 
 ## Quality Guards
 
-Quality checks are split into separate guard workflows for better granularity and parallel execution:
+Quality checks are consolidated into efficient guard workflows using strategy matrices for parallel execution and faster feedback:
 
-### Guard - Lint (`guard-lint.yml`)
-
-- Trigger: Pull requests targeting `main`.
-- Permissions: `contents: read` only.
-- Jobs: ESLint code quality checks.
-
-### Guard - Format (`guard-format.yml`)
+### Guard - Code Quality (`guard-code-quality.yml`)
 
 - Trigger: Pull requests targeting `main`.
 - Permissions: `contents: read` only.
-- Jobs: Prettier formatting validation.
+- Jobs: Runs multiple code quality checks in parallel using strategy matrix:
+  - **lint** - ESLint code quality checks
+  - **format** - Prettier formatting validation
+  - **yaml-lint** - YAML workflow file linting
+- Benefits: Single workflow file, parallel execution, reduced overhead
 
-### Guard - YAML Lint (`guard-yaml-lint.yml`)
+### Guard - Tests (`guard-tests.yml`)
 
 - Trigger: Pull requests targeting `main`.
 - Permissions: `contents: read` only.
-- Jobs: YAML workflow file linting.
+- Jobs: Runs all test suites in parallel using strategy matrix:
+  - **unit** - Unit test execution
+  - **e2e** - PTR end-to-end tests
+  - **regression** - Regression test validation
+  - **docs** - Documentation build and validation tests
+- Benefits: Single workflow file, parallel test execution, faster feedback
+- Notes: E2E tests require PTR secrets. Regression test failures must be reproduced with a regression test before applying fixes (see repository rules in [README](../../README.md)).
 
 ### Guard - Version Index (`guard-version.yml`)
 
 - Trigger: Pull requests targeting `main`.
 - Permissions: `contents: read` only.
-- Jobs: Verification that `docs/changelog/versions.json` and `docs/changelog/versions.md` match `bun run versions:update`.
+- Jobs: Verification that `docs/changelog/versions.json` and `docs/changelog/versions.md` match `yarn run versions:update`.
 
 ### Guard - Build (`guard-build.yml`)
 
 - Trigger: Pull requests targeting `main`.
 - Permissions: `contents: read` only.
 - Jobs: Build validation with caching.
-
-### Guard - Unit Tests (`guard-test-unit.yml`)
-
-- Trigger: Pull requests targeting `main`.
-- Permissions: `contents: read` only.
-- Jobs: Unit test execution.
-
-### Guard - E2E Tests (`guard-test-e2e.yml`)
-
-- Trigger: Pull requests targeting `main`.
-- Permissions: `contents: read` only.
-- Jobs: PTR end-to-end tests.
-- Notes: Configure PTR secrets locally before running the e2e suite.
-
-### Guard - Regression Tests (`guard-test-regression.yml`)
-
-- Trigger: Pull requests targeting `main`.
-- Permissions: `contents: read` only.
-- Jobs: Regression test validation.
-- Notes: Failures here must be reproduced with a regression test before applying fixes (see repository rules in [README](../../README.md)).
 
 ### Guard - Coverage (`guard-coverage.yml`)
 
@@ -495,19 +479,14 @@ The quality gate system has been refactored from a monolithic `quality-gate.yml`
 
 #### Required Guards (enforced for branch protection)
 
-- **guard-test-unit.yml** - Executes unit test suite
+- **guard-tests.yml** - Executes all test suites in parallel (unit, e2e, regression, docs)
 - **guard-build.yml** - Validates build process (compilation and bundling)
-- **guard-lint.yml** - Runs ESLint for code style and static analysis
-- **guard-format.yml** - Validates Prettier formatting
-- **guard-yaml-lint.yml** - Validates YAML syntax in workflow files
+- **guard-code-quality.yml** - Runs code quality checks in parallel (lint, format, yaml-lint)
 
-These five guards are required for branch protection and must pass for a pull request to be merged.
+These three consolidated guards are required for branch protection and must pass for a pull request to be merged.
 
 #### Optional/Supplementary Guards
 
-- **guard-test-e2e.yml** - Runs end-to-end tests
-- **guard-test-regression.yml** - Validates regression test suite
-- **guard-test-docs.yml** - Tests documentation build processes
 - **guard-version.yml** - Checks version consistency
 - **guard-coverage.yml** - Reports test coverage metrics
 - **guard-deprecation.yml** - Detects deprecated API usage
@@ -517,20 +496,21 @@ These supplementary guards provide additional quality signals and reporting, but
 
 ### Quality Gate Summary (`quality-gate-summary.yml`)
 
-Provides a single, reliable quality gate status for PRs by aggregating results from individual guard workflows:
+Provides a single, reliable quality gate status for PRs by aggregating results from consolidated guard workflows:
 
 - **Trigger**: Pull requests to `main` branch
 - **Behaviour**: Polls guard workflow results and reports unified pass/fail status
-- **Required Guards for Branch Protection**: Unit Tests, Build, Lint, Format, YAML Lint (see above)
+- **Required Guards for Branch Protection**: Tests, Build, Code Quality (see above)
 - **Features**:
   - Waits up to 25 minutes for guards to complete
   - Treats `action_required` (cancelled by concurrency) as non-blocking
   - Provides single check for branch protection requirements
   - Never cancelled by concurrency to ensure definitive reporting
+  - Monitors consolidated workflows for efficient parallel execution
 
 > **Note:** Only the required guards listed above are enforced for branch protection. Optional/supplementary guards provide additional feedback but do not block merging.
 
-This architecture allows guards to fail fast individually while the summary provides a single status for branch protection.
+This consolidated architecture using strategy matrices allows multiple checks to run in parallel within each guard workflow, providing faster feedback while maintaining clear separation of concerns.
 
 ## Post Merge Release (`post-merge-release.yml`)
 

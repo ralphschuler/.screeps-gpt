@@ -1,0 +1,117 @@
+---
+name: Guard - Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: guard-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        test-suite:
+          - name: unit
+            command: yarn test:unit
+            env: {}
+            paths: []
+          - name: e2e
+            command: yarn test:e2e
+            env:
+              SCREEPS_TEST_REALM: PTR
+              SCREEPS_HOST: ptr.screeps.com
+            paths: []
+          - name: regression
+            command: yarn test:regression
+            env: {}
+            paths: []
+          - name: docs
+            command: yarn test:docs
+            env: {}
+            paths:
+              - "packages/docs/**"
+              - "packages/utilities/scripts/build-hexo-site.ts"
+              - "packages/utilities/scripts/validate-docs-links.ts"
+              - "tests/unit/build-hexo-site.test.ts"
+              - "tests/regression/hexo-documentation-build.test.ts"
+              - "tests/regression/documentation-workflow.test.ts"
+              - "tests/e2e/docs-site.test.ts"
+              - ".github/workflows/docs-pages.yml"
+              - ".github/workflows/guard-tests.yml"
+    name: ${{ matrix.test-suite.name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+
+      - name: Setup Node.js for documentation build
+        if: matrix.test-suite.name == 'docs'
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Install documentation dependencies
+        if: matrix.test-suite.name == 'docs'
+        working-directory: packages/docs
+        run: yarn install --frozen-lockfile
+
+      - name: Clone Hexo Cactus theme
+        if: matrix.test-suite.name == 'docs'
+        working-directory: packages/docs/themes
+        run: |
+          if [ ! -d "cactus/.git" ]; then
+            rm -rf cactus
+            git clone \
+              https://github.com/probberechts/hexo-theme-cactus.git \
+              cactus
+          fi
+
+      - name: Run ${{ matrix.test-suite.name }} tests
+        env: ${{ matrix.test-suite.env }}
+        run: ${{ matrix.test-suite.command }}
+
+      - name: Validate documentation links
+        if: matrix.test-suite.name == 'docs'
+        run: >-
+          yarn validate:docs-links ||
+          echo "::warning::Found broken links in documentation (non-blocking)"
+
+      - name: Verify documentation builds successfully
+        if: matrix.test-suite.name == 'docs'
+        run: |
+          cd packages/docs
+          npm run clean
+          npm run build
+
+          # Verify output exists
+          if [ ! -f public/index.html ]; then
+            echo "::error::Documentation build failed - \
+              index.html not generated"
+            exit 1
+          fi
+
+          # Verify index.html has content (not blank)
+          if [ $(wc -l < public/index.html) -lt 10 ]; then
+            echo "::error::Documentation build generated \
+              blank or minimal index.html"
+            exit 1
+          fi
+
+          echo "✅ Documentation build successful"
