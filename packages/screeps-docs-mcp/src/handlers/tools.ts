@@ -34,7 +34,7 @@ export const toolSchemas = {
 export function listTools() {
   return [
     {
-      name: "search",
+      name: "screeps_docs_search",
       description: "Search Screeps documentation by keyword or phrase",
       inputSchema: {
         type: "object",
@@ -48,7 +48,7 @@ export function listTools() {
       }
     },
     {
-      name: "get_api",
+      name: "screeps_docs_get_api",
       description: "Get API reference documentation for a specific Screeps object",
       inputSchema: {
         type: "object",
@@ -62,7 +62,7 @@ export function listTools() {
       }
     },
     {
-      name: "get_mechanics",
+      name: "screeps_docs_get_mechanics",
       description: "Get game mechanics documentation for a specific topic",
       inputSchema: {
         type: "object",
@@ -76,7 +76,7 @@ export function listTools() {
       }
     },
     {
-      name: "list_apis",
+      name: "screeps_docs_list_apis",
       description: "List all available Screeps API objects",
       inputSchema: {
         type: "object",
@@ -84,7 +84,7 @@ export function listTools() {
       }
     },
     {
-      name: "list_mechanics",
+      name: "screeps_docs_list_mechanics",
       description: "List all available game mechanics topics",
       inputSchema: {
         type: "object",
