@@ -25,6 +25,7 @@ Comprehensive documentation for the repository's GitHub Actions workflows, Copil
 ### Best Practices
 
 - [**Semantic Versioning Guide**](semantic-versioning-guide.html) - Version management and changelog automation
+- [**GitHub Models Migration**](github-models-migration.html) - Migration assessment for GitHub Models in Actions
 
 ## Related Documentation
 
