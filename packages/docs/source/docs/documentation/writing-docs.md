@@ -201,13 +201,26 @@ This content is hidden by default and revealed when clicked.
 
 ### Graphviz Diagrams
 
-Use `hexo-graphviz` to render diagrams directly in markdown:
+Use `hexo-graphviz` to render diagrams directly in markdown. This is particularly useful for architecture diagrams and workflow visualization:
 
 ```markdown
 {% graphviz %}
-digraph G {
-  A -> B -> C;
-  B -> D;
+digraph CreepLifecycle {
+  rankdir=LR;
+  node [shape=box];
+  
+  Spawn [label="Spawn Creep"];
+  Harvest [label="Harvest Energy"];
+  Transfer [label="Transfer to Storage"];
+  Upgrade [label="Upgrade Controller"];
+  Death [label="TTL Expires"];
+  
+  Spawn -> Harvest;
+  Harvest -> Transfer;
+  Transfer -> Harvest;
+  Harvest -> Upgrade;
+  Upgrade -> Harvest;
+  Harvest -> Death [style=dashed];
 }
 {% endgraphviz %}
 ```

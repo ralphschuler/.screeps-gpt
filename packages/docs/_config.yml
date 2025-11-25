@@ -151,8 +151,14 @@ graph:
 robots:
   disallow:
     - /search/
+    - /page/
+    - /tags/
+    - /categories/
+    - /archives/page/
   allow:
-    - /
+    - /docs/
+    - /archives/
+    - /blog/
 
 # Spoiler/Collapsible Content (hexo-spoiler)
 # Usage: {% spoiler title %} content {% endspoiler %}
