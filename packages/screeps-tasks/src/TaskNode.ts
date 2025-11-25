@@ -8,7 +8,7 @@
 import { ITaskNode, TaskState, TaskPriority } from "./types";
 
 /**
- *
+ * Represents a single task node in the dependency graph.
  */
 export class TaskNode implements ITaskNode {
   public id: string;

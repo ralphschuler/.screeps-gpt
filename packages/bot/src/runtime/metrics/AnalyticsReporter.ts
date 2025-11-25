@@ -37,7 +37,7 @@ export interface StatsReport {
 }
 
 /**
- *
+ * Reports analytics data to external monitoring endpoints.
  */
 @profile
 export class AnalyticsReporter {

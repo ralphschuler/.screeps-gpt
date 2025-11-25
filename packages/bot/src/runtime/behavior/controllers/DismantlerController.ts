@@ -23,7 +23,7 @@ interface DismantlerMemory extends CreepMemory {
 }
 
 /**
- *
+ * Controller for dismantler creeps that deconstruct enemy structures.
  */
 export class DismantlerController extends BaseRoleController<DismantlerMemory> {
   public constructor() {

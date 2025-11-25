@@ -24,7 +24,7 @@ interface AttackerMemory extends CreepMemory {
 }
 
 /**
- *
+ * Controller for attacker creeps that engage hostile targets.
  */
 export class AttackerController extends BaseRoleController<AttackerMemory> {
   public constructor() {

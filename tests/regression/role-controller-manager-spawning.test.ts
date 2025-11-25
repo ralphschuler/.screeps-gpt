@@ -84,7 +84,7 @@ describe("Regression: RoleControllerManager Spawning", () => {
       energyAvailable: 300,
       energyCapacityAvailable: 300,
       storage: null,
-      find: vi.fn((type: FindConstant, opts?: FilterOptions<any>) => {
+      find: vi.fn((type: FindConstant, opts?: FilterOptions<FindConstant>) => {
         if (type === FIND_SOURCES_ACTIVE || type === FIND_SOURCES) {
           return [mockSource];
         }

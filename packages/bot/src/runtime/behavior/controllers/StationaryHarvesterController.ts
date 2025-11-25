@@ -24,7 +24,7 @@ interface StationaryHarvesterMemory extends CreepMemory {
 }
 
 /**
- *
+ * Controller for stationary harvester creeps that mine from a fixed position.
  */
 export class StationaryHarvesterController extends BaseRoleController<StationaryHarvesterMemory> {
   public constructor() {

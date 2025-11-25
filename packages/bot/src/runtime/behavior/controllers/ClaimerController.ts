@@ -24,7 +24,7 @@ interface ClaimerMemory extends CreepMemory {
 }
 
 /**
- *
+ * Controller for claimer creeps that claim or reserve room controllers.
  */
 export class ClaimerController extends BaseRoleController<ClaimerMemory> {
   public constructor() {

@@ -9,7 +9,7 @@ import { TaskNode } from "./TaskNode";
 import { DependencyResolver } from "./DependencyResolver";
 
 /**
- *
+ * Task queue that respects dependencies between tasks.
  */
 export class DependencyTaskQueue {
   private tasks: Map<string, TaskNode>;

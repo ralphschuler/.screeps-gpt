@@ -9,7 +9,7 @@ import { TaskNode } from "./TaskNode";
 import { TaskState, ResolutionResult, TaskGraph } from "./types";
 
 /**
- *
+ * Resolves task dependencies using topological sorting.
  */
 export class DependencyResolver {
   /**

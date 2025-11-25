@@ -143,9 +143,12 @@ function ensureProfilerRunning(): void {
  *
  * This function is the entry point for all bot logic. It performs:
  * 1. Profiler initialization (if enabled at build time)
- * 2. Memory.stats defensive initialization for telemetry
- * 3. Game context validation
- * 4. Kernel execution with all registered processes
+ * 2. Game context validation
+ * 3. Kernel execution with all registered processes
+ *
+ * Memory.stats initialization is handled by StatsCollector (domain owner)
+ * during MetricsProcess execution. This ensures single-responsibility
+ * and prevents duplicate initialization code.
  *
  * Errors are caught and logged to prevent the bot from crashing.
  * The kernel manages process scheduling and CPU budget protection.
@@ -162,16 +165,6 @@ export const loop = (): void => {
     // Ensure profiler is running on every tick
     // This handles Memory resets and ensures continuous data collection
     ensureProfilerRunning();
-
-    // Defensive initialization of Memory.stats to prevent telemetry blackout
-    // This ensures stats structure exists on every tick, even if Memory is reset
-    // between script loads. Critical for /api/user/stats endpoint to receive data.
-    Memory.stats ??= {
-      time: 0,
-      cpu: { used: 0, limit: 0, bucket: 0 },
-      creeps: { count: 0 },
-      rooms: { count: 0 }
-    };
 
     const gameContext = validateGameContext(Game);
     kernel.run(gameContext, Memory);

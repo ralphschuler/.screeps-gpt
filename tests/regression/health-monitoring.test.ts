@@ -3,6 +3,22 @@ import { HealthProcess } from "../../packages/bot/src/runtime/processes/HealthPr
 import type { GameContext } from "../../packages/bot/src/runtime/types/GameContext";
 import type { ProcessContext } from "@ralphschuler/screeps-kernel";
 
+interface MockProtocol {
+  isEmergencyReset: () => boolean;
+  needsRespawn: () => boolean;
+  setEmergencyReset: (value: boolean) => void;
+  setNeedsRespawn: (value: boolean) => void;
+  clearFlags: () => void;
+  setHealthMetrics: () => void;
+  getHealthMetrics: () => undefined;
+  getHealthScore: () => number;
+}
+
+interface MockMemoryExt extends Memory {
+  emergencyReset?: boolean;
+  needsRespawn?: boolean;
+}
+
 /**
  * Regression tests for bot health monitoring and autonomous recovery system.
  *
@@ -19,9 +35,9 @@ import type { ProcessContext } from "@ralphschuler/screeps-kernel";
  */
 describe("Health Monitoring System - Regression Tests", () => {
   let mockGame: GameContext;
-  let mockMemory: Memory;
+  let mockMemory: MockMemoryExt;
   let healthProcess: HealthProcess;
-  let mockProtocol: any;
+  let mockProtocol: MockProtocol;
 
   beforeEach(() => {
     mockGame = {
@@ -50,22 +66,22 @@ describe("Health Monitoring System - Regression Tests", () => {
         creeps: { count: 0 },
         rooms: { count: 1 }
       }
-    } as Memory;
+    } as MockMemoryExt;
 
     // Mock protocol for emergency reset, respawn checks, and health metrics
     // Protocol reads from memory for state coordination
     mockProtocol = {
-      isEmergencyReset: () => !!(mockMemory as any).emergencyReset,
-      needsRespawn: () => !!(mockMemory as any).needsRespawn,
+      isEmergencyReset: () => !!mockMemory.emergencyReset,
+      needsRespawn: () => !!mockMemory.needsRespawn,
       setEmergencyReset: (value: boolean) => {
-        (mockMemory as any).emergencyReset = value;
+        mockMemory.emergencyReset = value;
       },
       setNeedsRespawn: (value: boolean) => {
-        (mockMemory as any).needsRespawn = value;
+        mockMemory.needsRespawn = value;
       },
       clearFlags: () => {
-        delete (mockMemory as any).emergencyReset;
-        delete (mockMemory as any).needsRespawn;
+        delete mockMemory.emergencyReset;
+        delete mockMemory.needsRespawn;
       },
       setHealthMetrics: () => {},
       getHealthMetrics: () => undefined,

@@ -24,7 +24,7 @@ interface ScoutMemory extends CreepMemory {
 }
 
 /**
- *
+ * Controller for scout creeps that explore and gather intel on rooms.
  */
 export class ScoutController extends BaseRoleController<ScoutMemory> {
   private machines: Map<string, StateMachine<ScoutContext, ScoutEvent>> = new Map();
