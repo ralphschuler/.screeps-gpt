@@ -39,6 +39,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          registry-url: 'https://npm.pkg.github.com'
-          scope: '@ralphschuler'
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@ralphschuler"
           cache: "npm"
+          token: "${{ secrets.COPILOT_MCP_GH_TOKEN }}"
