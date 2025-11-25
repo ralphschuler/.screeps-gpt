@@ -17,13 +17,7 @@ export {
   getCategoryUrl
 } from "./client.js";
 
-export {
-  parseWikitext,
-  parseHtmlContent,
-  cleanContent,
-  extractCodeBlocks,
-  toPlainText
-} from "./parser.js";
+export { parseWikitext, parseHtmlContent, cleanContent, extractCodeBlocks, toPlainText } from "./parser.js";
 
 export {
   WikiCache,

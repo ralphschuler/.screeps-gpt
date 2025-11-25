@@ -25,8 +25,7 @@ vi.mock("../../src/wiki/client.js", () => ({
   getArticleContent: vi.fn().mockResolvedValue({
     title: "Overmind",
     pageId: 123,
-    content:
-      "== Overview ==\nOvermind is a popular open-source bot.\n\n== Features ==\nAutomatic creep management.",
+    content: "== Overview ==\nOvermind is a popular open-source bot.\n\n== Features ==\nAutomatic creep management.",
     categories: ["Bots", "Architecture"]
   }),
   getArticleHtml: vi.fn().mockResolvedValue({
@@ -45,9 +44,7 @@ vi.mock("../../src/wiki/client.js", () => ({
     { title: "Screeps-TypeScript-Starter", pageId: 456 }
   ]),
   getArticleUrl: vi.fn((title: string) => `https://wiki.screepspl.us/index.php/${title.replace(/ /g, "_")}`),
-  getCategoryUrl: vi.fn(
-    (name: string) => `https://wiki.screepspl.us/index.php/Category:${name.replace(/ /g, "_")}`
-  )
+  getCategoryUrl: vi.fn((name: string) => `https://wiki.screepspl.us/index.php/Category:${name.replace(/ /g, "_")}`)
 }));
 
 // Mock the cache module

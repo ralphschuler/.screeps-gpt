@@ -247,7 +247,8 @@ export function extractCodeBlocks(content: string): Array<{ language: string; co
   const codeBlocks: Array<{ language: string; code: string }> = [];
 
   // Match <syntaxhighlight> or <source> blocks
-  const syntaxRegex = /<(?:syntaxhighlight|source)\s+lang=["']?(\w+)["']?[^>]*>([\s\S]*?)<\/(?:syntaxhighlight|source)>/gi;
+  const syntaxRegex =
+    /<(?:syntaxhighlight|source)\s+lang=["']?(\w+)["']?[^>]*>([\s\S]*?)<\/(?:syntaxhighlight|source)>/gi;
   let match;
 
   while ((match = syntaxRegex.exec(content)) !== null) {

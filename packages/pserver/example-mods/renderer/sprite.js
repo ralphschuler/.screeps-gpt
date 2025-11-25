@@ -4,21 +4,21 @@
 //
 // See renderer documentation: https://github.com/screeps/renderer
 
-module.exports = function(config) {
-    if(config.backend) {
-        config.backend.renderer.resources['my_gift_texture'] = '{ASSETS_URL}/gift.png';
-        config.backend.renderer.metadata['test'] = {
-            processors: [
-                {
-                    type: 'sprite',
-                    once: true,
-                    payload: {
-                        texture: 'my_gift_texture',
-                        width: 100,
-                        height: 100,
-                    },
-                },
-            ],
+module.exports = function (config) {
+  if (config.backend) {
+    config.backend.renderer.resources["my_gift_texture"] = "{ASSETS_URL}/gift.png";
+    config.backend.renderer.metadata["test"] = {
+      processors: [
+        {
+          type: "sprite",
+          once: true,
+          payload: {
+            texture: "my_gift_texture",
+            width: 100,
+            height: 100
+          }
         }
-    }
-}
+      ]
+    };
+  }
+};

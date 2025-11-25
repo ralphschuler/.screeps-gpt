@@ -166,9 +166,7 @@ export async function getArticleHtml(title: string): Promise<{
 /**
  * List all categories in the wiki
  */
-export async function listCategories(
-  limit: number = 50
-): Promise<Array<{ name: string; title: string }>> {
+export async function listCategories(limit: number = 50): Promise<Array<{ name: string; title: string }>> {
   const data = await apiRequest({
     action: "query",
     list: "allcategories",

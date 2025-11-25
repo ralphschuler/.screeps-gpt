@@ -1,33 +1,32 @@
 // Add an object with type "myobject" visually represented by a green circle
 
-module.exports = function(config) {
-
-    if(config.backend) {
-        // Add visuals
-        config.backend.renderer.metadata['myobject'] = {
-            processors: [
-                {
-                    type: 'draw',
-                    once: true,
-                    payload: {
-                        drawings: [
-                            { method: 'beginFill', params: [0x77FF77] },
-                            { method: 'drawCircle', params: [0,0,40] },
-                            { method: 'endFill' }
-                        ]
-                    }
-                }
+module.exports = function (config) {
+  if (config.backend) {
+    // Add visuals
+    config.backend.renderer.metadata["myobject"] = {
+      processors: [
+        {
+          type: "draw",
+          once: true,
+          payload: {
+            drawings: [
+              { method: "beginFill", params: [0x77ff77] },
+              { method: "drawCircle", params: [0, 0, 40] },
+              { method: "endFill" }
             ]
-        };
-    }
+          }
+        }
+      ]
+    };
+  }
 
-    if(config.engine) {
-        // Add MyObject prototype to user scripts
-        config.engine.registerCustomObjectPrototype('myobject', 'MyObject', {
-            findConstant: 10000
-        });
-    }
-}
+  if (config.engine) {
+    // Add MyObject prototype to user scripts
+    config.engine.registerCustomObjectPrototype("myobject", "MyObject", {
+      findConstant: 10000
+    });
+  }
+};
 
 /*
 

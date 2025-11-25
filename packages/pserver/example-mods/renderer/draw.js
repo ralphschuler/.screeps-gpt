@@ -5,45 +5,35 @@
 // See renderer documentation: https://github.com/screeps/renderer
 
 module.exports = function (config) {
-    if (config.backend) {
-        config.backend.renderer.metadata['test'] = {
-            processors: [
-                {
-                    type: 'draw',
-                    once: true,
-                    payload: {                            
-                        drawings: [
-                            // Each element here describes a PIXI.Graphics method
-                            // See http://pixijs.download/dev/docs/PIXI.Graphics.html
-                            {
-                                method: 'lineStyle',
-                                params: [
-                                    5,
-                                    0xFFAAFF
-                                ],
-                            },
-                            {
-                                method: 'beginFill',
-                                params: [0xFF00FF]
-                            },
-                            {
-                                method: 'drawRoundedRect',
-                                params: [
-                                    -40,
-                                    -40,
-                                    80,
-                                    80,
-                                    10,
-                                ],
-                            },
-                            {
-                                method: 'endFill'
-                            },
-                        ],
-                    },
-                },
-
-            ],
+  if (config.backend) {
+    config.backend.renderer.metadata["test"] = {
+      processors: [
+        {
+          type: "draw",
+          once: true,
+          payload: {
+            drawings: [
+              // Each element here describes a PIXI.Graphics method
+              // See http://pixijs.download/dev/docs/PIXI.Graphics.html
+              {
+                method: "lineStyle",
+                params: [5, 0xffaaff]
+              },
+              {
+                method: "beginFill",
+                params: [0xff00ff]
+              },
+              {
+                method: "drawRoundedRect",
+                params: [-40, -40, 80, 80, 10]
+              },
+              {
+                method: "endFill"
+              }
+            ]
+          }
         }
-    }
-}
+      ]
+    };
+  }
+};

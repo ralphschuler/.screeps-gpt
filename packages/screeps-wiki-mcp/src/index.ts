@@ -38,13 +38,7 @@ export {
 } from "./wiki/client.js";
 
 // Wiki parser exports
-export {
-  parseWikitext,
-  parseHtmlContent,
-  cleanContent,
-  extractCodeBlocks,
-  toPlainText
-} from "./wiki/parser.js";
+export { parseWikitext, parseHtmlContent, cleanContent, extractCodeBlocks, toPlainText } from "./wiki/parser.js";
 
 // Cache exports
 export {
@@ -57,11 +51,7 @@ export {
 } from "./wiki/cache.js";
 
 // Handler exports
-export {
-  listResources,
-  parseResourceURI,
-  handleResourceRead
-} from "./handlers/resources.js";
+export { listResources, parseResourceURI, handleResourceRead } from "./handlers/resources.js";
 
 export {
   toolSchemas,
