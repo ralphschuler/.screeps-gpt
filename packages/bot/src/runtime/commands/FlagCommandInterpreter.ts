@@ -283,6 +283,12 @@ export class FlagCommandInterpreter {
   }
 
   /**
+   * Minimum energy thresholds for command validation
+   */
+  private static readonly MIN_STORAGE_ENERGY = 10000;
+  private static readonly MIN_ROOM_ENERGY = 300;
+
+  /**
    * Check if bot has stable energy reserves
    */
   private hasStableEnergy(game: GameContext): boolean {
@@ -290,12 +296,12 @@ export class FlagCommandInterpreter {
       const room = game.rooms[roomName];
       if (room?.controller?.my) {
         const storage = room.storage;
-        if (storage && storage.store.getUsedCapacity(RESOURCE_ENERGY) > 10000) {
+        if (storage && storage.store.getUsedCapacity(RESOURCE_ENERGY) > FlagCommandInterpreter.MIN_STORAGE_ENERGY) {
           return true;
         }
         // Fallback to room energy if no storage
         const roomWithEnergy = room as Room & { energyAvailable?: number };
-        if ((roomWithEnergy.energyAvailable ?? 0) > 300) {
+        if ((roomWithEnergy.energyAvailable ?? 0) > FlagCommandInterpreter.MIN_ROOM_ENERGY) {
           return true;
         }
       }

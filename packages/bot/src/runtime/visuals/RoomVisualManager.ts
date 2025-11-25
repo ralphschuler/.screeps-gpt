@@ -426,7 +426,8 @@ export class RoomVisualManager {
         continue;
       }
 
-      // Type-safe cast: GameLike is structurally compatible with GameContext for flag operations
+      // GameLike is a duck-typed interface for testability - structurally compatible with GameContext
+      // The cast is safe as GameLike includes all properties needed by FlagCommandInterpreter
       const gameContext: GameContext = game as GameContext & GameLike;
 
       // Parse flag command

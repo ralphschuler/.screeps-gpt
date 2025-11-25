@@ -29,6 +29,8 @@ export class FlagCommandProcess {
     const memory = ctx.memory;
 
     // Skip if emergency reset or respawn occurred
+    // Protocol methods are dynamically registered, causing type inference issues in strict mode
+    // This pattern matches other processes (BehaviorProcess, HealthProcess, etc.)
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     if (ctx.protocol.isEmergencyReset() || ctx.protocol.needsRespawn()) {
       return;
