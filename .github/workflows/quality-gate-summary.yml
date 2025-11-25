@@ -40,11 +40,9 @@ jobs:
           script: |
             // Guard workflows to check
             const requiredGuards = [
-              'Guard - Unit Tests',
+              'Guard - Tests',
               'Guard - Build',
-              'Guard - Lint',
-              'Guard - Format',
-              'Guard - YAML Lint'
+              'Guard - Code Quality'
             ];
 
             const maxWaitMinutes = 25;

@@ -5,6 +5,16 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Changed
+
+- **CI/CD**: Consolidated guard workflows using strategy matrices for faster execution
+  - Merged `guard-lint.yml`, `guard-format.yml`, and `guard-yaml-lint.yml` into `guard-code-quality.yml` with matrix strategy (3 parallel jobs)
+  - Merged `guard-test-unit.yml`, `guard-test-e2e.yml`, `guard-test-regression.yml`, and `guard-test-docs.yml` into `guard-tests.yml` with matrix strategy (4 parallel jobs)
+  - Updated `quality-gate-summary.yml` to monitor consolidated workflows
+  - Reduced from 12 to 7 guard workflows (42% reduction)
+  - Benefits: Parallel execution within matrix, faster CI feedback, reduced workflow file overhead
+  - Updated documentation in `packages/docs/source/docs/automation/overview.md` and legacy docs
+
 ## [0.159.1] - 2025-11-25
 
 ### Added
