@@ -82,6 +82,17 @@ For architectural inspiration and large-scale automation patterns, explore the o
 - Regenerate the static documentation site locally with `yarn build:docs-site` when editing docs so you can preview what GitHub Pages will publish.
 - Generate blog posts for new releases automatically (via workflow) or manually with `yarn docs:generate-blog-posts` for bulk generation of missing posts.
 
+## Code Documentation Standards
+
+All TypeScript source files in the `packages/` directory should include TSDoc comments for exported APIs. This improves IDE IntelliSense, facilitates onboarding, and enables automated API documentation generation.
+
+See [`packages/README.md`](packages/README.md) for the complete TSDoc style guide, including:
+
+- Documentation templates for classes, methods, interfaces, and types
+- Required documentation elements (purpose, parameters, returns, examples)
+- ESLint validation configuration
+- API documentation generation with TypeDoc
+
 ## Maintenance Tips
 
 - Keep [`TASKS.md`](TASKS.md) updated as you work. Archive completed tasks for visibility before pruning them.

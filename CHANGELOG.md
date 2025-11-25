@@ -5,6 +5,15 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Added
+
+- **Documentation**: TSDoc/JSDoc documentation standards and style guide
+  - Created `packages/README.md` with comprehensive TSDoc standards and templates
+  - Added code documentation standards section to `AGENTS.md` and `DOCS.md`
+  - Added ESLint JSDoc validation rules for exported classes (set to warn for incremental adoption)
+  - Enhanced TSDoc comments for high-priority entry points (`main.ts`, `server.ts`, `agent.ts`)
+  - Installed `eslint-plugin-jsdoc` for automated documentation validation
+
 ## [0.157.5] - 2025-11-25
 
 ### Added
