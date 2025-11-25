@@ -43,31 +43,27 @@ tickleman/screeps implements a dual-phase work pattern where creeps alternate be
 
 ```javascript
 // creep.js - Core work pattern
-module.exports.sourceWork = function(creep) {
+module.exports.sourceWork = function (creep) {
   if (!this.source_work) return this.NEXT_STEP;
   if (!this.canWorkSource(creep)) {
-    if (this.target_work && this.canWorkTarget(creep) && this.target(creep)) 
-      return this.NEXT_STEP;
+    if (this.target_work && this.canWorkTarget(creep) && this.target(creep)) return this.NEXT_STEP;
     return this.WAIT;
   }
   if (!this.source(creep)) {
-    if (this.target_work && this.canWorkTarget(creep) && this.target(creep)) 
-      return this.NEXT_STEP;
+    if (this.target_work && this.canWorkTarget(creep) && this.target(creep)) return this.NEXT_STEP;
     return this.NO_SOURCE;
   }
   return this.sourceJob(creep);
 };
 
-module.exports.targetWork = function(creep) {
+module.exports.targetWork = function (creep) {
   if (!this.target_work) return this.NEXT_STEP;
   if (!this.canWorkTarget(creep)) {
-    if (this.source_work && this.canWorkSource(creep) && this.source(creep)) 
-      return this.NEXT_STEP;
+    if (this.source_work && this.canWorkSource(creep) && this.source(creep)) return this.NEXT_STEP;
     return this.WAIT;
   }
   if (!this.target(creep)) {
-    if (this.source_work && this.canWorkSource(creep) && this.source(creep)) 
-      return this.NEXT_STEP;
+    if (this.source_work && this.canWorkSource(creep) && this.source(creep)) return this.NEXT_STEP;
     return this.NO_TARGET;
   }
   return this.targetJob(creep);
@@ -120,14 +116,14 @@ tickleman/screeps implements a path serialization system that achieves ~75-90% m
 
 ```javascript
 // path.js - Path serialization
-module.exports.serialize = function(path, opts) {
+module.exports.serialize = function (path, opts) {
   let pos = path[Object.keys(path)[0]];
   let xx = pos.x.toString();
-  if (xx.length < 2) xx = '0' + xx;
+  if (xx.length < 2) xx = "0" + xx;
   let yy = pos.y.toString();
-  if (yy.length < 2) yy = '0' + yy;
+  if (yy.length < 2) yy = "0" + yy;
   let result = xx.concat(yy); // Start position: "xxyy"
-  
+
   let last_pos = pos;
   for (pos of path.slice(1)) {
     if (pos === this.WAYPOINT) {
@@ -141,14 +137,14 @@ module.exports.serialize = function(path, opts) {
 };
 
 // Two-way path calculation
-module.exports.calculateTwoWay = function(source, destination, opts) {
+module.exports.calculateTwoWay = function (source, destination, opts) {
   let path = this.calculate(source, destination, opts);
-  
+
   // Calculate return path with different route (avoid collisions)
   let back_source = this.last(path);
   let back_destination = this.start(path);
   let back_path = this.calculate(back_source, back_destination, opts);
-  
+
   return path.concat(this.WAYPOINT, this.shift(back_path, back_source).substr(4));
 };
 ```
@@ -161,6 +157,7 @@ module.exports.calculateTwoWay = function(source, destination, opts) {
 - `w` character: Waypoint marker for phase transitions
 
 **Example:** `"25251234w8765"` means:
+
 - Start at (25, 25)
 - Move TOP(1), TOP_RIGHT(2), RIGHT(3), BOTTOM_RIGHT(4)
 - Waypoint reached (work phase transition)
@@ -200,18 +197,18 @@ interface PathStep {
 }
 
 export class PathSerializer {
-  private static readonly WAYPOINT = 'w';
+  private static readonly WAYPOINT = "w";
 
   public static serialize(path: PathStep[]): string {
-    if (path.length === 0) return '';
-    
+    if (path.length === 0) return "";
+
     const start = path[0];
     let result = this.padPosition(start.x) + this.padPosition(start.y);
-    
+
     for (let i = 1; i < path.length; i++) {
       result += path[i].direction.toString();
     }
-    
+
     return result;
   }
 
@@ -219,27 +216,29 @@ export class PathSerializer {
     const positions: RoomPosition[] = [];
     const startX = parseInt(serialized.substring(0, 2));
     const startY = parseInt(serialized.substring(2, 4));
-    
+
     let pos = new RoomPosition(startX, startY, roomName);
     positions.push(pos);
-    
+
     for (let i = 4; i < serialized.length; i++) {
       if (serialized[i] === this.WAYPOINT) continue;
       pos = this.applyDirection(pos, parseInt(serialized[i]) as DirectionConstant);
       positions.push(pos);
     }
-    
+
     return positions;
   }
 
   private static padPosition(n: number): string {
-    return n.toString().padStart(2, '0');
+    return n.toString().padStart(2, "0");
   }
 
   private static applyDirection(pos: RoomPosition, direction: DirectionConstant): RoomPosition {
     // Implementation would apply direction offset to position
     // See Screeps documentation for direction constants
-    const offsets = { /* direction -> {dx, dy} mapping */ };
+    const offsets = {
+      /* direction -> {dx, dy} mapping */
+    };
     // Return new RoomPosition with applied offset
   }
 }
@@ -252,15 +251,28 @@ tickleman/screeps uses a clear step-based state machine for creep execution:
 
 ```javascript
 // work.rooms.js - Step-based execution
-module.exports.work = function(creepjs, creep) {
+module.exports.work = function (creepjs, creep) {
   switch (creep.memory.step) {
-    case 'spawning':   if (!creep.spawning) this.spawning(creepjs, creep); break;
-    case 'goToStart':  this.goToStart(creepjs, creep); break;
-    case 'goToSource': this.goToSource(creepjs, creep); break;
-    case 'sourceWork': this.sourceWork(creepjs, creep); break;
-    case 'goToTarget': this.goToTarget(creepjs, creep); break;
-    case 'targetWork': this.targetWork(creepjs, creep); break;
-    default: creepjs.nextStep(creep, 'spawning');
+    case "spawning":
+      if (!creep.spawning) this.spawning(creepjs, creep);
+      break;
+    case "goToStart":
+      this.goToStart(creepjs, creep);
+      break;
+    case "goToSource":
+      this.goToSource(creepjs, creep);
+      break;
+    case "sourceWork":
+      this.sourceWork(creepjs, creep);
+      break;
+    case "goToTarget":
+      this.goToTarget(creepjs, creep);
+      break;
+    case "targetWork":
+      this.targetWork(creepjs, creep);
+      break;
+    default:
+      creepjs.nextStep(creep, "spawning");
   }
 };
 ```
@@ -277,10 +289,10 @@ module.exports.work = function(creepjs, creep) {
 **Step Transitions:**
 
 ```javascript
-module.exports.nextStep = function(creep, step) {
+module.exports.nextStep = function (creep, step) {
   creep.memory.step = step;
   // Handle source/target duration limits
-  if (step === 'sourceWork' && creep.memory.source_duration !== undefined) {
+  if (step === "sourceWork" && creep.memory.source_duration !== undefined) {
     if (!creep.memory.source_duration--) {
       delete creep.memory.source;
     }
@@ -317,7 +329,7 @@ tickleman/screeps organizes memory by room with pre-planned positions and roles:
 ```javascript
 // Memory structure from README.md
 Memory.rooms = {
-  "W1N1": {
+  W1N1: {
     spawn: { x, y, id },
     spawn_source: { x, y, id },
     spawn_harvester: { x, y, role, source, creep },
@@ -342,20 +354,24 @@ Memory.rooms = {
 
 ```javascript
 // rooms.js - Room memorization
-module.exports.memorize = function(reset) {
-  this.forEach(function(room) {
+module.exports.memorize = function (reset) {
+  this.forEach(function (room) {
     if (!Memory.rooms[room.name]) {
       let cache = {};
       let memory = {};
-      
+
       // Find key structures
-      room.find(FIND_MY_STRUCTURES).forEach(function(structure) {
+      room.find(FIND_MY_STRUCTURES).forEach(function (structure) {
         switch (structure.structureType) {
-          case STRUCTURE_CONTROLLER: memory.controller = toMemoryObject(structure); break;
-          case STRUCTURE_SPAWN: memory.spawn = toMemoryObject(structure); break;
+          case STRUCTURE_CONTROLLER:
+            memory.controller = toMemoryObject(structure);
+            break;
+          case STRUCTURE_SPAWN:
+            memory.spawn = toMemoryObject(structure);
+            break;
         }
       });
-      
+
       // Calculate spawn-related positions
       if (cache.spawn) {
         cache.spawn_source = cache.spawn.pos.findClosestByRange(FIND_SOURCES_ACTIVE);
@@ -363,10 +379,10 @@ module.exports.memorize = function(reset) {
           path: Path.calculate(cache.spawn_source, cache.spawn, { range: 1 })
         };
         memory.spawn_harvester = Path.start(memory.spawn_carrier.path);
-        memory.spawn_harvester.role = 'harvester';
+        memory.spawn_harvester.role = "harvester";
         memory.spawn_harvester.source = memory.spawn_source.id;
       }
-      
+
       Memory.rooms[room.name] = memory;
     }
   });
@@ -403,35 +419,35 @@ tickleman/screeps implements per-tick object caching to reduce redundant lookups
 // objects.js - Object caching
 module.exports.cache = {};
 
-module.exports.get = function(context, target) {
+module.exports.get = function (context, target) {
   // Return if already object or position
-  if ((target instanceof RoomObject) || (target instanceof RoomPosition) || !target) {
+  if (target instanceof RoomObject || target instanceof RoomPosition || !target) {
     return target;
   }
-  
+
   // Check cache first
   if (this.cache[target]) return this.cache[target];
-  
+
   // Context-based cache
   if (context instanceof RoomObject) context = context.pos;
   if (this.cache[context.roomName] && this.cache[context.roomName][target]) {
     return this.cache[context.roomName][target];
   }
-  
+
   // Look up by various methods and cache result
   if (target.length === 24) {
     let object = Game.getObjectById(target);
     if (object instanceof RoomObject) {
-      return this.cache[target] = object;
+      return (this.cache[target] = object);
     }
   }
-  
+
   // Room role lookup
   if (Memory.rooms[context.roomName][target]) {
     if (!this.cache[context.roomName]) this.cache[context.roomName] = {};
-    return this.cache[context.roomName][target] = require('./rooms').get(context.roomName, target);
+    return (this.cache[context.roomName][target] = require("./rooms").get(context.roomName, target));
   }
-  
+
   return null;
 };
 ```
@@ -440,7 +456,7 @@ module.exports.get = function(context, target) {
 
 ```javascript
 // main.js - Reset cache each tick
-module.exports.loop = function() {
+module.exports.loop = function () {
   objects.cache = {};
   // ... rest of loop
 };
@@ -473,7 +489,7 @@ tickleman/screeps provides unified methods for energy operations across all stru
 
 ```javascript
 // objects.js - Universal energy methods
-module.exports.energy = function(object) {
+module.exports.energy = function (object) {
   if (object instanceof ConstructionSite) return object.progress;
   if (object instanceof Creep) return object.carry.energy;
   if (object instanceof Resource) return object.amount;
@@ -488,7 +504,7 @@ module.exports.energy = function(object) {
   return null;
 };
 
-module.exports.getEnergy = function(creep, source, allow_dismantle) {
+module.exports.getEnergy = function (creep, source, allow_dismantle) {
   let creep_can = this.can(creep);
   if (creep_can[CARRY]) {
     if (source instanceof Resource) return creep.pickup(source);
@@ -502,10 +518,10 @@ module.exports.getEnergy = function(creep, source, allow_dismantle) {
   return ERR_INVALID_TARGET;
 };
 
-module.exports.putEnergy = function(creep, target) {
+module.exports.putEnergy = function (creep, target) {
   let creep_can = this.can(creep);
   if (creep_can[WORK]) {
-    if ((target instanceof Structure) && this.wounded(target)) return creep.repair(target);
+    if (target instanceof Structure && this.wounded(target)) return creep.repair(target);
     if (target instanceof ConstructionSite) return creep.build(target);
     if (target instanceof StructureController) return creep.upgradeController(target);
   }
@@ -546,12 +562,12 @@ module.exports.putEnergy = function(creep, target) {
 
 **Comparison with .screeps-gpt:**
 
-| Aspect | tickleman/screeps | .screeps-gpt (estimated) |
-|--------|-------------------|--------------------------|
-| Path Storage | ~20-50 bytes | No path caching (recalculated) |
-| Room Memory | ~500 bytes | Variable (depends on managers) |
-| Creep Memory | ~50-100 bytes | ~50-100 bytes |
-| Object Cache | Heap only | Heap/Memory mixed |
+| Aspect       | tickleman/screeps | .screeps-gpt (estimated)       |
+| ------------ | ----------------- | ------------------------------ |
+| Path Storage | ~20-50 bytes      | No path caching (recalculated) |
+| Room Memory  | ~500 bytes        | Variable (depends on managers) |
+| Creep Memory | ~50-100 bytes     | ~50-100 bytes                  |
+| Object Cache | Heap only         | Heap/Memory mixed              |
 
 ### CPU Overhead
 
@@ -565,40 +581,40 @@ module.exports.putEnergy = function(creep, target) {
 
 **Comparison (Approximate):**
 
-| Operation | tickleman/screeps | .screeps-gpt (estimated) | Methodology |
-|-----------|-------------------|--------------------------|-------------|
-| Pathfinding | Pre-calculated (minimal/tick) | Per-tick (varies) | Path reuse vs recalculation |
-| Object Lookup | Cached | Direct lookup | Cache hit vs Game.getObjectById |
-| Creep Logic | Step switch | Task execution | State machine vs task system |
+| Operation     | tickleman/screeps             | .screeps-gpt (estimated) | Methodology                     |
+| ------------- | ----------------------------- | ------------------------ | ------------------------------- |
+| Pathfinding   | Pre-calculated (minimal/tick) | Per-tick (varies)        | Path reuse vs recalculation     |
+| Object Lookup | Cached                        | Direct lookup            | Cache hit vs Game.getObjectById |
+| Creep Logic   | Step switch                   | Task execution           | State machine vs task system    |
 
-*Note: For precise measurements, use `Game.cpu.getUsed()` profiling in-game.*
+_Note: For precise measurements, use `Game.cpu.getUsed()` profiling in-game._
 
 ## Comparison Matrix
 
 ### Architecture Comparison
 
-| Feature | tickleman/screeps | .screeps-gpt |
-|---------|-------------------|--------------|
-| **Language** | JavaScript (ES6) | TypeScript (strict) |
-| **Paradigm** | Role-based with source/target pattern | Task-based with prerequisites |
-| **Path Handling** | Pre-calculated, serialized | On-demand calculation |
-| **Memory Structure** | Room-based with position planning | Manager-based organization |
-| **Creep Assignment** | Room role slots | Task assignment system |
-| **Execution Model** | Step-based state machine | Task execution with status |
-| **Object Access** | Cached per-tick | Mixed (heap/memory) |
-| **Multi-room** | Basic room memory | ColonyManager coordination |
-| **Testing** | Basic in-game tests | Vitest test suites |
+| Feature              | tickleman/screeps                     | .screeps-gpt                  |
+| -------------------- | ------------------------------------- | ----------------------------- |
+| **Language**         | JavaScript (ES6)                      | TypeScript (strict)           |
+| **Paradigm**         | Role-based with source/target pattern | Task-based with prerequisites |
+| **Path Handling**    | Pre-calculated, serialized            | On-demand calculation         |
+| **Memory Structure** | Room-based with position planning     | Manager-based organization    |
+| **Creep Assignment** | Room role slots                       | Task assignment system        |
+| **Execution Model**  | Step-based state machine              | Task execution with status    |
+| **Object Access**    | Cached per-tick                       | Mixed (heap/memory)           |
+| **Multi-room**       | Basic room memory                     | ColonyManager coordination    |
+| **Testing**          | Basic in-game tests                   | Vitest test suites            |
 
 ### Pattern Applicability
 
-| Pattern | Complexity | Value | Compatibility | Priority |
-|---------|------------|-------|---------------|----------|
-| Path Serialization | Low | High | High | **HIGH** |
-| Object Caching | Low | Medium | High | **MEDIUM** |
-| Room Position Planning | Medium | Medium | Medium | MEDIUM |
-| Source/Target Pattern | Medium | Low | Low | LOW |
-| Step-Based Execution | Low | Low | Low | LOW |
-| Universal Energy Methods | Low | Low | Low | NOT RECOMMENDED |
+| Pattern                  | Complexity | Value  | Compatibility | Priority        |
+| ------------------------ | ---------- | ------ | ------------- | --------------- |
+| Path Serialization       | Low        | High   | High          | **HIGH**        |
+| Object Caching           | Low        | Medium | High          | **MEDIUM**      |
+| Room Position Planning   | Medium     | Medium | Medium        | MEDIUM          |
+| Source/Target Pattern    | Medium     | Low    | Low           | LOW             |
+| Step-Based Execution     | Low        | Low    | Low           | LOW             |
+| Universal Energy Methods | Low        | Low    | Low           | NOT RECOMMENDED |
 
 **Priority Classification Criteria:**
 
@@ -706,20 +722,19 @@ This research addresses the following gaps not covered by previous analyses:
 ### Related .screeps-gpt Issues
 
 - **#392, #426, #494, #495** - CPU optimization initiatives
-  - *Relevance:* Path serialization pattern directly reduces pathfinding CPU overhead
-  - *Pattern:* Pre-calculated paths eliminate per-tick PathFinder.search() calls
-  
+  - _Relevance:_ Path serialization pattern directly reduces pathfinding CPU overhead
+  - _Pattern:_ Pre-calculated paths eliminate per-tick PathFinder.search() calls
 - **#487** - Memory optimization
-  - *Relevance:* Caching patterns reduce Memory object access and serialization
-  - *Pattern:* Per-tick heap cache for frequently accessed game objects
+  - _Relevance:_ Caching patterns reduce Memory object access and serialization
+  - _Pattern:_ Per-tick heap cache for frequently accessed game objects
 
 - **#573** - Screeps bot development strategies reference
-  - *Relevance:* Additional architectural context for bot design patterns
-  - *Pattern:* General best practices from community resources
+  - _Relevance:_ Additional architectural context for bot design patterns
+  - _Pattern:_ General best practices from community resources
 
 - **#648** - The International bot research (pending, complementary)
-  - *Relevance:* Another bot architecture for comparison
-  - *Pattern:* Will provide additional perspective on multi-room strategies
+  - _Relevance:_ Another bot architecture for comparison
+  - _Pattern:_ Will provide additional perspective on multi-room strategies
 
 ### Cross-Reference with Previous Research
 
@@ -765,7 +780,7 @@ The recommended implementation order prioritizes CPU-saving patterns (path seria
 ## References
 
 - **GitHub Repository:** https://github.com/tickleman/screeps
-- **Related Research:** 
+- **Related Research:**
   - Overmind Analysis (`docs/research/overmind-analysis.md`)
   - creep-tasks Analysis (`docs/research/creep-tasks-analysis.md`)
   - screeps-packrat Analysis (`docs/research/screeps-packrat-analysis.md`)
