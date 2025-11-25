@@ -434,23 +434,6 @@ export async function handleGetTable(args: z.infer<typeof toolSchemas.getTable>)
   }
 
   const table = tables[tableIndex];
-  if (!table) {
-    return {
-      content: [
-        {
-          type: "text",
-          text: JSON.stringify(
-            {
-              error: `Table at index ${tableIndex} not found.`,
-              availableTables: tables.length
-            },
-            null,
-            2
-          )
-        }
-      ]
-    };
-  }
 
   // Create a new object with the source article to avoid mutating the original
   const tableWithSource = {
