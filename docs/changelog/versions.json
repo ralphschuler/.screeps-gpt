@@ -1,5 +1,20 @@
 [
   {
+    "version": "0.157.5",
+    "date": "2025-11-25",
+    "notes": [
+      "**Documentation**: Created GitHub Models in Actions migration assessment",
+      "Comprehensive comparison between Copilot CLI and `actions/ai-inference`",
+      "Identified workflows suitable for migration vs. those requiring Copilot CLI",
+      "Proposed hybrid architecture combining both approaches",
+      "Documented implementation plan with phased rollout",
+      "Added example showing issue classification pre-filter pattern",
+      "Located at `packages/docs/source/docs/automation/github-models-migration.md`"
+    ],
+    "anchor": "01575---2025-11-25",
+    "slug": "v0-157-5"
+  },
+  {
     "version": "0.155.21",
     "date": "2025-11-25",
     "notes": [
