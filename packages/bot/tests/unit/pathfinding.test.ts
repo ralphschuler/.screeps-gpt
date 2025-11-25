@@ -1,15 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import {
-  PathfindingManager,
-  DefaultPathfinder,
-  CartographerPathfinder,
-  PathCache
-} from "../../src/runtime/pathfinding";
-
-// Mock screeps-cartographer at the top level
-vi.mock("screeps-cartographer", () => ({
-  moveTo: vi.fn().mockReturnValue(OK)
-}));
+import { PathfindingManager, NesCafePathfinder, PathCache } from "../../src/runtime/pathfinding";
 
 // Mock RoomPosition for tests
 class MockRoomPosition {
@@ -23,31 +13,60 @@ class MockRoomPosition {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (global as any).RoomPosition = MockRoomPosition;
 
-describe("Pathfinding Abstraction Layer", () => {
+// Add missing Screeps global constants for tests
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(global as any).ERR_NOT_FOUND = -5;
+
+/**
+ * Tests for the NesCafe pathfinding integration
+ *
+ * Note: In the test environment, screeps-pathfinding is not available,
+ * so the NesCafePathfinder falls back to native creep.moveTo and PathFinder.
+ * These tests verify:
+ * 1. The PathfindingManager correctly uses the NesCafePathfinder
+ * 2. The fallback behavior works correctly when screeps-pathfinding is unavailable
+ * 3. The interface contracts are maintained
+ */
+describe("Pathfinding with screeps-pathfinding (NesCafe)", () => {
   describe("PathfindingManager", () => {
-    it("should initialize with default provider", () => {
-      const manager = new PathfindingManager();
-      expect(manager.getProviderName()).toBe("default");
+    beforeEach(() => {
+      vi.clearAllMocks();
     });
 
-    it("should initialize with cartographer provider when specified", () => {
-      const manager = new PathfindingManager({ provider: "cartographer", logger: { log: vi.fn(), warn: vi.fn() } });
-      // In test environment, cartographer fails to load and falls back to default
-      // In production, this would return "cartographer"
-      expect(["default", "cartographer"].includes(manager.getProviderName())).toBe(true);
+    it("should initialize with nescafe provider", () => {
+      const manager = new PathfindingManager({ logger: { log: vi.fn(), warn: vi.fn() } });
+      expect(manager.getProviderName()).toBe("nescafe");
     });
 
-    it("should enable caching by default", () => {
-      const manager = new PathfindingManager();
+    it("should fallback to native moveTo when screeps-pathfinding is unavailable", () => {
+      const manager = new PathfindingManager({ logger: { log: vi.fn(), warn: vi.fn() } });
+      const mockMoveTo = vi.fn().mockReturnValue(OK);
       const creep = {
-        moveTo: vi.fn().mockReturnValue(OK)
+        moveTo: mockMoveTo,
+        memory: {}
+      } as unknown as Creep;
+
+      const target = new RoomPosition(25, 25, "W1N1");
+      const result = manager.moveTo(creep, target);
+
+      // Should fallback to native moveTo and return OK
+      expect(mockMoveTo).toHaveBeenCalled();
+      expect(result).toBe(OK);
+    });
+
+    it("should apply default reusePath option when caching is enabled", () => {
+      const manager = new PathfindingManager({ logger: { log: vi.fn(), warn: vi.fn() } });
+      const mockMoveTo = vi.fn().mockReturnValue(OK);
+      const creep = {
+        moveTo: mockMoveTo,
+        memory: {}
       } as unknown as Creep;
 
       const target = new RoomPosition(25, 25, "W1N1");
       manager.moveTo(creep, target);
 
-      // Default reusePath should be applied (5 ticks)
-      expect(creep.moveTo).toHaveBeenCalledWith(
+      // Default reusePath should be applied (5 ticks) in fallback mode
+      expect(mockMoveTo).toHaveBeenCalledWith(
         target,
         expect.objectContaining({
           reusePath: 5
@@ -56,15 +75,17 @@ describe("Pathfinding Abstraction Layer", () => {
     });
 
     it("should respect explicit reusePath option", () => {
-      const manager = new PathfindingManager();
+      const manager = new PathfindingManager({ logger: { log: vi.fn(), warn: vi.fn() } });
+      const mockMoveTo = vi.fn().mockReturnValue(OK);
       const creep = {
-        moveTo: vi.fn().mockReturnValue(OK)
+        moveTo: mockMoveTo,
+        memory: {}
       } as unknown as Creep;
 
       const target = new RoomPosition(25, 25, "W1N1");
       manager.moveTo(creep, target, { reusePath: 30 });
 
-      expect(creep.moveTo).toHaveBeenCalledWith(
+      expect(mockMoveTo).toHaveBeenCalledWith(
         target,
         expect.objectContaining({
           reusePath: 30
@@ -72,67 +93,116 @@ describe("Pathfinding Abstraction Layer", () => {
       );
     });
 
-    it("should disable caching when configured", () => {
-      const manager = new PathfindingManager({ enableCaching: false });
+    it("should not apply reusePath when caching is disabled", () => {
+      const manager = new PathfindingManager({ enableCaching: false, logger: { log: vi.fn(), warn: vi.fn() } });
+      const mockMoveTo = vi.fn().mockReturnValue(OK);
       const creep = {
-        moveTo: vi.fn().mockReturnValue(OK)
+        moveTo: mockMoveTo,
+        memory: {}
       } as unknown as Creep;
 
       const target = new RoomPosition(25, 25, "W1N1");
       manager.moveTo(creep, target);
 
-      // reusePath should be undefined when caching disabled
-      expect(creep.moveTo).toHaveBeenCalledWith(
+      expect(mockMoveTo).toHaveBeenCalledWith(
         target,
         expect.objectContaining({
           reusePath: undefined
         })
       );
     });
+
+    it("should call runMoves without error", () => {
+      const manager = new PathfindingManager({ logger: { log: vi.fn(), warn: vi.fn() } });
+
+      // Should not throw even when screeps-pathfinding is unavailable
+      expect(() => manager.runMoves()).not.toThrow();
+    });
+
+    it("should call runMovesRoom without error", () => {
+      const manager = new PathfindingManager({ logger: { log: vi.fn(), warn: vi.fn() } });
+
+      // Should not throw even when screeps-pathfinding is unavailable
+      expect(() => manager.runMovesRoom("W1N1")).not.toThrow();
+    });
+
+    it("should return false from moveOffRoad when library is unavailable", () => {
+      const manager = new PathfindingManager({ logger: { log: vi.fn(), warn: vi.fn() } });
+      const creep = {
+        memory: {}
+      } as unknown as Creep;
+
+      // Should return false when screeps-pathfinding is unavailable
+      const result = manager.moveOffRoad(creep);
+      expect(result).toBe(false);
+    });
+
+    it("should return ERR_NOT_FOUND from reservePos when library is unavailable", () => {
+      const manager = new PathfindingManager({ logger: { log: vi.fn(), warn: vi.fn() } });
+      const pos = new RoomPosition(25, 25, "W1N1");
+
+      // Should return error when screeps-pathfinding is unavailable
+      const result = manager.reservePos(pos, 10);
+      expect(result).toBe(ERR_NOT_FOUND);
+    });
+
+    it("should provide isPosExit fallback implementation", () => {
+      const manager = new PathfindingManager({ logger: { log: vi.fn(), warn: vi.fn() } });
+
+      // Test corner/edge positions
+      expect(manager.isPosExit({ x: 0, y: 25 })).toBe(true);
+      expect(manager.isPosExit({ x: 49, y: 25 })).toBe(true);
+      expect(manager.isPosExit({ x: 25, y: 0 })).toBe(true);
+      expect(manager.isPosExit({ x: 25, y: 49 })).toBe(true);
+
+      // Test interior positions
+      expect(manager.isPosExit({ x: 25, y: 25 })).toBe(false);
+      expect(manager.isPosExit({ x: 1, y: 1 })).toBe(false);
+      expect(manager.isPosExit({ x: 48, y: 48 })).toBe(false);
+    });
   });
 
-  describe("DefaultPathfinder", () => {
-    let pathfinder: DefaultPathfinder;
+  describe("NesCafePathfinder", () => {
+    let pathfinder: NesCafePathfinder;
 
     beforeEach(() => {
-      pathfinder = new DefaultPathfinder(new PathCache());
+      vi.clearAllMocks();
+      pathfinder = new NesCafePathfinder(new PathCache());
     });
 
     it("should return correct provider name", () => {
-      expect(pathfinder.getName()).toBe("default");
+      expect(pathfinder.getName()).toBe("nescafe");
     });
 
-    it("should delegate moveTo to creep.moveTo", () => {
+    it("should fallback to native moveTo when library is unavailable", () => {
+      const mockMoveTo = vi.fn().mockReturnValue(OK);
       const creep = {
-        moveTo: vi.fn().mockReturnValue(OK)
+        moveTo: mockMoveTo,
+        memory: {}
       } as unknown as Creep;
 
       const target = new RoomPosition(25, 25, "W1N1");
-      const result = pathfinder.moveTo(creep, target, { range: 2, reusePath: 10 });
+      const result = pathfinder.moveTo(creep, target, { range: 2 });
 
+      expect(mockMoveTo).toHaveBeenCalled();
       expect(result).toBe(OK);
-      expect(creep.moveTo).toHaveBeenCalledWith(
-        target,
-        expect.objectContaining({
-          range: 2,
-          reusePath: 10
-        })
-      );
     });
 
     it("should handle target with pos property", () => {
+      const mockMoveTo = vi.fn().mockReturnValue(OK);
       const creep = {
-        moveTo: vi.fn().mockReturnValue(OK)
+        moveTo: mockMoveTo,
+        memory: {}
       } as unknown as Creep;
 
       const target = { pos: new RoomPosition(25, 25, "W1N1") };
       const result = pathfinder.moveTo(creep, target);
 
+      expect(mockMoveTo).toHaveBeenCalledWith(target.pos, expect.any(Object));
       expect(result).toBe(OK);
-      expect(creep.moveTo).toHaveBeenCalledWith(target.pos, expect.any(Object));
     });
 
-    it("should use PathFinder.search for findPath", () => {
+    it("should use PathFinder.search for findPath fallback", () => {
       const origin = new RoomPosition(10, 10, "W1N1");
       const goal = new RoomPosition(25, 25, "W1N1");
 
@@ -146,7 +216,7 @@ describe("Pathfinding Abstraction Layer", () => {
         }
       } as unknown as Game;
 
-      // Mock PathFinder.search
+      // Mock PathFinder.search for fallback
       const mockPath = [new RoomPosition(11, 10, "W1N1"), new RoomPosition(12, 10, "W1N1")];
       global.PathFinder = {
         search: vi.fn().mockReturnValue({
@@ -160,84 +230,26 @@ describe("Pathfinding Abstraction Layer", () => {
 
       expect(result.path).toEqual(mockPath);
       expect(result.ops).toBe(100);
-      expect(result.cost).toBe(0.5);
       expect(result.incomplete).toBe(false);
     });
-  });
 
-  describe("CartographerPathfinder", () => {
-    let pathfinder: CartographerPathfinder;
-
-    beforeEach(() => {
-      pathfinder = new CartographerPathfinder(new PathCache());
-    });
-
-    it("should return correct provider name", () => {
-      expect(pathfinder.getName()).toBe("cartographer");
-    });
-
-    it("should use cartographer moveTo", () => {
-      const creep = {} as Creep;
-      const target = new RoomPosition(25, 25, "W1N1");
-
-      // Note: This test verifies the interface, actual cartographer integration
-      // is mocked at the top of the file
-      const result = pathfinder.moveTo(creep, target, { range: 2 });
-
-      // Result should be OK from our mock
-      expect(result).toBe(OK);
-    });
-
-    it("should use PathFinder.search for findPath", () => {
-      const origin = new RoomPosition(10, 10, "W1N1");
-      const goal = new RoomPosition(25, 25, "W1N1");
-
-      // Mock Game.cpu.getUsed and Game.time
-      const mockGetUsed = vi.fn();
-      mockGetUsed.mockReturnValueOnce(0).mockReturnValueOnce(0.3);
-      global.Game = {
-        time: 1000,
-        cpu: {
-          getUsed: mockGetUsed
-        }
-      } as unknown as Game;
-
-      // Mock PathFinder.search
-      const mockPath = [new RoomPosition(11, 10, "W1N1"), new RoomPosition(12, 10, "W1N1")];
-      global.PathFinder = {
-        search: vi.fn().mockReturnValue({
-          path: mockPath,
-          ops: 80,
-          incomplete: false
-        })
-      } as unknown as typeof PathFinder;
-
-      const result = pathfinder.findPath(origin, goal, { range: 1 });
-
-      expect(result.path).toEqual(mockPath);
-      expect(result.ops).toBe(80);
-      expect(result.cost).toBe(0.3);
-      expect(result.incomplete).toBe(false);
-    });
-  });
-
-  describe("Provider Selection", () => {
-    it("should allow switching between providers", () => {
-      const logger = { log: vi.fn(), warn: vi.fn() };
-      const defaultManager = new PathfindingManager({ provider: "default", logger });
-      const cartographerManager = new PathfindingManager({ provider: "cartographer", logger });
-
-      expect(defaultManager.getProviderName()).toBe("default");
-      // In test environment, cartographer may fall back to default
-      expect(["default", "cartographer"].includes(cartographerManager.getProviderName())).toBe(true);
+    it("should report library as unavailable in test environment", () => {
+      // In test environment, screeps-pathfinding is not available
+      expect(pathfinder.isAvailable()).toBe(false);
     });
   });
 
   describe("Pathfinding Options", () => {
-    it("should support all pathfinding options", () => {
-      const manager = new PathfindingManager();
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it("should pass basic pathfinding options to native moveTo", () => {
+      const manager = new PathfindingManager({ logger: { log: vi.fn(), warn: vi.fn() } });
+      const mockMoveTo = vi.fn().mockReturnValue(OK);
       const creep = {
-        moveTo: vi.fn().mockReturnValue(OK)
+        moveTo: mockMoveTo,
+        memory: {}
       } as unknown as Creep;
 
       const target = new RoomPosition(25, 25, "W1N1");
@@ -254,7 +266,8 @@ describe("Pathfinding Abstraction Layer", () => {
         swampCost: 10
       });
 
-      expect(creep.moveTo).toHaveBeenCalledWith(
+      // In fallback mode, only basic options are passed
+      expect(mockMoveTo).toHaveBeenCalledWith(
         target,
         expect.objectContaining({
           range: 3,
@@ -267,6 +280,39 @@ describe("Pathfinding Abstraction Layer", () => {
           swampCost: 10
         })
       );
+    });
+  });
+
+  describe("Cache Integration", () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it("should provide cache metrics when caching is enabled", () => {
+      const manager = new PathfindingManager({ enableCaching: true, logger: { log: vi.fn(), warn: vi.fn() } });
+      const metrics = manager.getCacheMetrics();
+      expect(metrics).not.toBeNull();
+    });
+
+    it("should not provide cache metrics when caching is disabled", () => {
+      const manager = new PathfindingManager({ enableCaching: false, logger: { log: vi.fn(), warn: vi.fn() } });
+      const metrics = manager.getCacheMetrics();
+      expect(metrics).toBeNull();
+    });
+
+    it("should invalidate room cache without error", () => {
+      const manager = new PathfindingManager({ enableCaching: true, logger: { log: vi.fn(), warn: vi.fn() } });
+      expect(() => manager.invalidateRoom("W1N1")).not.toThrow();
+    });
+
+    it("should invalidate structures cache without error", () => {
+      const manager = new PathfindingManager({ enableCaching: true, logger: { log: vi.fn(), warn: vi.fn() } });
+      expect(() => manager.invalidateStructures("W1N1")).not.toThrow();
+    });
+
+    it("should clear all caches without error", () => {
+      const manager = new PathfindingManager({ enableCaching: true, logger: { log: vi.fn(), warn: vi.fn() } });
+      expect(() => manager.clearCache()).not.toThrow();
     });
   });
 });

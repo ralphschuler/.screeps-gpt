@@ -1247,7 +1247,7 @@ __metadata:
     prettier: "npm:^3.6.2"
     rimraf: "npm:^6.1.0"
     screeps-api: "npm:^1.16.1"
-    screeps-cartographer: "npm:^1.8.13"
+    screeps-pathfinding: "npm:^2.3.1"
     semver: "npm:^7.7.3"
     tsx: "npm:^4.20.6"
     typescript: "npm:^5.4.3"
@@ -6974,6 +6974,13 @@ __metadata:
     screeps-utf15: "npm:^1.0.1"
     ts-polyfill: "npm:^3.8.2"
   checksum: 10c0/d4067be7784c3c5e09026a008f05dd74ec3e277ec9bdefa91302d6f3f244372c67a155b8890edab44eb0f0f19b86b95c091d982fb82d28078c20727e3ac7b1c0
+  languageName: node
+  linkType: hard
+
+"screeps-pathfinding@npm:^2.3.1":
+  version: 2.3.1
+  resolution: "screeps-pathfinding@npm:2.3.1"
+  checksum: 10c0/41beff802836f0ff0c63d6b3b46ab58a8fe325a93e09ff7a6645919f60522774cdf3c88c1780ae97f17488e04b98371972c83824b91cb3ae0798aa9f44f709a8
   languageName: node
   linkType: hard
 
