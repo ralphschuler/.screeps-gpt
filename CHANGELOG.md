@@ -5,6 +5,9 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.157.5] - 2025-11-25
+
+
 ### Added
 
 - **Documentation**: Comprehensive Screeps wiki topic research
@@ -20,6 +23,7 @@ All notable changes to this project are documented here. This changelog now main
   - Documented implementation plan with phased rollout
   - Added example showing issue classification pre-filter pattern
   - Located at `packages/docs/source/docs/automation/github-models-migration.md`
+
 
 ## [0.155.21] - 2025-11-25
 
