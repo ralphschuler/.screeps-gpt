@@ -451,7 +451,12 @@ export async function handleGetTable(args: z.infer<typeof toolSchemas.getTable>)
       ]
     };
   }
-  table.sourceArticle = args.article;
+
+  // Create a new object with the source article to avoid mutating the original
+  const tableWithSource = {
+    ...table,
+    sourceArticle: args.article
+  };
 
   return {
     content: [
@@ -463,7 +468,7 @@ export async function handleGetTable(args: z.infer<typeof toolSchemas.getTable>)
             articleUrl: getArticleUrl(args.article),
             tableIndex,
             totalTables: tables.length,
-            table
+            table: tableWithSource
           },
           null,
           2

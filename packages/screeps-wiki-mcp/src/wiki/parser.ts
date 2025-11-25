@@ -68,6 +68,19 @@ export function parseWikitext(wikitext: string): {
 }
 
 /**
+ * Remove HTML comments iteratively to handle nested/malformed cases
+ */
+function removeHtmlComments(input: string): string {
+  let result = input;
+  let previous = "";
+  while (result !== previous) {
+    previous = result;
+    result = result.replace(/<!--[\s\S]*?-->/g, "");
+  }
+  return result;
+}
+
+/**
  * Process a single line of wikitext
  */
 function processWikitextLine(line: string): string {
@@ -79,8 +92,8 @@ function processWikitextLine(line: string): string {
   // Remove template calls {{Template}} - simplified handling
   result = result.replace(/\{\{[^}]+\}\}/g, "");
 
-  // Remove HTML comments
-  result = result.replace(/<!--[\s\S]*?-->/g, "");
+  // Remove HTML comments iteratively to handle nested cases
+  result = removeHtmlComments(result);
 
   // Convert wiki links [[Article]] or [[Article|Display Text]]
   result = result.replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, (_, article, display) => {
@@ -264,6 +277,20 @@ export function extractCodeBlocks(content: string): Array<{ language: string; co
 }
 
 /**
+ * Strip HTML tags from a string, handling nested/malformed tags
+ */
+function stripHtmlTagsIteratively(input: string): string {
+  let result = input;
+  let previous = "";
+  // Loop until no more tags are found (handles nested cases like <scr<script>ipt>)
+  while (result !== previous) {
+    previous = result;
+    result = result.replace(/<[^>]*>/g, "");
+  }
+  return result;
+}
+
+/**
  * Convert wiki content to plain text summary
  */
 export function toPlainText(content: string, maxLength: number = 500): string {
@@ -273,14 +300,21 @@ export function toPlainText(content: string, maxLength: number = 500): string {
     .replace(/\[([^\s\]]+)\s+([^\]]+)\]/g, "$2")
     .replace(/'''([^']+)'''/g, "$1")
     .replace(/''([^']+)''/g, "$1")
-    .replace(/<[^>]+>/g, "")
     .replace(/\{\{[^}]+\}\}/g, "")
     .replace(/={2,6}[^=]+={2,6}/g, "")
     .replace(/\s+/g, " ")
     .trim();
 
+  // Strip HTML tags iteratively to handle nested/malformed tags
+  text = stripHtmlTagsIteratively(text);
+
   if (text.length > maxLength) {
-    text = text.substring(0, maxLength).replace(/\s+\S*$/, "") + "...";
+    // Truncate and add ellipsis, ensuring we don't cut mid-word
+    const truncated = text.substring(0, maxLength).replace(/\s+\S*$/, "");
+    // Only add ellipsis if we actually truncated
+    if (truncated.length < text.length) {
+      text = truncated + "...";
+    }
   }
 
   return text;

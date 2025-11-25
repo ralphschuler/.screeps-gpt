@@ -79,8 +79,23 @@ export async function searchWiki(
   return data.query.search.map(result => ({
     title: result.title,
     pageId: result.pageid,
-    snippet: result.snippet.replace(/<[^>]*>/g, "") // Strip HTML tags
+    // Strip HTML tags iteratively to handle nested tags like <scr<script>ipt>
+    snippet: stripHtmlTags(result.snippet)
   }));
+}
+
+/**
+ * Strip HTML tags from a string, handling nested/malformed tags
+ */
+function stripHtmlTags(input: string): string {
+  let result = input;
+  let previous = "";
+  // Loop until no more tags are found (handles nested cases)
+  while (result !== previous) {
+    previous = result;
+    result = result.replace(/<[^>]*>/g, "");
+  }
+  return result;
 }
 
 /**
