@@ -103,8 +103,26 @@ After Copilot analysis completes, the workflow also executes `scripts/check-ptr-
 
 - Reads the PTR stats snapshot from `reports/screeps-stats/latest.json`
 - Analyzes for high CPU usage (>80% sustained), critical CPU (>95%), and low energy reserves
+- **Controller Health Monitoring:** Checks controller downgrade timers across all rooms
+  - **Critical Alert (< 12 hours)**: Immediate email + push notification
+  - **Warning Alert (< 24 hours)**: Email + push notification for attention
+  - **Info Alert (< 48 hours)**: Logged for monitoring awareness
+- Tracks upgrader count, energy availability, and controller progress per room
 - Sends push notifications via Push by Techulus for critical and high severity alerts
+- Sends email notifications with detailed controller status for warning/critical alerts
 - Provides real-time alerting independent of issue creation
+
+**Controller Health Data:**
+
+The workflow collects comprehensive controller metrics through console telemetry:
+
+- `ticksToDowngrade`: Actual downgrade timer from game state
+- `controllerProgress`: Current progress toward next RCL
+- `controllerProgressTotal`: Total energy required for next level
+- `upgraderCount`: Number of active upgrader creeps per room
+- `energyAvailable`: Energy immediately available for upgrading
+
+Alert history is preserved in `reports/bot-snapshots/` for trend analysis and incident investigation.
 
 #### Phase 4: Repository Health Analysis
 
