@@ -5,6 +5,8 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.161.3] - 2025-11-25
+
 ### Changed
 
 - **CI/CD**: Consolidated guard workflows using strategy matrices for faster execution
