@@ -23,7 +23,7 @@ The issue was in the state transition logic. The old implementation checked ener
 
 #### Fix Applied
 
-**PR:** [To be updated when PR is created]
+**PR:** #1385
 **Commit:** 963cc44
 
 The fix involved:

@@ -67,10 +67,9 @@ All state machine definitions exist in `packages/bot/src/runtime/behavior/stateM
 - [x] `dismantler.ts` - **Ready to use** by DismantlerController
 - [x] `claimer.ts` - **Ready to use** by ClaimerController
 
-### ⏳ State Machines To Create (2/14)
+### ⏳ State Machines To Create (1/14)
 
 - [ ] `remoteBuilder.ts` - New state machine needed for RemoteBuilderController
-- [ ] `scout.ts` - Verify ScoutController's state machine exists and is properly used
 
 ## Migration Pattern
 

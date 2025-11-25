@@ -61,7 +61,7 @@ export class UpgraderController extends BaseRoleController<UpgraderMemory> {
     const energyMgr = serviceRegistry.getEnergyPriorityManager();
 
     // Clean up machines for dead creeps every 10 ticks to prevent memory leaks without impacting performance
-    if (typeof Game !== "undefined" && Game.time && Game.time - this.lastCleanupTick >= 10) {
+    if (typeof Game !== "undefined" && Game.time - this.lastCleanupTick >= 10) {
       this.cleanupDeadCreepMachines();
       this.lastCleanupTick = Game.time;
     }
@@ -189,6 +189,10 @@ export class UpgraderController extends BaseRoleController<UpgraderMemory> {
         if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
           machine.send({ type: "ENERGY_FULL" });
         }
+        // Save state to memory and return current state
+        memory.stateMachine = serialize(machine);
+        memory.task = machine.getState();
+        return memory.task;
       }
     } else if (currentState === "upgrading") {
       comm?.say(creep, "⚡upgrade");
@@ -217,7 +221,7 @@ export class UpgraderController extends BaseRoleController<UpgraderMemory> {
 
   /**
    * Clean up state machines for dead creeps to prevent memory leaks.
-   * This is called on every execute to ensure the machines Map doesn't grow indefinitely.
+   * This is called every 10 ticks to prevent memory leaks while minimizing CPU overhead.
    */
   private cleanupDeadCreepMachines(): void {
     // Skip cleanup if Game is not available (e.g., in tests)
