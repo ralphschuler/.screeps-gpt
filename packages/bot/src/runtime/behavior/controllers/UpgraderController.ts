@@ -6,29 +6,35 @@
  * - Upgrading the room controller
  * - Emergency spawn refilling when needed
  * - Pausing during defensive postures
+ *
+ * Uses state machine from screeps-xstate for declarative behavior management.
  */
 
 import { BaseRoleController, type RoleConfig } from "./RoleController";
 import type { CreepLike } from "@runtime/types/GameContext";
 import { serviceRegistry } from "./ServiceLocator";
+import { StateMachine, serialize, restore } from "@ralphschuler/screeps-xstate";
+import {
+  upgraderStates,
+  UPGRADER_INITIAL_STATE,
+  type UpgraderContext,
+  type UpgraderEvent
+} from "../stateMachines/upgrader";
 import { tryPickupDroppedEnergy, isValidEnergySource } from "./helpers";
-
-// Task constants
-const RECHARGE_TASK = "recharge" as const;
-const UPGRADE_TASK = "upgrade" as const;
-
-type UpgraderTask = typeof RECHARGE_TASK | typeof UPGRADE_TASK;
 
 interface UpgraderMemory extends CreepMemory {
   role: "upgrader";
-  task: UpgraderTask;
+  task: string;
   version: number;
+  stateMachine?: unknown;
 }
 
 /**
- * Upgrader role controller implementation
+ * Upgrader role controller implementation using state machines
  */
 export class UpgraderController extends BaseRoleController<UpgraderMemory> {
+  private machines: Map<string, StateMachine<UpgraderContext, UpgraderEvent>> = new Map();
+
   public constructor() {
     const config: RoleConfig<UpgraderMemory> = {
       minimum: 3,
@@ -36,7 +42,7 @@ export class UpgraderController extends BaseRoleController<UpgraderMemory> {
       version: 1,
       createMemory: () => ({
         role: "upgrader",
-        task: RECHARGE_TASK,
+        task: "idle",
         version: 1
       })
     };
@@ -47,10 +53,36 @@ export class UpgraderController extends BaseRoleController<UpgraderMemory> {
     return "upgrader";
   }
 
+  private lastCleanupTick = 0;
+
   public execute(creep: CreepLike): string {
     const memory = creep.memory as UpgraderMemory;
     const comm = serviceRegistry.getCommunicationManager();
     const energyMgr = serviceRegistry.getEnergyPriorityManager();
+
+    // Clean up machines for dead creeps every 10 ticks to prevent memory leaks without impacting performance
+    if (typeof Game !== "undefined" && Game.time - this.lastCleanupTick >= 10) {
+      this.cleanupDeadCreepMachines();
+      this.lastCleanupTick = Game.time;
+    }
+
+    // Get or create state machine for this creep
+    let machine = this.machines.get(creep.name);
+    if (!machine) {
+      if (memory.stateMachine) {
+        machine = restore<UpgraderContext, UpgraderEvent>(memory.stateMachine, upgraderStates);
+      } else {
+        machine = new StateMachine<UpgraderContext, UpgraderEvent>(UPGRADER_INITIAL_STATE, upgraderStates, {
+          creep: creep as Creep
+        });
+      }
+      this.machines.set(creep.name, machine);
+    }
+
+    // Update creep reference in context every tick to ensure guards evaluate current state
+    machine.getContext().creep = creep as Creep;
+
+    const currentState = machine.getState();
 
     // Check if room is under defensive posture - pause upgrading during combat
     const roomPosture = Memory.defense?.posture[creep.room.name];
@@ -70,7 +102,10 @@ export class UpgraderController extends BaseRoleController<UpgraderMemory> {
       if (safeSpot && !creep.pos.inRangeTo(safeSpot, 3)) {
         creep.moveTo(safeSpot, { range: 3, reusePath: 10 });
       }
-      return UPGRADE_TASK; // Keep task state but don't upgrade
+      // Save state to memory and return current state
+      memory.stateMachine = serialize(machine);
+      memory.task = currentState;
+      return currentState;
     }
 
     // CRITICAL: Check if spawn needs immediate refilling BEFORE any other task
@@ -92,18 +127,31 @@ export class UpgraderController extends BaseRoleController<UpgraderMemory> {
         if (result === ERR_NOT_IN_RANGE) {
           creep.moveTo(spawn, { range: 1, reusePath: 10, visualizePathStyle: { stroke: "#ff0000" } });
         }
-        return UPGRADE_TASK; // Return current task to avoid state confusion
+        // Check if empty after transfer
+        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+          machine.send({ type: "ENERGY_EMPTY" });
+        }
+        // Save state to memory and return current state
+        memory.stateMachine = serialize(machine);
+        memory.task = machine.getState();
+        return memory.task;
       }
     }
 
-    const task = this.ensureTask(memory, creep);
-
-    if (task === RECHARGE_TASK) {
-      comm?.say(creep, "gather");
+    // Execute behavior based on current state
+    if (currentState === "recharge") {
+      comm?.say(creep, "⚡gather");
 
       // Priority 1: Pick up dropped energy
       if (tryPickupDroppedEnergy(creep)) {
-        return RECHARGE_TASK;
+        // Check if full after pickup
+        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+          machine.send({ type: "ENERGY_FULL" });
+        }
+        // Save state to memory and return current state
+        memory.stateMachine = serialize(machine);
+        memory.task = machine.getState();
+        return memory.task;
       }
 
       // Priority 2: Use energy priority manager to get available sources (respecting reserves)
@@ -119,7 +167,14 @@ export class UpgraderController extends BaseRoleController<UpgraderMemory> {
         if (result === ERR_NOT_IN_RANGE) {
           creep.moveTo(target, { range: 1, reusePath: 30 });
         }
-        return RECHARGE_TASK;
+        // Check if full after withdrawal
+        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+          machine.send({ type: "ENERGY_FULL" });
+        }
+        // Save state to memory and return current state
+        memory.stateMachine = serialize(machine);
+        memory.task = machine.getState();
+        return memory.task;
       }
 
       // Priority 3: Harvest from sources directly if no other options
@@ -130,39 +185,54 @@ export class UpgraderController extends BaseRoleController<UpgraderMemory> {
         if (result === ERR_NOT_IN_RANGE) {
           creep.moveTo(source, { range: 1, reusePath: 30 });
         }
+        // Check if full after harvest
+        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+          machine.send({ type: "ENERGY_FULL" });
+        }
+        // Save state to memory and return current state
+        memory.stateMachine = serialize(machine);
+        memory.task = machine.getState();
+        return memory.task;
       }
-      return RECHARGE_TASK;
+    } else if (currentState === "upgrading") {
+      comm?.say(creep, "⚡upgrade");
+
+      const controller = creep.room.controller;
+      if (controller) {
+        const result = creep.upgradeController(controller);
+        if (result === ERR_NOT_IN_RANGE) {
+          creep.moveTo(controller, { range: 3, reusePath: 30 });
+        }
+
+        // Check if empty after upgrade - this is the KEY FIX
+        // Only transition when energy is FULLY depleted
+        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+          machine.send({ type: "ENERGY_EMPTY" });
+        }
+      }
     }
 
-    comm?.say(creep, "upgrade");
+    // Save state to memory
+    memory.stateMachine = serialize(machine);
+    memory.task = machine.getState();
 
-    const controller = creep.room.controller;
-    if (controller) {
-      const result = creep.upgradeController(controller);
-      if (result === ERR_NOT_IN_RANGE) {
-        creep.moveTo(controller, { range: 3, reusePath: 30 });
-      }
-      return UPGRADE_TASK;
-    }
-
-    return RECHARGE_TASK;
+    return memory.task;
   }
 
   /**
-   * Ensure upgrader task is valid and transitions properly between states
+   * Clean up state machines for dead creeps to prevent memory leaks.
+   * This is called every 10 ticks to prevent memory leaks while minimizing CPU overhead.
    */
-  private ensureTask(memory: UpgraderMemory, creep: CreepLike): UpgraderTask {
-    if (memory.task !== RECHARGE_TASK && memory.task !== UPGRADE_TASK) {
-      memory.task = RECHARGE_TASK;
-      return memory.task;
+  private cleanupDeadCreepMachines(): void {
+    // Skip cleanup if Game is not available (e.g., in tests)
+    if (typeof Game === "undefined" || !Game.creeps) {
+      return;
     }
 
-    if (memory.task === RECHARGE_TASK && creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
-      memory.task = UPGRADE_TASK;
-    } else if (memory.task === UPGRADE_TASK && creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
-      memory.task = RECHARGE_TASK;
+    for (const creepName of this.machines.keys()) {
+      if (!Game.creeps[creepName]) {
+        this.machines.delete(creepName);
+      }
     }
-
-    return memory.task;
   }
 }

@@ -28,6 +28,11 @@
 - [ ] Create operational runbooks (#802) - completed initial version
 - [ ] Establish performance baselines (#820) - metrics and thresholds
 - [ ] Write ADRs for key architectural patterns - completed 3 initial ADRs
+- [ ] **Migrate all role controllers to xstate state machines** - See `.github/ISSUE_TEMPLATE/xstate-migration.md`
+  - Phase 1 (High): BuilderController, HaulerController, RepairerController (3/11 remaining)
+  - Phase 2 (Medium): StationaryHarvesterController, RemoteMinerController, RemoteHaulerController, RemoteBuilderController (4/11 remaining)
+  - Phase 3 (Low): AttackerController, HealerController, DismantlerController, ClaimerController (4/11 remaining)
+  - ✅ Completed: HarvesterController, UpgraderController, ScoutController (3/14 total)
 
 **Medium Priority (Weeks 7-12)**:
 
