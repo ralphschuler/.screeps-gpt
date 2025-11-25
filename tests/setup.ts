@@ -64,6 +64,18 @@ globals.HEAL = "heal";
 globals.CLAIM = "claim";
 globals.TOUGH = "tough";
 
+// Color constants for flags
+globals.COLOR_RED = 1;
+globals.COLOR_PURPLE = 2;
+globals.COLOR_BLUE = 3;
+globals.COLOR_CYAN = 4;
+globals.COLOR_GREEN = 5;
+globals.COLOR_YELLOW = 6;
+globals.COLOR_ORANGE = 7;
+globals.COLOR_BROWN = 8;
+globals.COLOR_GREY = 9;
+globals.COLOR_WHITE = 10;
+
 // Body part costs (from Screeps constants)
 globals.BODYPART_COST = {
   move: 50,
