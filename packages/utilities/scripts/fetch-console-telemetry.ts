@@ -135,7 +135,18 @@ async function fetchConsoleTelemetry(): Promise<ConsoleTelemetry> {
     const gcl = JSON.parse(gclData);
 
     // Query 3: Room summary with controller downgrade info
-    const roomsCommand = `JSON.stringify(Object.values(Game.rooms).filter(r=>r.controller&&r.controller.my).map(r=>({name:r.name,rcl:r.controller.level,energy:r.energyAvailable,energyCapacity:r.energyCapacityAvailable,storage:r.storage?r.storage.store.energy:undefined,controllerProgress:r.controller.progress,controllerProgressTotal:r.controller.progressTotal,ticksToDowngrade:r.controller.ticksToDowngrade})))`;
+    // Build command in parts to improve readability
+    const roomMapping = [
+      "name:r.name",
+      "rcl:r.controller.level",
+      "energy:r.energyAvailable",
+      "energyCapacity:r.energyCapacityAvailable",
+      "storage:r.storage?r.storage.store.energy:undefined",
+      "controllerProgress:r.controller.progress",
+      "controllerProgressTotal:r.controller.progressTotal",
+      "ticksToDowngrade:r.controller.ticksToDowngrade"
+    ].join(",");
+    const roomsCommand = `JSON.stringify(Object.values(Game.rooms).filter(r=>r.controller&&r.controller.my).map(r=>({${roomMapping}})))`;
     validateExpressionSize(roomsCommand, 1500); // Slightly larger limit for rooms with controller data
     console.log(`  Fetching room data with controller status...`);
     const roomsData = await executeConsoleCommand(api, roomsCommand, shard);

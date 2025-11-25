@@ -50,6 +50,36 @@ const MAX_DOWNGRADE_TIMER: Record<number, number> = {
 };
 
 /**
+ * Default fallback timer when RCL is unknown
+ */
+const DEFAULT_DOWNGRADE_TIMER = 20000;
+
+/**
+ * Controller progress thresholds for downgrade estimation
+ */
+const PROGRESS_THRESHOLDS = {
+  wellMaintained: 50, // > 50% progress
+  moderatelyMaintained: 25, // 25-50% progress
+  poorlyMaintained: 10, // 10-25% progress
+  atRisk: 0 // < 10% progress
+};
+
+/**
+ * Downgrade timer multipliers based on progress
+ */
+const TIMER_MULTIPLIERS = {
+  wellMaintained: 0.9,
+  moderatelyMaintained: 0.7,
+  poorlyMaintained: 0.5,
+  atRisk: 0.3
+};
+
+/**
+ * Creep role name constants
+ */
+const ROLE_UPGRADER = "upgrader";
+
+/**
  * Alert thresholds in hours
  */
 const ALERT_THRESHOLDS = {
@@ -59,14 +89,18 @@ const ALERT_THRESHOLDS = {
 };
 
 /**
+ * Ticks per hour (1 tick ≈ 1.33 seconds on average)
+ * 3600 seconds per hour / 1.33 ≈ 2700 ticks per hour
+ */
+const TICKS_PER_HOUR = 2700;
+
+/**
  * Convert ticks to hours (assuming 1 tick = ~1.33 seconds on average)
  * @param ticks Number of ticks
  * @returns Hours
  */
 function ticksToHours(ticks: number): number {
-  // 1 tick ≈ 1.33 seconds on average
-  // 3600 seconds per hour / 1.33 ≈ 2700 ticks per hour
-  return ticks / 2700;
+  return ticks / TICKS_PER_HOUR;
 }
 
 /**
@@ -134,21 +168,21 @@ export function analyzeControllerHealth(snapshot: BotSnapshot): ControllerHealth
         actualTicksToDowngrade = roomData.ticksToDowngrade;
       } else {
         // Estimate based on progress if actual value not available
-        const maxTimer = MAX_DOWNGRADE_TIMER[rcl] || 20000;
+        const maxTimer = MAX_DOWNGRADE_TIMER[rcl] || DEFAULT_DOWNGRADE_TIMER;
 
         if (roomData.controllerProgress !== undefined && roomData.controllerProgressTotal !== undefined) {
           const progressPercent = (roomData.controllerProgress / roomData.controllerProgressTotal) * 100;
 
           // If controller has made progress, assume it's being maintained
           // Scale downgrade timer based on how much progress has been made
-          if (progressPercent > 50) {
-            actualTicksToDowngrade = maxTimer * 0.9; // Assume well-maintained
-          } else if (progressPercent > 25) {
-            actualTicksToDowngrade = maxTimer * 0.7; // Assume moderately maintained
-          } else if (progressPercent > 10) {
-            actualTicksToDowngrade = maxTimer * 0.5; // Assume poorly maintained
+          if (progressPercent > PROGRESS_THRESHOLDS.wellMaintained) {
+            actualTicksToDowngrade = maxTimer * TIMER_MULTIPLIERS.wellMaintained;
+          } else if (progressPercent > PROGRESS_THRESHOLDS.moderatelyMaintained) {
+            actualTicksToDowngrade = maxTimer * TIMER_MULTIPLIERS.moderatelyMaintained;
+          } else if (progressPercent > PROGRESS_THRESHOLDS.poorlyMaintained) {
+            actualTicksToDowngrade = maxTimer * TIMER_MULTIPLIERS.poorlyMaintained;
           } else {
-            actualTicksToDowngrade = maxTimer * 0.3; // Assume at risk
+            actualTicksToDowngrade = maxTimer * TIMER_MULTIPLIERS.atRisk;
           }
         } else {
           // No data available, use max timer as safe default
@@ -162,7 +196,7 @@ export function analyzeControllerHealth(snapshot: BotSnapshot): ControllerHealth
       // Count upgraders from creeps data
       let upgraderCount = 0;
       if (snapshot.creeps && snapshot.creeps.byRole) {
-        upgraderCount = snapshot.creeps.byRole["upgrader"] || 0;
+        upgraderCount = snapshot.creeps.byRole[ROLE_UPGRADER] || 0;
       }
 
       const status: ControllerHealthStatus = {
@@ -283,4 +317,14 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   });
 }
 
-export { ALERT_THRESHOLDS, MAX_DOWNGRADE_TIMER, ticksToHours, determineAlertLevel };
+export {
+  ALERT_THRESHOLDS,
+  MAX_DOWNGRADE_TIMER,
+  TICKS_PER_HOUR,
+  DEFAULT_DOWNGRADE_TIMER,
+  PROGRESS_THRESHOLDS,
+  TIMER_MULTIPLIERS,
+  ROLE_UPGRADER,
+  ticksToHours,
+  determineAlertLevel
+};
