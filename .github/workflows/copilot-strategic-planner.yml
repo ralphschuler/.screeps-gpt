@@ -32,6 +32,11 @@ jobs:
           RUN_URL: >-
             https://github.com/${{ github.repository }}/actions/runs/${{
             github.run_id }}
+          SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
+          SCREEPS_HOST: ${{ secrets.SCREEPS_HOST }}
+          SCREEPS_SHARD: ${{ secrets.SCREEPS_SHARD }}
+          SCREEPS_PORT: ${{ secrets.SCREEPS_PORT }}
+          SCREEPS_PROTOCOL: ${{ secrets.SCREEPS_PROTOCOL }}
         with:
           copilot-token: ${{ secrets.COPILOT_TOKEN }}
           prompt-path: .github/copilot/prompts/strategic-planner
@@ -39,6 +44,7 @@ jobs:
             reports/copilot/strategic-planner-${{ github.run_id }}.log
           timeout: "40"
           verbose: "true"
+          additional-mcp-config: '@.github/mcp/all-servers.json'
 
       - name: Upload strategic planning report
         if: always()
