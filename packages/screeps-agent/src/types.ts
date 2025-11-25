@@ -83,7 +83,11 @@ export enum AgentTask {
   /** Analyze code quality */
   AnalyzeCode = "analyze_code",
   /** Update documentation */
-  UpdateDocs = "update_docs"
+  UpdateDocs = "update_docs",
+  /** Research a topic and deliver insights */
+  Research = "research",
+  /** Create strategic plans for Screeps development */
+  Strategize = "strategize"
 }
 
 /**
@@ -153,7 +157,11 @@ export enum ActionType {
   /** Creating issue */
   IssueCreate = "issue_create",
   /** Updating issue */
-  IssueUpdate = "issue_update"
+  IssueUpdate = "issue_update",
+  /** Research analysis */
+  ResearchAnalysis = "research_analysis",
+  /** Strategic planning */
+  StrategicPlanning = "strategic_planning"
 }
 
 /**
@@ -270,4 +278,269 @@ export interface ValidationCheck {
   passed: boolean;
   /** Check message */
   message: string;
+}
+
+/**
+ * Research request scope
+ */
+export type ResearchScope = "internal" | "external" | "comprehensive";
+
+/**
+ * Research request depth
+ */
+export type ResearchDepth = "overview" | "detailed" | "exhaustive";
+
+/**
+ * Research output format
+ */
+export type ResearchOutputFormat = "summary" | "report" | "actionable_items";
+
+/**
+ * Research request configuration
+ */
+export interface ResearchRequest {
+  /** Topic to research */
+  topic: string;
+  /** Scope of research */
+  scope: ResearchScope;
+  /** Depth of research */
+  depth: ResearchDepth;
+  /** Output format */
+  outputFormat: ResearchOutputFormat;
+  /** Optional context for the research */
+  context?: string;
+  /** Optional keywords to focus on */
+  keywords?: string[];
+}
+
+/**
+ * Research finding from analysis
+ */
+export interface ResearchFinding {
+  /** Finding title */
+  title: string;
+  /** Finding description */
+  description: string;
+  /** Relevance score (0-100) */
+  relevance: number;
+  /** Supporting evidence */
+  evidence: string[];
+  /** Category of finding */
+  category: string;
+}
+
+/**
+ * Research recommendation
+ */
+export interface ResearchRecommendation {
+  /** Recommendation title */
+  title: string;
+  /** Detailed recommendation */
+  description: string;
+  /** Priority level */
+  priority: "critical" | "high" | "medium" | "low";
+  /** Estimated effort */
+  effort: "trivial" | "small" | "medium" | "large" | "xlarge";
+  /** Expected impact */
+  impact: string;
+}
+
+/**
+ * Research source reference
+ */
+export interface ResearchSource {
+  /** Source title or name */
+  title: string;
+  /** Source URL or file path */
+  location: string;
+  /** Source type */
+  type: "documentation" | "code" | "issue" | "external" | "api";
+  /** Reliability score (0-100) */
+  reliability: number;
+}
+
+/**
+ * Complete research result
+ */
+export interface ResearchResult {
+  /** Researched topic */
+  topic: string;
+  /** Research findings */
+  findings: ResearchFinding[];
+  /** Recommendations based on findings */
+  recommendations: ResearchRecommendation[];
+  /** Sources used in research */
+  sources: ResearchSource[];
+  /** Confidence score (0-100) */
+  confidence: number;
+  /** Research timestamp */
+  timestamp: Date;
+  /** Executive summary */
+  summary: string;
+}
+
+/**
+ * Strategy domain types
+ */
+export type StrategyDomain = "expansion" | "economy" | "defense" | "combat" | "infrastructure" | "optimization";
+
+/**
+ * Strategy time horizon
+ */
+export type StrategyTimeHorizon = "short" | "medium" | "long";
+
+/**
+ * Strategy constraints
+ */
+export interface StrategyConstraints {
+  /** Maximum CPU budget */
+  maxCPU?: number;
+  /** Maximum memory budget */
+  maxMemory?: number;
+  /** Resource constraints */
+  resources?: Record<string, number>;
+  /** Time constraints */
+  timeLimit?: number;
+  /** Must work with existing systems */
+  compatibility?: string[];
+}
+
+/**
+ * Strategy objective
+ */
+export interface StrategyObjective {
+  /** Objective name */
+  name: string;
+  /** Objective description */
+  description: string;
+  /** Target metric */
+  metric: string;
+  /** Target value */
+  target: number | string;
+  /** Priority */
+  priority: "critical" | "high" | "medium" | "low";
+}
+
+/**
+ * Strategy request configuration
+ */
+export interface StrategyRequest {
+  /** Strategy domain */
+  domain: StrategyDomain;
+  /** Strategy constraints */
+  constraints: StrategyConstraints;
+  /** Strategy objectives */
+  objectives: StrategyObjective[];
+  /** Time horizon for strategy */
+  timeHorizon: StrategyTimeHorizon;
+  /** Current game state context */
+  currentState?: Record<string, unknown>;
+}
+
+/**
+ * Strategy phase definition
+ */
+export interface StrategyPhase {
+  /** Phase name */
+  name: string;
+  /** Phase description */
+  description: string;
+  /** Phase order */
+  order: number;
+  /** Duration estimate */
+  duration: string;
+  /** Phase actions */
+  actions: StrategyAction[];
+  /** Prerequisites */
+  prerequisites: string[];
+  /** Completion criteria */
+  completionCriteria: string[];
+}
+
+/**
+ * Strategy action
+ */
+export interface StrategyAction {
+  /** Action name */
+  name: string;
+  /** Action description */
+  description: string;
+  /** Action type */
+  type: "implement" | "configure" | "monitor" | "validate";
+  /** Target files or modules */
+  targets: string[];
+  /** Priority */
+  priority: "critical" | "high" | "medium" | "low";
+}
+
+/**
+ * Success metric for strategy
+ */
+export interface SuccessMetric {
+  /** Metric name */
+  name: string;
+  /** Current value */
+  currentValue: number | string;
+  /** Target value */
+  targetValue: number | string;
+  /** Unit of measurement */
+  unit: string;
+  /** How to measure */
+  measurementMethod: string;
+}
+
+/**
+ * Risk assessment for strategy
+ */
+export interface RiskAssessment {
+  /** Risk name */
+  name: string;
+  /** Risk description */
+  description: string;
+  /** Probability (0-100) */
+  probability: number;
+  /** Impact (0-100) */
+  impact: number;
+  /** Mitigation strategy */
+  mitigation: string;
+}
+
+/**
+ * Implementation plan for strategy
+ */
+export interface ImplementationPlan {
+  /** Plan summary */
+  summary: string;
+  /** Files to modify */
+  filesToModify: string[];
+  /** Files to create */
+  filesToCreate: string[];
+  /** Tests to add */
+  testsToAdd: string[];
+  /** Documentation updates */
+  documentationUpdates: string[];
+  /** Estimated effort */
+  estimatedEffort: string;
+}
+
+/**
+ * Complete strategy result
+ */
+export interface StrategyResult {
+  /** Strategy domain */
+  domain: StrategyDomain;
+  /** Strategy phases */
+  phases: StrategyPhase[];
+  /** Success metrics */
+  metrics: SuccessMetric[];
+  /** Risk assessments */
+  risks: RiskAssessment[];
+  /** Implementation plan */
+  implementation: ImplementationPlan;
+  /** Strategy timestamp */
+  timestamp: Date;
+  /** Executive summary */
+  summary: string;
+  /** Confidence score (0-100) */
+  confidence: number;
 }

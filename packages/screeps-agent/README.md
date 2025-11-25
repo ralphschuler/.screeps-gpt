@@ -150,6 +150,53 @@ Update documentation based on code changes.
 npx screeps-agent --task=update_docs
 ```
 
+### `research`
+
+Research a topic and deliver structured insights.
+
+```bash
+npx screeps-agent --task=research
+```
+
+**Parameters:**
+
+- `topic` - Topic to research (required)
+- `scope` - Research scope: "internal", "external", "comprehensive" (default: "comprehensive")
+- `depth` - Research depth: "overview", "detailed", "exhaustive" (default: "detailed")
+- `outputFormat` - Output format: "summary", "report", "actionable_items" (default: "report")
+- `context` - Optional context for the research
+- `keywords` - Optional keywords to focus on
+
+**Output:**
+
+- Structured findings with relevance scores
+- Prioritized recommendations
+- Source references with reliability scores
+- Executive summary
+
+### `strategize`
+
+Create strategic plans for Screeps development.
+
+```bash
+npx screeps-agent --task=strategize
+```
+
+**Parameters:**
+
+- `domain` - Strategy domain: "expansion", "economy", "defense", "combat", "infrastructure", "optimization" (default: "optimization")
+- `timeHorizon` - Time horizon: "short", "medium", "long" (default: "medium")
+- `objectives` - Array of strategy objectives
+- `constraints` - Strategy constraints (CPU, memory, etc.)
+- `currentState` - Optional current game state context
+
+**Output:**
+
+- Phased implementation plan
+- Success metrics
+- Risk assessments
+- Implementation roadmap
+
 ## Autonomy Levels
 
 ### Level 1: Manual (Default)
@@ -309,6 +356,30 @@ const result = await capability.executeTests(["unit", "e2e"]);
 ```typescript
 const capability = new DeploymentCapability(mcpClient);
 const result = await capability.deployBot("1.0.0");
+```
+
+#### ResearcherCapability
+
+```typescript
+const capability = new ResearcherCapability(mcpClient);
+const result = await capability.conductResearch({
+  topic: "creep behavior patterns",
+  scope: "comprehensive",
+  depth: "detailed",
+  outputFormat: "report"
+});
+```
+
+#### StrategistCapability
+
+```typescript
+const capability = new StrategistCapability(mcpClient);
+const result = await capability.createStrategy({
+  domain: "expansion",
+  timeHorizon: "medium",
+  constraints: { maxCPU: 80 },
+  objectives: [{ name: "Claim second room", description: "...", metric: "room_count", target: 2, priority: "high" }]
+});
 ```
 
 ## Development

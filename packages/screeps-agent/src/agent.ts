@@ -23,13 +23,17 @@ import { CodeReviewCapability } from "./capabilities/codeReview.js";
 import { ImplementationCapability } from "./capabilities/implementation.js";
 import { TestingCapability } from "./capabilities/testing.js";
 import { DeploymentCapability } from "./capabilities/deployment.js";
+import { ResearcherCapability } from "./capabilities/researcher.js";
+import { StrategistCapability } from "./capabilities/strategist.js";
 import {
   AgentTask,
   AutonomyLevel,
   type AgentConfig,
   type ScreepsConfig,
   type TaskContext,
-  type TaskResult
+  type TaskResult,
+  type ResearchRequest,
+  type StrategyRequest
 } from "./types.js";
 
 /**
@@ -60,6 +64,8 @@ export class ScreensAgent {
   private implementation: ImplementationCapability;
   private testing: TestingCapability;
   private deployment: DeploymentCapability;
+  private researcher: ResearcherCapability;
+  private strategist: StrategistCapability;
 
   public constructor(config: AgentConfig) {
     this.config = config;
@@ -68,6 +74,8 @@ export class ScreensAgent {
     this.implementation = new ImplementationCapability(this.mcpClient);
     this.testing = new TestingCapability(this.mcpClient);
     this.deployment = new DeploymentCapability(this.mcpClient);
+    this.researcher = new ResearcherCapability(this.mcpClient);
+    this.strategist = new StrategistCapability(this.mcpClient);
   }
 
   /**
@@ -133,6 +141,14 @@ export class ScreensAgent {
 
         case AgentTask.UpdateDocs:
           result = await this.updateDocumentation(context);
+          break;
+
+        case AgentTask.Research:
+          result = await this.conductResearch(context);
+          break;
+
+        case AgentTask.Strategize:
+          result = await this.createStrategy(context);
           break;
 
         default:
@@ -245,6 +261,55 @@ export class ScreensAgent {
   }
 
   /**
+   * Conduct research on a topic
+   */
+  private async conductResearch(context: TaskContext): Promise<TaskResult> {
+    console.log("🔬 Conducting research...");
+
+    const request: ResearchRequest = {
+      topic: (context.parameters["topic"] as string) || "general",
+      scope: (context.parameters["scope"] as ResearchRequest["scope"]) || "comprehensive",
+      depth: (context.parameters["depth"] as ResearchRequest["depth"]) || "detailed",
+      outputFormat: (context.parameters["outputFormat"] as ResearchRequest["outputFormat"]) || "report"
+    };
+
+    // Add optional properties only if defined
+    const contextValue = context.parameters["context"] as string | undefined;
+    if (contextValue !== undefined) {
+      request.context = contextValue;
+    }
+
+    const keywords = context.parameters["keywords"] as string[] | undefined;
+    if (keywords !== undefined) {
+      request.keywords = keywords;
+    }
+
+    return await this.researcher.conductResearch(request);
+  }
+
+  /**
+   * Create a strategic plan
+   */
+  private async createStrategy(context: TaskContext): Promise<TaskResult> {
+    console.log("📋 Creating strategic plan...");
+
+    const request: StrategyRequest = {
+      domain: (context.parameters["domain"] as StrategyRequest["domain"]) || "optimization",
+      constraints: (context.parameters["constraints"] as StrategyRequest["constraints"]) || {},
+      objectives: (context.parameters["objectives"] as StrategyRequest["objectives"]) || [],
+      timeHorizon: (context.parameters["timeHorizon"] as StrategyRequest["timeHorizon"]) || "medium"
+    };
+
+    // Add optional currentState only if defined
+    const currentState = context.parameters["currentState"] as Record<string, unknown> | undefined;
+    if (currentState !== undefined) {
+      request.currentState = currentState;
+    }
+
+    return await this.strategist.createStrategy(request);
+  }
+
+  /**
    * Shutdown the agent and disconnect from MCP server.
    *
    * This method should be called when the agent is no longer needed
@@ -289,7 +354,7 @@ async function main() {
     console.error("❌ Error: --task argument is required");
     console.error("Usage: screeps-agent --task=<task_type>");
     console.error(
-      "Available tasks: review_pr, implement_feature, run_tests, optimize_performance, analyze_code, update_docs"
+      "Available tasks: review_pr, implement_feature, run_tests, optimize_performance, analyze_code, update_docs, research, strategize"
     );
     process.exit(1);
   }
