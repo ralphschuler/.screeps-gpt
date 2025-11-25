@@ -26,7 +26,6 @@ export class ResearcherCapability {
 
   public constructor(mcpClient: MCPClient) {
     this.mcpClient = mcpClient;
-    this.actions = [];
   }
 
   /**
@@ -241,14 +240,34 @@ export class ResearcherCapability {
     const sources: ResearchSource[] = [];
 
     try {
-      const stats = await this.mcpClient.getBotState();
+      const stats = (await this.mcpClient.getBotState()) as {
+        cpu?: { used?: number; limit?: number };
+        gcl?: { level?: number };
+        rooms?: number;
+        creeps?: number;
+      } | null;
 
       if (stats) {
+        // Extract only non-sensitive summary metrics for evidence
+        const safeMetrics: string[] = ["Bot state retrieved successfully"];
+        if (stats.cpu?.used !== undefined) {
+          safeMetrics.push(`CPU: ${stats.cpu.used.toFixed(1)}%`);
+        }
+        if (stats.gcl?.level !== undefined) {
+          safeMetrics.push(`GCL: ${stats.gcl.level}`);
+        }
+        if (stats.rooms !== undefined) {
+          safeMetrics.push(`Rooms: ${stats.rooms}`);
+        }
+        if (stats.creeps !== undefined) {
+          safeMetrics.push(`Creeps: ${stats.creeps}`);
+        }
+
         findings.push({
           title: "Bot State Analysis",
           description: "Current bot operational state analyzed for research context",
           relevance: 70,
-          evidence: ["Bot state retrieved successfully", `Stats: ${JSON.stringify(stats).substring(0, 100)}...`],
+          evidence: safeMetrics,
           category: "runtime"
         });
         sources.push({

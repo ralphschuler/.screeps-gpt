@@ -27,7 +27,6 @@ export class StrategistCapability {
 
   public constructor(mcpClient: MCPClient) {
     this.mcpClient = mcpClient;
-    this.actions = [];
   }
 
   /**
@@ -839,8 +838,20 @@ export class StrategistCapability {
       confidence += 10;
     }
 
-    // Adjust based on phase structure
-    if (phases.every(p => p.prerequisites.length <= p.order - 1)) {
+    // Validate phase structure - check prerequisites reference earlier phases
+    const phaseNames = new Set(phases.map(p => p.name));
+    const hasValidPrereqs = phases.every(phase => {
+      // All prerequisites should exist as other phase names
+      // and should have a lower order number (come before this phase)
+      const prereqsValid = phase.prerequisites.every(prereq => {
+        const prereqPhase = phases.find(p => p.name === prereq);
+        return prereqPhase && prereqPhase.order < phase.order;
+      });
+      // Also valid if there are no prerequisites for early phases
+      return prereqsValid || (phase.prerequisites.length === 0 && phase.order === 1);
+    });
+
+    if (hasValidPrereqs && phaseNames.size === phases.length) {
       confidence += 5; // Well-structured dependencies
     }
 
