@@ -5,6 +5,9 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.161.3] - 2025-11-25
+
+
 ### Changed
 
 - **CI/CD**: Consolidated guard workflows using strategy matrices for faster execution
@@ -14,6 +17,7 @@ All notable changes to this project are documented here. This changelog now main
   - Reduced from 12 to 7 guard workflows (42% reduction)
   - Benefits: Parallel execution within matrix, faster CI feedback, reduced workflow file overhead
   - Updated documentation in `packages/docs/source/docs/automation/overview.md` and legacy docs
+
 
 ## [0.159.1] - 2025-11-25
 
