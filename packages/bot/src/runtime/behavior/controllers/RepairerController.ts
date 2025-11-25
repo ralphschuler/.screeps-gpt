@@ -141,61 +141,61 @@ export class RepairerController extends BaseRoleController<RepairerMemory> {
     } else if (currentState === "repair") {
       comm?.say(creep, "repair");
 
-    // Priority 1: Roads and containers (infrastructure)
-    const infrastructureTargets = creep.room.find(FIND_STRUCTURES, {
-      filter: (structure: AnyStructure) => {
-        if (!("hits" in structure) || typeof structure.hits !== "number") {
+      // Priority 1: Roads and containers (infrastructure)
+      const infrastructureTargets = creep.room.find(FIND_STRUCTURES, {
+        filter: (structure: AnyStructure) => {
+          if (!("hits" in structure) || typeof structure.hits !== "number") {
+            return false;
+          }
+
+          // Prioritize roads when below 50% health
+          if (structure.structureType === STRUCTURE_ROAD) {
+            return structure.hits < structure.hitsMax * 0.5;
+          }
+
+          // Prioritize containers when below 50% health
+          if (structure.structureType === STRUCTURE_CONTAINER) {
+            return structure.hits < structure.hitsMax * 0.5;
+          }
+
           return false;
         }
+      }) as Structure[];
 
-        // Prioritize roads when below 50% health
-        if (structure.structureType === STRUCTURE_ROAD) {
-          return structure.hits < structure.hitsMax * 0.5;
-        }
+      // Sort infrastructure targets to prioritize source containers
+      const sources = creep.room.find(FIND_SOURCES) as Source[];
+      if (infrastructureTargets.length > 1) {
+        infrastructureTargets.sort((a, b) => {
+          const isAContainer = a.structureType === STRUCTURE_CONTAINER;
+          const isBContainer = b.structureType === STRUCTURE_CONTAINER;
 
-        // Prioritize containers when below 50% health
-        if (structure.structureType === STRUCTURE_CONTAINER) {
-          return structure.hits < structure.hitsMax * 0.5;
-        }
+          // Both are containers - prioritize by proximity to sources
+          if (isAContainer && isBContainer) {
+            const aNearSource = sources.some(s => s.pos.inRangeTo(a.pos, 2));
+            const bNearSource = sources.some(s => s.pos.inRangeTo(b.pos, 2));
 
-        return false;
-      }
-    }) as Structure[];
+            if (aNearSource && !bNearSource) return -1;
+            if (!aNearSource && bNearSource) return 1;
 
-    // Sort infrastructure targets to prioritize source containers
-    const sources = creep.room.find(FIND_SOURCES) as Source[];
-    if (infrastructureTargets.length > 1) {
-      infrastructureTargets.sort((a, b) => {
-        const isAContainer = a.structureType === STRUCTURE_CONTAINER;
-        const isBContainer = b.structureType === STRUCTURE_CONTAINER;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+            const aDist = creep.pos.getRangeTo(a.pos);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+            const bDist = creep.pos.getRangeTo(b.pos);
+            return aDist - bDist;
+          }
 
-        // Both are containers - prioritize by proximity to sources
-        if (isAContainer && isBContainer) {
-          const aNearSource = sources.some(s => s.pos.inRangeTo(a.pos, 2));
-          const bNearSource = sources.some(s => s.pos.inRangeTo(b.pos, 2));
+          // Containers prioritized over roads
+          if (isAContainer && !isBContainer) return -1;
+          if (!isAContainer && isBContainer) return 1;
 
-          if (aNearSource && !bNearSource) return -1;
-          if (!aNearSource && bNearSource) return 1;
-
+          // Both are same type - use distance
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
           const aDist = creep.pos.getRangeTo(a.pos);
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
           const bDist = creep.pos.getRangeTo(b.pos);
           return aDist - bDist;
-        }
-
-        // Containers prioritized over roads
-        if (isAContainer && !isBContainer) return -1;
-        if (!isAContainer && isBContainer) return 1;
-
-        // Both are same type - use distance
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-        const aDist = creep.pos.getRangeTo(a.pos);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-        const bDist = creep.pos.getRangeTo(b.pos);
-        return aDist - bDist;
-      });
-    }
+        });
+      }
 
       if (infrastructureTargets.length > 0) {
         const target = creep.pos.findClosestByPath(infrastructureTargets) ?? infrastructureTargets[0];

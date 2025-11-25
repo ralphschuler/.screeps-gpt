@@ -13,12 +13,7 @@ import type { CreepLike } from "@runtime/types/GameContext";
 import { serviceRegistry } from "./ServiceLocator";
 import { moveToTargetRoom } from "./helpers";
 import { StateMachine, serialize, restore } from "@ralphschuler/screeps-xstate";
-import {
-  healerStates,
-  HEALER_INITIAL_STATE,
-  type HealerContext,
-  type HealerEvent
-} from "../stateMachines/healer";
+import { healerStates, HEALER_INITIAL_STATE, type HealerContext, type HealerEvent } from "../stateMachines/healer";
 
 interface HealerMemory extends CreepMemory {
   role: "healer";

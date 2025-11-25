@@ -16,12 +16,7 @@ import type { CreepLike } from "@runtime/types/GameContext";
 import { serviceRegistry } from "./ServiceLocator";
 import { tryPickupDroppedEnergy, isValidEnergySource } from "./helpers";
 import { StateMachine, serialize, restore } from "@ralphschuler/screeps-xstate";
-import {
-  builderStates,
-  BUILDER_INITIAL_STATE,
-  type BuilderContext,
-  type BuilderEvent
-} from "../stateMachines/builder";
+import { builderStates, BUILDER_INITIAL_STATE, type BuilderContext, type BuilderEvent } from "../stateMachines/builder";
 
 interface BuilderMemory extends CreepMemory {
   role: "builder";

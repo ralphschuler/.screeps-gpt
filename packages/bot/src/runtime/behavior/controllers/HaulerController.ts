@@ -16,12 +16,7 @@ import { serviceRegistry } from "./ServiceLocator";
 import { tryPickupDroppedEnergy, findSpawnAdjacentContainers, findLowEnergyTowers } from "./helpers";
 import { DEFAULT_ENERGY_CONFIG } from "@runtime/energy";
 import { StateMachine, serialize, restore } from "@ralphschuler/screeps-xstate";
-import {
-  haulerStates,
-  HAULER_INITIAL_STATE,
-  type HaulerContext,
-  type HaulerEvent
-} from "../stateMachines/hauler";
+import { haulerStates, HAULER_INITIAL_STATE, type HaulerContext, type HaulerEvent } from "../stateMachines/hauler";
 
 interface HaulerMemory extends CreepMemory {
   role: "hauler";
@@ -208,15 +203,12 @@ export class HaulerController extends BaseRoleController<HaulerMemory> {
         // Priority 5: Top off towers to full capacity
         creep.room.find(FIND_STRUCTURES, {
           filter: (structure: AnyStructure) =>
-            structure.structureType === STRUCTURE_TOWER &&
-            structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+            structure.structureType === STRUCTURE_TOWER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
         }) as StructureTower[],
         // Priority 6: Fill spawn-adjacent containers to full capacity
         energyMgr ? findSpawnAdjacentContainers(creep.room) : [],
         // Priority 7: Storage (surplus)
-        creep.room.storage && creep.room.storage.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-          ? [creep.room.storage]
-          : []
+        creep.room.storage && creep.room.storage.store.getFreeCapacity(RESOURCE_ENERGY) > 0 ? [creep.room.storage] : []
       ];
 
       for (const targetList of targets) {

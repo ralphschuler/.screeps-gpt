@@ -13,12 +13,7 @@ import type { CreepLike } from "@runtime/types/GameContext";
 import { serviceRegistry } from "./ServiceLocator";
 import { moveToTargetRoom } from "./helpers";
 import { StateMachine, serialize, restore } from "@ralphschuler/screeps-xstate";
-import {
-  claimerStates,
-  CLAIMER_INITIAL_STATE,
-  type ClaimerContext,
-  type ClaimerEvent
-} from "../stateMachines/claimer";
+import { claimerStates, CLAIMER_INITIAL_STATE, type ClaimerContext, type ClaimerEvent } from "../stateMachines/claimer";
 
 interface ClaimerMemory extends CreepMemory {
   role: "claimer";
