@@ -8,6 +8,9 @@
 import { TaskNode } from "./TaskNode";
 import { DependencyResolver } from "./DependencyResolver";
 
+/**
+ *
+ */
 export class DependencyTaskQueue {
   private tasks: Map<string, TaskNode>;
   private resolver: DependencyResolver;

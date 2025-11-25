@@ -22,6 +22,9 @@ interface HealerMemory extends CreepMemory {
   targetRoom?: string;
 }
 
+/**
+ *
+ */
 export class HealerController extends BaseRoleController<HealerMemory> {
   public constructor() {
     const config: RoleConfig<HealerMemory> = {

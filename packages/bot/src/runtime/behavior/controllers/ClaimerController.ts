@@ -23,6 +23,9 @@ interface ClaimerMemory extends CreepMemory {
   reserveOnly?: boolean;
 }
 
+/**
+ *
+ */
 export class ClaimerController extends BaseRoleController<ClaimerMemory> {
   public constructor() {
     const config: RoleConfig<ClaimerMemory> = {

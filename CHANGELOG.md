@@ -5,6 +5,9 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.159.1] - 2025-11-25
+
+
 ### Added
 
 - **Documentation**: TSDoc/JSDoc documentation standards and style guide
@@ -13,6 +16,7 @@ All notable changes to this project are documented here. This changelog now main
   - Added ESLint JSDoc validation rules for exported classes (set to warn for incremental adoption)
   - Enhanced TSDoc comments for high-priority entry points (`main.ts`, `server.ts`, `agent.ts`)
   - Installed `eslint-plugin-jsdoc` for automated documentation validation
+
 
 ## [0.157.5] - 2025-11-25
 

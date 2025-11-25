@@ -23,6 +23,9 @@ interface StationaryHarvesterMemory extends CreepMemory {
   containerId?: Id<StructureContainer>;
 }
 
+/**
+ *
+ */
 export class StationaryHarvesterController extends BaseRoleController<StationaryHarvesterMemory> {
   public constructor() {
     const config: RoleConfig<StationaryHarvesterMemory> = {

@@ -31,6 +31,9 @@ interface RemoteBuilderMemory extends CreepMemory {
   sourceId?: Id<Source>;
 }
 
+/**
+ *
+ */
 export class RemoteBuilderController extends BaseRoleController<RemoteBuilderMemory> {
   public constructor() {
     const config: RoleConfig<RemoteBuilderMemory> = {

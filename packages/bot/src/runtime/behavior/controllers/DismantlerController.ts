@@ -22,6 +22,9 @@ interface DismantlerMemory extends CreepMemory {
   targetRoom?: string;
 }
 
+/**
+ *
+ */
 export class DismantlerController extends BaseRoleController<DismantlerMemory> {
   public constructor() {
     const config: RoleConfig<DismantlerMemory> = {

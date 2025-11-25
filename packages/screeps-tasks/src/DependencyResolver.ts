@@ -8,6 +8,9 @@
 import { TaskNode } from "./TaskNode";
 import { TaskState, ResolutionResult, TaskGraph } from "./types";
 
+/**
+ *
+ */
 export class DependencyResolver {
   /**
    * Build a task graph from a collection of task nodes

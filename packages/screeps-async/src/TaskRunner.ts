@@ -2,6 +2,9 @@ import { Task } from "./Task";
 import type { TaskState, TaskStatus, TaskGeneratorFn, TaskOptions, TaskRunnerConfig, TaskStats } from "./types";
 import { Logger } from "@ralphschuler/screeps-logger";
 
+/**
+ *
+ */
 export class TaskRunner {
   private tasks: Map<string, Task<unknown>> = new Map();
   private readonly config: Required<TaskRunnerConfig>;

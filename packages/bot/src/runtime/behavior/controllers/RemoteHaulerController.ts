@@ -29,6 +29,9 @@ interface RemoteHaulerMemory extends CreepMemory {
   targetRoom: string;
 }
 
+/**
+ *
+ */
 export class RemoteHaulerController extends BaseRoleController<RemoteHaulerMemory> {
   public constructor() {
     const config: RoleConfig<RemoteHaulerMemory> = {

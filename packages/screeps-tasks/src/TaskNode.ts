@@ -7,6 +7,9 @@
 
 import { ITaskNode, TaskState, TaskPriority } from "./types";
 
+/**
+ *
+ */
 export class TaskNode implements ITaskNode {
   public id: string;
   public type: string;

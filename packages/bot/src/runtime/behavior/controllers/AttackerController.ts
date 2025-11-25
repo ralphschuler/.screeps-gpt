@@ -23,6 +23,9 @@ interface AttackerMemory extends CreepMemory {
   targetRoom?: string;
 }
 
+/**
+ *
+ */
 export class AttackerController extends BaseRoleController<AttackerMemory> {
   public constructor() {
     const config: RoleConfig<AttackerMemory> = {

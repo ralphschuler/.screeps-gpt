@@ -28,6 +28,9 @@ interface RemoteMinerMemory extends CreepMemory {
   sourceId?: Id<Source>;
 }
 
+/**
+ *
+ */
 export class RemoteMinerController extends BaseRoleController<RemoteMinerMemory> {
   public constructor() {
     const config: RoleConfig<RemoteMinerMemory> = {

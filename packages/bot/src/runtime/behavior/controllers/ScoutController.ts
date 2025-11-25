@@ -23,6 +23,9 @@ interface ScoutMemory extends CreepMemory {
   stateMachine?: unknown;
 }
 
+/**
+ *
+ */
 export class ScoutController extends BaseRoleController<ScoutMemory> {
   private machines: Map<string, StateMachine<ScoutContext, ScoutEvent>> = new Map();
 

@@ -1,5 +1,8 @@
 import type { TaskState, TaskGenerator, TaskGeneratorFn, TaskOptions } from "./types";
 
+/**
+ *
+ */
 export class Task<T = unknown> {
   private generator: TaskGenerator<T> | null = null;
   private state: TaskState;

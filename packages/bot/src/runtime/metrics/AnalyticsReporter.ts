@@ -36,6 +36,9 @@ export interface StatsReport {
   };
 }
 
+/**
+ *
+ */
 @profile
 export class AnalyticsReporter {
   private static readonly MAX_RETRY_QUEUE_MULTIPLIER = 2;
