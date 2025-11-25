@@ -108,6 +108,12 @@ plugins:
   - hexo-generator-tag
   - hexo-generator-search
   - hexo-generator-feed
+  - hexo-content-blocks
+  - hexo-filter-highlight
+  - hexo-graphviz
+  - hexo-robots
+  - hexo-spoiler
+  - hexo-tag-admonition
 
 # Deployment
 ## Docs: https://hexo.io/docs/one-command-deployment
@@ -138,4 +144,44 @@ feed:
 # Graph Plugin
 # Generates relationship graphs
 graph:
+  enable: true
+
+# Robots.txt Generation (hexo-robots)
+# Controls search engine crawling behavior
+robots:
+  disallow:
+    - /search/
+    - /page/
+    - /tags/
+    - /categories/
+    - /archives/page/
+  allow:
+    - /docs/
+    - /archives/
+    - /blog/
+
+# Spoiler/Collapsible Content (hexo-spoiler)
+# Usage: {% spoiler title %} content {% endspoiler %}
+spoiler:
+  style: accordion
+
+# Admonition Callout Boxes (hexo-tag-admonition)
+# Usage: {% admonition type:note title:"Note" %}content{% endadmonition %}
+# Types: note, tip, warning, danger, info, success
+admonition:
+  enable: true
+
+# Enhanced Syntax Highlighting (hexo-filter-highlight)
+# Additional language support and styling
+filter_highlight:
+  enable: true
+
+# Graphviz Diagrams (hexo-graphviz)
+# Usage: {% graphviz %} digraph { A -> B } {% endgraphviz %}
+graphviz:
+  enable: true
+
+# Content Blocks (hexo-content-blocks)
+# Usage: {% block name %} content {% endblock %}
+content_blocks:
   enable: true

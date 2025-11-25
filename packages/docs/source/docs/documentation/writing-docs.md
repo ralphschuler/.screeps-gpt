@@ -160,3 +160,109 @@ If pages don't generate:
 - [Hexo Cactus Theme](https://github.com/probberechts/hexo-theme-cactus)
 - [Repository Automation Overview](../automation/overview.md)
 - [AGENTS.md Knowledge Base](https://github.com/ralphschuler/.screeps-gpt/blob/main/AGENTS.md)
+
+## Hexo Plugins Guide
+
+This documentation site includes several Hexo plugins to enhance content presentation and functionality.
+
+### Admonition Callout Boxes
+
+Use `hexo-tag-admonition` to create styled callout boxes for important information:
+
+```markdown
+{% admonition type:note title:"Note" %}
+This is a note callout for general information.
+{% endadmonition %}
+
+{% admonition type:warning title:"Warning" %}
+This is a warning callout for cautionary information.
+{% endadmonition %}
+
+{% admonition type:tip title:"Tip" %}
+This is a tip callout for helpful suggestions.
+{% endadmonition %}
+
+{% admonition type:danger title:"Danger" %}
+This is a danger callout for critical warnings.
+{% endadmonition %}
+```
+
+Supported types: `note`, `tip`, `warning`, `danger`, `info`, `success`
+
+### Spoiler/Collapsible Content
+
+Use `hexo-spoiler` to create collapsible sections:
+
+```markdown
+{% spoiler Click to reveal %}
+This content is hidden by default and revealed when clicked.
+{% endspoiler %}
+```
+
+### Graphviz Diagrams
+
+Use `hexo-graphviz` to render diagrams directly in markdown. This is particularly useful for architecture diagrams and workflow visualization:
+
+```markdown
+{% graphviz %}
+digraph CreepLifecycle {
+  rankdir=LR;
+  node [shape=box];
+  
+  Spawn [label="Spawn Creep"];
+  Harvest [label="Harvest Energy"];
+  Transfer [label="Transfer to Storage"];
+  Upgrade [label="Upgrade Controller"];
+  Death [label="TTL Expires"];
+  
+  Spawn -> Harvest;
+  Harvest -> Transfer;
+  Transfer -> Harvest;
+  Harvest -> Upgrade;
+  Upgrade -> Harvest;
+  Harvest -> Death [style=dashed];
+}
+{% endgraphviz %}
+```
+
+This plugin uses DOT language for defining graphs. See [Graphviz documentation](https://graphviz.org/doc/info/lang.html) for syntax details.
+
+### Content Blocks
+
+Use `hexo-content-blocks` to define reusable content blocks:
+
+```markdown
+{% block prerequisitesBlock %}
+## Prerequisites
+- Node.js 18.x or later
+- Yarn 4+ package manager
+- Git
+{% endblock %}
+```
+
+Later in the same document or other documents:
+```markdown
+{% include prerequisitesBlock %}
+```
+
+### Code Syntax Highlighting
+
+Enhanced syntax highlighting is provided by `hexo-filter-highlight`. Simply use standard markdown code fences with language specifiers:
+
+````markdown
+```javascript
+const greeting = 'Hello, Screeps!';
+console.log(greeting);
+```
+
+```typescript
+interface CreepMemory {
+  role: string;
+  working: boolean;
+}
+```
+````
+
+### SEO: Robots.txt
+
+The `hexo-robots` plugin automatically generates a `robots.txt` file for search engine crawlers. Configuration is done in `_config.yml` under the `robots` section.
