@@ -1,0 +1,34 @@
+{
+  "name": "screeps-server",
+  "dependencies": {
+    "@screepsmod/serverinfo": "*",
+    "morgan": "*",
+    "screeps": "*",
+    "screeps-bot-choreographer": "*",
+    "screeps-bot-overmind": "*",
+    "screeps-bot-tooangel": "*",
+    "screepsmod-admin-utils": "*",
+    "screepsmod-auth": "*",
+    "screepsmod-bots": "*",
+    "screepsmod-dynamicmarket": "*",
+    "screepsmod-features": "*",
+    "screepsmod-gcltocpu": "*",
+    "screepsmod-history": "*",
+    "screepsmod-mongo": "*",
+    "screepsmod-portals": "*",
+    "screepsmod-stats": "*",
+    "screepsmod-timeout": "*",
+    "screepsmod-visualize": "*"
+  },
+  "resolutions": {
+    "cacache": "15.3.0",
+    "canvas": "2.11.2",
+    "express-rate-limit": "6.7.0",
+    "minipass-fetch": "2.1.2",
+    "passport-steam": "1.0.17",
+    "psl": "1.10.0",
+    "ssri": "8.0.1",
+    "yaml": "2.0.0-11"
+  },
+  "private": true
+}
