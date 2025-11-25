@@ -11,9 +11,7 @@
     "node_modules/screepsmod-features/index.js",
     "node_modules/screepsmod-portals/dist/index.js",
     "node_modules/screepsmod-timeout/index.js",
-    "node_modules/@screepsmod/serverinfo/index.js",
-    "node_modules/screepsmod-gcltocpu/index.js",
-    "mods/screeps-launcher-cli.js"
+    "node_modules/@screepsmod/serverinfo/index.js"
   ],
   "bots": {
     "choreographer": "node_modules/screeps-bot-choreographer/dist",

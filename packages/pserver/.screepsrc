@@ -1,5 +1,5 @@
-;If you launch the server without running the local Steam client, 
-;then the Steam Web API key is required for authenticating users. 
+;If you launch the server without running the local Steam client,
+;then the Steam Web API key is required for authenticating users.
 ;It can be obtained on this page: http://steamcommunity.com/dev/apikey
 steam_api_key = {{STEAM_KEY}}
 
@@ -10,7 +10,7 @@ port = 21025
 host = 0.0.0.0
 
 ;The server password which should be provided on user sign in.
-password = 
+password =
 
 ;The port number on which the CLI server should listen. Defaults to port+1.
 cli_port = 21026
@@ -50,7 +50,7 @@ log_console = false
 log_rotate_keep = 5
 
 ;If set, disable built-in storage, useful when you use some other implementation.
-storage_disabled = false
+storage_disabled = true
 
 ;Automatically restart child processes.
 restart_interval = 3600
