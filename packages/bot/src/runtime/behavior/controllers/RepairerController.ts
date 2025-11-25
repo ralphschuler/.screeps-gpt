@@ -73,7 +73,9 @@ export class RepairerController extends BaseRoleController<RepairerMemory> {
       if (memory.stateMachine) {
         machine = restore<RepairerContext, RepairerEvent>(memory.stateMachine, repairerStates);
       } else {
-        machine = new StateMachine<RepairerContext, RepairerEvent>(REPAIRER_INITIAL_STATE, repairerStates, {
+        // Use memory.task as initial state if available (for backwards compatibility)
+        const initialState = memory.task === "repair" ? "repair" : REPAIRER_INITIAL_STATE;
+        machine = new StateMachine<RepairerContext, RepairerEvent>(initialState, repairerStates, {
           creep: creep as Creep
         });
       }
