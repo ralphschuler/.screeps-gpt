@@ -31,7 +31,7 @@ export const toolSchemas = {
 export function listTools() {
   return [
     {
-      name: "screeps.console",
+      name: "screeps_console",
       description: "Execute console commands in Screeps",
       inputSchema: {
         type: "object",
@@ -45,7 +45,7 @@ export function listTools() {
       }
     },
     {
-      name: "screeps.memory.get",
+      name: "screeps_memory_get",
       description: "Read Memory objects from Screeps",
       inputSchema: {
         type: "object",
@@ -59,7 +59,7 @@ export function listTools() {
       }
     },
     {
-      name: "screeps.memory.set",
+      name: "screeps_memory_set",
       description: "Update Memory in Screeps (with safety checks)",
       inputSchema: {
         type: "object",
@@ -76,7 +76,7 @@ export function listTools() {
       }
     },
     {
-      name: "screeps.stats",
+      name: "screeps_stats",
       description: "Query performance metrics from Screeps",
       inputSchema: {
         type: "object",
