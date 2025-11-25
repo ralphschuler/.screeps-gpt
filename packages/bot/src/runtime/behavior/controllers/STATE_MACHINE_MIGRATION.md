@@ -89,19 +89,20 @@ public execute(creep: CreepLike): string {
 
 - [x] HarvesterController ✅ **DONE**
 - [x] ScoutController ✅ **DONE**
-- [ ] UpgraderController (states: recharge, upgrading) - Works without state machine
-- [ ] BuilderController (states: gather, building, maintaining) - Works without state machine
-- [ ] HaulerController (states: pickup, delivering) - Works without state machine
-- [ ] RepairerController (states: gather, repairing) - Works without state machine
-- [ ] StationaryHarvesterController (states: harvesting) - Works without state machine
-- [ ] RemoteMinerController (states: travel, mining, returning) - Works without state machine
-- [ ] RemoteHaulerController (states: travel, pickup, returning) - Works without state machine
-- [ ] AttackerController (states: attacking) - Works without state machine
-- [ ] HealerController (states: healing) - Works without state machine
-- [ ] DismantlerController (states: dismantling) - Works without state machine
-- [ ] ClaimerController (states: claiming) - Works without state machine
+- [x] UpgraderController ✅ **DONE** (states: recharge, upgrading)
+- [x] BuilderController ✅ **DONE** (states: gather, build, maintain)
+- [x] HaulerController ✅ **DONE** (states: pickup, deliver)
+- [x] RepairerController ✅ **DONE** (states: gather, repair)
+- [x] StationaryHarvesterController ✅ **DONE** (states: harvesting)
+- [x] AttackerController ✅ **DONE** (states: travel, attack)
+- [x] HealerController ✅ **DONE** (states: travel, heal)
+- [x] DismantlerController ✅ **DONE** (states: travel, dismantle)
+- [x] ClaimerController ✅ **DONE** (states: travel, claim, idle)
+- [ ] RemoteMinerController (states: travel, mine, return) - State machine exists, pending integration
+- [ ] RemoteHaulerController (states: travel, pickup, return) - State machine exists, pending integration
+- [ ] RemoteBuilderController (states: travel, gather, build) - Can reuse builder state machine, pending integration
 
-**Note**: State machine migration is optional. All controllers work with RoleControllerManager without state machines.
+**Note**: Most controllers have been migrated to use state machines. The remaining remote controllers (RemoteMiner, RemoteHauler, RemoteBuilder) have state machines defined but require integration due to their complex multi-room behavior patterns.
 
 ## State Machine Files
 
