@@ -5,6 +5,16 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Added
+
+- **Documentation**: Created GitHub Models in Actions migration assessment
+  - Comprehensive comparison between Copilot CLI and `actions/ai-inference`
+  - Identified workflows suitable for migration vs. those requiring Copilot CLI
+  - Proposed hybrid architecture combining both approaches
+  - Documented implementation plan with phased rollout
+  - Added example showing issue classification pre-filter pattern
+  - Located at `packages/docs/source/docs/automation/github-models-migration.md`
+
 ## [0.155.21] - 2025-11-25
 
 ### Added
