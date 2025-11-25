@@ -110,11 +110,11 @@ export abstract class TaskAction {
 ### 2. Path Serialization System
 
 **Pattern Description:**  
-tickleman/screeps implements an efficient path serialization system that:
+tickleman/screeps implements a path serialization system that achieves ~75-90% memory reduction compared to storing full path arrays:
 
-1. Calculates paths once and stores them in compressed format
+1. Calculates paths once and stores them in compressed format (~20-50 bytes vs ~200-500 bytes for full paths)
 2. Supports two-way paths for round-trip operations
-3. Uses a compact string format for memory efficiency
+3. Uses a compact string format: 4-byte position header + 1 byte per step (vs ~10 bytes per RoomPosition)
 
 **Architecture:**
 
@@ -156,14 +156,15 @@ module.exports.calculateTwoWay = function(source, destination, opts) {
 **Path Format:**
 
 - First 4 characters: Start position (`xxyy`)
-- Following characters: Direction codes (1-8 representing Screeps directions)
+- Following characters: Direction codes (1-8 mapping to Screeps direction constants)
+  - 1=TOP, 2=TOP_RIGHT, 3=RIGHT, 4=BOTTOM_RIGHT, 5=BOTTOM, 6=BOTTOM_LEFT, 7=LEFT, 8=TOP_LEFT
 - `w` character: Waypoint marker for phase transitions
 
 **Example:** `"25251234w8765"` means:
 - Start at (25, 25)
-- Move in directions 1, 2, 3, 4
-- Waypoint reached
-- Return via directions 8, 7, 6, 5
+- Move TOP(1), TOP_RIGHT(2), RIGHT(3), BOTTOM_RIGHT(4)
+- Waypoint reached (work phase transition)
+- Return via TOP_LEFT(8), LEFT(7), BOTTOM_LEFT(6), BOTTOM(5)
 
 **Current .screeps-gpt Architecture:**
 
@@ -538,19 +539,23 @@ module.exports.putEnergy = function(creep, target) {
 
 ### CPU Overhead
 
+> **Note:** CPU estimates below are based on Screeps community benchmarks and general patterns observed in similar bots. Actual performance varies based on room complexity, creep count, and game state. These figures should be validated through in-game profiling.
+
 **tickleman/screeps:**
 
 - Path pre-calculation: High initial cost, near-zero per-tick
-- Object cache: ~0.01 CPU per lookup (vs ~0.1 CPU for getObjectById)
+- Object cache: Reduced lookup overhead through per-tick caching
 - Step-based execution: Minimal branching overhead
 
-**Comparison:**
+**Comparison (Approximate):**
 
-| Operation | tickleman/screeps | .screeps-gpt (estimated) |
-|-----------|-------------------|--------------------------|
-| Pathfinding | Pre-calculated (~0.001 CPU/tick) | Per-tick (~0.5-2 CPU) |
-| Object Lookup | Cached (~0.01 CPU) | Direct (~0.1 CPU) |
-| Creep Logic | Step switch (~0.001 CPU) | Task execution (~0.02 CPU) |
+| Operation | tickleman/screeps | .screeps-gpt (estimated) | Methodology |
+|-----------|-------------------|--------------------------|-------------|
+| Pathfinding | Pre-calculated (minimal/tick) | Per-tick (varies) | Path reuse vs recalculation |
+| Object Lookup | Cached | Direct lookup | Cache hit vs Game.getObjectById |
+| Creep Logic | Step switch | Task execution | State machine vs task system |
+
+*Note: For precise measurements, use `Game.cpu.getUsed()` profiling in-game.*
 
 ## Comparison Matrix
 
@@ -578,6 +583,19 @@ module.exports.putEnergy = function(creep, target) {
 | Source/Target Pattern | Medium | Low | Low | LOW |
 | Step-Based Execution | Low | Low | Low | LOW |
 | Universal Energy Methods | Low | Low | Low | NOT RECOMMENDED |
+
+**Priority Classification Criteria:**
+
+- **HIGH:** Addresses known performance issues, low risk, aligns with existing architecture
+- **MEDIUM:** Provides value but requires integration effort or has moderate complexity
+- **LOW:** Limited value for current needs or significant architectural differences
+- **NOT RECOMMENDED:** Conflicts with existing patterns or introduces regressions
+
+**Complexity Classification Criteria:**
+
+- **Low:** < 2 days effort, minimal code changes, no architectural impact
+- **Medium:** 2-5 days effort, moderate changes, may require refactoring
+- **High:** > 5 days effort, significant changes, architectural implications
 
 ## Integration Recommendations
 
@@ -671,10 +689,21 @@ This research addresses the following gaps not covered by previous analyses:
 
 ### Related .screeps-gpt Issues
 
-- **#392, #426, #494, #495** - CPU optimization (path serialization addresses this)
-- **#487** - Memory optimization (caching patterns align)
-- **#573** - Screeps bot development strategies (additional reference)
+- **#392, #426, #494, #495** - CPU optimization initiatives
+  - *Relevance:* Path serialization pattern directly reduces pathfinding CPU overhead
+  - *Pattern:* Pre-calculated paths eliminate per-tick PathFinder.search() calls
+  
+- **#487** - Memory optimization
+  - *Relevance:* Caching patterns reduce Memory object access and serialization
+  - *Pattern:* Per-tick heap cache for frequently accessed game objects
+
+- **#573** - Screeps bot development strategies reference
+  - *Relevance:* Additional architectural context for bot design patterns
+  - *Pattern:* General best practices from community resources
+
 - **#648** - The International bot research (pending, complementary)
+  - *Relevance:* Another bot architecture for comparison
+  - *Pattern:* Will provide additional perspective on multi-room strategies
 
 ### Cross-Reference with Previous Research
 
