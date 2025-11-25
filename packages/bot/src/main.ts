@@ -31,6 +31,13 @@ import "@runtime/protocols";
 // Import process modules to trigger @process decorator registration
 import "@runtime/processes";
 
+/**
+ * Global flag to track if profiler has been initialized.
+ * Used to avoid redundant initialization checks on every tick.
+ * Resets on code reload (global re-creation), which is the desired behavior.
+ */
+let profilerInitialized = false;
+
 // Create kernel instance using screeps-kernel
 const kernel = new Kernel({
   logger: console,
@@ -101,11 +108,17 @@ function validateGameContext(game: Game): GameContext {
 
 /**
  * Ensures profiler is running if enabled at build time.
- * This function is idempotent and safe to call on every tick.
- * It handles Memory resets and code reloads gracefully.
+ * Uses a global flag to avoid redundant checks on every tick.
+ * Only runs initialization on first call or after Memory reset.
  */
 function ensureProfilerRunning(): void {
   if (!__PROFILER_ENABLED__) {
+    return;
+  }
+
+  // Skip initialization if already done and Memory.profiler exists
+  // This avoids redundant checks on every tick
+  if (profilerInitialized && Memory.profiler !== undefined) {
     return;
   }
 
@@ -116,11 +129,13 @@ function ensureProfilerRunning(): void {
   };
 
   // Auto-start profiler if not already running
-  // Check every tick to handle Memory resets gracefully
   if (Memory.profiler.start === undefined) {
     profilerInstance.start();
     logger.info(`Profiler auto-started data collection (tick: ${Game.time})`, { component: "Profiler" });
   }
+
+  // Mark as initialized after successful setup
+  profilerInitialized = true;
 }
 
 /**
