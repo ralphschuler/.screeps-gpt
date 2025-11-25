@@ -174,4 +174,90 @@ describe("Room Exit Crossing - Regression", () => {
     expect(targetPos.y).toBe(25);
     expect(targetPos.roomName).toBe("W4N5");
   });
+
+  /**
+   * Regression test: Claimer cycles at room entry
+   * Issue: claimer moves to room to claim and then when it enters it it leaves it again
+   *
+   * Root cause: When creep entered target room at edge (x/y = 0 or 49), moveToTargetRoom
+   * returned false (indicating "arrived"), but creep was still vulnerable to cycling
+   * back through exit when pathfinding to controller.
+   *
+   * Fix: Continue moving toward room center when in target room but still at edge.
+   */
+  it("should continue moving toward center when in target room but at left edge (x=0)", () => {
+    const creep = createMockCreep(0, 25, "W4N5"); // In target room W4N5 at left edge
+    const result = moveToTargetRoom(creep, "W4N5", 50);
+
+    expect(result).toBe(true); // Should still be moving
+    expect(creep.moveTo).toHaveBeenCalled();
+
+    // Verify moving to room center (25, 25)
+    const moveToCall = (creep.moveTo as ReturnType<typeof vi.fn>).mock.calls[0];
+    const targetPos = moveToCall[0];
+    expect(targetPos.x).toBe(25);
+    expect(targetPos.y).toBe(25);
+    expect(targetPos.roomName).toBe("W4N5");
+    expect(moveToCall[1]).toEqual({ reusePath: 0 }); // Fresh pathfinding at edge
+  });
+
+  it("should continue moving toward center when in target room but at right edge (x=49)", () => {
+    const creep = createMockCreep(49, 25, "W4N5");
+    const result = moveToTargetRoom(creep, "W4N5", 50);
+
+    expect(result).toBe(true);
+    expect(creep.moveTo).toHaveBeenCalled();
+
+    const moveToCall = (creep.moveTo as ReturnType<typeof vi.fn>).mock.calls[0];
+    const targetPos = moveToCall[0];
+    expect(targetPos.x).toBe(25);
+    expect(targetPos.y).toBe(25);
+    expect(targetPos.roomName).toBe("W4N5");
+    expect(moveToCall[1]).toEqual({ reusePath: 0 });
+  });
+
+  it("should continue moving toward center when in target room but at top edge (y=0)", () => {
+    const creep = createMockCreep(25, 0, "W4N5");
+    const result = moveToTargetRoom(creep, "W4N5", 50);
+
+    expect(result).toBe(true);
+    expect(creep.moveTo).toHaveBeenCalled();
+
+    const moveToCall = (creep.moveTo as ReturnType<typeof vi.fn>).mock.calls[0];
+    const targetPos = moveToCall[0];
+    expect(targetPos.x).toBe(25);
+    expect(targetPos.y).toBe(25);
+    expect(targetPos.roomName).toBe("W4N5");
+    expect(moveToCall[1]).toEqual({ reusePath: 0 });
+  });
+
+  it("should continue moving toward center when in target room but at bottom edge (y=49)", () => {
+    const creep = createMockCreep(25, 49, "W4N5");
+    const result = moveToTargetRoom(creep, "W4N5", 50);
+
+    expect(result).toBe(true);
+    expect(creep.moveTo).toHaveBeenCalled();
+
+    const moveToCall = (creep.moveTo as ReturnType<typeof vi.fn>).mock.calls[0];
+    const targetPos = moveToCall[0];
+    expect(targetPos.x).toBe(25);
+    expect(targetPos.y).toBe(25);
+    expect(targetPos.roomName).toBe("W4N5");
+    expect(moveToCall[1]).toEqual({ reusePath: 0 });
+  });
+
+  it("should continue moving toward center when in target room at corner (x=0, y=0)", () => {
+    const creep = createMockCreep(0, 0, "W4N5");
+    const result = moveToTargetRoom(creep, "W4N5", 50);
+
+    expect(result).toBe(true);
+    expect(creep.moveTo).toHaveBeenCalled();
+
+    const moveToCall = (creep.moveTo as ReturnType<typeof vi.fn>).mock.calls[0];
+    const targetPos = moveToCall[0];
+    expect(targetPos.x).toBe(25);
+    expect(targetPos.y).toBe(25);
+    expect(targetPos.roomName).toBe("W4N5");
+    expect(moveToCall[1]).toEqual({ reusePath: 0 });
+  });
 });

@@ -103,11 +103,14 @@ describe("BasePlanner", () => {
   });
 
   describe("getPlanForRCL", () => {
-    it("should return empty plan for RCL 1", () => {
+    it("should return spawn for RCL 1 (for newly claimed rooms)", () => {
       const planner = new BasePlanner("W0N0");
       const plans = planner.getPlanForRCL(1, { x: 25, y: 25 });
 
-      expect(plans).toEqual([]);
+      // RCL 1 should include a spawn for newly claimed rooms
+      expect(plans.length).toBe(1);
+      expect(plans[0].structureType).toBe("spawn");
+      expect(plans[0].pos).toEqual({ x: 25, y: 25 });
     });
 
     it("should include extensions for RCL 2", () => {

@@ -6,10 +6,22 @@ interface AnalyticsDataPoint {
   date: string;
   cpuUsed?: number;
   cpuBucket?: number;
+  cpuLimit?: number;
   creepCount?: number;
   roomCount?: number;
   totalEnergy?: number;
+  totalEnergyCapacity?: number;
   averageRcl?: number;
+  memoryUsed?: number;
+  memoryUsedPercent?: number;
+  containerCount?: number;
+  roadCount?: number;
+  towerCount?: number;
+  extensionCount?: number;
+  spawnCount?: number;
+  activeSpawnCount?: number;
+  controllerProgress?: number;
+  controllerProgressTotal?: number;
 }
 
 interface AnalyticsData {
@@ -34,7 +46,8 @@ function generateAnalytics(): void {
   console.log("Generating analytics data from snapshots...\n");
 
   const snapshotsDir = resolve("reports", "bot-snapshots");
-  const outputDir = resolve("source", "docs", "analytics");
+  // Output to Hexo docs source directory
+  const outputDir = resolve("packages", "docs", "source", "docs", "analytics");
   const outputPath = resolve(outputDir, "data.json");
 
   // Read all snapshot files
@@ -66,6 +79,7 @@ function generateAnalytics(): void {
       if (snapshot.cpu) {
         dataPoint.cpuUsed = snapshot.cpu.used;
         dataPoint.cpuBucket = snapshot.cpu.bucket;
+        dataPoint.cpuLimit = snapshot.cpu.limit;
       }
 
       // Extract creep count
@@ -73,15 +87,50 @@ function generateAnalytics(): void {
         dataPoint.creepCount = snapshot.creeps.total;
       }
 
-      // Extract room metrics
+      // Extract room metrics (filter out non-room entries like "count")
       if (snapshot.rooms) {
-        const rooms = Object.values(snapshot.rooms);
+        const roomEntries = Object.entries(snapshot.rooms).filter(([name]) => /^[EW]\d+[NS]\d+$/.test(name));
+        const rooms = roomEntries.map(([, data]) => data);
         dataPoint.roomCount = rooms.length;
 
         if (rooms.length > 0) {
-          dataPoint.totalEnergy = rooms.reduce((sum, room) => sum + room.energy, 0);
-          dataPoint.averageRcl = rooms.reduce((sum, room) => sum + room.rcl, 0) / rooms.length;
+          dataPoint.totalEnergy = rooms.reduce((sum, room) => sum + (room.energy || 0), 0);
+          dataPoint.totalEnergyCapacity = rooms.reduce((sum, room) => sum + (room.energyCapacity || 0), 0);
+          dataPoint.averageRcl = rooms.reduce((sum, room) => sum + (room.rcl || 0), 0) / rooms.length;
+
+          // Aggregate controller progress from all rooms
+          const roomsWithProgress = rooms.filter(room => room.controllerProgress !== undefined);
+          if (roomsWithProgress.length > 0) {
+            dataPoint.controllerProgress = roomsWithProgress.reduce(
+              (sum, room) => sum + (room.controllerProgress || 0),
+              0
+            );
+            dataPoint.controllerProgressTotal = roomsWithProgress.reduce(
+              (sum, room) => sum + (room.controllerProgressTotal || 0),
+              0
+            );
+          }
         }
+      }
+
+      // Extract memory metrics
+      if (snapshot.memory) {
+        dataPoint.memoryUsed = snapshot.memory.used;
+        dataPoint.memoryUsedPercent = snapshot.memory.usedPercent;
+      }
+
+      // Extract structure metrics
+      if (snapshot.structures) {
+        dataPoint.containerCount = snapshot.structures.containers;
+        dataPoint.roadCount = snapshot.structures.roads;
+        dataPoint.towerCount = snapshot.structures.towers;
+        dataPoint.extensionCount = snapshot.structures.extensions;
+      }
+
+      // Extract spawn metrics
+      if (snapshot.spawns) {
+        dataPoint.spawnCount = snapshot.spawns.total;
+        dataPoint.activeSpawnCount = snapshot.spawns.active;
       }
 
       dataPoints.push(dataPoint);

@@ -5,7 +5,7 @@ the repository into `$GITHUB_WORKSPACE/repo`, and audit it end-to-end with empha
 
 - TypeScript runtime correctness, deterministic logic, and Screeps strategy flaws.
 - Automation workflows, deployment, and evaluation scripts that could break continuous delivery.
-- Documentation gaps that make autonomous improvements unreliable.
+- Documentation gaps that make autonomous improvements unreliable (check `packages/docs/source/` for Hexo documentation).
 
 ## MANDATORY ACTIONS (failure to complete any item is a workflow failure)
 

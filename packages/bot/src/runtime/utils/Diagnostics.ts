@@ -1,5 +1,8 @@
 import { StatsCollector } from "@runtime/metrics/StatsCollector";
 import type { PerformanceSnapshot, SystemReport } from "@shared/contracts";
+import { createComponentLogger } from "./logger";
+
+const logger = createComponentLogger("Diagnostics");
 
 /**
  * Console-accessible diagnostics for validating stats collection pipeline.
@@ -246,7 +249,7 @@ export class Diagnostics {
    */
   public static debugStatsCollection(): string {
     try {
-      console.log("=== Stats Collection Debug Session ===");
+      logger.info("=== Stats Collection Debug Session ===");
 
       // 1. Validate runtime environment
       if (typeof Game === "undefined") {
@@ -257,42 +260,42 @@ export class Diagnostics {
         return "❌ Memory object not available - cannot debug stats collection";
       }
 
-      console.log(`✓ Runtime environment validated (tick: ${Game.time})`);
+      logger.info(`✓ Runtime environment validated (tick: ${Game.time})`);
 
       // 2. Check Memory.stats state BEFORE collection
       const statsExistedBefore = !!Memory.stats;
       const statsKeysBefore = Memory.stats ? Object.keys(Memory.stats).join(", ") : "none";
-      console.log(`Memory.stats before collection: ${statsExistedBefore ? "exists" : "missing"}`);
+      logger.info(`Memory.stats before collection: ${statsExistedBefore ? "exists" : "missing"}`);
       if (statsExistedBefore) {
-        console.log(`  Keys before: ${statsKeysBefore}`);
-        console.log(`  Time before: ${Memory.stats?.time ?? "undefined"}`);
+        logger.info(`  Keys before: ${statsKeysBefore}`);
+        logger.info(`  Time before: ${Memory.stats?.time ?? "undefined"}`);
       }
 
       // 3. Attempt stats collection
-      console.log("Attempting forced stats collection...");
+      logger.info("Attempting forced stats collection...");
       const collectionResult = Diagnostics.testStatsCollection();
-      console.log(`Collection result: ${collectionResult}`);
+      logger.info(`Collection result: ${collectionResult}`);
 
       // 4. Check Memory.stats state AFTER collection
       const statsExistsAfter = !!Memory.stats;
       const statsKeysAfter = Memory.stats ? Object.keys(Memory.stats).join(", ") : "none";
-      console.log(`Memory.stats after collection: ${statsExistsAfter ? "exists" : "MISSING"}`);
+      logger.info(`Memory.stats after collection: ${statsExistsAfter ? "exists" : "MISSING"}`);
       if (statsExistsAfter) {
-        console.log(`  Keys after: ${statsKeysAfter}`);
-        console.log(`  Time after: ${Memory.stats?.time ?? "undefined"}`);
-        console.log(`  Data size: ${JSON.stringify(Memory.stats).length} bytes`);
+        logger.info(`  Keys after: ${statsKeysAfter}`);
+        logger.info(`  Time after: ${Memory.stats?.time ?? "undefined"}`);
+        logger.info(`  Data size: ${JSON.stringify(Memory.stats).length} bytes`);
       }
 
       // 5. Validate structure if stats exist
       if (statsExistsAfter) {
         const validationResult = Diagnostics.validateMemoryStats();
-        console.log(`Validation result: ${validationResult}`);
+        logger.info(`Validation result: ${validationResult}`);
       }
 
       // 6. Check system state
       const systemInfo = Diagnostics.getSystemInfo();
       if (typeof systemInfo === "object") {
-        console.log("System state:");
+        logger.info("System state:");
         // Type guard to ensure we have the expected structure
         const info = systemInfo as {
           game: {
@@ -302,14 +305,14 @@ export class Diagnostics {
             spawnCount: number;
           };
         };
-        console.log(`  CPU: ${info.game.cpu.used.toFixed(2)}/${info.game.cpu.limit} (bucket: ${info.game.cpu.bucket})`);
-        console.log(
+        logger.info(`  CPU: ${info.game.cpu.used.toFixed(2)}/${info.game.cpu.limit} (bucket: ${info.game.cpu.bucket})`);
+        logger.info(
           `  Creeps: ${info.game.creepCount}, Rooms: ${info.game.roomCount}, Spawns: ${info.game.spawnCount}`
         );
       }
 
       // 7. Generate summary report
-      console.log("=== Debug Session Complete ===");
+      logger.info("=== Debug Session Complete ===");
 
       if (!statsExistsAfter) {
         return (
@@ -338,8 +341,8 @@ export class Diagnostics {
 
       return "⚠️ Unexpected state - review console logs above";
     } catch (error) {
+      logger.errorObject(error, "❌ Debug session error:");
       const errorMessage = error instanceof Error ? error.message : String(error);
-      console.log(`❌ Debug session error: ${errorMessage}`);
       return `❌ Debug session failed: ${errorMessage}`;
     }
   }

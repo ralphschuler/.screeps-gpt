@@ -21,7 +21,10 @@
     "prepublishOnly": "npm run build",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "docker:build": "docker build -t screeps-mcp:latest .",
+    "docker:run": "docker run --rm -i -e SCREEPS_TOKEN -e SCREEPS_HOST -e SCREEPS_SHARD screeps-mcp:latest",
+    "docker:push": "docker tag screeps-mcp:latest ghcr.io/ralphschuler/screeps-mcp:latest && docker push ghcr.io/ralphschuler/screeps-mcp:latest"
   },
   "dependencies": {
     "@cfworker/json-schema": "^4.1.1",
@@ -32,7 +35,7 @@
   "devDependencies": {
     "@types/node": "^24.9.1",
     "typescript": "^5.4.3",
-    "vitest": "^4.0.12"
+    "vitest": "^4.0.13"
   },
   "engines": {
     "node": ">=18.0.0"

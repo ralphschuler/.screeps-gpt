@@ -1,15 +1,162 @@
 {
-  "generated": "2025-11-07T16:35:25.044Z",
+  "generated": "2025-11-25T00:20:44.010Z",
   "period": "30 days",
   "dataPoints": [
     {
-      "date": "2025-11-07",
-      "cpuUsed": 45.5,
-      "cpuBucket": 9500,
-      "creepCount": 15,
-      "roomCount": 2,
-      "totalEnergy": 1200,
-      "averageRcl": 4
+      "date": "2025-11-07"
+    },
+    {
+      "date": "2025-11-08"
+    },
+    {
+      "date": "2025-11-09"
+    },
+    {
+      "date": "2025-11-10"
+    },
+    {
+      "date": "2025-11-11"
+    },
+    {
+      "date": "2025-11-12"
+    },
+    {
+      "date": "2025-11-13"
+    },
+    {
+      "date": "2025-11-14"
+    },
+    {
+      "date": "2025-11-15"
+    },
+    {
+      "date": "2025-11-16",
+      "cpuUsed": 0,
+      "cpuBucket": 0,
+      "cpuLimit": 0,
+      "creepCount": 0,
+      "roomCount": 1,
+      "totalEnergy": 450,
+      "totalEnergyCapacity": 800,
+      "averageRcl": 3,
+      "controllerProgress": 113532,
+      "controllerProgressTotal": 135000
+    },
+    {
+      "date": "2025-11-17",
+      "cpuUsed": 0,
+      "cpuBucket": 0,
+      "cpuLimit": 0,
+      "creepCount": 11,
+      "roomCount": 1,
+      "totalEnergy": 1300,
+      "totalEnergyCapacity": 1300,
+      "averageRcl": 4,
+      "controllerProgress": 100783,
+      "controllerProgressTotal": 405000,
+      "memoryUsed": 3056,
+      "memoryUsedPercent": 0.15,
+      "containerCount": 3,
+      "roadCount": 107,
+      "towerCount": 1,
+      "extensionCount": 20,
+      "spawnCount": 1,
+      "activeSpawnCount": 0
+    },
+    {
+      "date": "2025-11-21",
+      "cpuUsed": 0,
+      "cpuBucket": 0,
+      "cpuLimit": 0,
+      "creepCount": 0,
+      "roomCount": 1,
+      "totalEnergy": 0,
+      "totalEnergyCapacity": 0,
+      "averageRcl": 2,
+      "controllerProgress": 38708,
+      "controllerProgressTotal": 45000,
+      "memoryUsed": 2537,
+      "memoryUsedPercent": 0.12,
+      "containerCount": 3,
+      "roadCount": 161,
+      "spawnCount": 1,
+      "activeSpawnCount": 0
+    },
+    {
+      "date": "2025-11-22",
+      "cpuUsed": 0,
+      "cpuBucket": 0,
+      "cpuLimit": 0,
+      "creepCount": 0,
+      "roomCount": 1,
+      "totalEnergy": 0,
+      "totalEnergyCapacity": 0,
+      "averageRcl": 2,
+      "controllerProgress": 38708,
+      "controllerProgressTotal": 45000,
+      "memoryUsed": 2537,
+      "memoryUsedPercent": 0.12,
+      "containerCount": 3,
+      "roadCount": 161,
+      "spawnCount": 1,
+      "activeSpawnCount": 0
+    },
+    {
+      "date": "2025-11-23",
+      "cpuUsed": 0,
+      "cpuBucket": 0,
+      "cpuLimit": 0,
+      "creepCount": 0,
+      "roomCount": 1,
+      "totalEnergy": 0,
+      "totalEnergyCapacity": 0,
+      "averageRcl": 2,
+      "controllerProgress": 38708,
+      "controllerProgressTotal": 45000,
+      "memoryUsed": 2537,
+      "memoryUsedPercent": 0.12,
+      "containerCount": 3,
+      "roadCount": 161,
+      "spawnCount": 1,
+      "activeSpawnCount": 0
+    },
+    {
+      "date": "2025-11-24",
+      "cpuUsed": 0,
+      "cpuBucket": 0,
+      "cpuLimit": 0,
+      "creepCount": 0,
+      "roomCount": 1,
+      "totalEnergy": 0,
+      "totalEnergyCapacity": 0,
+      "averageRcl": 2,
+      "controllerProgress": 38708,
+      "controllerProgressTotal": 45000,
+      "memoryUsed": 2537,
+      "memoryUsedPercent": 0.12,
+      "containerCount": 3,
+      "roadCount": 161,
+      "spawnCount": 1,
+      "activeSpawnCount": 0
+    },
+    {
+      "date": "2025-11-25",
+      "cpuUsed": 0,
+      "cpuBucket": 0,
+      "cpuLimit": 0,
+      "creepCount": 0,
+      "roomCount": 1,
+      "totalEnergy": 0,
+      "totalEnergyCapacity": 0,
+      "averageRcl": 2,
+      "controllerProgress": 38708,
+      "controllerProgressTotal": 45000,
+      "memoryUsed": 2537,
+      "memoryUsedPercent": 0.12,
+      "containerCount": 3,
+      "roadCount": 161,
+      "spawnCount": 1,
+      "activeSpawnCount": 0
     }
   ]
 }

@@ -149,22 +149,28 @@ export function findLowEnergyTowers(
 /**
  * Helper function to move a creep to a target room.
  * Handles finding exit direction and navigating to room exits.
- * When at room edge, moves directly to target room center to avoid oscillation.
+ * When at room edge (including after entering target room), moves toward room center
+ * to avoid oscillation and cycling back through exits.
  *
  * @param creep - The creep to move
  * @param targetRoom - Target room name
  * @param reusePath - Path reuse parameter
- * @returns true if the creep is moving to the target room, false if already there or no path found
+ * @returns true if the creep is still moving (not yet safely in target room interior), false if done
  */
 export function moveToTargetRoom(creep: CreepLike, targetRoom: string, reusePath: number = 50): boolean {
-  if (creep.room.name === targetRoom) {
-    return false;
-  }
-
   // Check if creep is at room edge (coordinates 0 or 49)
   const atEdge = creep.pos.x === 0 || creep.pos.x === 49 || creep.pos.y === 0 || creep.pos.y === 49;
 
-  // If at edge, move directly to target room center to avoid oscillation
+  if (creep.room.name === targetRoom) {
+    // If in target room but at edge, move toward center to avoid cycling back through exit
+    if (atEdge) {
+      creep.moveTo(new RoomPosition(ROOM_CENTER_X, ROOM_CENTER_Y, targetRoom), { reusePath: 0 });
+      return true;
+    }
+    return false;
+  }
+
+  // If at edge (not in target room), move directly to target room center to avoid oscillation
   // Use reusePath: 0 to force fresh pathfinding and prevent cached path issues at room boundaries
   if (atEdge) {
     creep.moveTo(new RoomPosition(ROOM_CENTER_X, ROOM_CENTER_Y, targetRoom), { reusePath: 0 });

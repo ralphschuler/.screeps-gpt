@@ -4,7 +4,8 @@
  * Remote miners are responsible for:
  * - Traveling to remote rooms
  * - Mining energy from sources
- * - Returning home to deliver energy
+ * - Upgrading the remote room's controller (if owned by us)
+ * - Returning home to deliver energy (if room is not ours)
  */
 
 import { BaseRoleController, type RoleConfig } from "./RoleController";
@@ -78,6 +79,27 @@ export class RemoteMinerController extends BaseRoleController<RemoteMinerMemory>
       comm?.say(creep, "harvest");
 
       if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+        // When full in the remote/integration room, check if we should upgrade
+        // the room's controller (if it's ours) before returning home
+        const controller = creep.room.controller;
+        if (controller?.my) {
+          // This is an integration room we own - upgrade the controller
+          const result = creep.upgradeController(controller);
+          if (result === ERR_NOT_IN_RANGE) {
+            creep.moveTo(controller, { range: 3, reusePath: 40 });
+            comm?.say(creep, "upgrade");
+            return REMOTE_MINE_TASK;
+          } else if (result === OK) {
+            comm?.say(creep, "upgrade");
+            // Continue upgrading until empty, then go back to mining
+            if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+              // Empty - continue mining
+              return REMOTE_MINE_TASK;
+            }
+            return REMOTE_MINE_TASK;
+          }
+        }
+        // If controller is not ours, return home with the energy
         memory.task = REMOTE_RETURN_TASK;
         comm?.say(creep, "full");
         return REMOTE_RETURN_TASK;

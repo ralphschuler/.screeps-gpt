@@ -5,6 +5,60 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.155.21] - 2025-11-25
+
+### Added
+
+- **Pathfinding**: Integrated screeps-pathfinding library by NesCafe62
+  - Added NesCafePathfinder as the default pathfinding provider
+  - Added traffic management with priority-based movement (`runMoves()`)
+  - Added `moveOffRoad()` to move creeps off roads when finished working
+  - Added `reservePos()` for position reservations
+  - Added `priority` option in `moveTo()` for traffic management
+  - Added move off exit behavior
+  - Added terrain and cost matrix caching
+
+### Changed
+
+- **Pathfinding**: Replaced DefaultPathfinder and CartographerPathfinder with NesCafePathfinder
+  - Automatic fallback to native Screeps pathfinding when library is unavailable
+
+### Removed
+
+- **Pathfinding**: Removed DefaultPathfinder implementation
+- **Pathfinding**: Removed CartographerPathfinder implementation
+
+## [0.154.0] - 2025-11-24
+
+### Added
+
+- **Memory Management**: Implemented proper memory usage patterns from wiki.screepspl.us/Memory
+  - Added `GlobalCache` for volatile heap caching (no serialization overhead)
+  - Added path serialization utilities (`serializePath`, `deserializePath`, etc.) for 85% memory reduction
+  - Added flag memory cleanup to `MemoryGarbageCollector`
+  - Updated memory management documentation with advanced patterns
+  - Covers heap caching, path serialization, and RawMemory segments documentation
+
+## [0.151.1] - 2025-11-24
+
+### Fixed
+
+- **Claimer Room Cycling**: Fixed claimers cycling back through room exits after entering target room
+  - When creep enters target room at edge position (x/y = 0 or 49), it now moves toward room center before attempting to claim
+  - Prevents pathfinding to controller from leading creep back through the exit
+  - Added regression tests to verify behavior at all edge positions and corners
+
+## [0.146.0] - 2025-11-24
+
+### Fixed
+
+- **Build Validation**: Added comprehensive test coverage for context-aware size thresholds
+  - Validates main.js requires minimum 50KB (ensures functional AI with kernel + runtime components)
+  - Validates module files require minimum 500 bytes (allows small type-only modules)
+  - Tests confirm validation prevents broken or incomplete builds from passing
+  - Added 11 regression test cases covering threshold enforcement and edge cases
+  - Addresses deployment safety concerns from ralphschuler/.screeps-gpt#729
+
 ## [0.143.5] - 2025-11-24
 
 ### Added

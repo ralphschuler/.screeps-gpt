@@ -92,6 +92,60 @@ main().catch(console.error);
 }
 ```
 
+### Docker Usage
+
+The MCP server is available as a Docker image for containerized deployments.
+
+**Pull from GHCR:**
+
+```bash
+docker pull ghcr.io/ralphschuler/screeps-mcp:latest
+```
+
+**Run with environment variables:**
+
+```bash
+docker run --rm -i \
+  -e SCREEPS_TOKEN=${SCREEPS_TOKEN} \
+  -e SCREEPS_HOST=screeps.com \
+  -e SCREEPS_SHARD=shard3 \
+  ghcr.io/ralphschuler/screeps-mcp:latest
+```
+
+**Build locally:**
+
+```bash
+cd packages/screeps-mcp
+npm run docker:build
+npm run docker:run
+```
+
+### Docker stdio Transport Configuration
+
+For MCP clients like Claude Desktop or Cursor, configure the Docker-based server:
+
+```json
+{
+  "mcpServers": {
+    "screeps-mcp-docker": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "-e",
+        "SCREEPS_TOKEN=${SCREEPS_TOKEN}",
+        "-e",
+        "SCREEPS_HOST=${SCREEPS_HOST:-screeps.com}",
+        "-e",
+        "SCREEPS_SHARD=${SCREEPS_SHARD:-shard3}",
+        "ghcr.io/ralphschuler/screeps-mcp:latest"
+      ]
+    }
+  }
+}
+```
+
 ## MCP Resources
 
 The server exposes the following Screeps data as MCP resources:

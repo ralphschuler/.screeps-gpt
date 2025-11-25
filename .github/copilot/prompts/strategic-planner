@@ -51,12 +51,18 @@ You are the "strategic intelligence" that closes the autonomous development loop
 - Function-level performance analysis
 - Optimization targets ranked by impact
 
-**Documentation** (`docs/` directory):
+**Documentation**:
 
-- Current strategic plans (`docs/strategy/`)
-- Development roadmap (`docs/strategy/roadmap.md`)
-- Architecture documentation
-- Automation ecosystem overview
+- **Hexo Documentation Site** (`packages/docs/source/docs/`):
+  - Operations runbooks (`packages/docs/source/docs/operations/`)
+  - Automation specifications (`packages/docs/source/docs/automation/`)
+  - Runtime documentation (`packages/docs/source/docs/runtime/`)
+  - Security guidelines (`packages/docs/source/docs/security/`)
+  - Changelog and analytics (`packages/docs/source/docs/changelog/`, `packages/docs/source/docs/analytics/`)
+- **Strategic Documentation** (legacy `docs/` directory):
+  - Current strategic plans (`docs/strategy/`)
+  - Development roadmap (`docs/strategy/roadmap.md`)
+  - Architecture documentation
 
 **Issue History**:
 
@@ -400,15 +406,15 @@ Update strategic documentation to reflect current plans:
 - [ ] Maintain phase documentation alignment
 - [ ] Record optimization targets
 
-**B. Automation Documentation** (`docs/automation/`):
+**B. Automation Documentation** (`packages/docs/source/docs/automation/`):
 
-- [ ] Keep workflow descriptions current
+- [ ] Keep workflow descriptions current in Hexo documentation
 - [ ] Document new automation capabilities
 - [ ] Update integration guides
 
-**C. Operations Documentation** (`docs/operations/`):
+**C. Operations Documentation** (`packages/docs/source/docs/operations/`):
 
-- [ ] Document recurring issues and solutions
+- [ ] Document recurring issues and solutions in Hexo documentation
 - [ ] Update troubleshooting guides
 - [ ] Maintain runbooks
 

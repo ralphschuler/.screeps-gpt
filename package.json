@@ -1,6 +1,6 @@
 {
   "name": "@ralphschuler/screeps-gpt",
-  "version": "0.145.0",
+  "version": "0.155.30",
   "description": "Autonomously evolving Screeps AI with automated development and deployment workflows.",
   "license": "MIT",
   "author": "OpenAI Automations",
@@ -89,7 +89,7 @@
     "node-fetch": "^3.3.2",
     "nodemailer": "^7.0.10",
     "screeps-api": "^1.16.1",
-    "screeps-cartographer": "^1.8.13",
+    "screeps-pathfinding": "^2.3.1",
     "semver": "^7.7.3",
     "zod": "^4.1.13"
   },
@@ -124,7 +124,7 @@
     "rimraf": "^6.1.0",
     "tsx": "^4.20.6",
     "typescript": "^5.4.3",
-    "vitest": "^4.0.12",
+    "vitest": "^4.0.13",
     "yaml": "^2.8.1"
   },
   "overrides": {

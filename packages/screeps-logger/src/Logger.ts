@@ -1,6 +1,8 @@
 // Declare global for Screeps compatibility (available in both Node.js and Screeps)
 declare const global: any;
 
+import { safeSerialize } from "./safeSerialize";
+
 /**
  * Console interface for logging output
  */
@@ -99,6 +101,19 @@ export class Logger {
    * Logs an error message
    */
   public error(message: string, context?: Record<string, unknown>): void {
+    this.log("error", message, context);
+  }
+
+  /**
+   * Logs an error object with automatic safe serialization.
+   * Handles Error objects, Zod errors, and complex objects safely.
+   * @param error - The error or value to log
+   * @param prefix - Optional prefix for the error message
+   * @param context - Optional additional context
+   */
+  public errorObject(error: unknown, prefix?: string, context?: Record<string, unknown>): void {
+    const serialized = safeSerialize(error);
+    const message = prefix ? `${prefix} ${serialized}` : serialized;
     this.log("error", message, context);
   }
 

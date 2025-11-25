@@ -34,6 +34,7 @@ import {
   StationaryHarvesterController,
   RemoteMinerController,
   RemoteHaulerController,
+  RemoteBuilderController,
   AttackerController,
   HealerController,
   DismantlerController,
@@ -47,6 +48,7 @@ type RoleName =
   | "builder"
   | "remoteMiner"
   | "remoteHauler"
+  | "remoteBuilder"
   | "stationaryHarvester"
   | "hauler"
   | "repairer"
@@ -65,6 +67,19 @@ interface RoleControllerManagerOptions {
   maxCpuPerCreep?: number;
   enableCreepCommunication?: boolean;
 }
+
+/**
+ * Combat mode constants for spawn prioritization
+ */
+const COMBAT_UPGRADER_REDUCTION_FACTOR = 0.3; // Reduce upgrader minimum to 30% during combat
+const COMBAT_MIN_ATTACKERS_HEALERS = 2; // Minimum attackers/healers during combat
+const COMBAT_MIN_REPAIRERS = 1; // Minimum repairers during combat
+
+/**
+ * Room integration constants for workforce deployment
+ */
+const MINERS_PER_INTEGRATION_ROOM = 2; // Remote miners spawned per room needing integration
+const BUILDERS_PER_INTEGRATION_ROOM = 2; // Remote builders spawned per room needing integration
 
 /**
  * Coordinates spawning and per-tick behavior execution using individual role controllers.
@@ -117,6 +132,7 @@ export class RoleControllerManager {
     this.registerRoleController(new StationaryHarvesterController());
     this.registerRoleController(new RemoteMinerController());
     this.registerRoleController(new RemoteHaulerController());
+    this.registerRoleController(new RemoteBuilderController());
 
     // Combat roles
     this.registerRoleController(new AttackerController());
@@ -400,8 +416,74 @@ export class RoleControllerManager {
       roomCreepCounts.set(roomName, (roomCreepCounts.get(roomName) ?? 0) + 1);
     }
 
-    // Determine spawn priority order
-    const roleOrder: RoleName[] = [
+    // Check if any room is under defensive posture (alert, defensive, or emergency)
+    const defenseMemory = memory.defense;
+    const roomsUnderCombat = defenseMemory
+      ? Object.entries(defenseMemory.posture)
+          .filter(([_, posture]) => posture === "alert" || posture === "defensive" || posture === "emergency")
+          .map(([roomName, _]) => roomName)
+      : [];
+    const isUnderCombat = roomsUnderCombat.length > 0;
+
+    // Check if any room is in emergency posture (most severe)
+    const hasEmergencyPosture = defenseMemory
+      ? Object.values(defenseMemory.posture).some(posture => posture === "emergency")
+      : false;
+
+    // Check for pending expansion requests and adjust claimer minimum
+    // Access colony memory expansion queue (typed as ColonyManagerMemory when set by EmpireManager)
+    const expansionQueue = memory.colony?.expansionQueue as Array<{ targetRoom: string; status: string }> | undefined;
+    const pendingExpansions = expansionQueue?.filter(req => req.status === "pending") ?? [];
+    const needsClaimers = pendingExpansions.length > 0;
+
+    // Pre-calculate claimer assignments to avoid repeated iterations
+    // Build a Set of target rooms already assigned to claimers and count them
+    const assignedClaimerRooms = new Set<string>();
+    let claimersOnExpansionCount = 0;
+    if (needsClaimers) {
+      for (const creep of Object.values(game.creeps)) {
+        if (creep.memory.role === "claimer" && creep.memory.targetRoom) {
+          assignedClaimerRooms.add(creep.memory.targetRoom);
+          if (pendingExpansions.some(exp => exp.targetRoom === creep.memory.targetRoom)) {
+            claimersOnExpansionCount++;
+          }
+        }
+      }
+    }
+
+    // Check for newly claimed rooms needing workforce deployment
+    // These are rooms with controller.my but no operational spawn
+    // Note: We access memory directly because RoleControllerManager doesn't own ColonyManager
+    // (ColonyManager is owned by EmpireManager). The filter logic mirrors ColonyManager.getRoomsNeedingWorkforce()
+    const roomsNeedingIntegration =
+      memory.colony?.roomsNeedingIntegration?.filter(data => data.status === "pending" || data.status === "building") ??
+      [];
+    const needsRemoteWorkforce = roomsNeedingIntegration.length > 0;
+
+    // Pre-calculate remote worker assignments for rooms needing integration
+    const assignedRemoteMiners = new Map<string, number>(); // targetRoom -> count
+    const assignedRemoteBuilders = new Map<string, number>(); // targetRoom -> count
+    if (needsRemoteWorkforce) {
+      for (const creep of Object.values(game.creeps)) {
+        const targetRoom = creep.memory.targetRoom;
+        if (!targetRoom) continue;
+
+        if (creep.memory.role === "remoteMiner") {
+          assignedRemoteMiners.set(targetRoom, (assignedRemoteMiners.get(targetRoom) ?? 0) + 1);
+        } else if (creep.memory.role === "remoteBuilder") {
+          // Count remote builders assigned to integration rooms
+          assignedRemoteBuilders.set(targetRoom, (assignedRemoteBuilders.get(targetRoom) ?? 0) + 1);
+        }
+      }
+
+      this.logger.log?.(
+        `[RoleControllerManager] Rooms needing workforce: ${roomsNeedingIntegration.map(r => r.roomName).join(", ")}`
+      );
+    }
+
+    // Determine spawn priority order based on combat status
+    // Base role order that will be adjusted based on conditions
+    const baseRoleOrder: RoleName[] = [
       "harvester",
       "upgrader",
       "builder",
@@ -410,12 +492,66 @@ export class RoleControllerManager {
       "repairer",
       "remoteMiner",
       "remoteHauler",
+      "remoteBuilder",
       "scout",
       "attacker",
       "healer",
       "dismantler",
       "claimer"
     ];
+
+    let roleOrder: RoleName[];
+    if (isUnderCombat) {
+      // Combat mode: prioritize defenders, attackers, and repairers over upgraders
+      roleOrder = [
+        "harvester",
+        "attacker",
+        "healer",
+        "repairer",
+        "hauler",
+        "builder",
+        "stationaryHarvester",
+        "upgrader",
+        "remoteMiner",
+        "remoteHauler",
+        "remoteBuilder",
+        "scout",
+        "dismantler",
+        "claimer"
+      ];
+      this.logger.log?.(`[RoleControllerManager] Combat mode active in rooms: ${roomsUnderCombat.join(", ")}`);
+    } else if (needsClaimers) {
+      // Normal mode with expansion: prioritize claimers (second after harvesters)
+      roleOrder = baseRoleOrder.filter(r => r !== "claimer");
+      roleOrder.splice(1, 0, "claimer");
+    } else if (needsRemoteWorkforce) {
+      // Normal mode with room integration: prioritize remote miners and builders (after harvesters and upgraders)
+      roleOrder = [
+        "harvester",
+        "upgrader",
+        "remoteMiner",
+        "remoteBuilder",
+        "builder",
+        "stationaryHarvester",
+        "hauler",
+        "repairer",
+        "remoteHauler",
+        "scout",
+        "attacker",
+        "healer",
+        "dismantler",
+        "claimer"
+      ];
+    } else {
+      // Normal mode: standard priority order
+      roleOrder = baseRoleOrder;
+    }
+
+    if (needsClaimers) {
+      this.logger.log?.(
+        `[RoleControllerManager] Expansion pending to ${pendingExpansions.map(e => e.targetRoom).join(", ")} - prioritizing claimer spawning`
+      );
+    }
 
     for (const role of roleOrder) {
       const controller = this.getRoleController(role);
@@ -425,7 +561,59 @@ export class RoleControllerManager {
 
       const current = roleCounts[role] ?? 0;
       const config = controller.getConfig();
-      const targetMinimum = bootstrapMinimums[role] ?? config.minimum;
+      let targetMinimum = bootstrapMinimums[role] ?? config.minimum;
+
+      // Dynamically increase claimer minimum when expansion is pending
+      if (role === "claimer" && needsClaimers) {
+        // Use pre-calculated claimer count to avoid iterating through all creeps again
+        // Spawn one claimer per pending expansion (up to current pending count)
+        targetMinimum = Math.max(targetMinimum, pendingExpansions.length - claimersOnExpansionCount);
+      }
+
+      // Dynamically increase remote miner minimum when rooms need workforce integration
+      // Spawn remote miners per room needing workforce (to harvest energy for spawn construction)
+      if (role === "remoteMiner" && needsRemoteWorkforce) {
+        let neededMiners = 0;
+        for (const integrationRoom of roomsNeedingIntegration) {
+          const assigned = assignedRemoteMiners.get(integrationRoom.roomName) ?? 0;
+          neededMiners += Math.max(0, MINERS_PER_INTEGRATION_ROOM - assigned);
+        }
+        targetMinimum = Math.max(targetMinimum, neededMiners);
+      }
+
+      // Dynamically increase remote builder minimum when rooms need workforce integration
+      // Spawn remote builders per room needing workforce (to build spawn and structures)
+      if (role === "remoteBuilder" && needsRemoteWorkforce) {
+        let neededBuilders = 0;
+        for (const integrationRoom of roomsNeedingIntegration) {
+          const assigned = assignedRemoteBuilders.get(integrationRoom.roomName) ?? 0;
+          neededBuilders += Math.max(0, BUILDERS_PER_INTEGRATION_ROOM - assigned);
+        }
+        targetMinimum = Math.max(targetMinimum, neededBuilders);
+      }
+
+      // Dynamically reduce upgrader minimum during combat to focus on defense
+      if (role === "upgrader" && isUnderCombat) {
+        if (hasEmergencyPosture) {
+          // Emergency: Stop spawning upgraders entirely
+          targetMinimum = 0;
+        } else {
+          // Alert/Defensive: Reduce upgrader minimum to 30%
+          targetMinimum = Math.max(0, Math.floor(targetMinimum * COMBAT_UPGRADER_REDUCTION_FACTOR));
+        }
+
+        if (targetMinimum === 0 && current === 0) {
+          continue; // Skip spawning upgraders entirely
+        }
+      }
+
+      // Increase attacker/healer/repairer minimums during combat
+      if ((role === "attacker" || role === "healer") && isUnderCombat) {
+        targetMinimum = Math.max(config.minimum, COMBAT_MIN_ATTACKERS_HEALERS);
+      }
+      if (role === "repairer" && isUnderCombat) {
+        targetMinimum = Math.max(config.minimum, COMBAT_MIN_REPAIRERS);
+      }
 
       if (current >= targetMinimum) {
         continue;
@@ -463,6 +651,64 @@ export class RoleControllerManager {
       memory.creepCounter += 1;
 
       const creepMemory = controller.createMemory();
+
+      // If spawning a claimer for expansion, assign the target room
+      if (role === "claimer" && needsClaimers) {
+        // Use pre-calculated Set to efficiently find first unassigned expansion
+        const unassignedExpansion = pendingExpansions.find(
+          expansion => !assignedClaimerRooms.has(expansion.targetRoom)
+        );
+
+        if (unassignedExpansion) {
+          // Set targetRoom using explicit property assignment (ClaimerMemory extends CreepMemory with optional targetRoom)
+          (creepMemory as CreepMemory & { targetRoom?: string }).targetRoom = unassignedExpansion.targetRoom;
+          this.logger.log?.(
+            `[RoleControllerManager] Assigning claimer ${name} to expansion target: ${unassignedExpansion.targetRoom}`
+          );
+        }
+      }
+
+      // If spawning a remote miner for room integration, assign home and target rooms
+      if (role === "remoteMiner" && needsRemoteWorkforce) {
+        // Find an integration room that needs more miners
+        for (const integrationRoom of roomsNeedingIntegration) {
+          const assigned = assignedRemoteMiners.get(integrationRoom.roomName) ?? 0;
+          if (assigned < MINERS_PER_INTEGRATION_ROOM) {
+            // Assign this miner to the integration room
+            (creepMemory as CreepMemory & { homeRoom?: string; targetRoom?: string }).homeRoom =
+              integrationRoom.homeRoom;
+            (creepMemory as CreepMemory & { homeRoom?: string; targetRoom?: string }).targetRoom =
+              integrationRoom.roomName;
+            // Update pre-calculated count for subsequent iterations
+            assignedRemoteMiners.set(integrationRoom.roomName, assigned + 1);
+            this.logger.log?.(
+              `[RoleControllerManager] Assigning remote miner ${name} to integration room: ${integrationRoom.roomName} (home: ${integrationRoom.homeRoom})`
+            );
+            break;
+          }
+        }
+      }
+
+      // If spawning a remote builder for room integration, assign home and target rooms
+      if (role === "remoteBuilder" && needsRemoteWorkforce) {
+        // Find an integration room that needs more builders
+        for (const integrationRoom of roomsNeedingIntegration) {
+          const assigned = assignedRemoteBuilders.get(integrationRoom.roomName) ?? 0;
+          if (assigned < BUILDERS_PER_INTEGRATION_ROOM) {
+            // Assign this builder to the integration room
+            (creepMemory as CreepMemory & { homeRoom?: string; targetRoom?: string }).homeRoom =
+              integrationRoom.homeRoom;
+            (creepMemory as CreepMemory & { homeRoom?: string; targetRoom?: string }).targetRoom =
+              integrationRoom.roomName;
+            // Update pre-calculated count for subsequent iterations
+            assignedRemoteBuilders.set(integrationRoom.roomName, assigned + 1);
+            this.logger.log?.(
+              `[RoleControllerManager] Assigning remote builder ${name} to integration room: ${integrationRoom.roomName} (home: ${integrationRoom.homeRoom})`
+            );
+            break;
+          }
+        }
+      }
 
       const result = this.spawnCreepSafely(spawn, body, name, creepMemory);
       if (result === OK) {

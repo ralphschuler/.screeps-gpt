@@ -1,5 +1,11 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { PathfindingManager, PathCache } from "../../packages/bot/src/runtime/pathfinding";
+
+// Mock screeps-pathfinding to force fallback to native PathFinder
+// This allows us to test the cache behavior with predictable PathFinder.search calls
+vi.mock("screeps-pathfinding", () => {
+  throw new Error("screeps-pathfinding not available in test environment");
+});
 
 /**
  * Regression tests for path caching system
@@ -49,8 +55,11 @@ describe("Path Caching Integration", () => {
     } as unknown as typeof PathFinder;
   });
 
+  // Suppress console output from PathfindingManager initialization
+  const silentLogger = { log: vi.fn(), warn: vi.fn() };
+
   it("should cache paths and improve CPU performance on subsequent calls", () => {
-    const manager = new PathfindingManager({ enableCaching: true });
+    const manager = new PathfindingManager({ enableCaching: true, logger: silentLogger });
     const origin = new RoomPosition(1, 1, "W1N1");
     const goal = new RoomPosition(10, 10, "W1N1");
 
@@ -74,7 +83,7 @@ describe("Path Caching Integration", () => {
   });
 
   it("should invalidate cache when structures change", () => {
-    const manager = new PathfindingManager({ enableCaching: true });
+    const manager = new PathfindingManager({ enableCaching: true, logger: silentLogger });
     const origin = new RoomPosition(1, 1, "W1N1");
     const goal = new RoomPosition(10, 10, "W1N1");
 
@@ -101,7 +110,7 @@ describe("Path Caching Integration", () => {
   });
 
   it("should invalidate entire room cache", () => {
-    const manager = new PathfindingManager({ enableCaching: true });
+    const manager = new PathfindingManager({ enableCaching: true, logger: silentLogger });
     const origin1 = new RoomPosition(1, 1, "W1N1");
     const goal1 = new RoomPosition(10, 10, "W1N1");
     const origin2 = new RoomPosition(1, 1, "W2N2");
@@ -125,7 +134,7 @@ describe("Path Caching Integration", () => {
   });
 
   it("should handle cache with disabled caching", () => {
-    const manager = new PathfindingManager({ enableCaching: false });
+    const manager = new PathfindingManager({ enableCaching: false, logger: silentLogger });
     const origin = new RoomPosition(1, 1, "W1N1");
     const goal = new RoomPosition(10, 10, "W1N1");
 
@@ -164,7 +173,7 @@ describe("Path Caching Integration", () => {
   });
 
   it("should differentiate paths by range parameter", () => {
-    const manager = new PathfindingManager({ enableCaching: true });
+    const manager = new PathfindingManager({ enableCaching: true, logger: silentLogger });
     const origin = new RoomPosition(1, 1, "W1N1");
     const goal = new RoomPosition(10, 10, "W1N1");
 
@@ -182,7 +191,7 @@ describe("Path Caching Integration", () => {
   });
 
   it("should track CPU savings from cache hits", () => {
-    const manager = new PathfindingManager({ enableCaching: true });
+    const manager = new PathfindingManager({ enableCaching: true, logger: silentLogger });
     const origin = new RoomPosition(1, 1, "W1N1");
     const goal = new RoomPosition(10, 10, "W1N1");
 
@@ -222,7 +231,7 @@ describe("Path Caching Integration", () => {
   });
 
   it("should reset metrics without clearing cache", () => {
-    const manager = new PathfindingManager({ enableCaching: true });
+    const manager = new PathfindingManager({ enableCaching: true, logger: silentLogger });
     const origin = new RoomPosition(1, 1, "W1N1");
     const goal = new RoomPosition(10, 10, "W1N1");
 
@@ -244,7 +253,7 @@ describe("Path Caching Integration", () => {
 
   it("should handle incomplete paths gracefully", () => {
     // Create a new manager with fresh cache
-    const manager = new PathfindingManager({ enableCaching: true });
+    const manager = new PathfindingManager({ enableCaching: true, logger: silentLogger });
     const origin = new RoomPosition(5, 5, "W1N1"); // Use different coordinates
     const goal = new RoomPosition(20, 20, "W1N1");
 

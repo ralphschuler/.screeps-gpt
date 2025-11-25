@@ -69,6 +69,14 @@ export class BodyComposer {
         pattern: [WORK, MOVE]
       },
 
+      // Remote Builder: Balanced work/carry/move for remote construction
+      // Base: 2 WORK, 2 CARRY, 4 MOVE (500 energy)
+      // Pattern: 1 WORK, 1 CARRY, 1 MOVE (balanced scaling for building and gathering)
+      remoteBuilder: {
+        base: [WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE],
+        pattern: [WORK, CARRY, MOVE]
+      },
+
       // Remote Hauler: Carry-heavy for long-distance energy transport
       // Base: 4 CARRY, 4 MOVE (400 energy)
       // Pattern: 2 CARRY, 1 MOVE (prioritize carry capacity for remote hauling)
@@ -123,6 +131,25 @@ export class BodyComposer {
       dismantler: {
         base: [TOUGH, WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE],
         pattern: [WORK, MOVE]
+      },
+
+      // Claimer: Room claiming specialist
+      // Base: 1 CLAIM, 1 MOVE (650 energy)
+      // Pattern: 1 MOVE (additional mobility for faster travel)
+      // CLAIM part is required for claimController() and reserveController()
+      claimer: {
+        base: [CLAIM, MOVE],
+        pattern: [MOVE],
+        maxRepeats: 4 // Limited scaling since CLAIM parts are fixed
+      },
+
+      // Scout: Fast reconnaissance specialist
+      // Base: 1 MOVE (50 energy) - minimal and fast
+      // Pattern: 1 MOVE (additional mobility)
+      scout: {
+        base: [MOVE],
+        pattern: [MOVE],
+        maxRepeats: 4 // Limited scaling for speed
       }
     };
   }

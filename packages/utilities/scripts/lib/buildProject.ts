@@ -3,6 +3,10 @@ import { constants } from "node:fs";
 import { resolve, join } from "node:path";
 import { build, context as createContext, type BuildOptions } from "esbuild";
 import { rimraf } from "rimraf";
+import { createRequire } from "node:module";
+
+// Create require function for ES module compatibility
+const require = createRequire(import.meta.url);
 
 const outDir = resolve("dist");
 const srcDir = resolve("packages/bot/src");
@@ -57,6 +61,16 @@ const RUNTIME_DEFINES = {
   // does not support the ES2020 globalThis feature.
   // Related: ralphschuler/.screeps-gpt#1314 - ReferenceError: globalThis is not defined
   globalThis: "global"
+} as const;
+
+/**
+ * Aliases for module resolution
+ * The screeps-pathfinding library uses bare `require('pathing.utils')` which expects
+ * modules to be resolved as siblings in Screeps environment. For esbuild bundling,
+ * we need to explicitly alias these to their actual paths.
+ */
+const MODULE_ALIASES = {
+  "pathing.utils": require.resolve("screeps-pathfinding/pathing.utils.js")
 } as const;
 
 async function prepare() {
@@ -140,7 +154,8 @@ async function buildModules(watch: boolean): Promise<string[]> {
       outfile: outFile,
       logLevel: "warning" as const,
       external: [], // No external modules - each bundle is self-contained
-      define: RUNTIME_DEFINES
+      define: RUNTIME_DEFINES,
+      alias: MODULE_ALIASES
     };
 
     if (watch) {
@@ -161,7 +176,8 @@ async function buildModules(watch: boolean): Promise<string[]> {
     format: "cjs" as const,
     outfile: resolve(outDir, "main.js"),
     logLevel: "info" as const,
-    define: RUNTIME_DEFINES
+    define: RUNTIME_DEFINES,
+    alias: MODULE_ALIASES
   };
 
   if (watch) {
@@ -200,7 +216,8 @@ export async function buildProject(watch: boolean): Promise<void> {
       format: "cjs" as const,
       outfile: resolve(outDir, "main.js"),
       logLevel: "info" as const,
-      define: RUNTIME_DEFINES
+      define: RUNTIME_DEFINES,
+      alias: MODULE_ALIASES
     };
 
     if (watch) {

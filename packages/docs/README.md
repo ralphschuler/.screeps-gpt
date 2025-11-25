@@ -343,11 +343,35 @@ Update `_config.cactus.yml` navigation when:
 - Changing primary navigation paths
 - Adding important external links
 
+### Analytics Charts Maintenance
+
+The analytics dashboard (`source/docs/analytics.md`) displays bot performance metrics using Chart.js. The data pipeline works as follows:
+
+1. **Data Collection**: Bot snapshots are collected daily by the monitoring workflow and stored in `reports/bot-snapshots/`
+2. **Data Generation**: The `generate-analytics.ts` script transforms snapshots into chart-ready JSON
+3. **Build Integration**: The `docs-pages.yml` workflow runs `generate-analytics.ts` before building the site
+4. **Output**: Chart data is written to `source/docs/analytics/data.json`
+
+**Adding New Metrics:**
+
+1. Update `packages/utilities/scripts/generate-analytics.ts` to extract the new metric from snapshots
+2. Add the metric to the `AnalyticsDataPoint` interface
+3. Update `source/docs/analytics.md` to add a new chart for the metric
+4. Update `source/docs/analytics/index.md` to document the new chart
+
+**Chart Configuration:**
+
+- Charts use Chart.js v4.x loaded from jsDelivr CDN
+- Chart types available: line, bar, area, stacked bar, dual-axis
+- Colors follow a consistent palette for visual coherence
+- All charts are responsive and mobile-friendly
+
 ## Additional Resources
 
 - [Hexo Documentation](https://hexo.io/docs/)
 - [Cactus Theme README](https://github.com/probberechts/hexo-theme-cactus/blob/master/README.md)
 - [Markdown Guide](https://www.markdownguide.org/)
+- [Chart.js Documentation](https://www.chartjs.org/docs/)
 - [Repository Documentation Guidelines](../../AGENTS.md)
 
 ## Questions?

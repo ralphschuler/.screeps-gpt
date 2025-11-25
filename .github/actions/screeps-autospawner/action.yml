@@ -25,8 +25,11 @@ outputs:
     description: "Spawn status after check (normal, lost, empty, or spawned)"
     value: ${{ steps.autospawn.outputs.status }}
   action-taken:
-    description: "Action taken by the autospawner (none, respawned)"
+    description: "Action taken by the autospawner (none, respawned, spawn_placed, blocked, failed)"
     value: ${{ steps.autospawn.outputs.action }}
+  circuit_breaker_until:
+    description: "Timestamp when circuit breaker expires (if active)"
+    value: ${{ steps.autospawn.outputs.circuit_breaker_until }}
 runs:
   using: "composite"
   steps:
