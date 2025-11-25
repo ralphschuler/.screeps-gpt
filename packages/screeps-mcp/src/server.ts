@@ -143,16 +143,16 @@ export function createMCPServer(config: MCPServerConfig) {
     try {
       await ensureConnected();
 
-      if (name === "screeps.console") {
+      if (name === "screeps_console") {
         const validated = toolSchemas.console.parse(toolArgs);
         return await handleConsole(client, validated);
-      } else if (name === "screeps.memory.get") {
+      } else if (name === "screeps_memory_get") {
         const validated = toolSchemas.memoryGet.parse(toolArgs);
         return await handleMemoryGet(client, validated);
-      } else if (name === "screeps.memory.set") {
+      } else if (name === "screeps_memory_set") {
         const validated = toolSchemas.memorySet.parse(toolArgs);
         return await handleMemorySet(client, validated);
-      } else if (name === "screeps.stats") {
+      } else if (name === "screeps_stats") {
         return await handleStats(client);
       } else {
         throw new Error(`Unknown tool: ${name}`);
