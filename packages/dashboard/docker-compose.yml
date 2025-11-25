@@ -10,10 +10,10 @@ services:
       - "9000:9000"
     volumes:
       - ./config.json:/app/server/config.json:ro
-      - dashboard-data:/app/server
+      - dashboard-data:/app/data
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:9000/ || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/ || exit 1"]
       interval: 30s
       timeout: 10s
       start_period: 30s
@@ -27,7 +27,6 @@ services:
     environment:
       - NODE_ENV=development
     ports:
-      - "8000:8000"
       - "9000:9000"
     volumes:
       - ./config.json:/app/server/config.json:ro

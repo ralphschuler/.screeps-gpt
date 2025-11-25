@@ -52,15 +52,15 @@ docker compose down
 
 ## Development Mode
 
-For development with hot-reload:
+For development with source mounting:
 
 ```bash
 docker compose --profile dev up dashboard-dev
 ```
 
-This runs:
-- Frontend dev server at http://localhost:8000
-- Backend API at http://localhost:9000
+This runs the backend API at http://localhost:9000
+
+> **Note**: For frontend development, clone the original screeps-dashboard repository and run `npm run start` locally.
 
 ## Configuration
 
