@@ -15,8 +15,11 @@ export default defineConfig({
     }
   },
   define: {
-    __PROFILER_ENABLED__: false,
-    __ROOM_VISUALS_ENABLED__: JSON.stringify("false")
+    // Enable profiler for tests to match production builds (buildProject.ts uses "true" which
+    // esbuild interprets as boolean true). This enables profiler functionality.
+    __PROFILER_ENABLED__: true,
+    __ROOM_VISUALS_ENABLED__: JSON.stringify("false"),
+    __PLAYER_USERNAME__: JSON.stringify("ralphschuler")
   },
   test: {
     globals: true,

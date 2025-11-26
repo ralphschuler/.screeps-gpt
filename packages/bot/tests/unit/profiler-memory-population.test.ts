@@ -64,8 +64,8 @@ describe("Profiler Memory Population", () => {
 
   describe("Data collection", () => {
     it("should collect profiling data when profiler is started", () => {
-      // Note: This test verifies profiler behavior, but __PROFILER_ENABLED__ is set to false
-      // in vitest.config.ts. In production builds, __PROFILER_ENABLED__ defaults to true.
+      // Note: This test verifies profiler behavior with __PROFILER_ENABLED__ set to true
+      // in vitest.config.ts, matching production builds where profiler is enabled.
 
       // Initialize profiler
       const profiler = initProfiler();
@@ -105,9 +105,8 @@ describe("Profiler Memory Population", () => {
       // Verify Memory.profiler data structure exists
       expect(global.Memory.profiler.data).toBeDefined();
 
-      // Note: __PROFILER_ENABLED__ is false in tests (vitest.config.ts line 34)
-      // so decorators don't actually instrument functions.
-      // In production builds with __PROFILER_ENABLED__=true, data would be collected.
+      // Note: With __PROFILER_ENABLED__=true in vitest.config.ts, decorators now
+      // instrument functions, matching production behavior where data is collected.
       const dataKeys = Object.keys(global.Memory.profiler.data);
 
       // Verify the data structure is correct (even if empty in tests)
