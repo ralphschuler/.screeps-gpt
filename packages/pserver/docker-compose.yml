@@ -19,6 +19,7 @@ services:
       - ./.screepsrc:/screeps/.screepsrc
       - ./bots.yml:/screeps/bots.yml
       - ./mods.json:/screeps/mods.json
+      - ./config.yml:/screeps/config.jml
       - screeps-data:/screeps
     environment:
       MONGO_HOST: mongo
