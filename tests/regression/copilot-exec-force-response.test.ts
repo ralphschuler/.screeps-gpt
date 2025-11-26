@@ -102,7 +102,7 @@ describe("Workflow Migration to Codex-Exec", () => {
     { file: "copilot-strategic-planner.yml", action: "codex-exec" }
   ];
 
-  workflowFiles.forEach(({ file: workflowFile, agent }) => {
+  workflowFiles.forEach(({ file: workflowFile, agent, action: _action }) => {
     it(`should use codex-exec or specialized agent in ${workflowFile}`, () => {
       const workflowPath = join(workflowsDir, workflowFile);
       const workflowContent = readFileSync(workflowPath, "utf-8");
