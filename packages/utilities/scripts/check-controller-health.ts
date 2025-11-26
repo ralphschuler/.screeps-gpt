@@ -130,7 +130,8 @@ function generateAlertMessage(status: ControllerHealthStatus): string | null {
   }
 
   const timeStr = `${status.hoursToDowngrade.toFixed(1)}h (${status.ticksToDowngrade} ticks)`;
-  const progressStr = status.progressPercent !== undefined ? ` [${status.progressPercent.toFixed(1)}% to next level]` : "";
+  const progressStr =
+    status.progressPercent !== undefined ? ` [${status.progressPercent.toFixed(1)}% to next level]` : "";
 
   return `Room ${status.roomName} RCL${status.rcl} controller will downgrade in ${timeStr}${progressStr}. Upgraders: ${status.upgraderCount}, Energy: ${status.energyAvailable}/${status.energyCapacity}`;
 }
@@ -162,7 +163,7 @@ export function analyzeControllerHealth(snapshot: BotSnapshot): ControllerHealth
 
       // Use actual ticksToDowngrade if available, otherwise estimate
       let actualTicksToDowngrade: number;
-      
+
       if (roomData.ticksToDowngrade !== undefined && roomData.ticksToDowngrade > 0) {
         // We have the actual value from the game
         actualTicksToDowngrade = roomData.ticksToDowngrade;
@@ -281,7 +282,9 @@ async function main(): Promise<void> {
   console.log("=== Controller Health Report ===");
   console.log(`Timestamp: ${report.timestamp}`);
   console.log(`Total Rooms Analyzed: ${report.totalRooms}`);
-  console.log(`Alerts: ${report.alertCounts.critical} critical, ${report.alertCounts.warning} warning, ${report.alertCounts.info} info\n`);
+  console.log(
+    `Alerts: ${report.alertCounts.critical} critical, ${report.alertCounts.warning} warning, ${report.alertCounts.info} info\n`
+  );
 
   // Display each room status
   for (const room of report.rooms) {
@@ -289,7 +292,9 @@ async function main(): Promise<void> {
       const emoji = room.alertLevel === "critical" ? "🚨" : room.alertLevel === "warning" ? "⚠️" : "ℹ️";
       console.log(`${emoji} [${room.alertLevel.toUpperCase()}] ${room.alertMessage}`);
     } else {
-      console.log(`✅ Room ${room.roomName} RCL${room.rcl}: Healthy (~${room.hoursToDowngrade.toFixed(0)}h to downgrade)`);
+      console.log(
+        `✅ Room ${room.roomName} RCL${room.rcl}: Healthy (~${room.hoursToDowngrade.toFixed(0)}h to downgrade)`
+      );
     }
   }
 
