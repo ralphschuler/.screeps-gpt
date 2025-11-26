@@ -31,7 +31,9 @@ export default defineConfig({
     }
   },
   define: {
-    __PROFILER_ENABLED__: false,
+    // Enable profiler for tests to match production builds (buildProject.ts uses "true" which
+    // esbuild interprets as boolean true). This enables profiler functionality and event subscriptions.
+    __PROFILER_ENABLED__: true,
     __ROOM_VISUALS_ENABLED__: false,
     __TASK_SYSTEM_ENABLED__: false,
     __PLAYER_USERNAME__: JSON.stringify("ralphschuler")
