@@ -627,14 +627,17 @@ export class RoleControllerManager {
 
       // Get spawn energy details using helper to avoid type casting issues
       const spawnEnergy = this.getSpawnEnergyDetails(spawn, isEmergency || harvesterCount === 0);
-      const energyToUse = spawnEnergy.energyToUse;
+
+      // CRITICAL: Prevent oversized bodies when available energy is below capacity
+      // Use the smaller of available vs capacity-derived budget so we can bootstrap recovery
+      const energyBudget = Math.min(spawnEnergy.energyToUse, spawnEnergy.energyAvailable);
 
       // Get pre-calculated creep count for the spawn's room
       // Defaults to 0 if room not in map (no creeps in room)
       const roomCreepCount = spawnEnergy.room ? (roomCreepCounts.get(spawnEnergy.room.name) ?? 0) : undefined;
 
       // Generate body based on energy
-      const body = this.bodyComposer.generateBody(role, energyToUse, spawnEnergy.room, roomCreepCount);
+      const body = this.bodyComposer.generateBody(role, energyBudget, spawnEnergy.room, roomCreepCount);
 
       if (body.length === 0) {
         // Not enough energy for minimum body
