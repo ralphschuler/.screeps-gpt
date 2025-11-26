@@ -18,6 +18,8 @@ services:
       MONGO_HOST: mongo
       REDIS_HOST: redis
       STEAM_KEY: ${STEAM_KEY:?"Missing steam key"}
+      MAPTOOL_USER: admin
+      MAPTOOL_PASS: ${MAPTOOL_PASSWORD:="superSecret"}
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:21025/api/version || exit 1"]
