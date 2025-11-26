@@ -207,18 +207,18 @@ try {
 Recommended priority ranges for different process types:
 
 - **100+**: Critical systems (memory management, respawn detection)
-- **50-99**: Core gameplay (behavior controllers, spawning)
+- **50-99**: Core gameplay (role controllers, spawning)
 - **25-49**: Infrastructure (construction planning, roads)
 - **1-24**: Optional systems (visuals, statistics)
 
 **Example Priority Assignment:**
 
 ```typescript
-@process({ name: 'MemoryManager', priority: 100 })     // Critical
-@process({ name: 'RespawnManager', priority: 95 })     // Critical
-@process({ name: 'BehaviorController', priority: 50 }) // Core
-@process({ name: 'ConstructionManager', priority: 30 }) // Infrastructure
-@process({ name: 'RoomVisuals', priority: 10 })        // Optional
+@process({ name: 'MemoryManager', priority: 100 })       // Critical
+@process({ name: 'RespawnManager', priority: 95 })       // Critical
+@process({ name: 'RoleControllerManager', priority: 50 }) // Core
+@process({ name: 'ConstructionManager', priority: 30 })  // Infrastructure
+@process({ name: 'RoomVisuals', priority: 10 })          // Optional
 ```
 
 ## Integration Patterns
@@ -229,7 +229,7 @@ Recommended priority ranges for different process types:
 // main.ts
 import { Kernel } from "screeps-kernel";
 import "./processes/MemoryManager"; // Import triggers registration
-import "./processes/BehaviorController";
+import "./processes/RoleControllerManager";
 import "./processes/SpawnManager";
 
 const kernel = new Kernel({ logger: console });
@@ -266,17 +266,17 @@ const kernel = new Kernel({ metrics });
 ```typescript
 // kernel.ts
 export class Kernel {
-  private readonly behavior: BehaviorController;
+  private readonly roleManager: RoleControllerManager;
   private readonly memory: MemoryManager;
 
   constructor() {
-    this.behavior = new BehaviorController();
+    this.roleManager = new RoleControllerManager();
     this.memory = new MemoryManager();
   }
 
   run(game: GameContext, memory: Memory): void {
     this.memory.prune(memory, game.creeps);
-    this.behavior.execute(game, memory);
+    this.roleManager.execute(game, memory, roleCounts);
   }
 }
 
@@ -302,24 +302,48 @@ export class MemoryManager {
   }
 }
 
-// BehaviorController.ts
+// RoleControllerManager.ts
 import { process, ProcessContext } from "screeps-kernel";
+import { profile } from "@ralphschuler/screeps-profiler";
 
-@process({ name: "BehaviorController", priority: 50, singleton: true })
-export class BehaviorController {
-  run(ctx: ProcessContext): void {
-    this.execute(ctx.game, ctx.memory);
+@process({ name: "RoleControllerManager", priority: 50, singleton: true })
+@profile
+export class RoleControllerManager {
+  private readonly roleControllers: Map<string, RoleController>;
+
+  constructor() {
+    this.roleControllers = new Map();
+    // Register all role controllers
+    this.registerRoleController(new HarvesterController());
+    this.registerRoleController(new UpgraderController());
+    // ... more role controllers
   }
 
-  private execute(game: GameContext, memory: Memory): void {
-    // Behavior logic
+  run(ctx: ProcessContext): void {
+    const roleCounts = this.countRoles(ctx.game.creeps);
+    this.execute(ctx.game, ctx.memory, roleCounts);
+  }
+
+  private execute(game: GameContext, memory: Memory, roleCounts: Record<string, number>): BehaviorSummary {
+    // Spawn creeps to meet role minimums
+    this.ensureRoleMinimums(game, memory, roleCounts);
+
+    // Execute each creep via its role controller
+    for (const creep of Object.values(game.creeps)) {
+      const controller = this.roleControllers.get(creep.memory.role);
+      if (controller) {
+        controller.execute(creep);
+      }
+    }
+
+    return summary;
   }
 }
 
 // main.ts
 import { Kernel } from "screeps-kernel";
 import "./processes/MemoryManager";
-import "./processes/BehaviorController";
+import "./processes/RoleControllerManager";
 
 const kernel = new Kernel({ logger: console });
 export const loop = () => kernel.run(Game, Memory);
@@ -479,7 +503,24 @@ describe("Kernel Integration", () => {
 - #454 - Screeps ecosystem package research (evaluation of community patterns)
 - #634 - Kernel integration tests (testing infrastructure for new kernel)
 - #801 - Critical runtime components lack test coverage (kernel testing needs)
+- #1267 - State machine migration (complete removal of BehaviorController)
+- #1261 - Document creep behavior modularity
+
+## State Machine Integration
+
+The kernel integrates with the state machine-based behavior architecture via `RoleControllerManager`. Each creep role is implemented as:
+
+- **State Machine**: Defines behavior states and transitions (in `stateMachines/`)
+- **Role Controller**: Implements `RoleController` interface (in `controllers/`)
+- **Manager**: `RoleControllerManager` orchestrates all roles as a kernel process
+
+For details, see:
+- [ADR-004: State Machine Architecture](../../docs/strategy/decisions/adr-004-state-machine-behavior-architecture.md)
+- [Behavior State Machines Documentation](../../packages/docs/source/docs/runtime/architecture/behavior-state-machines.md)
+- [Behavior Migration Guide](../../packages/docs/source/docs/operations/behavior-migration-guide.md)
+
+**Note**: The `BehaviorController` pattern shown in earlier migration examples is **deprecated and removed** (Issue #1267). All new development should use the state machine architecture with `RoleControllerManager`.
 
 ## Conclusion
 
-The `screeps-kernel` package provides a modern, type-safe approach to process management in Screeps. By leveraging TypeScript decorators, generic types, and priority-based scheduling, it enables modular, testable, and maintainable AI architectures while maintaining backward compatibility with existing patterns.
+The `screeps-kernel` package provides a modern, type-safe approach to process management in Screeps. By leveraging TypeScript decorators, generic types, and priority-based scheduling, it enables modular, testable, and maintainable AI architectures. The kernel seamlessly integrates with the state machine-based behavior system for clear separation of concerns and independent role development.
