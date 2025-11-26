@@ -148,26 +148,39 @@ describe("Workflow concurrency controls", () => {
   });
 
   describe("Monitoring workflows", () => {
-    const monitoringWorkflows = ["screeps-monitoring.yml", "screeps-spawn-monitor.yml"];
-
-    for (const workflowFile of monitoringWorkflows) {
-      it(`${workflowFile} should prevent overlapping runs without cancellation`, () => {
-        const workflowPath = join(workflowsDir, workflowFile);
-        const content = readFileSync(workflowPath, "utf8");
-        const parsed = yaml.parse(content) as {
-          concurrency: {
-            group: string;
-            "cancel-in-progress": boolean;
-          };
+    it("screeps-monitoring.yml should cancel overlapping runs to prevent git race conditions", () => {
+      const workflowPath = join(workflowsDir, "screeps-monitoring.yml");
+      const content = readFileSync(workflowPath, "utf8");
+      const parsed = yaml.parse(content) as {
+        concurrency: {
+          group: string;
+          "cancel-in-progress": boolean;
         };
+      };
 
-        // Should not cancel in progress (let monitoring complete)
-        expect(parsed.concurrency["cancel-in-progress"]).toBe(false);
+      // Should cancel in progress to prevent git push race conditions
+      expect(parsed.concurrency["cancel-in-progress"]).toBe(true);
 
-        // Should use workflow-level grouping to prevent overlaps
-        expect(parsed.concurrency.group).toContain("github.workflow");
-      });
-    }
+      // Should use workflow-level grouping to prevent overlaps
+      expect(parsed.concurrency.group).toContain("github.workflow");
+    });
+
+    it("screeps-spawn-monitor.yml should prevent overlapping runs without cancellation", () => {
+      const workflowPath = join(workflowsDir, "screeps-spawn-monitor.yml");
+      const content = readFileSync(workflowPath, "utf8");
+      const parsed = yaml.parse(content) as {
+        concurrency: {
+          group: string;
+          "cancel-in-progress": boolean;
+        };
+      };
+
+      // Should not cancel in progress (let monitoring complete)
+      expect(parsed.concurrency["cancel-in-progress"]).toBe(false);
+
+      // Should use workflow-level grouping to prevent overlaps
+      expect(parsed.concurrency.group).toContain("github.workflow");
+    });
   });
 
   describe("Singleton workflows", () => {
