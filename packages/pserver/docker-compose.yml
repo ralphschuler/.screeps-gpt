@@ -1,35 +1,24 @@
-volumes:
-  mongo-data:
-  redis-data:
-  screeps-data:
-
 services:
   screeps:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    env_file: .env
-    platform: linux/amd64
+    build: server
     depends_on:
       mongo:
         condition: service_healthy
       redis:
         condition: service_healthy
+    ports:
+      - 21025:21025/tcp
     volumes:
-      - ./.screepsrc:/screeps/.screepsrc
-      - ./bots.yml:/screeps/bots.yml
-      - ./mods.json:/screeps/mods.json
-      - ./config.yml:/screeps/config.jml
-      - screeps-data:/screeps
+      - ./config.yml:/screeps/config.yml
+      - screeps-data:/data
+      - screeps-mods:/screeps/mods
     environment:
       MONGO_HOST: mongo
       REDIS_HOST: redis
-      STEAM_KEY: ${STEAM_KEY}
-    ports:
-      - "21025:21025/tcp"
+      STEAM_KEY: ${STEAM_KEY:?"Missing steam key"}
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "curl --fail --silent http://127.0.0.1:21025/api/version"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:21025/api/version || exit 1"]
       interval: 30s
       timeout: 10s
       start_period: 180s
@@ -61,3 +50,9 @@ services:
       timeout: 5s
       start_period: 5s
       retries: 6
+
+volumes:
+  screeps-data:
+  screeps-mods:
+  redis-data:
+  mongo-data:
