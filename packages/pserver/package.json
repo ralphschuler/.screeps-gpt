@@ -17,7 +17,15 @@
     "screepsmod-portals": "*",
     "screepsmod-stats": "*",
     "screepsmod-timeout": "*",
-    "screepsmod-visualize": "*"
+    "screepsmod-visualize": "*",
+    "screepsmod-leaderboard": "*",
+    "screepsmod-maptools": "*",
+    "screepsmod-arena-world": "https://github.com/daboross/screepsmod-arena-world",
+    "screepsmod-pvp-api": "*",
+    "screepsmod-remote-console": "*",
+    "screepsmod-map-tool": "*",
+    "screepsmod-web-client": "*",
+    "screepsmod-cors": "*"
   },
   "resolutions": {
     "cacache": "15.3.0",
