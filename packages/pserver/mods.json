@@ -1,5 +1,10 @@
 {
   "mods": [
+    "node_modules/screepsmod-maptools/index.js",
+    "node_modules/screepsmod-leaderboard/index.js",
+    "node_modules/screepsmod-arena-world/index.js",
+    "node_modules/screepsmod-pvp-api/index.js",
+    "node_modules/screepsmod-remote-console/index.js",
     "node_modules/screepsmod-auth/index.js",
     "node_modules/screepsmod-admin-utils/index.js",
     "node_modules/screepsmod-mongo/index.js",
@@ -11,7 +16,10 @@
     "node_modules/screepsmod-features/index.js",
     "node_modules/screepsmod-portals/dist/index.js",
     "node_modules/screepsmod-timeout/index.js",
-    "node_modules/@screepsmod/serverinfo/index.js"
+    "node_modules/@screepsmod/serverinfo/index.js",
+    "node_modules/screepsmod-map-tool/index.js",
+    "node_modules/screepsmod-web-client/index.js",
+    "node_modules/screepsmod-cors/index.js"
   ],
   "bots": {
     "choreographer": "node_modules/screeps-bot-choreographer/dist",
