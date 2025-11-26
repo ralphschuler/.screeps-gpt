@@ -1,0 +1,30 @@
+# Used by screepsmod-bots to preconfigure bots for this private server
+version: 1
+bots:
+  - username: overmind
+    botName: overmind
+    position: 22,13,W21N23 # Norden des Rings
+    cpu: 200
+    gcl: 1
+    log_console: false
+
+  - username: toolangle
+    botName: tooangel
+    position: 34,22,W23N21 # Osten des Rings
+    cpu: 200
+    gcl: 1
+    log_console: false
+
+  - username: choreographer
+    botName: choreographer
+    position: 17,12,W21N19 # Süden des Rings
+    cpu: 200
+    gcl: 1
+    log_console: false
+
+  - username: screeps-gpt
+    botName: screeps-gpt
+    position: 17,37,W19N23 # Nordwest-Ecke des Rings
+    cpu: 200
+    gcl: 1
+    log_console: false

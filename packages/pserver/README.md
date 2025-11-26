@@ -56,7 +56,9 @@ npm run check        # Run TypeScript type checking
 
 ### Mods and Bots
 
-Edit `config.yml` to add or remove mods and bots:
+This setup uses both `config.yml` and `bots.yml` for configuration:
+
+#### config.yml - Mods, Bot Packages, and Server Settings
 
 ```yaml
 mods:
@@ -71,6 +73,34 @@ bots:
 launcherOptions:
   autoUpdate: false
   logConsole: true
+
+serverConfig:
+  tickRate: 200
+  socketUpdateRate: 200
+  shardName: "test"
+  constants:
+    UPGRADE_POWER: 10
+  welcomeText: |
+    <h1>Welcome</h1>
+  gclToCPU: true
+  maxCPU: 100
+  baseCPU: 20
+  stepCPU: 10
+```
+
+#### bots.yml - Bot User Configuration
+
+Used by screepsmod-bots to preconfigure bot users with spawn positions:
+
+```yaml
+version: 1
+bots:
+  - username: botuser
+    botName: bot-package-name
+    position: x,y,RoomName
+    cpu: 200
+    gcl: 1
+    log_console: false
 ```
 
 ### Custom Changes
@@ -80,8 +110,10 @@ This setup includes the following customizations from the base Jomik repository:
 - **MongoDB 8** instead of 4.4.18 for latest features
 - **Enhanced healthchecks** with longer start periods (180s for Screeps)
 - **Additional mods** configured for testing and development
-- **Multiple test bots** (choreographer, overmind, toolangle)
+- **Multiple test bots** (choreographer, overmind, toolangle, screeps-gpt)
 - **Persistent Redis data** with AOF enabled
+- **Custom bots.yml** for preconfigured bot users with spawn positions
+- **serverConfig section** in config.yml for server-specific settings (tick rate, constants, etc.)
 
 ## Architecture
 

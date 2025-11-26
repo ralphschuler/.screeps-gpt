@@ -10,6 +10,7 @@ services:
       - 21025:21025/tcp
     volumes:
       - ./config.yml:/screeps/config.yml
+      - ./bots.yml:/screeps/bots.yml
       - screeps-data:/data
       - screeps-mods:/screeps/mods
     environment:
