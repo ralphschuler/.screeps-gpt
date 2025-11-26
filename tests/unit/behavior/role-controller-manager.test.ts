@@ -26,6 +26,9 @@ describe("RoleControllerManager spawning", () => {
     const spawned: string[] = [];
     const memory = {} as Memory;
 
+    // Declare spawn first to avoid "used before defined" error
+    let spawn: SpawnLike;
+
     const room: Room = {
       name: "W1N1",
       controller: { my: true } as StructureController,
@@ -49,7 +52,7 @@ describe("RoleControllerManager spawning", () => {
       getTerrain: () => ({ get: () => 0 }) as unknown as RoomTerrain
     };
 
-    const spawn = {
+    spawn = {
       name: "Spawn1",
       room,
       spawning: null,

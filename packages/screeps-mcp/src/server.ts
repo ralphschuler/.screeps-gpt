@@ -20,7 +20,6 @@ import {
   listResources
 } from "./handlers/resources.js";
 import { handleConsole, handleMemoryGet, handleMemorySet, handleStats, toolSchemas } from "./handlers/tools.js";
-import { z } from "zod";
 
 /**
  * Create and configure the MCP server for Screeps integration.

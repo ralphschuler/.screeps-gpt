@@ -177,9 +177,10 @@ export const loop = (): void => {
     // This prevents TypeError crashes when external console automation (screeps-mcp probes,
     // monitoring scripts) attempts to write to Memory.stats between ticks or after memory resets.
     // StatsCollector will populate this with full telemetry data during MetricsProcess execution.
+    // Note: Using same initialization structure as StatsCollector for consistency (zeros, not actual values).
     Memory.stats ??= {
       time: Game.time,
-      cpu: { used: Game.cpu.getUsed(), limit: Game.cpu.limit, bucket: Game.cpu.bucket },
+      cpu: { used: 0, limit: 0, bucket: 0 },
       creeps: { count: 0 },
       rooms: { count: 0 }
     };
