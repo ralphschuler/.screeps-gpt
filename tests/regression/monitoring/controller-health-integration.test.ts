@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { analyzeControllerHealth } from "../../../packages/utilities/scripts/check-controller-health";
+import { analyzeControllerHealth, TICKS_PER_HOUR } from "../../../packages/utilities/scripts/check-controller-health";
 import type { BotSnapshot } from "../../../packages/utilities/scripts/types/bot-snapshot";
 
 /**
@@ -52,7 +52,7 @@ describe("Controller Health Monitoring Integration", () => {
             energyCapacity: 1300,
             controllerProgress: 50000,
             controllerProgressTotal: 540000,
-            ticksToDowngrade: 35000 // ~13 hours - warning threshold
+            ticksToDowngrade: Math.round(13 * TICKS_PER_HOUR) // ~13 hours - warning threshold
           },
           W1N2: {
             rcl: 5,
@@ -60,7 +60,7 @@ describe("Controller Health Monitoring Integration", () => {
             energyCapacity: 1800,
             controllerProgress: 100000,
             controllerProgressTotal: 1000000,
-            ticksToDowngrade: 150000 // ~55 hours - healthy
+            ticksToDowngrade: Math.round(55 * TICKS_PER_HOUR) // ~55 hours - healthy
           }
         },
         creeps: {
@@ -84,7 +84,7 @@ describe("Controller Health Monitoring Integration", () => {
       expect(parsed.rooms!["W1N1"]).toHaveProperty("ticksToDowngrade");
       expect(parsed.rooms!["W1N1"]).toHaveProperty("controllerProgress");
       expect(parsed.rooms!["W1N1"]).toHaveProperty("controllerProgressTotal");
-      expect(parsed.rooms!["W1N2"].ticksToDowngrade).toBe(150000);
+      expect(parsed.rooms!["W1N2"].ticksToDowngrade).toBe(Math.round(55 * TICKS_PER_HOUR));
     });
   });
 
@@ -97,7 +97,7 @@ describe("Controller Health Monitoring Integration", () => {
             rcl: 3,
             energy: 800,
             energyCapacity: 800,
-            ticksToDowngrade: 25000 // ~9.3 hours - CRITICAL
+            ticksToDowngrade: Math.round(9.3 * TICKS_PER_HOUR) // ~9.3 hours - CRITICAL
           }
         },
         creeps: {
@@ -126,7 +126,7 @@ describe("Controller Health Monitoring Integration", () => {
             rcl: 4,
             energy: 1300,
             energyCapacity: 1300,
-            ticksToDowngrade: 50000 // ~18.5 hours - WARNING
+            ticksToDowngrade: Math.round(18.5 * TICKS_PER_HOUR) // ~18.5 hours - WARNING
           }
         },
         creeps: {
@@ -156,7 +156,7 @@ describe("Controller Health Monitoring Integration", () => {
             rcl: 5,
             energy: 1800,
             energyCapacity: 1800,
-            ticksToDowngrade: 100000 // ~37 hours - INFO
+            ticksToDowngrade: Math.round(37 * TICKS_PER_HOUR) // ~37 hours - INFO
           }
         },
         creeps: {
@@ -186,7 +186,7 @@ describe("Controller Health Monitoring Integration", () => {
             rcl: 6,
             energy: 2300,
             energyCapacity: 2300,
-            ticksToDowngrade: 180000 // ~66 hours - HEALTHY
+            ticksToDowngrade: Math.round(66 * TICKS_PER_HOUR) // ~66 hours - HEALTHY
           }
         },
         creeps: {
@@ -217,25 +217,25 @@ describe("Controller Health Monitoring Integration", () => {
             rcl: 2,
             energy: 300,
             energyCapacity: 300,
-            ticksToDowngrade: 8000 // ~3 hours - CRITICAL
+            ticksToDowngrade: Math.round(3 * TICKS_PER_HOUR) // ~3 hours - CRITICAL
           },
           W1N2: {
             rcl: 3,
             energy: 800,
             energyCapacity: 800,
-            ticksToDowngrade: 45000 // ~16.7 hours - WARNING
+            ticksToDowngrade: Math.round(16.7 * TICKS_PER_HOUR) // ~16.7 hours - WARNING
           },
           W1N3: {
             rcl: 4,
             energy: 1300,
             energyCapacity: 1300,
-            ticksToDowngrade: 95000 // ~35 hours - INFO
+            ticksToDowngrade: Math.round(35 * TICKS_PER_HOUR) // ~35 hours - INFO
           },
           W1N4: {
             rcl: 5,
             energy: 1800,
             energyCapacity: 1800,
-            ticksToDowngrade: 250000 // ~92 hours - HEALTHY
+            ticksToDowngrade: Math.round(92 * TICKS_PER_HOUR) // ~92 hours - HEALTHY
           }
         },
         creeps: {
@@ -277,7 +277,7 @@ describe("Controller Health Monitoring Integration", () => {
             energyCapacity: 1300,
             controllerProgress: 100000,
             controllerProgressTotal: 540000,
-            ticksToDowngrade: 30000 // ~11 hours - CRITICAL
+            ticksToDowngrade: Math.round(11 * TICKS_PER_HOUR) // ~11 hours - CRITICAL
           }
         },
         creeps: {
@@ -312,7 +312,7 @@ describe("Controller Health Monitoring Integration", () => {
             rcl: 3,
             energy: 800,
             energyCapacity: 800,
-            ticksToDowngrade: 40000
+            ticksToDowngrade: Math.round(15 * TICKS_PER_HOUR) // ~15 hours
           }
         },
         creeps: {
@@ -339,7 +339,7 @@ describe("Controller Health Monitoring Integration", () => {
             rcl: 2,
             energy: 300,
             energyCapacity: 300,
-            ticksToDowngrade: 8000 // CRITICAL with no upgraders
+            ticksToDowngrade: Math.round(3 * TICKS_PER_HOUR) // ~3 hours - CRITICAL with no upgraders
           }
         },
         creeps: {
@@ -398,7 +398,7 @@ describe("Controller Health Monitoring Integration", () => {
             rcl: 3,
             energy: 800,
             energyCapacity: 800,
-            ticksToDowngrade: 25000
+            ticksToDowngrade: Math.round(9 * TICKS_PER_HOUR) // ~9 hours
           }
         },
         creeps: {
@@ -445,7 +445,7 @@ describe("Controller Health Monitoring Integration", () => {
             energyCapacity: 1300,
             controllerProgress: 270000, // 50% of 540000
             controllerProgressTotal: 540000,
-            ticksToDowngrade: 35000
+            ticksToDowngrade: Math.round(13 * TICKS_PER_HOUR) // ~13 hours
           }
         },
         creeps: {
