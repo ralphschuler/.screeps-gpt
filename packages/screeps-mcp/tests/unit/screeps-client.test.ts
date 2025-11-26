@@ -172,7 +172,7 @@ describe("ScreepsClient", () => {
     });
 
     it("should allow setting safe memory paths", async () => {
-      mockApi.memory.set.mockResolvedValue(undefined);
+      mockApi.memory.set.mockResolvedValue({ ok: 1 });
 
       const result = await client.setMemory("myData.config", { value: 123 });
 
