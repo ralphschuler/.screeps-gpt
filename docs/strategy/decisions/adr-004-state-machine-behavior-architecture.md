@@ -31,6 +31,7 @@ The bot's behavior system evolved from a monolithic `BehaviorController` that ma
 ### Option 1: State Machine Architecture (Selected)
 
 **Description**: Implement each role as a dedicated state machine using the `screeps-xstate` package. Each role controller manages:
+
 - State machine definitions with explicit states and transitions
 - Role-specific context and event types
 - Integration with `RoleControllerManager` for orchestration
@@ -166,16 +167,19 @@ The `screeps-xstate` package provides lightweight state machine primitives speci
 ## Implementation Timeline
 
 ### Phase 1: Foundation (Completed)
+
 - Created `StateMachineManager` for lifecycle management
 - Implemented core role state machines (harvester, upgrader)
 - Established `RoleController` interface pattern
 
 ### Phase 2: Migration (Completed)
+
 - Migrated all roles to state machine pattern
 - Created specialized state machines for each role type
 - Integrated with `RoleControllerManager` orchestration
 
 ### Phase 3: Deprecation (Issue #1267 - In Progress)
+
 - Remove obsolete `BehaviorController` code
 - Update documentation to reflect new architecture
 - Remove `USE_MODULAR_CONTROLLERS` feature flag
@@ -219,18 +223,22 @@ The `screeps-xstate` package provides lightweight state machine primitives speci
 ```typescript
 export const harvesterStates: Record<string, StateConfig<HarvesterContext, HarvesterEvent>> = {
   idle: {
-    onEntry: [ctx => {
-      ctx.sourceId = undefined;
-      ctx.targetId = undefined;
-    }],
+    onEntry: [
+      ctx => {
+        ctx.sourceId = undefined;
+        ctx.targetId = undefined;
+      }
+    ],
     on: {
       START_HARVEST: {
         target: "harvesting",
-        actions: [(ctx, event) => {
-          if (event.type === "START_HARVEST") {
-            ctx.sourceId = event.sourceId;
+        actions: [
+          (ctx, event) => {
+            if (event.type === "START_HARVEST") {
+              ctx.sourceId = event.sourceId;
+            }
           }
-        }]
+        ]
       }
     }
   },
@@ -263,7 +271,7 @@ export class HarvesterController implements RoleController<CreepMemory> {
     if (!machine) return "idle";
 
     const currentState = machine.getCurrentState();
-    
+
     // Execute state-specific logic
     switch (currentState) {
       case "harvesting":

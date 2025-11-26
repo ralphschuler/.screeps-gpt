@@ -111,11 +111,13 @@ The bot uses a **state machine architecture** for creep behaviors:
 - `StateMachineManager` handles state machine initialization, persistence, and cleanup
 
 **Key Documentation:**
+
 - [ADR-004: State Machine Architecture](docs/strategy/decisions/adr-004-state-machine-behavior-architecture.md)
 - [Behavior State Machines](packages/docs/source/docs/runtime/architecture/behavior-state-machines.md)
 - [Behavior Migration Guide](packages/docs/source/docs/operations/behavior-migration-guide.md)
 
 **DEPRECATED PATTERNS:**
+
 - ❌ `BehaviorController` - Monolithic behavior controller (removed in Issue #1267)
 - ❌ `USE_MODULAR_CONTROLLERS` - Feature flag (removed in Issue #1267)
 - ❌ Switch-based role dispatch - Use state machines and role controllers instead

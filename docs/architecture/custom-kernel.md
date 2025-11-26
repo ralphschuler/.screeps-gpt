@@ -515,6 +515,7 @@ The kernel integrates with the state machine-based behavior architecture via `Ro
 - **Manager**: `RoleControllerManager` orchestrates all roles as a kernel process
 
 For details, see:
+
 - [ADR-004: State Machine Architecture](../../docs/strategy/decisions/adr-004-state-machine-behavior-architecture.md)
 - [Behavior State Machines Documentation](../../packages/docs/source/docs/runtime/architecture/behavior-state-machines.md)
 - [Behavior Migration Guide](../../packages/docs/source/docs/operations/behavior-migration-guide.md)
