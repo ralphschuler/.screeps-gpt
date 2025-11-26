@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Run strategic planning analysis
-        uses: ./.github/actions/copilot-exec
+        uses: ./.github/actions/codex-exec
         env:
           REPO_NAME: "${{ github.repository }}"
           RUN_ID: "${{ github.run_id }}"
@@ -35,7 +35,7 @@ jobs:
           SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
           SCREEPS_SHARD: ${{ vars.SCREEPS_SHARD || 'shard1' }}
         with:
-          copilot-token: ${{ secrets.COPILOT_TOKEN }}
+          codex-token: ${{ secrets.OPENAI_API_KEY }}
           prompt-path: .github/copilot/prompts/strategic-planner
           output-path: >-
             reports/copilot/strategic-planner-${{ github.run_id }}.log

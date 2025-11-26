@@ -77,7 +77,8 @@ All agents should reference these documents before making changes:
 4. **Workflow Configuration**
    - `.github/workflows/*.yml` - GitHub Actions workflow definitions
    - `.github/copilot/prompts/*` - Prompt templates for Copilot automation
-   - `.github/actions/copilot-exec/action.yml` - Shared Copilot CLI execution action
+   - `.github/actions/copilot-exec/action.yml` - Shared AI CLI execution action (wraps codex-exec)
+   - `.github/actions/codex-exec/action.yml` - OpenAI Codex action wrapper (uses openai/codex-action)
    - `.github/labels.yml` - Repository label definitions
 
 ### Runtime Architecture
@@ -226,7 +227,8 @@ function validateGameContext(game: Game): GameContext {
 - Any change to `.github/workflows/` must keep the automation promises described in `README.md` and `packages/docs/source/docs/automation/overview.md`.
 - Follow [Graphite's GitHub Actions permissions guidance](https://graphite.dev/guides/github-actions-permissions) to ensure least-privilege scopes.
 - Secrets referenced by workflows must be documented in `README.md` under the automation section.
-- Use the GitHub Copilot CLI via the shared `copilot-exec` composite action and template prompts in `.github/copilot/prompts/`.
+- Use the `copilot-exec` composite action for AI-powered CLI operations (delegates to OpenAI's codex-action via codex-exec wrapper)
+- Template prompts are located in `.github/copilot/prompts/` and rendered by the action
 
 ### 5. MCP Server Integration
 
@@ -238,7 +240,7 @@ Agents have access to Model Context Protocol (MCP) servers that extend their cap
    - Repository operations: create/update issues and PRs
    - Code search: find files, symbols, and content across repositories
    - Commit inspection: review diffs and history
-   - Configuration: Built into `copilot-exec` action
+   - Configuration: Built into `copilot-exec`/`codex-exec` actions
 
 2. **Playwright MCP Server** ([executeautomation/playwright-mcp-server](https://github.com/executeautomation/playwright-mcp-server))
    - Browser automation for web-based monitoring

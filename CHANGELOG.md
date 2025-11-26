@@ -5,6 +5,20 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.165.1] - 2025-11-26
+
+
+### Changed
+
+- **Automation**: Replaced `copilot-exec` custom implementation with wrapper around `codex-exec` (OpenAI's official codex-action)
+  - Reduced maintenance burden by leveraging official OpenAI tooling
+  - Maintained full backward compatibility with all existing workflows (4 workflows, 5 specialized agents)
+  - `copilot-exec` now delegates to `codex-exec` which wraps `openai/codex-action@v1`
+  - Updated regression tests to validate delegation and compatibility
+  - Updated documentation in `packages/docs/source/docs/automation/overview.md`, `AGENTS.md`, and `.github/copilot-instructions.md`
+  - Migration aligns with zero-tolerance policy for obsolete code while preserving existing workflow integrations
+
+
 ## [0.161.3] - 2025-11-25
 
 ### Changed
