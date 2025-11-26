@@ -1,41 +1,28 @@
 {
   "name": "screeps-server",
-  "dependencies": {
-    "@screepsmod/serverinfo": "*",
-    "morgan": "*",
-    "screeps": "*",
-    "screeps-bot-choreographer": "*",
-    "screeps-bot-overmind": "*",
-    "screeps-bot-tooangel": "*",
-    "screepsmod-admin-utils": "*",
-    "screepsmod-auth": "*",
-    "screepsmod-bots": "*",
-    "screepsmod-dynamicmarket": "*",
-    "screepsmod-features": "*",
-    "screepsmod-history": "*",
-    "screepsmod-mongo": "*",
-    "screepsmod-portals": "*",
-    "screepsmod-stats": "*",
-    "screepsmod-timeout": "*",
-    "screepsmod-visualize": "*",
-    "screepsmod-leaderboard": "*",
-    "screepsmod-maptools": "*",
-    "screepsmod-arena-world": "https://github.com/daboross/screepsmod-arena-world",
-    "screepsmod-pvp-api": "*",
-    "screepsmod-remote-console": "*",
-    "screepsmod-map-tool": "*",
-    "screepsmod-web-client": "*",
-    "screepsmod-cors": "*"
+  "private": true,
+  "version": "1.0.0",
+  "repository": "https://github.com/ralphschuler/.screeps-gpt",
+  "author": "Ralph Schuler",
+  "license": "MIT",
+  "scripts": {
+    "check": "tsc -p tsconfig.json",
+    "start": "docker compose up -d",
+    "start:logs": "npm run start && npm run logs",
+    "stop": "docker compose stop",
+    "restart": "docker compose restart screeps",
+    "restart:logs": "npm run restart && npm run logs",
+    "reset": "docker compose down",
+    "reset:hard": "docker compose down -v",
+    "logs": "docker compose logs -ft -n 100 screeps",
+    "shell": "docker compose exec screeps /bin/sh",
+    "redis-cli": "docker compose exec redis redis-cli",
+    "cli": "docker compose exec screeps cli",
+    "update": "docker compose exec screeps start --update"
   },
-  "resolutions": {
-    "cacache": "15.3.0",
-    "canvas": "2.11.2",
-    "express-rate-limit": "6.7.0",
-    "minipass-fetch": "2.1.2",
-    "passport-steam": "1.0.17",
-    "psl": "1.10.0",
-    "ssri": "8.0.1",
-    "yaml": "2.0.0-11"
-  },
-  "private": true
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^10.17.60",
+    "typescript": "^5.6.2"
+  }
 }
