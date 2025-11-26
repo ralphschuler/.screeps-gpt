@@ -14,6 +14,11 @@ The runtime system is the core of the Screeps AI bot, executing every game tick 
 
 ## Documentation Sections
 
+### Architecture
+
+- [**Behavior State Machines**](architecture/behavior-state-machines.html) - State machine architecture for creep behaviors
+- [**Custom Kernel**](../../../../../docs/architecture/custom-kernel.html) - Kernel process architecture and integration
+
 ### Strategy & Decision Making
 
 - [**Creep Roles**](strategy/creep-roles.html) - Role definitions, decision trees, and performance characteristics
@@ -37,11 +42,13 @@ The runtime system is the core of the Screeps AI bot, executing every game tick 
 
 The runtime is organized into several key subsystems:
 
-- **Bootstrap/Kernel** - System initialization and module orchestration
-- **Behavior System** - Creep role execution and decision-making
-- **Memory System** - State persistence and consistency
+- **Bootstrap/Kernel** - System initialization and module orchestration using decorator-based process registration
+- **Behavior System** - State machine-based creep role execution using `RoleControllerManager` and dedicated role controllers
+- **Memory System** - State persistence and consistency, including state machine serialization
 - **Metrics System** - Performance tracking and CPU accounting
 - **Evaluation System** - Health reports and improvement recommendations
+
+**State Machine Architecture**: Each creep role is implemented as a dedicated state machine with explicit states (idle, harvesting, delivering, etc.) and valid transitions. See [Behavior State Machines](architecture/behavior-state-machines.html) for details.
 
 ### Execution Model
 

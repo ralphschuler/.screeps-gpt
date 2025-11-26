@@ -86,7 +86,11 @@ All agents should reference these documents before making changes:
 Agents working on runtime code should understand:
 
 - `src/runtime/bootstrap/` - Kernel orchestration and system wiring
-- `src/runtime/behavior/` - Creep roles and spawn logic
+- `src/runtime/behavior/` - Creep roles and spawn logic using state machines
+  - `stateMachines/` - State machine definitions for each role
+  - `controllers/` - Role controller implementations
+  - `RoleControllerManager.ts` - Orchestrates all role controllers (registered as kernel process)
+  - `StateMachineManager.ts` - Manages state machine lifecycle
 - `src/runtime/memory/` - Memory consistency helpers
 - `src/runtime/metrics/` - CPU tracking and performance accounting
 - `src/runtime/respawn/` - Automatic respawn detection
@@ -95,6 +99,30 @@ Agents working on runtime code should understand:
 - `scripts/` - Build, deploy, and automation scripts
 - `tests/` - Unit, e2e, regression, and mockup test suites
 - `reports/` - Persistent analysis artifacts
+
+**Behavior Architecture (State Machines):**
+
+The bot uses a **state machine architecture** for creep behaviors:
+
+- Each role (harvester, upgrader, builder, etc.) is implemented as a dedicated state machine
+- State machines define explicit states (idle, harvesting, delivering, etc.) and valid transitions
+- Role controllers implement the `RoleController` interface and manage state machine execution
+- `RoleControllerManager` orchestrates all roles and integrates with the kernel as a process
+- `StateMachineManager` handles state machine initialization, persistence, and cleanup
+
+**Key Documentation:**
+
+- [ADR-004: State Machine Architecture](docs/strategy/decisions/adr-004-state-machine-behavior-architecture.md)
+- [Behavior State Machines](packages/docs/source/docs/runtime/architecture/behavior-state-machines.md)
+- [Behavior Migration Guide](packages/docs/source/docs/operations/behavior-migration-guide.md)
+
+**DEPRECATED PATTERNS:**
+
+- ❌ `BehaviorController` - Monolithic behavior controller (removed in Issue #1267)
+- ❌ `USE_MODULAR_CONTROLLERS` - Feature flag (removed in Issue #1267)
+- ❌ Switch-based role dispatch - Use state machines and role controllers instead
+
+All new behavior development MUST use the state machine pattern. Do not reference or reintroduce deprecated patterns.
 
 ## Operational Rules
 

@@ -21,6 +21,10 @@ Operational guides for running, deploying, and troubleshooting the Screeps AI bo
 - [**Docker Guide**](docker-guide.html) - Container-based development and testing
 - [**Workflow Troubleshooting**](workflow-troubleshooting.html) - CI/CD pipeline debugging
 
+### Migration Guides
+
+- [**Behavior Migration Guide**](behavior-migration-guide.html) - Migration from BehaviorController to state machine architecture
+
 ## Related Documentation
 
 - [Automation Guides](../automation/index.html) - GitHub Actions and CI/CD automation

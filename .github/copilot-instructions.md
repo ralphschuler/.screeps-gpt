@@ -69,7 +69,11 @@ This repository hosts an autonomous Screeps AI with comprehensive automation. Wh
 ### Runtime Code (`src/`)
 
 - `src/runtime/bootstrap/` - Kernel orchestration and system wiring
-- `src/runtime/behavior/` - Creep roles and spawn logic
+- `src/runtime/behavior/` - Creep roles and spawn logic using state machines
+  - `stateMachines/` - State machine definitions for each role
+  - `controllers/` - Role controller implementations
+  - `RoleControllerManager.ts` - Orchestrates all role controllers
+  - `StateMachineManager.ts` - Manages state machine lifecycle
 - `src/runtime/memory/` - Memory consistency helpers
 - `src/runtime/metrics/` - CPU tracking and performance accounting
 - `src/runtime/respawn/` - Automatic respawn detection
@@ -236,6 +240,29 @@ Repository labels are synchronized from `.github/labels.yml` using a standardize
 - Never edit labels in the UI - update `.github/labels.yml` instead
 - Use `type/*` and `priority/*` labels for issue classification
 - Apply `state/pending` to new issues, update states as work progresses
+
+## Behavior Architecture
+
+The bot uses a **state machine architecture** for creep behaviors:
+
+- Each role (harvester, upgrader, builder, etc.) is implemented as a dedicated state machine
+- State machines define explicit states and valid transitions
+- Role controllers implement the `RoleController` interface
+- `RoleControllerManager` orchestrates all roles and integrates with the kernel
+- `StateMachineManager` handles state machine lifecycle
+
+**Important Documentation:**
+
+- [ADR-004: State Machine Architecture](../docs/strategy/decisions/adr-004-state-machine-behavior-architecture.md)
+- [Behavior State Machines](../packages/docs/source/docs/runtime/architecture/behavior-state-machines.md)
+- [Behavior Migration Guide](../packages/docs/source/docs/operations/behavior-migration-guide.md)
+
+**DEPRECATED PATTERNS:**
+
+- ❌ `BehaviorController` - Monolithic behavior controller (removed in Issue #1267)
+- ❌ Switch-based role dispatch - Use state machines instead
+
+All new behavior development MUST use the state machine pattern with role controllers.
 
 ## Additional Resources
 
