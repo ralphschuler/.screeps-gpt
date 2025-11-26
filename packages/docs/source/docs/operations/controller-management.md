@@ -134,10 +134,49 @@ Monitor these metrics to detect controller downgrade risks:
 | 7   | 150,000 ticks  | 30,000 ticks (~22h)    | 15,000 ticks (~11h)     |
 | 8   | 200,000 ticks  | 40,000 ticks (~30h)    | 20,000 ticks (~15h)     |
 
+## Automated Monitoring
+
+### Controller Health Checks
+
+As of release 0.161.2, the screeps-monitoring.yml workflow includes proactive controller downgrade alerts:
+
+**Alert Thresholds:**
+- **Critical (< 12 hours)**: Immediate action required, email + push notifications sent
+- **Warning (< 24 hours)**: Attention needed, email + push notifications sent  
+- **Info (< 48 hours)**: Monitoring notice, logged only
+
+**How It Works:**
+
+1. Every 30 minutes, the monitoring workflow collects bot state snapshots
+2. Console telemetry fetches controller.ticksToDowngrade for each room
+3. The check-controller-health.ts script analyzes downgrade risk per room
+4. Critical and warning alerts trigger email notifications to configured recipients
+5. Alert history is tracked in reports/bot-snapshots/ for trend analysis
+
+**Metrics Tracked:**
+- Time until downgrade (ticks and hours)
+- Controller progress toward next level
+- Upgrader creep count per room
+- Energy availability at controller
+- Room Control Level (RCL)
+
+**Manual Check:**
+
+You can manually run the controller health check at any time:
+
+```bash
+yarn tsx packages/utilities/scripts/check-controller-health.ts
+```
+
+Exit codes:
+- `0`: All controllers healthy or info-level alerts only
+- `1`: Warning-level alerts detected
+- `2`: Critical alerts detected
+
 ## Future Improvements
 
-1. **Proactive Monitoring** (Issue #1383): Implement automated alerts when controller downgrade timer drops below thresholds
-2. **Dynamic Upgrader Scaling**: Automatically spawn more upgraders when downgrade timer is low
-3. **Energy Reserve Management**: Ensure sufficient energy reserves for upgraders
-4. **State Machine Migration**: Complete migration of all role controllers to xstate
-5. **Regression Testing**: Add comprehensive tests for controller management edge cases
+1. **Dynamic Upgrader Scaling**: Automatically spawn more upgraders when downgrade timer is low
+2. **Energy Reserve Management**: Ensure sufficient energy reserves for upgraders
+3. **State Machine Migration**: Complete migration of all role controllers to xstate
+4. **Regression Testing**: Add comprehensive tests for controller management edge cases
+5. **Trend Analysis**: Track controller health trends over time to predict future issues

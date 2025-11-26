@@ -5,6 +5,8 @@ import { sendPushNotification } from "./send-push-notification.js";
 import { sendEmailNotification } from "./send-email-notification.js";
 import { saveReport, loadLatestReport, applyRetentionPolicy } from "./lib/report-storage.js";
 import { comparePTRStats, formatPTRTrendReport } from "./lib/report-comparison.js";
+import { analyzeControllerHealth } from "./check-controller-health.js";
+import type { BotSnapshot } from "./types/bot-snapshot.js";
 
 interface TickStats {
   cpu?: {
@@ -260,6 +262,49 @@ async function main(): Promise<void> {
     } catch (error) {
       console.warn("Failed to read or parse health check results:", error);
     }
+  }
+
+  // Check controller health for downgrade risks
+  console.log("\n=== Controller Health Check ===");
+  const snapshotsDir = resolve("reports", "bot-snapshots");
+  const today = new Date().toISOString().split("T")[0];
+  const todaySnapshotPath = resolve(snapshotsDir, `snapshot-${today}.json`);
+
+  if (existsSync(todaySnapshotPath)) {
+    try {
+      const snapshotContent = readFileSync(todaySnapshotPath, "utf-8");
+      const botSnapshot = JSON.parse(snapshotContent) as BotSnapshot;
+      const controllerReport = analyzeControllerHealth(botSnapshot);
+
+      console.log(`Analyzed ${controllerReport.totalRooms} rooms`);
+      console.log(
+        `Alerts: ${controllerReport.alertCounts.critical} critical, ${controllerReport.alertCounts.warning} warning, ${controllerReport.alertCounts.info} info`
+      );
+
+      // Add controller alerts
+      for (const room of controllerReport.rooms) {
+        if (room.alertLevel === "critical") {
+          alerts.push({
+            type: "controller_downgrade_critical",
+            severity: "critical",
+            message: room.alertMessage || `${room.roomName} controller at critical downgrade risk`
+          });
+        } else if (room.alertLevel === "warning") {
+          alerts.push({
+            type: "controller_downgrade_warning",
+            severity: "high",
+            message: room.alertMessage || `${room.roomName} controller at warning downgrade risk`
+          });
+        } else if (room.alertLevel === "info") {
+          // Info level alerts are tracked but not sent as notifications
+          console.log(`ℹ️  [INFO] ${room.alertMessage}`);
+        }
+      }
+    } catch (error) {
+      console.warn("Failed to check controller health:", error);
+    }
+  } else {
+    console.log("No bot snapshot found for controller health check");
   }
 
   // Send push notifications and email notifications for critical and high severity alerts

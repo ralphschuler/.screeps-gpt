@@ -145,6 +145,7 @@ async function collectBotSnapshot(): Promise<void> {
             const controllerProgressTotal = roomData.controllerProgressTotal
               ? Number(roomData.controllerProgressTotal)
               : undefined;
+            const ticksToDowngrade = roomData.ticksToDowngrade ? Number(roomData.ticksToDowngrade) : undefined;
 
             snapshot.rooms[roomName] = {
               rcl,
@@ -157,7 +158,9 @@ async function collectBotSnapshot(): Promise<void> {
               controllerProgressTotal:
                 controllerProgressTotal !== undefined && Number.isFinite(controllerProgressTotal)
                   ? controllerProgressTotal
-                  : undefined
+                  : undefined,
+              ticksToDowngrade:
+                ticksToDowngrade !== undefined && Number.isFinite(ticksToDowngrade) ? ticksToDowngrade : undefined
             };
           }
         }
@@ -243,7 +246,10 @@ async function collectBotSnapshot(): Promise<void> {
           snapshot.rooms[room.name] = {
             rcl: room.rcl,
             energy: room.energy,
-            energyCapacity: room.energyCapacity
+            energyCapacity: room.energyCapacity,
+            controllerProgress: room.controllerProgress,
+            controllerProgressTotal: room.controllerProgressTotal,
+            ticksToDowngrade: room.ticksToDowngrade
           };
         }
       }

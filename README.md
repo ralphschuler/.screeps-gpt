@@ -265,7 +265,7 @@ The repository uses 14 GitHub Actions workflows orchestrating the agent swarm:
 - **Deploy** - Automatic deployment to Screeps triggered by post-merge-release completion, with post-deployment spawn status checking
 - **Blog Generation** - Automated changelog-to-blog conversion triggered by post-merge-release completion
 - **Copilot Agents** - Issue triage, Todo automation, code review, CI issue tracking
-- **PTR Monitor** - Continuous bot data collection (snapshots, stats, telemetry, profiler data)
+- **PTR Monitor** - Continuous bot data collection (snapshots, stats, telemetry, profiler data) with proactive controller downgrade alerts (critical < 12h, warning < 24h, info < 48h)
 - **Spec-Kit** - Specification-driven development workflow
 - **Stale Issue Management** - Automated cleanup of inactive issues (60-day inactivity threshold)
 

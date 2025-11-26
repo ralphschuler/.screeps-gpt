@@ -33,6 +33,7 @@ export interface BotSnapshot {
       energyCapacity: number;
       controllerProgress?: number;
       controllerProgressTotal?: number;
+      ticksToDowngrade?: number;
     }
   >;
   creeps?: {

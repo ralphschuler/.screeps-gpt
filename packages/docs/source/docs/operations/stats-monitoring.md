@@ -26,13 +26,58 @@ The Screeps Monitoring workflow (`screeps-monitoring.yml`) keeps a pulse on Publ
   - Fetches PTR telemetry using `scripts/fetch-screeps-stats.mjs`
   - Analyzes bot performance via Screeps MCP server (console access, memory, room data)
   - Detects PTR anomalies (CPU >95%, >80%, low energy) with concrete evidence
+  - **Controller Health Monitoring**: Tracks downgrade timers across all rooms
+    - Critical alerts for < 12 hours to downgrade
+    - Warning alerts for < 24 hours to downgrade
+    - Info logging for < 48 hours to downgrade
   - Evaluates repository health (codebase quality, automation effectiveness, development velocity)
   - Makes strategic decisions about priorities and improvements
   - Creates, updates, and closes issues with evidence-based recommendations
   - Strategic issues prefixed with `[Autonomous Monitor]`, PTR anomalies with `PTR:`
-  - Executes `scripts/check-ptr-alerts.ts` to send push notifications for critical/high severity alerts
+  - Executes `scripts/check-ptr-alerts.ts` to send push notifications and email alerts for critical/high severity issues
 - Duplicates: Copilot searches existing issues using the GitHub MCP server. If an identical alert exists, it comments instead of creating a duplicate.
 - MCP Integration: Uses github, screeps-mcp, and screeps-api MCP servers for comprehensive access
+
+## Controller Health Monitoring
+
+The workflow includes automated controller downgrade detection to prevent room loss incidents:
+
+### Alert Thresholds
+
+- **Critical (< 12 hours)**: Email + push notification sent immediately
+- **Warning (< 24 hours)**: Email + push notification for attention needed
+- **Info (< 48 hours)**: Logged for monitoring awareness
+
+### Metrics Collected
+
+- `ticksToDowngrade`: Actual downgrade timer from game state via console telemetry
+- `controllerProgress`: Current progress toward next RCL
+- `upgraderCount`: Number of active upgrader creeps per room
+- `energyAvailable`: Energy immediately available for upgrading
+- `RCL`: Room Control Level
+
+### Email Notifications
+
+Critical and warning controller alerts include:
+
+- Room name and RCL
+- Time remaining until downgrade (hours and ticks)
+- Controller progress percentage
+- Upgrader count and energy availability
+- Direct link to workflow run for investigation
+
+### Manual Check
+
+Run the controller health check manually:
+
+```bash
+yarn tsx packages/utilities/scripts/check-controller-health.ts
+```
+
+Exit codes:
+- `0`: All healthy or info-level only
+- `1`: Warning alerts detected
+- `2`: Critical alerts detected
 
 ## Follow-up Expectations
 
