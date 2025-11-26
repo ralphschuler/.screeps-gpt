@@ -109,7 +109,7 @@ export class ScreepsClient {
     const baseUrl = `${this.config.protocol}://${this.config.host}:${this.config.port}/`;
     try {
       // Validate we can form a valid URL before constructing the API client
-      // eslint-disable-next-line no-new
+
       new URL(baseUrl);
     } catch {
       throw new Error(
