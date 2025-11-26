@@ -97,7 +97,7 @@ State machines address these problems by:
 5. **Debugging**: Current state visible in memory
 6. **Maintainability**: Changes localized to specific role files
 
-See [ADR-004: State Machine Architecture](../../strategy/decisions/adr-004-state-machine-behavior-architecture.md) for detailed decision rationale.
+See [ADR-004: State Machine Architecture](../../../../../docs/strategy/decisions/adr-004-state-machine-behavior-architecture.md) for detailed decision rationale.
 
 ## Migration Timeline
 
