@@ -153,7 +153,7 @@ export class HarvesterController implements RoleController<CreepMemory> {
     }
   }
 
-  private executeHarvesting(creep: Creep, machine: StateMachine): string {
+  private executeHarvesting(creep: CreepLike, machine: StateMachine): string {
     // Get source from context
     const ctx = machine.getContext();
     if (!ctx.sourceId) {
@@ -167,8 +167,8 @@ export class HarvesterController implements RoleController<CreepMemory> {
       return "idle";
     }
 
-    // Execute harvest
-    const result = creep.harvest(source);
+    // Execute harvest (CreepLike has same interface as Creep for game actions)
+    const result = (creep as Creep).harvest(source);
     if (result === OK && creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
       machine.send({ type: "ENERGY_FULL" });
     }
