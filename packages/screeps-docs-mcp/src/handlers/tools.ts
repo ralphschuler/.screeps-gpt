@@ -114,7 +114,7 @@ export async function handleSearch(args: z.infer<typeof toolSchemas.search>) {
   return {
     content: [
       {
-        type: "text",
+        type: "text" as const,
         text: JSON.stringify({ query: args.query, count: results.length, results: formatted }, null, 2)
       }
     ]
@@ -132,7 +132,7 @@ export async function handleGetAPI(args: z.infer<typeof toolSchemas.getAPI>) {
     return {
       content: [
         {
-          type: "text",
+          type: "text" as const,
           text: JSON.stringify(
             {
               error: `API object not found: ${args.objectName}`,
@@ -149,7 +149,7 @@ export async function handleGetAPI(args: z.infer<typeof toolSchemas.getAPI>) {
   return {
     content: [
       {
-        type: "text",
+        type: "text" as const,
         text: JSON.stringify(entry, null, 2)
       }
     ]
@@ -167,7 +167,7 @@ export async function handleGetMechanics(args: z.infer<typeof toolSchemas.getMec
     return {
       content: [
         {
-          type: "text",
+          type: "text" as const,
           text: JSON.stringify(
             {
               error: `Mechanics topic not found: ${args.topic}`,
@@ -184,7 +184,7 @@ export async function handleGetMechanics(args: z.infer<typeof toolSchemas.getMec
   return {
     content: [
       {
-        type: "text",
+        type: "text" as const,
         text: JSON.stringify(entry, null, 2)
       }
     ]
@@ -200,7 +200,7 @@ export async function handleListAPIs() {
   return {
     content: [
       {
-        type: "text",
+        type: "text" as const,
         text: JSON.stringify({ apis: apiList, count: apiList.length }, null, 2)
       }
     ]
@@ -216,7 +216,7 @@ export async function handleListMechanics() {
   return {
     content: [
       {
-        type: "text",
+        type: "text" as const,
         text: JSON.stringify({ mechanics: mechanicsList, count: mechanicsList.length }, null, 2)
       }
     ]

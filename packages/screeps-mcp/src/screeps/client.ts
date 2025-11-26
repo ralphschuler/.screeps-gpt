@@ -301,7 +301,8 @@ export class ScreepsClient {
 
     try {
       const shard = this.config.shard ?? "shard3";
-      const response = await this.api.memory.set(path, value, shard);
+      const shardPath = `_shard_${shard}`;
+      const response = await this.api.memory.set(shardPath, path, value);
 
       if (response?.ok !== 1) {
         return {

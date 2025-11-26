@@ -111,7 +111,8 @@ describe("MCP Server Integration", () => {
       // Server should have required MCP methods
       expect(typeof server.close).toBe("function");
       expect(typeof server.connect).toBe("function");
-      expect(typeof server.setRequestHandler).toBe("function");
+      // Note: setRequestHandler was removed in MCP SDK v1.x
+      // The server uses registerTool and registerResource instead
     });
 
     it("should be a valid MCP server object", () => {

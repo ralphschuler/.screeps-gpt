@@ -13,7 +13,6 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import type { MCPServerConfig } from "./types.js";
 import { listResources, handleResourceRead } from "./handlers/resources.js";
 import {
-  listTools,
   handleSearch,
   handleGetArticle,
   handleListCategories,

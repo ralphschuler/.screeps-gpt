@@ -64,7 +64,8 @@ export async function scrapeAPIObject(objectName: string): Promise<APIDoc | null
       return null;
     }
 
-    const scrapedTitle = section.find("h1, h2, h3").first().text().trim();
+    // Extract title (unused but kept for potential future use)
+    // const scrapedTitle = section.find("h1, h2, h3").first().text().trim();
     const content = section.text().trim();
 
     // Extract properties

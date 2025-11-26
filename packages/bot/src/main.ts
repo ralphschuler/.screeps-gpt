@@ -143,12 +143,19 @@ function ensureProfilerRunning(): void {
  *
  * This function is the entry point for all bot logic. It performs:
  * 1. Profiler initialization (if enabled at build time)
- * 2. Game context validation
- * 3. Kernel execution with all registered processes
+ * 2. Defensive Memory.stats initialization (before external probes)
+ * 3. Game context validation
+ * 4. Kernel execution with all registered processes
  *
- * Memory.stats initialization is handled by StatsCollector (domain owner)
- * during MetricsProcess execution. This ensures single-responsibility
- * and prevents duplicate initialization code.
+ * **Memory.stats Defensive Initialization:**
+ * Memory.stats is defensively initialized here to prevent crashes from external
+ * console automation (screeps-mcp health probes, monitoring scripts) that may
+ * attempt to write to Memory.stats (e.g., Memory.stats.mcpTest) before the main
+ * loop runs or between ticks after memory resets.
+ *
+ * StatsCollector (in MetricsProcess, priority 10) remains the domain owner and
+ * will populate Memory.stats with full telemetry data during kernel execution.
+ * This early initialization provides a safety net without violating single-responsibility.
  *
  * Errors are caught and logged to prevent the bot from crashing.
  * The kernel manages process scheduling and CPU budget protection.
@@ -165,6 +172,18 @@ export const loop = (): void => {
     // Ensure profiler is running on every tick
     // This handles Memory resets and ensures continuous data collection
     ensureProfilerRunning();
+
+    // Defensive initialization: ensure Memory.stats exists BEFORE kernel runs
+    // This prevents TypeError crashes when external console automation (screeps-mcp probes,
+    // monitoring scripts) attempts to write to Memory.stats between ticks or after memory resets.
+    // StatsCollector will populate this with full telemetry data during MetricsProcess execution.
+    // Note: Using same initialization structure as StatsCollector for consistency (zeros, not actual values).
+    Memory.stats ??= {
+      time: Game.time,
+      cpu: { used: 0, limit: 0, bucket: 0 },
+      creeps: { count: 0 },
+      rooms: { count: 0 }
+    };
 
     const gameContext = validateGameContext(Game);
     kernel.run(gameContext, Memory);
