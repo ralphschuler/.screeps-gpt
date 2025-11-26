@@ -11,6 +11,7 @@ services:
     volumes:
       - ./config.yml:/screeps/config.yml
       - ./bots.yml:/screeps/bots.yml
+      - ./.screepsrc:/screeps/.screepsrc
       - screeps-data:/data
       - screeps-mods:/screeps/mods
     environment:
