@@ -197,4 +197,91 @@ describe("Regression: Memory.stats Defensive Initialization (#863)", () => {
     expect(mockMemory.profiler).toBeDefined();
     expect(mockMemory.stats).toBeDefined();
   });
+
+  it("should allow external console probes to write to Memory.stats after defensive init", async () => {
+    // This test simulates the exact scenario from the issue:
+    // screeps-mcp console automation sends "Memory.stats.mcpTest = ..." to validate bot health
+    // Before the fix, this would throw: TypeError: Cannot set property 'mcpTest' of undefined
+    // After the fix, Memory.stats exists from the start of loop() execution
+
+    // Import the main module
+    const mainModule = await import("../../packages/bot/src/main");
+
+    // Create empty Memory (simulating memory reset)
+    const mockMemory = {} as Memory;
+
+    // Mock Game object
+    (global as unknown as { Game: Game }).Game = {
+      time: 12345,
+      cpu: {
+        getUsed: () => 5.0,
+        limit: 100,
+        bucket: 9500
+      },
+      creeps: {},
+      spawns: {},
+      rooms: {}
+    };
+
+    // Mock Memory globally
+    (global as unknown as { Memory: Memory }).Memory = mockMemory;
+
+    // Mock __PROFILER_ENABLED__ as false
+    (global as unknown as { __PROFILER_ENABLED__: boolean }).__PROFILER_ENABLED__ = false;
+
+    // Execute loop - defensive initialization should create Memory.stats immediately
+    mainModule.loop();
+
+    // Verify Memory.stats was defensively initialized
+    expect(mockMemory.stats).toBeDefined();
+
+    // Simulate external console probe writing to Memory.stats.mcpTest
+    // This should NOT throw TypeError anymore
+    expect(() => {
+      (mockMemory.stats as { mcpTest?: string }).mcpTest = "health-check-probe-timestamp";
+    }).not.toThrow();
+
+    // Verify the probe data was written successfully
+    expect((mockMemory.stats as { mcpTest?: string }).mcpTest).toBe("health-check-probe-timestamp");
+  });
+
+  it("should initialize Memory.stats before kernel runs (early in loop)", async () => {
+    // This test verifies that Memory.stats is available BEFORE the kernel processes execute
+    // ensuring external console automation can safely access it at any time
+
+    const mainModule = await import("../../packages/bot/src/main");
+    const mockMemory = {} as Memory;
+
+    // Mock Game object
+    (global as unknown as { Game: Game }).Game = {
+      time: 12345,
+      cpu: {
+        getUsed: () => 5.0,
+        limit: 100,
+        bucket: 9500
+      },
+      creeps: {},
+      spawns: {},
+      rooms: {}
+    };
+
+    (global as unknown as { Memory: Memory }).Memory = mockMemory;
+    (global as unknown as { __PROFILER_ENABLED__: boolean }).__PROFILER_ENABLED__ = false;
+
+    // Execute loop
+    mainModule.loop();
+
+    // Memory.stats should exist with minimal structure from defensive initialization
+    expect(mockMemory.stats).toBeDefined();
+    expect(mockMemory.stats?.time).toBe(12345);
+    expect(mockMemory.stats?.cpu).toBeDefined();
+    expect(mockMemory.stats?.creeps).toBeDefined();
+    expect(mockMemory.stats?.rooms).toBeDefined();
+
+    // Verify structure matches defensive initialization contract
+    expect(mockMemory.stats?.cpu?.limit).toBe(100);
+    expect(mockMemory.stats?.cpu?.bucket).toBe(9500);
+    expect(mockMemory.stats?.creeps?.count).toBe(0);
+    expect(mockMemory.stats?.rooms?.count).toBe(0);
+  });
 });

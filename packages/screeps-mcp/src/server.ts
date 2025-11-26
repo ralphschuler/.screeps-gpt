@@ -137,13 +137,13 @@ export function createMCPServer(config: MCPServerConfig) {
       title: "screeps_console",
       description: "Execute console commands in Screeps",
       inputSchema: toolSchemas.console as unknown as any
-      },
-      async (args: unknown) => {
-        await ensureConnected();
-        const validated = toolSchemas.console.parse(args);
-        return await handleConsole(client, validated);
-      }
-    );
+    },
+    async (args: unknown) => {
+      await ensureConnected();
+      const validated = toolSchemas.console.parse(args);
+      return await handleConsole(client, validated);
+    }
+  );
 
   server.registerTool(
     "screeps_memory_get",
@@ -151,13 +151,13 @@ export function createMCPServer(config: MCPServerConfig) {
       title: "screeps_memory_get",
       description: "Read Memory objects from Screeps",
       inputSchema: toolSchemas.memoryGet as unknown as any
-      },
-      async (args: unknown) => {
-        await ensureConnected();
-        const validated = toolSchemas.memoryGet.parse(args);
-        return await handleMemoryGet(client, validated);
-      }
-    );
+    },
+    async (args: unknown) => {
+      await ensureConnected();
+      const validated = toolSchemas.memoryGet.parse(args);
+      return await handleMemoryGet(client, validated);
+    }
+  );
 
   server.registerTool(
     "screeps_memory_set",
@@ -165,13 +165,13 @@ export function createMCPServer(config: MCPServerConfig) {
       title: "screeps_memory_set",
       description: "Update Memory in Screeps (with safety checks)",
       inputSchema: toolSchemas.memorySet as unknown as any
-      },
-      async (args: unknown) => {
-        await ensureConnected();
-        const validated = toolSchemas.memorySet.parse(args);
-        return await handleMemorySet(client, validated);
-      }
-    );
+    },
+    async (args: unknown) => {
+      await ensureConnected();
+      const validated = toolSchemas.memorySet.parse(args);
+      return await handleMemorySet(client, validated);
+    }
+  );
 
   server.registerTool(
     "screeps_stats",
@@ -179,7 +179,7 @@ export function createMCPServer(config: MCPServerConfig) {
       title: "screeps_stats",
       description: "Query performance metrics from Screeps",
       inputSchema: toolSchemas.stats as unknown as any
-      },
+    },
     async () => {
       await ensureConnected();
       return await handleStats(client);

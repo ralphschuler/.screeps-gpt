@@ -1,7 +1,7 @@
-serverConfig: 
+serverConfig:
   tickRate: 200
   socketUpdateRate: 200
-  shardName: 'test'
+  shardName: "test"
   constants:
     UPGRADE_POWER: 10
     POWER_CREEP_SPAWN_COOLDOWN: 3600000 # 1 Hour
