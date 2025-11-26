@@ -20,11 +20,15 @@ import {
   handleListMechanics,
   toolSchemas
 } from "./handlers/tools.js";
+import { configureCache } from "./scraper/index-builder.js";
 
 /**
  * Create and configure the MCP server
  */
 export function createMCPServer(config: MCPServerConfig) {
+  // Apply cache configuration before handlers start using the index
+  configureCache(config.cacheConfig);
+
   const server = new McpServer(
     {
       name: config.name,

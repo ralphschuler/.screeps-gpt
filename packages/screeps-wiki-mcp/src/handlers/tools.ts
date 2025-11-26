@@ -163,7 +163,8 @@ export async function handleSearch(args: z.infer<typeof toolSchemas.search>) {
             2
           )
         }
-      ]
+      ],
+      isError: false
     };
   }
 
@@ -195,7 +196,8 @@ export async function handleSearch(args: z.infer<typeof toolSchemas.search>) {
           2
         )
       }
-    ]
+    ],
+    isError: false
   };
 }
 
@@ -241,7 +243,8 @@ export async function handleGetArticle(args: z.infer<typeof toolSchemas.getArtic
           type: "text",
           text: JSON.stringify(result, null, 2)
         }
-      ]
+      ],
+      isError: false
     };
   }
 
@@ -301,7 +304,8 @@ export async function handleGetArticle(args: z.infer<typeof toolSchemas.getArtic
         type: "text",
         text: JSON.stringify(result, null, 2)
       }
-    ]
+    ],
+    isError: false
   };
 }
 
@@ -334,7 +338,8 @@ export async function handleListCategories(args: z.infer<typeof toolSchemas.list
             2
           )
         }
-      ]
+      ],
+      isError: false
     };
   }
 
@@ -358,7 +363,8 @@ export async function handleListCategories(args: z.infer<typeof toolSchemas.list
           2
         )
       }
-    ]
+    ],
+    isError: false
   };
 }
 
@@ -457,6 +463,7 @@ export async function handleGetTable(args: z.infer<typeof toolSchemas.getTable>)
           2
         )
       }
-    ]
+    ],
+    isError: false
   };
 }

@@ -20,11 +20,14 @@ import {
   handleGetTable,
   toolSchemas
 } from "./handlers/tools.js";
+import { configureCaches } from "./wiki/cache.js";
 
 /**
  * Create and configure the MCP server
  */
 export function createMCPServer(config: MCPServerConfig) {
+  configureCaches(config.cacheConfig);
+
   const server = new McpServer(
     {
       name: config.name,

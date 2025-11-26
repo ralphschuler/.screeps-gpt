@@ -103,7 +103,8 @@ export async function handleConsole(client: ScreepsClient, args: z.infer<typeof 
               ? "Command sent; output appears in the Screeps in-game console."
               : `Error: ${result.error}`
       }
-    ]
+    ],
+    isError: !result.success
   };
 }
 
@@ -118,7 +119,8 @@ export async function handleMemoryGet(client: ScreepsClient, args: z.infer<typeo
         type: "text" as const,
         text: JSON.stringify(result, null, 2)
       }
-    ]
+    ],
+    isError: !result.success
   };
 }
 
@@ -133,7 +135,8 @@ export async function handleMemorySet(client: ScreepsClient, args: z.infer<typeo
         type: "text" as const,
         text: JSON.stringify(result, null, 2)
       }
-    ]
+    ],
+    isError: !result.success
   };
 }
 
@@ -148,6 +151,7 @@ export async function handleStats(client: ScreepsClient) {
         type: "text" as const,
         text: JSON.stringify(stats, null, 2)
       }
-    ]
+    ],
+    isError: false
   };
 }

@@ -138,16 +138,29 @@ export class WikiCache<T> {
 /**
  * Global cache instances for different data types
  */
-const articleCache = new WikiCache<{
+let articleCache = new WikiCache<{
   title: string;
   pageId: number;
   content: string;
   categories: string[];
 }>(3600, 500);
 
-const searchCache = new WikiCache<Array<{ title: string; pageId: number; snippet: string }>>(300, 100);
+let searchCache = new WikiCache<Array<{ title: string; pageId: number; snippet: string }>>(300, 100);
 
-const categoryCache = new WikiCache<Array<{ name: string; title: string }>>(3600, 50);
+let categoryCache = new WikiCache<Array<{ name: string; title: string }>>(3600, 50);
+
+/**
+ * Reconfigure all caches with new TTL/max size.
+ * A single TTL applies to every cache; sizes keep per-cache defaults unless overridden.
+ */
+export function configureCaches(options?: { ttl?: number; maxSize?: number }) {
+  const ttl = options?.ttl ?? 3600;
+  const maxSize = options?.maxSize;
+
+  articleCache = new WikiCache(ttl, maxSize ?? 500);
+  searchCache = new WikiCache(Math.min(ttl, 300), maxSize ?? 100); // keep search lighter by default
+  categoryCache = new WikiCache(ttl, maxSize ?? 50);
+}
 
 /**
  * Get the article cache

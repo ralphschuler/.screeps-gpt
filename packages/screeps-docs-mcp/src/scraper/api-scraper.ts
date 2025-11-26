@@ -64,7 +64,7 @@ export async function scrapeAPIObject(objectName: string): Promise<APIDoc | null
       return null;
     }
 
-    const title = section.find("h1, h2, h3").first().text().trim();
+    const scrapedTitle = section.find("h1, h2, h3").first().text().trim();
     const content = section.text().trim();
 
     // Extract properties
@@ -96,7 +96,8 @@ export async function scrapeAPIObject(objectName: string): Promise<APIDoc | null
 
     return {
       id: `api-${objectName.toLowerCase()}`,
-      title: title || objectName,
+      // Use canonical object name as title to avoid inconsistent heading scraping
+      title: objectName,
       url,
       content,
       type: "api",

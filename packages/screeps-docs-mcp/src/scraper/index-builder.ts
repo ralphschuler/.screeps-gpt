@@ -13,9 +13,11 @@ class DocCache {
   private index: DocIndex | null = null;
   private lastFetch: Date | null = null;
   private ttl: number;
+  private maxSize: number;
 
-  public constructor(ttlSeconds: number = 3600) {
+  public constructor(ttlSeconds: number = 3600, maxSize: number = 1000) {
     this.ttl = ttlSeconds * 1000; // Convert to milliseconds
+    this.maxSize = maxSize;
   }
 
   /**
@@ -42,6 +44,11 @@ class DocCache {
    * Set cache
    */
   public set(index: DocIndex): void {
+    // Enforce max size by truncating entries if needed (keeps newest first)
+    if (this.maxSize > 0 && index.entries.length > this.maxSize) {
+      index.entries = index.entries.slice(0, this.maxSize);
+    }
+
     this.index = index;
     this.lastFetch = new Date();
   }
@@ -58,7 +65,16 @@ class DocCache {
 /**
  * Global cache instance
  */
-const cache = new DocCache(3600); // 1 hour TTL
+let cache = new DocCache(3600, 1000); // defaults: 1 hour TTL, 1000 entries
+
+/**
+ * Configure cache TTL and max size at runtime (called from server startup)
+ */
+export function configureCache(options?: { ttl?: number; maxSize?: number }) {
+  const ttl = options?.ttl ?? 3600;
+  const maxSize = options?.maxSize ?? 1000;
+  cache = new DocCache(ttl, maxSize);
+}
 
 /**
  * Build complete documentation index

@@ -27,7 +27,6 @@
     "docker:push": "docker tag screeps-mcp:latest ghcr.io/ralphschuler/screeps-mcp:latest && docker push ghcr.io/ralphschuler/screeps-mcp:latest"
   },
   "dependencies": {
-    "@cfworker/json-schema": "^4.1.1",
     "@modelcontextprotocol/sdk": "^1.0.4",
     "screeps-api": "^1.16.1",
     "zod": "^4.1.13"
