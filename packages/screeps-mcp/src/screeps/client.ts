@@ -144,7 +144,7 @@ export class ScreepsClient {
     }
 
     const shard = this.config.shard ?? "shard3";
-    const response = await this.api.memory.get(`_shard_${shard}`, "rooms");
+    const response = await this.api.memory.get("rooms", shard);
 
     if (!response || !response.data) {
       return [];
@@ -168,7 +168,7 @@ export class ScreepsClient {
     }
 
     const shard = this.config.shard ?? "shard3";
-    const response = await this.api.memory.get(`_shard_${shard}`, "creeps");
+    const response = await this.api.memory.get("creeps", shard);
 
     if (!response || !response.data) {
       return [];
@@ -194,7 +194,7 @@ export class ScreepsClient {
     }
 
     const shard = this.config.shard ?? "shard3";
-    const response = await this.api.memory.get(`_shard_${shard}`, "spawns");
+    const response = await this.api.memory.get("spawns", shard);
 
     if (!response || !response.data) {
       return [];
@@ -219,7 +219,7 @@ export class ScreepsClient {
     }
 
     const shard = this.config.shard ?? "shard3";
-    const response = await this.api.memory.get(`_shard_${shard}`, "stats");
+    const response = await this.api.memory.get("stats", shard);
 
     const data = response?.data ?? {};
 
@@ -243,9 +243,9 @@ export class ScreepsClient {
       throw new Error("API not initialized. Call connect() first.");
     }
 
+    const shard = this.config.shard ?? "shard3";
     try {
-      const shard = this.config.shard ?? "shard3";
-      const response = await this.api.memory.get(`_shard_${shard}`, path);
+      const response = await this.api.memory.get(path, shard);
 
       return {
         success: true,
@@ -292,7 +292,7 @@ export class ScreepsClient {
 
     try {
       const shard = this.config.shard ?? "shard3";
-      await this.api.memory.set(`_shard_${shard}`, path, value);
+      await this.api.memory.set(path, value, shard);
 
       return {
         success: true,
