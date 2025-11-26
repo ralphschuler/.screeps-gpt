@@ -28,8 +28,7 @@ const config = /** @type {Config} */ (yaml.load(fs.readFileSync(ConfigPath, "utf
  * @param {string} dir
  * @returns {any}
  */
-const loadPackage = (dir) =>
-  JSON.parse(fs.readFileSync(path.resolve(dir, "package.json"), "utf8"));
+const loadPackage = dir => JSON.parse(fs.readFileSync(path.resolve(dir, "package.json"), "utf8"));
 
 /**
  *
@@ -37,17 +36,16 @@ const loadPackage = (dir) =>
  * @param {[string, string]} param
  * @returns {boolean}
  */
-const isDependency = (pkg, [name, version]) =>
-  pkg.includes(name) || version.includes(pkg);
+const isDependency = (pkg, [name, version]) => pkg.includes(name) || version.includes(pkg);
 
-const VERSION = /^(=|^|~|<|>|<=|>=)?\d+(?:\.\d+(?:\.\d+(?:.*)?)?)?$/
+const VERSION = /^(=|^|~|<|>|<=|>=)?\d+(?:\.\d+(?:\.\d+(?:.*)?)?)?$/;
 
 /**
- * 
- * @param {string} spec 
- * @returns 
+ *
+ * @param {string} spec
+ * @returns
  */
-const parseVersionSpec = (spec) => {
+const parseVersionSpec = spec => {
   const atIdx = spec.lastIndexOf("@");
   if (atIdx === -1) {
     return [spec, "latest"];
@@ -58,7 +56,7 @@ const parseVersionSpec = (spec) => {
     return [spec, "latest"];
   }
   return [name, version];
-}
+};
 
 const installPackages = () => {
   console.log("Updating dependencies");
@@ -72,13 +70,10 @@ const installPackages = () => {
   const packages = [...mods, ...Object.values(bots)];
 
   const newPackages = packages.filter(
-    (pkg) =>
-      !Object.entries(dependencies).some((dependency) =>
-        isDependency(pkg, dependency),
-      ),
+    pkg => !Object.entries(dependencies).some(dependency => isDependency(pkg, dependency))
   );
   const removedPackages = Object.entries(dependencies).filter(
-    (dependency) => !packages.some((pkg) => isDependency(pkg, dependency)),
+    dependency => !packages.some(pkg => isDependency(pkg, dependency))
   );
 
   if (removedPackages.length === 0 && newPackages.length === 0) {
@@ -87,47 +82,39 @@ const installPackages = () => {
 
   if (removedPackages.length > 0) {
     const packageNames = removedPackages
-      .map((pkg) => {
+      .map(pkg => {
         const entry =
-          Object.entries(dependencies).find(
-            ([name, version]) => pkg.includes(name) || version.includes(pkg),
-          ) || [];
+          Object.entries(dependencies).find(([name, version]) => pkg.includes(name) || version.includes(pkg)) || [];
         return entry[0];
       })
-      .filter((name) => name !== undefined);
+      .filter(name => name !== undefined);
 
     console.log("Uninstalling", ...packageNames);
-    execSync(
-      `npm uninstall --loglevel=error --no-progress ${packageNames.join(" ")}`,
-      {
-        cwd: ModsDir,
-        stdio: "inherit",
-        encoding: "utf8",
-      },
-    );
+    execSync(`npm uninstall --loglevel=error --no-progress ${packageNames.join(" ")}`, {
+      cwd: ModsDir,
+      stdio: "inherit",
+      encoding: "utf8"
+    });
   }
 
   if (newPackages.length > 0) {
     console.log("Installing", ...newPackages);
-    execSync(
-      `npm install --loglevel=error --no-progress -E ${newPackages.join(" ")}`,
-      {
-        cwd: ModsDir,
-        stdio: "inherit",
-        encoding: "utf8",
-      },
-    );
+    execSync(`npm install --loglevel=error --no-progress -E ${newPackages.join(" ")}`, {
+      cwd: ModsDir,
+      stdio: "inherit",
+      encoding: "utf8"
+    });
   }
 
   console.log("Done updating");
-}
+};
 
 /**
- * 
- * @param {boolean} doUpdate 
- * @returns 
+ *
+ * @param {boolean} doUpdate
+ * @returns
  */
-const updatePackages = (doUpdate) => {
+const updatePackages = doUpdate => {
   const mods = config.mods || [];
   const bots = config.bots || {};
 
@@ -137,12 +124,9 @@ const updatePackages = (doUpdate) => {
   // Calculate package diff
   const configuredPackages = [...mods, ...Object.values(bots)];
 
-  const packagedMods = configuredPackages.filter(
-    (pkg) =>
-      Object.entries(dependencies).some((dependency) =>
-        isDependency(pkg, dependency),
-      ),
-  ).map((pkg) => parseVersionSpec(pkg));
+  const packagedMods = configuredPackages
+    .filter(pkg => Object.entries(dependencies).some(dependency => isDependency(pkg, dependency)))
+    .map(pkg => parseVersionSpec(pkg));
 
   let outdated = {};
   const outdatedFile = path.resolve(ModsDir, "outdated.json");
@@ -152,16 +136,15 @@ const updatePackages = (doUpdate) => {
     execSync("npm outdated --json > outdated.json || true", {
       cwd: ModsDir,
       stdio: "inherit",
-      encoding: "utf8",
-    })
-    const output = fs.readFileSync(outdatedFile).toString()
+      encoding: "utf8"
+    });
+    const output = fs.readFileSync(outdatedFile).toString();
     outdated = JSON.parse(output);
   } catch {
   } finally {
     try {
       fs.unlinkSync(outdatedFile);
-    } catch {
-    }
+    } catch {}
   }
 
   const versionSpecs = [];
@@ -189,7 +172,7 @@ const updatePackages = (doUpdate) => {
   execSync(`npm install --loglevel=error --no-progress -E ${versionSpecs.join(" ")}`, {
     cwd: ModsDir,
     stdio: "inherit",
-    encoding: "utf8",
+    encoding: "utf8"
   });
   return false;
 };
@@ -206,20 +189,16 @@ const writeModsConfiguration = () => {
     const pkgDir = path.resolve(ModsDir, "node_modules", name);
     const { main } = loadPackage(pkgDir);
     if (!main) {
-      console.warn(
-        `Missing 'main' key for ${name}, report this to the author of the package.`,
-      );
+      console.warn(`Missing 'main' key for ${name}, report this to the author of the package.`);
     }
     const mainPath = path.resolve(pkgDir, main);
 
-    if (mods.some((m) => m.includes(name) || version.includes(m))) {
+    if (mods.some(m => m.includes(name) || version.includes(m))) {
       modsJSON.mods.push(mainPath);
       continue;
     }
 
-    const bot = Object.entries(bots).find(
-      ([, dep]) => dep.includes(name) || version.includes(dep),
-    );
+    const bot = Object.entries(bots).find(([, dep]) => dep.includes(name) || version.includes(dep));
     if (bot) {
       modsJSON.bots[bot[0]] = path.dirname(mainPath);
       continue;
@@ -239,7 +218,7 @@ const LauncherConfigMap = {
   storageTimeout: "storage_timeout",
   logConsole: "log_console",
   logRotateKeep: "log_rotate_keep",
-  restartInterval: "restart_interval",
+  restartInterval: "restart_interval"
 };
 
 const getPhysicalCores = () => {
@@ -274,7 +253,7 @@ const start = async () => {
     storage_disable: false,
     processors_cnt: cores,
     runners_cnt: 1,
-    runner_threads: Math.max(cores - 1, 1),
+    runner_threads: Math.max(cores - 1, 1)
   };
 
   const launcherOptions = config.launcherOptions || {};
@@ -288,7 +267,7 @@ const start = async () => {
   await screeps.start(options, process.stdout);
 };
 
-start().catch((err) => {
+start().catch(err => {
   console.error(err.message);
   process.exit();
 });

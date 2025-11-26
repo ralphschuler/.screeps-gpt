@@ -5,6 +5,7 @@ This private server setup is based on [Jomik/screeps-server](https://github.com/
 ## Why Jomik's Server?
 
 Unlike the traditional screepers/screeps-launcher, this implementation:
+
 - Performs all installation and setup during the Docker build stage
 - Only starts the server during container runtime
 - Manages mods and bots through a simple `config.yml` file
@@ -20,11 +21,13 @@ Unlike the traditional screepers/screeps-launcher, this implementation:
 ### Setup
 
 1. Copy the environment template:
+
    ```bash
    cp .env.example .env
    ```
 
 2. Edit `.env` and add your Steam API key:
+
    ```
    STEAM_KEY="your_steam_key_here"
    ```
@@ -118,10 +121,12 @@ This setup includes the following customizations from the base Jomik repository:
 ## Architecture
 
 The server uses a multi-stage Docker build:
+
 1. **Build stage** - Installs Screeps and dependencies
 2. **Runtime stage** - Copies artifacts and sets up the server
 
 Mods and bots are managed dynamically:
+
 - The `screeps-start.cjs` script reads `config.yml`
 - It installs/removes packages as needed in the `mods/` directory
 - Changes are detected automatically and applied on startup
@@ -129,16 +134,19 @@ Mods and bots are managed dynamically:
 ## Troubleshooting
 
 ### Server won't start
+
 - Check logs with `npm run logs`
 - Verify your Steam API key is correct
 - Ensure MongoDB and Redis are healthy
 
 ### Mods not loading
+
 - Check `config.yml` syntax
 - View mod installation logs in server output
 - Verify mod names match npm package names
 
 ### Performance issues
+
 - Adjust `launcherOptions` in `config.yml`
 - Monitor container resources with `docker stats`
 

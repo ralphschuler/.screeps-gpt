@@ -6,7 +6,7 @@ const readline = require("readline");
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
-  prompt: "> ",
+  prompt: "> "
 });
 
 screeps.cli("localhost", 21026, rl);
