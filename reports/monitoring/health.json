@@ -1,16 +1,11 @@
 {
-  "last_successful_ping": "2025-11-26T01:26:00.875Z",
+  "last_successful_ping": "2025-11-26T01:30:38.201Z",
   "last_failed_ping": null,
   "consecutive_failures": 0,
   "health_status": "operational",
   "last_known_tick": null,
   "last_bot_status": null,
   "detection_history": [
-    {
-      "timestamp": "2025-11-24T22:35:56.058Z",
-      "status": "success",
-      "aliveness": "active"
-    },
     {
       "timestamp": "2025-11-24T23:03:06.743Z",
       "status": "success",
@@ -503,6 +498,11 @@
     },
     {
       "timestamp": "2025-11-26T01:26:00.875Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-26T01:30:38.201Z",
       "status": "success",
       "aliveness": "active"
     }
