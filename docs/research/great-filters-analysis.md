@@ -22,7 +22,7 @@
 
 **CRITICAL (Active Issues):**
 
-- ✅ Death spiral pattern (Issue #1240 - CLOSED, addressed via manual respawn)
+- ⚠️ Death spiral pattern (Issue #1240 - CLOSED via manual respawn, underlying vulnerability remains)
 - ⚠️ Spawn queue resilience needs (Issue #1221 - OPEN, high priority)
 
 **HIGH (Architectural Gaps):**
