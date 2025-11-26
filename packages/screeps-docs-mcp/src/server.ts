@@ -86,7 +86,11 @@ export function createMCPServer(config: MCPServerConfig) {
     },
     async (args: unknown, _extra?: unknown) => {
       const validated = toolSchemas.search.parse(args);
-      return (await handleSearch(validated)) as any;
+      const result = await handleSearch(validated);
+      return {
+        ...result,
+        isError: false
+      };
     }
   );
 
@@ -98,7 +102,11 @@ export function createMCPServer(config: MCPServerConfig) {
     },
     async (args: unknown, _extra?: unknown) => {
       const validated = toolSchemas.getAPI.parse(args);
-      return (await handleGetAPI(validated)) as any;
+      const result = await handleGetAPI(validated);
+      return {
+        ...result,
+        isError: false
+      };
     }
   );
 
@@ -110,7 +118,11 @@ export function createMCPServer(config: MCPServerConfig) {
     },
     async (args: unknown, _extra?: unknown) => {
       const validated = toolSchemas.getMechanics.parse(args);
-      return (await handleGetMechanics(validated)) as any;
+      const result = await handleGetMechanics(validated);
+      return {
+        ...result,
+        isError: false
+      };
     }
   );
 
@@ -121,7 +133,11 @@ export function createMCPServer(config: MCPServerConfig) {
       description: "List Screeps API objects"
     },
     async (_args: unknown, _extra?: unknown) => {
-      return (await handleListAPIs()) as any;
+      const result = await handleListAPIs();
+      return {
+        ...result,
+        isError: false
+      };
     }
   );
 
@@ -133,7 +149,11 @@ export function createMCPServer(config: MCPServerConfig) {
     },
     async (args: unknown, _extra?: unknown) => {
       toolSchemas.listMechanics.parse(args);
-      return (await handleListMechanics()) as any;
+      const result = await handleListMechanics();
+      return {
+        ...result,
+        isError: false
+      };
     }
   );
 
