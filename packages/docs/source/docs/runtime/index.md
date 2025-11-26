@@ -17,7 +17,7 @@ The runtime system is the core of the Screeps AI bot, executing every game tick 
 ### Architecture
 
 - [**Behavior State Machines**](architecture/behavior-state-machines.html) - State machine architecture for creep behaviors
-- [**Custom Kernel**](../../docs/architecture/custom-kernel.html) - Kernel process architecture and integration
+- [**Custom Kernel**](../../../../../docs/architecture/custom-kernel.html) - Kernel process architecture and integration
 
 ### Strategy & Decision Making
 
