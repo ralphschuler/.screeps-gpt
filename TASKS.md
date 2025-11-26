@@ -46,7 +46,7 @@
 ### Phase 1: Foundation (HIGH Priority)
 
 - [x] Complete Phase 1 bootstrapping and RCL 1-2 foundation _(2025-11-06)_
-  - Project structure already established (src/runtime, src/shared, main.ts)
+  - Project structure already established (packages/bot/src/runtime, packages/bot/src/shared, packages/bot/src/main.ts)
   - TypeScript strict mode enabled, formatting and linting configured
   - Main game loop implemented with kernel orchestration
   - Memory initialization and reset hooks implemented via MemoryManager
@@ -70,7 +70,7 @@
 ### Phase 2: Core Framework (In Progress)
 
 - [x] Design and implement task queue system with priority levels _(2025-11-06)_
-  - Task interface defined in src/shared/contracts.ts
+  - Task interface defined in packages/bot/src/shared/contracts.ts
   - TaskManager enhanced with improved generation and assignment
   - Regression test added for task assignment scenarios
   - Documentation updated in docs/automation/overview.md
