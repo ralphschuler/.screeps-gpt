@@ -450,9 +450,9 @@ Potential improvements to state machine architecture:
 
 ## Related Documentation
 
-- [ADR-004: State Machine Architecture](../../../../docs/strategy/decisions/adr-004-state-machine-behavior-architecture.md) - Decision rationale
+- [ADR-004: State Machine Architecture](../../../../../docs/strategy/decisions/adr-004-state-machine-behavior-architecture.md) - Decision rationale
 - [Behavior State Machines](../runtime/architecture/behavior-state-machines.md) - Technical documentation
-- [Custom Kernel Architecture](../../../../docs/architecture/custom-kernel.md) - Kernel integration
+- [Custom Kernel Architecture](../../../../../docs/architecture/custom-kernel.md) - Kernel integration
 - [Issue #1267](https://github.com/ralphschuler/.screeps-gpt/issues/1267) - Migration tracking issue
 
 ## Getting Help

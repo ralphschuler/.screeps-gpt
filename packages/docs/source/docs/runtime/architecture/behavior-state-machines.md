@@ -657,9 +657,9 @@ See [Behavior Migration Guide](../operations/behavior-migration-guide.md) for de
 
 ## Related Documentation
 
-- [ADR-004: State Machine Architecture](../../../../../docs/strategy/decisions/adr-004-state-machine-behavior-architecture.md)
+- [ADR-004: State Machine Architecture](../../../../../../docs/strategy/decisions/adr-004-state-machine-behavior-architecture.md)
 - [Behavior Migration Guide](../../operations/behavior-migration-guide.md)
-- [Custom Kernel Architecture](../../../../../docs/architecture/custom-kernel.md)
+- [Custom Kernel Architecture](../../../../../../docs/architecture/custom-kernel.md)
 - [Creep Roles Strategy](../strategy/creep-roles.md)
 
 ## Examples Repository
