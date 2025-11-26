@@ -200,7 +200,9 @@ This repository has extensive GitHub Actions automation. Key workflows:
 
 ### Workflow Guidelines
 
-- Use the `copilot-exec` composite action for Copilot CLI operations
+- Use the `copilot-exec` composite action for AI-powered CLI operations
+  - Note: `copilot-exec` now delegates to `codex-exec` (OpenAI's official `codex-action`) for reduced maintenance
+  - Maintains backward compatibility with all existing workflows
 - Maintain least-privilege permissions (follow Graphite's guidance)
 - Document new secrets in `README.md`
 - Keep automation promises aligned with `packages/docs/source/docs/automation/overview.md`

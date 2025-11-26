@@ -119,9 +119,11 @@ See [Modular Deployment Architecture](./modular-deployment.md) for details on th
 
 All Copilot workflows use the `copilot-exec` composite action (`.github/actions/copilot-exec/action.yml`), which provides centralized model selection with a flexible fallback chain.
 
+**Implementation Note**: As of the recent migration, `copilot-exec` now delegates to `codex-exec` (which wraps OpenAI's official `codex-action`). This change reduces maintenance burden by leveraging official OpenAI tooling while maintaining backward compatibility with all existing workflows. The `copilot-exec` action serves as a compatibility wrapper, translating the `copilot-token` parameter to `codex-token` internally.
+
 ### Performance Optimizations
 
-The `copilot-exec` action includes several performance optimizations to reduce workflow execution time:
+The `copilot-exec` action (via `codex-exec`) includes several performance optimizations to reduce workflow execution time:
 
 1. **Conditional Repository Checkout**: Automatically detects if the repository is already checked out and skips the checkout step when not needed
 2. **npm Global Cache**: Caches the `@github/copilot` CLI installation with stable cache keys to avoid repeated downloads
