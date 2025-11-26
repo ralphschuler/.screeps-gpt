@@ -98,7 +98,7 @@ const installPackages = () => {
 
     console.log("Uninstalling", ...packageNames);
     execSync(
-      `npm uninstall --logevel=error --no-progress ${packageNames.join(" ")}`,
+      `npm uninstall --loglevel=error --no-progress ${packageNames.join(" ")}`,
       {
         cwd: ModsDir,
         stdio: "inherit",
@@ -110,7 +110,7 @@ const installPackages = () => {
   if (newPackages.length > 0) {
     console.log("Installing", ...newPackages);
     execSync(
-      `npm install --logevel=error --no-progress -E ${newPackages.join(" ")}`,
+      `npm install --loglevel=error --no-progress -E ${newPackages.join(" ")}`,
       {
         cwd: ModsDir,
         stdio: "inherit",
