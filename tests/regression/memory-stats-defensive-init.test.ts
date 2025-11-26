@@ -279,6 +279,8 @@ describe("Regression: Memory.stats Defensive Initialization (#863)", () => {
     expect(mockMemory.stats?.rooms).toBeDefined();
 
     // Verify structure matches defensive initialization contract
+    // CPU values should reflect actual Game.cpu state (not hardcoded zeros)
+    expect(mockMemory.stats?.cpu?.used).toBe(5.0); // From Game.cpu.getUsed()
     expect(mockMemory.stats?.cpu?.limit).toBe(100);
     expect(mockMemory.stats?.cpu?.bucket).toBe(9500);
     expect(mockMemory.stats?.creeps?.count).toBe(0);

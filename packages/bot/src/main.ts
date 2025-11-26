@@ -179,7 +179,7 @@ export const loop = (): void => {
     // StatsCollector will populate this with full telemetry data during MetricsProcess execution.
     Memory.stats ??= {
       time: Game.time,
-      cpu: { used: 0, limit: 0, bucket: 0 },
+      cpu: { used: Game.cpu.getUsed(), limit: Game.cpu.limit, bucket: Game.cpu.bucket },
       creeps: { count: 0 },
       rooms: { count: 0 }
     };
