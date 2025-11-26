@@ -9,9 +9,8 @@ RUN sed -i -e 's|deb.debian.org|archive.debian.org|g' \
   python \
   && rm -rf /var/lib/apt/lists/*
 
-
 COPY ./package.json /screeps/package.json
 
-RUN yarn install && yarn screeps init
+RUN yarn install
 
 CMD [ "yarn", "screeps", "start" ]
