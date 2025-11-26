@@ -20,7 +20,7 @@
     "screepsmod-visualize": "*",
     "screepsmod-leaderboard": "*",
     "screepsmod-maptools": "*",
-    "screepsmod-arena-world": "*",
+    "screepsmod-arena-world": "https://github.com/daboross/screepsmod-arena-world",
     "screepsmod-pvp-api": "*",
     "screepsmod-remote-console": "*",
     "screepsmod-map-tool": "*",
