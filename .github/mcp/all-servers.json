@@ -6,7 +6,7 @@
     },
     "screeps-mcp": {
       "command": "npx",
-      "args": ["-y", "@ralphschuler/screeps-api-mcp@latest"],
+      "args": ["-y", "@ralphschuler/screeps-mcp@latest"],
       "env": {
         "SCREEPS_TOKEN": "${SCREEPS_TOKEN}",
         "SCREEPS_SHARD": "${SCREEPS_SHARD:-shard1}"

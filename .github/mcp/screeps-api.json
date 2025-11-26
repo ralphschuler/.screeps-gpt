@@ -2,7 +2,7 @@
   "mcpServers": {
     "screeps-api": {
       "command": "npx",
-      "args": ["-y", "@ralphschuler/screeps-api-mcp@latest"],
+      "args": ["-y", "@ralphschuler/screeps-mcp@latest"],
       "env": {
         "SCREEPS_TOKEN": "${SCREEPS_TOKEN}",
         "SCREEPS_EMAIL": "${SCREEPS_EMAIL}",

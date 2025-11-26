@@ -12,6 +12,66 @@ import type {
   ConsoleResult
 } from "../types.js";
 
+const DEFAULT_HOST = "screeps.com";
+const DEFAULT_PROTOCOL: "http" | "https" = "https";
+const DEFAULT_PORT = 443;
+const DEFAULT_SHARD = "shard3";
+
+function parseHostParts(rawHost?: string): { host?: string; port?: number; protocol?: "http" | "https" } {
+  const trimmed = rawHost?.trim();
+
+  if (!trimmed || trimmed.includes("${")) {
+    return {};
+  }
+
+  if (trimmed.includes("://")) {
+    try {
+      const parsed = new URL(trimmed);
+      return {
+        host: parsed.hostname || undefined,
+        port: parsed.port ? Number(parsed.port) : undefined,
+        protocol: parsed.protocol === "http:" ? "http" : parsed.protocol === "https:" ? "https" : undefined
+      };
+    } catch {
+      return {};
+    }
+  }
+
+  const portMatch = trimmed.match(/^(?<host>[^:]+):(?<port>\d+)$/);
+  if (portMatch?.groups) {
+    return {
+      host: portMatch.groups.host,
+      port: Number(portMatch.groups.port)
+    };
+  }
+
+  return { host: trimmed };
+}
+
+function normalizeProtocol(protocol?: string): "http" | "https" {
+  if (protocol === "http" || protocol === "https") {
+    return protocol;
+  }
+  return DEFAULT_PROTOCOL;
+}
+
+function normalizePort(port: number | undefined, fallbackProtocol: "http" | "https"): number {
+  if (typeof port === "number" && Number.isFinite(port) && port > 0) {
+    return port;
+  }
+  return fallbackProtocol === "http" ? 80 : DEFAULT_PORT;
+}
+
+function normalizeHost(host?: string): string {
+  const trimmed = host?.trim();
+  if (!trimmed) {
+    return DEFAULT_HOST;
+  }
+
+  const cleaned = trimmed.replace(/^(https?:\/\/)/i, "").replace(/\/+$/, "");
+  return cleaned || DEFAULT_HOST;
+}
+
 /**
  * Screeps API client for MCP server integration
  */
@@ -20,12 +80,17 @@ export class ScreepsClient {
   private api: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
   public constructor(config: ScreepsConfig) {
+    const hostParts = parseHostParts(config.host);
+    const protocol = normalizeProtocol(config.protocol ?? hostParts.protocol);
+
     this.config = {
-      host: config.host ?? "screeps.com",
-      port: config.port ?? 443,
-      protocol: config.protocol ?? "https",
-      shard: config.shard ?? "shard3",
-      ...config
+      token: config.token,
+      email: config.email,
+      password: config.password,
+      host: normalizeHost(hostParts.host ?? (config.host && !config.host.includes("${") ? config.host : undefined)),
+      port: normalizePort(config.port ?? hostParts.port, protocol),
+      protocol,
+      shard: (config.shard?.trim() || DEFAULT_SHARD) as string
     };
   }
 
@@ -39,6 +104,17 @@ export class ScreepsClient {
     // Check for authentication credentials
     if (!this.config.token && !(this.config.email && this.config.password)) {
       throw new Error("Authentication credentials required (token or email/password)");
+    }
+
+    const baseUrl = `${this.config.protocol}://${this.config.host}:${this.config.port}/`;
+    try {
+      // Validate we can form a valid URL before constructing the API client
+      // eslint-disable-next-line no-new
+      new URL(baseUrl);
+    } catch {
+      throw new Error(
+        `Invalid Screeps server URL '${baseUrl}'. Check SCREEPS_HOST, SCREEPS_PORT, and SCREEPS_PROTOCOL.`
+      );
     }
 
     // Initialize the API with configuration

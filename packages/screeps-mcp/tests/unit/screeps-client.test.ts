@@ -41,6 +41,49 @@ describe("ScreepsClient", () => {
     });
   });
 
+  describe("configuration normalization", () => {
+    it("strips protocol and port from host strings", () => {
+      const client = new ScreepsClient({
+        token: "test-token",
+        host: "https://screeps.com:443/"
+      });
+
+      // @ts-expect-error - accessing private config for testing
+      const normalized = client.config;
+      expect(normalized.host).toBe("screeps.com");
+      expect(normalized.port).toBe(443);
+      expect(normalized.protocol).toBe("https");
+      expect(normalized.shard).toBe("shard3");
+    });
+
+    it("handles hosts with inline port and custom protocol", () => {
+      const client = new ScreepsClient({
+        token: "test-token",
+        host: "priv.server:21025",
+        protocol: "http",
+        shard: "shard0"
+      });
+
+      // @ts-expect-error - accessing private config for testing
+      const normalized = client.config;
+      expect(normalized.host).toBe("priv.server");
+      expect(normalized.port).toBe(21025);
+      expect(normalized.protocol).toBe("http");
+      expect(normalized.shard).toBe("shard0");
+    });
+
+    it("falls back when host is provided as an unexpanded placeholder", () => {
+      const client = new ScreepsClient({
+        token: "test-token",
+        host: "${SCREEPS_HOST:-screeps.com}"
+      });
+
+      // @ts-expect-error - accessing private config for testing
+      const normalized = client.config;
+      expect(normalized.host).toBe("screeps.com");
+    });
+  });
+
   describe("connect", () => {
     it("should throw error when no authentication provided", async () => {
       const noAuthConfig: ScreepsConfig = { host: "screeps.com" };
