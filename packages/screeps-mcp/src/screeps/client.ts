@@ -247,6 +247,15 @@ export class ScreepsClient {
     try {
       const response = await this.api.memory.get(path, shard);
 
+      // Screeps returns a 200 with a string error for invalid paths
+      if (response?.data === "Incorrect memory path") {
+        return {
+          success: false,
+          path,
+          error: "Incorrect memory path"
+        };
+      }
+
       return {
         success: true,
         path,
@@ -292,7 +301,15 @@ export class ScreepsClient {
 
     try {
       const shard = this.config.shard ?? "shard3";
-      await this.api.memory.set(path, value, shard);
+      const response = await this.api.memory.set(path, value, shard);
+
+      if (response?.ok !== 1) {
+        return {
+          success: false,
+          path,
+          error: response?.error ?? "Unknown error setting memory"
+        };
+      }
 
       return {
         success: true,

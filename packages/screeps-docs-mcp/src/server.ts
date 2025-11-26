@@ -6,14 +6,8 @@
  * Provides access to API reference and game mechanics documentation.
  */
 
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import {
-  CallToolRequestSchema,
-  ListResourcesRequestSchema,
-  ListToolsRequestSchema,
-  ReadResourceRequestSchema
-} from "@modelcontextprotocol/sdk/types.js";
 
 import type { MCPServerConfig } from "./types.js";
 import { listResources, handleResourceRead } from "./handlers/resources.js";
@@ -31,14 +25,7 @@ import {
  * Create and configure the MCP server
  */
 export function createMCPServer(config: MCPServerConfig) {
-  /**
-   * NOTE: Using the deprecated Server class from @modelcontextprotocol/sdk.
-   * The new McpServer class doesn't yet support stdio transport which is required
-   * for this implementation. This should be migrated when stdio support is added.
-   * See: https://github.com/modelcontextprotocol/typescript-sdk
-   */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  const server = new Server(
+  const server = new McpServer(
     {
       name: config.name,
       version: config.version
@@ -51,89 +38,104 @@ export function createMCPServer(config: MCPServerConfig) {
     }
   );
 
-  // Handle list resources request
-  server.setRequestHandler(ListResourcesRequestSchema, async () => {
-    const resources = listResources();
-    return {
-      resources: resources.map(r => ({
-        uri: r.uri,
-        name: r.name,
-        description: r.description,
+  // Resources
+  const resourceEntries = listResources();
+  for (const resource of resourceEntries) {
+    const template = new ResourceTemplate(resource.uri, {
+      list: async () => ({
+        resources: [
+          {
+            uri: resource.uri,
+            name: resource.name,
+            description: resource.description,
+            mimeType: "application/json"
+          }
+        ]
+      })
+    });
+
+    server.registerResource(
+      resource.name,
+      template,
+      {
+        title: resource.name,
+        description: resource.description,
         mimeType: "application/json"
-      }))
-    };
-  });
-
-  // Handle read resource request
-  server.setRequestHandler(ReadResourceRequestSchema, async request => {
-    const uri = request.params.uri;
-
-    try {
-      const content = await handleResourceRead(uri);
-
-      return {
-        contents: [
-          {
-            uri,
-            mimeType: "application/json",
-            text: content
-          }
-        ]
-      };
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      return {
-        contents: [
-          {
-            uri,
-            mimeType: "application/json",
-            text: JSON.stringify({ error: errorMessage }, null, 2)
-          }
-        ]
-      };
-    }
-  });
-
-  // Handle list tools request
-  server.setRequestHandler(ListToolsRequestSchema, async () => {
-    return {
-      tools: listTools()
-    };
-  });
-
-  // Handle call tool request
-  server.setRequestHandler(CallToolRequestSchema, async request => {
-    const { name, arguments: toolArgs } = request.params;
-
-    try {
-      if (name === "screeps_docs_search") {
-        const validated = toolSchemas.search.parse(toolArgs);
-        return await handleSearch(validated);
-      } else if (name === "screeps_docs_get_api") {
-        const validated = toolSchemas.getAPI.parse(toolArgs);
-        return await handleGetAPI(validated);
-      } else if (name === "screeps_docs_get_mechanics") {
-        const validated = toolSchemas.getMechanics.parse(toolArgs);
-        return await handleGetMechanics(validated);
-      } else if (name === "screeps_docs_list_apis") {
-        return await handleListAPIs();
-      } else if (name === "screeps_docs_list_mechanics") {
-        return await handleListMechanics();
-      } else {
-        throw new Error(`Unknown tool: ${name}`);
+      },
+      async uri => {
+        const content = await handleResourceRead(uri.href);
+        return {
+          contents: [
+            {
+              uri: uri.href,
+              mimeType: "application/json",
+              text: content
+            }
+          ]
+        };
       }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Error executing tool '${name}': ${errorMessage}`
-          }
-        ]
-      };
+    );
+  }
+
+  // Tools
+  server.registerTool(
+    "screeps_docs_search",
+    {
+      title: "screeps_docs_search",
+      description: "Search Screeps docs"
+    },
+    async (args: unknown, _extra?: unknown) => {
+      const validated = toolSchemas.search.parse(args);
+      return (await handleSearch(validated)) as any;
     }
-  });
+  );
+
+  server.registerTool(
+    "screeps_docs_get_api",
+    {
+      title: "screeps_docs_get_api",
+      description: "Get API object documentation"
+    },
+    async (args: unknown, _extra?: unknown) => {
+      const validated = toolSchemas.getAPI.parse(args);
+      return (await handleGetAPI(validated)) as any;
+    }
+  );
+
+  server.registerTool(
+    "screeps_docs_get_mechanics",
+    {
+      title: "screeps_docs_get_mechanics",
+      description: "Get game mechanics documentation"
+    },
+    async (args: unknown, _extra?: unknown) => {
+      const validated = toolSchemas.getMechanics.parse(args);
+      return (await handleGetMechanics(validated)) as any;
+    }
+  );
+
+  server.registerTool(
+    "screeps_docs_list_apis",
+    {
+      title: "screeps_docs_list_apis",
+      description: "List Screeps API objects"
+    },
+    async (_args: unknown, _extra?: unknown) => {
+      return (await handleListAPIs()) as any;
+    }
+  );
+
+  server.registerTool(
+    "screeps_docs_list_mechanics",
+    {
+      title: "screeps_docs_list_mechanics",
+      description: "List Screeps mechanics topics"
+    },
+    async (args: unknown, _extra?: unknown) => {
+      toolSchemas.listMechanics.parse(args);
+      return (await handleListMechanics()) as any;
+    }
+  );
 
   return server;
 }

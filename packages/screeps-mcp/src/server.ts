@@ -6,14 +6,8 @@
  * Exposes Screeps game data, memory, and operations via MCP protocol.
  */
 
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import {
-  CallToolRequestSchema,
-  ListResourcesRequestSchema,
-  ListToolsRequestSchema,
-  ReadResourceRequestSchema
-} from "@modelcontextprotocol/sdk/types.js";
 
 import { ScreepsClient } from "./screeps/client.js";
 import type { MCPServerConfig } from "./types.js";
@@ -25,14 +19,8 @@ import {
   getStatsResource,
   listResources
 } from "./handlers/resources.js";
-import {
-  listTools,
-  handleConsole,
-  handleMemoryGet,
-  handleMemorySet,
-  handleStats,
-  toolSchemas
-} from "./handlers/tools.js";
+import { handleConsole, handleMemoryGet, handleMemorySet, handleStats, toolSchemas } from "./handlers/tools.js";
+import { z } from "zod";
 
 /**
  * Create and configure the MCP server for Screeps integration.
@@ -62,14 +50,7 @@ import {
  * ```
  */
 export function createMCPServer(config: MCPServerConfig) {
-  /**
-   * NOTE: Using the deprecated Server class from @modelcontextprotocol/sdk.
-   * The new McpServer class doesn't yet support stdio transport which is required
-   * for this implementation. This should be migrated when stdio support is added.
-   * See: https://github.com/modelcontextprotocol/typescript-sdk
-   */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  const server = new Server(
+  const server = new McpServer(
     {
       name: config.name,
       version: config.version
@@ -94,105 +75,116 @@ export function createMCPServer(config: MCPServerConfig) {
     }
   };
 
-  // Handle list resources request
-  server.setRequestHandler(ListResourcesRequestSchema, async () => {
-    const resources = listResources();
-    return {
-      resources: resources.map(r => ({
-        uri: r.uri,
-        name: r.name,
-        description: r.description,
+  // Register resources using the SDK ResourceTemplate API
+  const resourceEntries = listResources();
+  for (const resource of resourceEntries) {
+    const template = new ResourceTemplate(resource.uri, {
+      list: async () => ({
+        resources: [
+          {
+            uri: resource.uri,
+            name: resource.name,
+            description: resource.description,
+            mimeType: "application/json"
+          }
+        ]
+      })
+    });
+
+    server.registerResource(
+      resource.name,
+      template,
+      {
+        title: resource.name,
+        description: resource.description,
         mimeType: "application/json"
-      }))
-    };
-  });
+      },
+      async uri => {
+        await ensureConnected();
+        let content: string;
 
-  // Handle read resource request
-  server.setRequestHandler(ReadResourceRequestSchema, async request => {
-    const uri = request.params.uri;
+        if (uri.href === "screeps://game/rooms") {
+          content = await getRoomsResource(client);
+        } else if (uri.href === "screeps://game/creeps") {
+          content = await getCreepsResource(client);
+        } else if (uri.href === "screeps://game/spawns") {
+          content = await getSpawnsResource(client);
+        } else if (uri.href === "screeps://memory") {
+          content = await getMemoryResource(client);
+        } else if (uri.href === "screeps://stats") {
+          content = await getStatsResource(client);
+        } else {
+          throw new Error(`Unknown resource: ${uri.href}`);
+        }
 
-    let content: string;
-
-    try {
-      await ensureConnected();
-
-      if (uri === "screeps://game/rooms") {
-        content = await getRoomsResource(client);
-      } else if (uri === "screeps://game/creeps") {
-        content = await getCreepsResource(client);
-      } else if (uri === "screeps://game/spawns") {
-        content = await getSpawnsResource(client);
-      } else if (uri === "screeps://memory") {
-        content = await getMemoryResource(client);
-      } else if (uri === "screeps://stats") {
-        content = await getStatsResource(client);
-      } else {
-        throw new Error(`Unknown resource: ${uri}`);
+        return {
+          contents: [
+            {
+              uri: uri.href,
+              mimeType: "application/json",
+              text: content
+            }
+          ]
+        };
       }
+    );
+  }
 
-      return {
-        contents: [
-          {
-            uri,
-            mimeType: "application/json",
-            text: content
-          }
-        ]
-      };
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      return {
-        contents: [
-          {
-            uri,
-            mimeType: "application/json",
-            text: JSON.stringify({ error: errorMessage }, null, 2)
-          }
-        ]
-      };
-    }
-  });
-
-  // Handle list tools request
-  server.setRequestHandler(ListToolsRequestSchema, async () => {
-    return {
-      tools: listTools()
-    };
-  });
-
-  // Handle call tool request
-  server.setRequestHandler(CallToolRequestSchema, async request => {
-    const { name, arguments: toolArgs } = request.params;
-
-    try {
-      await ensureConnected();
-
-      if (name === "screeps_console") {
-        const validated = toolSchemas.console.parse(toolArgs);
+  // Register tools using SDK helper (explicit to satisfy typing)
+  server.registerTool(
+    "screeps_console",
+    {
+      title: "screeps_console",
+      description: "Execute console commands in Screeps",
+      inputSchema: toolSchemas.console as unknown as any
+      },
+      async (args: unknown) => {
+        await ensureConnected();
+        const validated = toolSchemas.console.parse(args);
         return await handleConsole(client, validated);
-      } else if (name === "screeps_memory_get") {
-        const validated = toolSchemas.memoryGet.parse(toolArgs);
-        return await handleMemoryGet(client, validated);
-      } else if (name === "screeps_memory_set") {
-        const validated = toolSchemas.memorySet.parse(toolArgs);
-        return await handleMemorySet(client, validated);
-      } else if (name === "screeps_stats") {
-        return await handleStats(client);
-      } else {
-        throw new Error(`Unknown tool: ${name}`);
       }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Error executing tool '${name}': ${errorMessage}`
-          }
-        ]
-      };
+    );
+
+  server.registerTool(
+    "screeps_memory_get",
+    {
+      title: "screeps_memory_get",
+      description: "Read Memory objects from Screeps",
+      inputSchema: toolSchemas.memoryGet as unknown as any
+      },
+      async (args: unknown) => {
+        await ensureConnected();
+        const validated = toolSchemas.memoryGet.parse(args);
+        return await handleMemoryGet(client, validated);
+      }
+    );
+
+  server.registerTool(
+    "screeps_memory_set",
+    {
+      title: "screeps_memory_set",
+      description: "Update Memory in Screeps (with safety checks)",
+      inputSchema: toolSchemas.memorySet as unknown as any
+      },
+      async (args: unknown) => {
+        await ensureConnected();
+        const validated = toolSchemas.memorySet.parse(args);
+        return await handleMemorySet(client, validated);
+      }
+    );
+
+  server.registerTool(
+    "screeps_stats",
+    {
+      title: "screeps_stats",
+      description: "Query performance metrics from Screeps",
+      inputSchema: toolSchemas.stats as unknown as any
+      },
+    async () => {
+      await ensureConnected();
+      return await handleStats(client);
     }
-  });
+  );
 
   return server;
 }
