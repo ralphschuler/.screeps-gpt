@@ -66,25 +66,25 @@ This repository hosts an autonomous Screeps AI with comprehensive automation. Wh
 
 ## Repository Structure
 
-### Runtime Code (`src/`)
+### Runtime Code (`packages/bot/src/`)
 
-- `src/runtime/bootstrap/` - Kernel orchestration and system wiring
-- `src/runtime/behavior/` - Creep roles and spawn logic using state machines
+- `packages/bot/src/runtime/bootstrap/` - Kernel orchestration and system wiring
+- `packages/bot/src/runtime/behavior/` - Creep roles and spawn logic using state machines
   - `stateMachines/` - State machine definitions for each role
   - `controllers/` - Role controller implementations
   - `RoleControllerManager.ts` - Orchestrates all role controllers
   - `StateMachineManager.ts` - Manages state machine lifecycle
-- `src/runtime/memory/` - Memory consistency helpers
-- `src/runtime/metrics/` - CPU tracking and performance accounting
-- `src/runtime/respawn/` - Automatic respawn detection
-- `src/runtime/evaluation/` - Health reports and improvement recommendations
-- `src/shared/` - Shared contracts and types
+- `packages/bot/src/runtime/memory/` - Memory consistency helpers
+- `packages/bot/src/runtime/metrics/` - CPU tracking and performance accounting
+- `packages/bot/src/runtime/respawn/` - Automatic respawn detection
+- `packages/bot/src/runtime/evaluation/` - Health reports and improvement recommendations
+- `packages/bot/src/shared/` - Shared contracts and types
 
 ### Supporting Infrastructure
 
-- `scripts/` - Build, deploy, and automation scripts (TypeScript executed with Bun)
-- `tests/` - Vitest suites (unit, e2e, regression, mockup)
-- `reports/` - Persistent analysis artifacts
+- `packages/utilities/scripts/` - Build, deploy, and automation scripts (TypeScript executed with Bun)
+- `tests/` - Vitest suites (unit, e2e, regression, mockup) (root level)
+- `reports/` - Persistent analysis artifacts (root level)
 - `.github/workflows/` - GitHub Actions automation
 - `.github/copilot/prompts/` - Prompt templates for Copilot automation
 
@@ -94,7 +94,7 @@ This repository hosts an autonomous Screeps AI with comprehensive automation. Wh
 
 - Strict mode enabled in `tsconfig.json` - avoid `any` unless absolutely necessary
 - Prefer small, testable modules
-- Share contracts through `src/shared/` rather than duplicating types
+- Share contracts through `packages/bot/src/shared/` rather than duplicating types
 - Add TSDoc blocks for non-trivial exported classes and functions
 - Keep runtime code deterministic; guard `Math.random()` behind helper utilities
 
@@ -115,10 +115,10 @@ This repository hosts an autonomous Screeps AI with comprehensive automation. Wh
 
 **Prefer these internal modules:**
 
-- `src/shared/` - Use shared types and contracts instead of duplicating definitions
-- `src/runtime/metrics/` - Use existing CPU tracking utilities for performance monitoring
-- `src/runtime/memory/` - Use memory helpers for consistent Memory object access
-- `src/runtime/evaluation/` - Use evaluation types for health reports and recommendations
+- `packages/bot/src/shared/` - Use shared types and contracts instead of duplicating definitions
+- `packages/bot/src/runtime/metrics/` - Use existing CPU tracking utilities for performance monitoring
+- `packages/bot/src/runtime/memory/` - Use memory helpers for consistent Memory object access
+- `packages/bot/src/runtime/evaluation/` - Use evaluation types for health reports and recommendations
 
 **External libraries:**
 

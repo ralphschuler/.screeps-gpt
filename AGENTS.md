@@ -85,20 +85,20 @@ All agents should reference these documents before making changes:
 
 Agents working on runtime code should understand:
 
-- `src/runtime/bootstrap/` - Kernel orchestration and system wiring
-- `src/runtime/behavior/` - Creep roles and spawn logic using state machines
+- `packages/bot/src/runtime/bootstrap/` - Kernel orchestration and system wiring
+- `packages/bot/src/runtime/behavior/` - Creep roles and spawn logic using state machines
   - `stateMachines/` - State machine definitions for each role
   - `controllers/` - Role controller implementations
   - `RoleControllerManager.ts` - Orchestrates all role controllers (registered as kernel process)
   - `StateMachineManager.ts` - Manages state machine lifecycle
-- `src/runtime/memory/` - Memory consistency helpers
-- `src/runtime/metrics/` - CPU tracking and performance accounting
-- `src/runtime/respawn/` - Automatic respawn detection
-- `src/runtime/evaluation/` - Health reports and improvement recommendations
-- `src/shared/` - Shared contracts and types
-- `scripts/` - Build, deploy, and automation scripts
-- `tests/` - Unit, e2e, regression, and mockup test suites
-- `reports/` - Persistent analysis artifacts
+- `packages/bot/src/runtime/memory/` - Memory consistency helpers
+- `packages/bot/src/runtime/metrics/` - CPU tracking and performance accounting
+- `packages/bot/src/runtime/respawn/` - Automatic respawn detection
+- `packages/bot/src/runtime/evaluation/` - Health reports and improvement recommendations
+- `packages/bot/src/shared/` - Shared contracts and types
+- `packages/utilities/scripts/` - Build, deploy, and automation scripts
+- `tests/` - Unit, e2e, regression, and mockup test suites (root level)
+- `reports/` - Persistent analysis artifacts (root level)
 
 **Behavior Architecture (State Machines):**
 
@@ -138,7 +138,7 @@ All new behavior development MUST use the state machine pattern. Do not referenc
 ### 2. Coding Standards
 
 - TypeScript must compile with the strict settings defined in `tsconfig.json`. Avoid using `any` unless there is no alternative and document why.
-- Prefer small, testable modules. Share contracts through `src/shared/` rather than duplicating types.
+- Prefer small, testable modules. Share contracts through `packages/bot/src/shared/` rather than duplicating types.
 - Add TSDoc blocks for exported classes and functions when behaviour is non-trivial.
 - Keep runtime code deterministic; guard use of `Math.random()` behind helper utilities if predictable output matters for tests.
 - Node.js 18.x–22.x is the supported runtime window (see `.nvmrc` for the default Node 20 toolchain).
