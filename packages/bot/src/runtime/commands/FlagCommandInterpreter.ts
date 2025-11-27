@@ -166,16 +166,16 @@ export class FlagCommandInterpreter {
   /**
    * Validate command feasibility based on game state
    */
-  public validateCommand(command: FlagCommand, game: GameContext, memory: Memory): CommandValidation {
+  public validateCommand(command: FlagCommand, game: GameContext, _memory: Memory): CommandValidation {
     const missingPrerequisites: string[] = [];
 
     // Validate based on command type
     switch (command.type) {
       case FlagCommandType.CLAIM:
-        if (!this.hasClaimCreep(game)) {
-          missingPrerequisites.push("No claimer creep available");
+        if (!this.hasClaimerCapability(game)) {
+          missingPrerequisites.push("No claimer creep or spawn capacity available");
         }
-        if (!this.hasGCL(game, memory)) {
+        if (!this.hasGCL(game)) {
           missingPrerequisites.push("Insufficient GCL for new room");
         }
         break;
@@ -216,26 +216,46 @@ export class FlagCommandInterpreter {
   }
 
   /**
-   * Check if bot has claimer creeps
+   * Minimum energy cost for claimer body (CLAIM + MOVE)
    */
-  private hasClaimCreep(game: GameContext): boolean {
+  private static readonly CLAIMER_BODY_COST = 650;
+
+  /**
+   * Check if bot has claimer capability (existing claimer OR spawn with capacity)
+   * This allows claim flags to be valid even before a claimer is spawned.
+   */
+  private hasClaimerCapability(game: GameContext): boolean {
+    // Check for existing claimer creep
     for (const name in game.creeps) {
       const creep = game.creeps[name];
       if (creep?.memory?.role === "claimer") {
         return true;
       }
     }
+
+    // Check if any spawn can build a claimer body (650 energy for CLAIM + MOVE)
+    for (const spawnName in game.spawns) {
+      const spawn = game.spawns[spawnName];
+      // Check room energy capacity (what the room CAN hold when fully charged)
+      const room = spawn?.room;
+      const energyCapacity = room?.energyCapacityAvailable ?? 300;
+      if (energyCapacity >= FlagCommandInterpreter.CLAIMER_BODY_COST) {
+        return true;
+      }
+    }
+
     return false;
   }
 
   /**
-   * Check if bot has sufficient GCL
+   * Check if bot has sufficient GCL using live game data
+   * GCL level determines the maximum number of rooms that can be controlled
    */
-  private hasGCL(game: GameContext, memory: Memory): boolean {
+  private hasGCL(game: GameContext): boolean {
     const controlledRooms = Object.values(game.rooms).filter(room => room.controller?.my).length;
-    // GCL level determines max rooms (simplified check)
-    const gclMemory = memory.gcl as { level?: number } | undefined;
-    const gclLevel = gclMemory?.level ?? 1;
+    // Use live game.gcl data instead of stale memory
+    const gcl = game.gcl as { level: number } | undefined;
+    const gclLevel = gcl?.level ?? 1;
     return controlledRooms < gclLevel;
   }
 
@@ -338,10 +358,85 @@ export class FlagCommandInterpreter {
       acknowledgedAt: game.time
     };
 
+    // When a CLAIM command is valid, enqueue expansion request so RoleControllerManager spawns a claimer
+    if (command.type === FlagCommandType.CLAIM && validation.valid) {
+      this.enqueueExpansionRequest(command, memory, game);
+    }
+
     this.logger.log?.(
       `[FlagCommand] ${command.type} command '${command.name}' in ${command.roomName} (${command.priority} priority) - ` +
         `${validation.valid ? "VALID" : `INVALID: ${validation.reason}`}`
     );
+  }
+
+  /**
+   * Enqueue an expansion request for a valid CLAIM command.
+   * This ensures RoleControllerManager spawns a claimer for the target room.
+   */
+  private enqueueExpansionRequest(command: FlagCommand, memory: Memory, game: GameContext): void {
+    // Initialize colony memory if not present
+    memory.colony ??= {
+      expansionQueue: [],
+      claimedRooms: [],
+      shardMessages: [],
+      lastExpansionCheck: 0
+    };
+
+    // Type the expansion queue
+    const expansionQueue = memory.colony.expansionQueue as Array<{
+      targetRoom: string;
+      priority: number;
+      reason: string;
+      requestedAt: number;
+      status: string;
+    }>;
+
+    // Check if already queued
+    const existingRequest = expansionQueue.find(req => req.targetRoom === command.roomName);
+    if (existingRequest) {
+      // Update priority if flag has higher priority
+      const flagPriority = this.getPriorityValue(command.priority);
+      if (flagPriority > existingRequest.priority) {
+        existingRequest.priority = flagPriority;
+        existingRequest.reason = `Flag command: ${command.name}`;
+        this.logger.log?.(`[FlagCommand] Updated expansion priority for ${command.roomName} to ${flagPriority}`);
+      }
+      return;
+    }
+
+    // Check if room is already claimed
+    const claimedRooms = memory.colony.claimedRooms as string[] | undefined;
+    if (claimedRooms?.includes(command.roomName)) {
+      return; // Already claimed, no need to queue
+    }
+
+    // Add new expansion request
+    expansionQueue.push({
+      targetRoom: command.roomName,
+      priority: this.getPriorityValue(command.priority),
+      reason: `Flag command: ${command.name}`,
+      requestedAt: game.time,
+      status: "pending"
+    });
+
+    this.logger.log?.(
+      `[FlagCommand] Queued expansion to ${command.roomName} (priority: ${this.getPriorityValue(command.priority)})`
+    );
+  }
+
+  /**
+   * Convert FlagPriority to numeric value for expansion queue
+   */
+  private getPriorityValue(priority: FlagPriority): number {
+    switch (priority) {
+      case FlagPriority.HIGH:
+        return 90;
+      case FlagPriority.MEDIUM:
+        return 75;
+      case FlagPriority.LOW:
+      default:
+        return 50;
+    }
   }
 
   /**

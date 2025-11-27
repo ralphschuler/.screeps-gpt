@@ -67,7 +67,7 @@ Maintains the expansion queue:
 - Tracks request status: pending, claimed, failed
 - Evaluates expansion opportunities every 100 ticks
 
-### BehaviorController (`packages/bot/src/runtime/behavior/BehaviorController.ts`)
+### BehaviorController / RoleControllerManager
 
 Spawns claimer creeps for expansion:
 
@@ -76,6 +76,16 @@ Spawns claimer creeps for expansion:
 - Prioritizes by expansion request priority
 - Spawns claimers with target room and home room memory
 - Prevents duplicate claimers for same target
+
+### FlagCommandInterpreter
+
+Enables manual room claiming via flags:
+
+- Blue flag (CLAIM) placed in target room triggers validation
+- Validates GCL capacity using live `game.gcl.level` (not stale memory)
+- Validates claimer capability: existing claimer **OR** spawn with ≥650 energy capacity
+- When valid, automatically queues expansion request in `Memory.colony.expansionQueue`
+- No pre-existing claimer required - spawn triggers on demand
 
 ### Claimer Creep (`packages/bot/src/runtime/behavior/stateMachines/claimer.ts`)
 
@@ -420,8 +430,17 @@ Check queue:
 
 1. **Expansion Queue**: Verify `Memory.colony.expansionQueue` has pending requests
 2. **Existing Claimers**: Check if claimer already exists for target
-3. **Energy**: Verify room has at least 650 energy for claimer
+3. **Energy**: Verify room has at least 650 energy capacity (not just available)
 4. **Spawn Availability**: Verify spawn is not busy
+
+### Claim Flag Shows Invalid
+
+Check flag prerequisites:
+
+1. **GCL**: Verify `Game.gcl.level > controlled rooms count` (uses live game data, not Memory.gcl)
+2. **Spawn Capacity**: At least one spawn room must have ≥650 energyCapacityAvailable
+3. **Energy Reserves**: Need storage >10k energy OR room >300 energyAvailable
+4. **Note**: A live claimer creep is NOT required - spawn capability is sufficient
 
 ### Claimer Not Claiming
 

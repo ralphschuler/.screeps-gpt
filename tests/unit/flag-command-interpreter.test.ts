@@ -4,7 +4,7 @@ import {
   FlagCommandType,
   FlagPriority
 } from "../../packages/bot/src/runtime/commands/FlagCommandInterpreter";
-import type { GameContext } from "../../packages/bot/src/runtime/types/GameContext";
+import type { GameContext, SpawnLike } from "../../packages/bot/src/runtime/types/GameContext";
 
 describe("FlagCommandInterpreter", () => {
   let interpreter: FlagCommandInterpreter;
@@ -191,8 +191,8 @@ describe("FlagCommandInterpreter", () => {
         } as Room
       };
 
-      // Set GCL
-      mockMemory.gcl = { level: 2 };
+      // Set GCL on game object (not memory)
+      mockGame.gcl = { level: 2, progress: 0, progressTotal: 1000 };
 
       const validation = interpreter.validateCommand(command, mockGame, mockMemory);
 
@@ -200,7 +200,7 @@ describe("FlagCommandInterpreter", () => {
       expect(validation.reason).toBeUndefined();
     });
 
-    it("should invalidate CLAIM command without claimer creep", () => {
+    it("should validate CLAIM command with spawn capacity but no claimer creep", () => {
       const command = {
         name: "ClaimW2N1",
         type: FlagCommandType.CLAIM,
@@ -212,6 +212,61 @@ describe("FlagCommandInterpreter", () => {
 
       // No claimer creep
       mockGame.creeps = {};
+
+      // Add spawn with sufficient energy capacity (650 for CLAIM + MOVE)
+      mockGame.spawns = {
+        Spawn1: {
+          name: "Spawn1",
+          spawning: null,
+          room: {
+            name: "W1N1",
+            energyCapacityAvailable: 800, // Sufficient for claimer
+            controller: { my: true, level: 4 } as StructureController,
+            storage: {
+              store: {
+                getUsedCapacity: (resource: ResourceConstant) => (resource === RESOURCE_ENERGY ? 15000 : 0)
+              }
+            } as StructureStorage
+          } as Room
+        } as unknown as SpawnLike
+      };
+
+      // Add room with energy
+      mockGame.rooms = {
+        W1N1: {
+          controller: { my: true, level: 4 } as StructureController,
+          storage: {
+            store: {
+              getUsedCapacity: (resource: ResourceConstant) => (resource === RESOURCE_ENERGY ? 15000 : 0)
+            }
+          } as StructureStorage
+        } as Room
+      };
+
+      // Set GCL on game object (not memory)
+      mockGame.gcl = { level: 2, progress: 0, progressTotal: 1000 };
+
+      const validation = interpreter.validateCommand(command, mockGame, mockMemory);
+
+      expect(validation.valid).toBe(true);
+      expect(validation.reason).toBeUndefined();
+    });
+
+    it("should invalidate CLAIM command without claimer creep or spawn capacity", () => {
+      const command = {
+        name: "ClaimW2N1",
+        type: FlagCommandType.CLAIM,
+        priority: FlagPriority.HIGH,
+        roomName: "W2N1",
+        pos: { x: 25, y: 25 },
+        flag: {} as Flag
+      };
+
+      // No claimer creep
+      mockGame.creeps = {};
+
+      // No spawns (or spawn with insufficient capacity)
+      mockGame.spawns = {};
 
       // Add storage with energy
       mockGame.rooms = {
@@ -225,12 +280,13 @@ describe("FlagCommandInterpreter", () => {
         } as Room
       };
 
-      mockMemory.gcl = { level: 2 };
+      // Set GCL on game object (not memory)
+      mockGame.gcl = { level: 2, progress: 0, progressTotal: 1000 };
 
       const validation = interpreter.validateCommand(command, mockGame, mockMemory);
 
       expect(validation.valid).toBe(false);
-      expect(validation.reason).toContain("No claimer creep available");
+      expect(validation.reason).toContain("No claimer creep or spawn capacity available");
     });
 
     it("should invalidate REMOTE_MINE command without hauler creeps", () => {
@@ -357,7 +413,8 @@ describe("FlagCommandInterpreter", () => {
           } as StructureStorage
         } as Room
       };
-      mockMemory.gcl = { level: 2 };
+      // Set GCL on game object (not memory)
+      mockGame.gcl = { level: 2, progress: 0, progressTotal: 1000 };
 
       interpreter.storeCommand(command, mockMemory, mockGame);
 
@@ -366,6 +423,50 @@ describe("FlagCommandInterpreter", () => {
       expect(mockMemory.flagCommands?.ClaimW2N1.type).toBe(FlagCommandType.CLAIM);
       expect(mockMemory.flagCommands?.ClaimW2N1.valid).toBe(true);
       expect(mockMemory.flagCommands?.ClaimW2N1.acknowledged).toBe(true);
+    });
+
+    it("should enqueue expansion request when CLAIM command is valid", () => {
+      const command = {
+        name: "ClaimW3N2",
+        type: FlagCommandType.CLAIM,
+        priority: FlagPriority.HIGH,
+        roomName: "W3N2",
+        pos: { x: 25, y: 25 },
+        flag: {} as Flag
+      };
+
+      // Setup valid prerequisites with spawn capacity
+      mockGame.spawns = {
+        Spawn1: {
+          name: "Spawn1",
+          spawning: null,
+          room: {
+            name: "W1N1",
+            energyCapacityAvailable: 800
+          } as Room
+        } as unknown as SpawnLike
+      };
+      mockGame.rooms = {
+        W1N1: {
+          controller: { my: true } as StructureController,
+          storage: {
+            store: {
+              getUsedCapacity: (resource: ResourceConstant) => (resource === RESOURCE_ENERGY ? 15000 : 0)
+            }
+          } as StructureStorage
+        } as Room
+      };
+      mockGame.gcl = { level: 2, progress: 0, progressTotal: 1000 };
+
+      interpreter.storeCommand(command, mockMemory, mockGame);
+
+      // Verify expansion queue was created and populated
+      expect(mockMemory.colony).toBeDefined();
+      const colony = mockMemory.colony as { expansionQueue: Array<{ targetRoom: string; status: string }> };
+      expect(colony.expansionQueue).toBeDefined();
+      expect(colony.expansionQueue.length).toBe(1);
+      expect(colony.expansionQueue[0].targetRoom).toBe("W3N2");
+      expect(colony.expansionQueue[0].status).toBe("pending");
     });
 
     it("should store invalid command with validation reason", () => {
