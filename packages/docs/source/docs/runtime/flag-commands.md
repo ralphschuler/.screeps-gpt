@@ -176,9 +176,10 @@ Prerequisites not met: No remote hauler creeps available
 ### Command-Specific Prerequisites
 
 **CLAIM:**
-- Claimer creep available
-- GCL level permits additional room
+- Claimer creep available **OR** spawn with at least 650 energy capacity
+- GCL level permits additional room (checked via live `game.gcl.level`)
 - Stable energy reserves
+- **Note:** When a claim flag validates, an expansion request is automatically queued in `Memory.colony.expansionQueue`, triggering `RoleControllerManager` to spawn a claimer.
 
 **REMOTE_MINE:**
 - Hauler or remoteHauler creeps available

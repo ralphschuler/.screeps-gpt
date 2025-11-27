@@ -4,6 +4,15 @@ export interface CpuStats {
   bucket: number;
 }
 
+/**
+ * GCL (Global Control Level) stats interface
+ */
+export interface GclStats {
+  level: number;
+  progress: number;
+  progressTotal: number;
+}
+
 export interface StoreLike {
   getUsedCapacity(resource?: ResourceConstant): number;
   getFreeCapacity(resource?: ResourceConstant): number;
@@ -58,4 +67,5 @@ export interface GameContext {
   spawns: Record<string, SpawnLike>;
   rooms: Record<string, RoomLike>;
   cpu: CpuStats;
+  gcl?: GclStats;
 }
