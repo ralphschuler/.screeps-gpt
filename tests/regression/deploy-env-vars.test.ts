@@ -176,7 +176,8 @@ describe("Profiler Compilation Integration", () => {
     expect(workflowContent).toMatch(/PROFILER_ENABLED:\s*\$\{\{\s*vars\.PROFILER_ENABLED\s*\|\|\s*['"]true['"]\s*\}\}/);
 
     // Verify it's in the correct step (Build and deploy)
-    const buildStepMatch = workflowContent.match(/- name: Build and deploy[\s\S]*?run: yarn deploy/);
+    // The run is multiline with `|` and includes additional commands after yarn deploy
+    const buildStepMatch = workflowContent.match(/- name: Build and deploy[\s\S]*?run: \|\s*\n\s*yarn deploy/);
     expect(buildStepMatch).toBeTruthy();
     expect(buildStepMatch![0]).toContain("PROFILER_ENABLED:");
   });
