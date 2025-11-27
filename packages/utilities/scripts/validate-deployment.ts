@@ -51,11 +51,7 @@ export interface DeploymentValidation {
  * @returns Whether spawning is working
  */
 function isSpawningWorking(snapshot: BotSnapshot): boolean {
-  return (
-    (snapshot.creeps?.total || 0) > 0 ||
-    (snapshot.spawns?.active || 0) > 0 ||
-    (snapshot.spawns?.total || 0) > 0
-  );
+  return (snapshot.creeps?.total || 0) > 0 || (snapshot.spawns?.active || 0) > 0 || (snapshot.spawns?.total || 0) > 0;
 }
 
 /**
@@ -78,8 +74,7 @@ function loadLatestSnapshot(): BotSnapshot | null {
         return { name: f, path, mtime: statSync(path).mtime };
       })
       .reduce(
-        (latest, current) =>
-          !latest || current.mtime > latest.mtime ? current : latest,
+        (latest, current) => (!latest || current.mtime > latest.mtime ? current : latest),
         null as { name: string; path: string; mtime: Date } | null
       );
 
