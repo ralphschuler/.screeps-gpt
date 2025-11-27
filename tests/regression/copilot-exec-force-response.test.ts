@@ -44,96 +44,97 @@ describe("Copilot-Exec Force-Response Feature", () => {
     expect(description).toContain("fresh");
   });
 
-  it("should delegate to codex-exec action", () => {
-    // Verify copilot-exec now delegates to codex-exec
-    expect(actionContent).toContain("uses: ./.github/actions/codex-exec");
-  });
-
-  it("should pass force-response parameter to codex-exec", () => {
-    // Verify force-response is forwarded to codex-exec
-    expect(actionContent).toContain("force-response: ${{ inputs.force-response }}");
-  });
-
-  it("should maintain backward compatibility with copilot-token input", () => {
-    // Verify copilot-token input is mapped to codex-token
-    expect(action.inputs).toHaveProperty("copilot-token");
-    expect(actionContent).toContain("codex-token: ${{ inputs.copilot-token }}");
-  });
-});
-
-describe("Codex-Exec Implementation", () => {
-  const codexActionPath = join(process.cwd(), ".github/actions/codex-exec/action.yml");
-  const codexActionContent = readFileSync(codexActionPath, "utf-8");
-  const codexAction = parse(codexActionContent) as Action;
-
-  it("should have force-response input parameter", () => {
-    // Verify force-response parameter exists in codex-exec
-    expect(codexAction.inputs).toHaveProperty("force-response");
+  it("should use GitHub Copilot CLI for execution", () => {
+    // Verify copilot-exec uses @github/copilot CLI
+    expect(actionContent).toContain("npm install -g @github/copilot");
   });
 
   it("should conditionally skip cache restoration when force-response is true", () => {
     // Verify cache restoration step has conditional logic
-    expect(codexActionContent).toContain("name: Restore result cache");
-    expect(codexActionContent).toContain("if: inputs.force-response != 'true'");
+    expect(actionContent).toContain("name: Restore result cache");
+    expect(actionContent).toContain("if: inputs.force-response != 'true'");
+  });
+
+  it("should have copilot-token input parameter", () => {
+    // Verify copilot-token input exists
+    expect(action.inputs).toHaveProperty("copilot-token");
+  });
+});
+
+describe("Copilot-Exec Implementation", () => {
+  const copilotActionPath = join(process.cwd(), ".github/actions/copilot-exec/action.yml");
+  const copilotActionContent = readFileSync(copilotActionPath, "utf-8");
+  const copilotAction = parse(copilotActionContent) as Action;
+
+  it("should have force-response input parameter", () => {
+    // Verify force-response parameter exists in copilot-exec
+    expect(copilotAction.inputs).toHaveProperty("force-response");
+  });
+
+  it("should conditionally skip cache restoration when force-response is true", () => {
+    // Verify cache restoration step has conditional logic
+    expect(copilotActionContent).toContain("name: Restore result cache");
+    expect(copilotActionContent).toContain("if: inputs.force-response != 'true'");
   });
 
   it("should cache fresh responses for future use", () => {
     // Verify execution saves to cache directory
-    expect(codexActionContent).toContain(".codex-cache/output.txt");
+    expect(copilotActionContent).toContain(".copilot-cache/output.txt");
   });
 
-  it("should use openai/codex-action", () => {
-    // Verify codex-exec uses the official OpenAI action
-    expect(codexActionContent).toContain("uses: openai/codex-action@v1");
+  it("should use GitHub Copilot CLI", () => {
+    // Verify copilot-exec uses the GitHub Copilot CLI
+    expect(copilotActionContent).toContain("npm install -g @github/copilot");
+    expect(copilotActionContent).toContain("copilot -p");
   });
 });
 
-describe("Workflow Migration to Codex-Exec", () => {
+describe("Workflow Migration to Copilot-Exec", () => {
   const workflowsDir = join(process.cwd(), ".github/workflows");
 
-  // List of workflows that have been migrated to codex-exec
+  // List of workflows that use copilot-exec or specialized agents
   const workflowFiles = [
     { file: "copilot-review.yml", agent: "copilot-audit-agent" },
-    { file: "copilot-email-triage.yml", action: "codex-exec" },
+    { file: "copilot-email-triage.yml", action: "copilot-exec" },
     { file: "copilot-issue-triage.yml", agent: "copilot-issue-agent" },
     { file: "copilot-todo-pr.yml", agent: "copilot-issue-agent" },
-    { file: "copilot-todo-daily.yml", action: "codex-exec" },
-    { file: "copilot-changelog-to-blog.yml", action: "codex-exec" },
-    { file: "copilot-strategic-planner.yml", action: "codex-exec" }
+    { file: "copilot-todo-daily.yml", action: "copilot-exec" },
+    { file: "copilot-changelog-to-blog.yml", action: "copilot-exec" },
+    { file: "copilot-strategic-planner.yml", action: "copilot-exec" }
   ];
 
   workflowFiles.forEach(({ file: workflowFile, agent, action: _action }) => {
-    it(`should use codex-exec or specialized agent in ${workflowFile}`, () => {
+    it(`should use copilot-exec or specialized agent in ${workflowFile}`, () => {
       const workflowPath = join(workflowsDir, workflowFile);
       const workflowContent = readFileSync(workflowPath, "utf-8");
 
-      // Verify workflow uses either codex-exec directly or a specialized agent
-      // Specialized agents now wrap codex-exec
-      const usesCodexExec = workflowContent.includes("uses: ./.github/actions/codex-exec");
+      // Verify workflow uses either copilot-exec directly or a specialized agent
+      // Specialized agents wrap copilot-exec
+      const usesCopilotExec = workflowContent.includes("uses: ./.github/actions/copilot-exec");
       const usesSpecializedAgent = agent && workflowContent.includes(`uses: ./.github/actions/${agent}`);
 
-      expect(usesCodexExec || usesSpecializedAgent).toBe(true);
+      expect(usesCopilotExec || usesSpecializedAgent).toBe(true);
     });
   });
 
-  it("should use OPENAI_API_KEY in migrated workflows", () => {
-    const migratedWorkflows = [
+  it("should use COPILOT_TOKEN in workflows", () => {
+    const workflowsWithCopilotToken = [
       "copilot-changelog-to-blog.yml",
       "copilot-email-triage.yml",
       "copilot-strategic-planner.yml",
       "copilot-todo-daily.yml"
     ];
 
-    migratedWorkflows.forEach(workflowFile => {
+    workflowsWithCopilotToken.forEach(workflowFile => {
       const workflowPath = join(workflowsDir, workflowFile);
       const workflowContent = readFileSync(workflowPath, "utf-8");
 
-      expect(workflowContent).toContain("codex-token: ${{ secrets.OPENAI_API_KEY }}");
+      expect(workflowContent).toContain("copilot-token: ${{ secrets.COPILOT_TOKEN }}");
     });
   });
 });
 
-describe("Specialized Agents Migration to Codex-Exec", () => {
+describe("Specialized Agents Using Copilot-Exec", () => {
   const actionsDir = join(process.cwd(), ".github/actions");
 
   const specializedAgents = [
@@ -145,18 +146,18 @@ describe("Specialized Agents Migration to Codex-Exec", () => {
   ];
 
   specializedAgents.forEach(agentName => {
-    it(`${agentName} should use codex-exec`, () => {
+    it(`${agentName} should use copilot-exec`, () => {
       const actionPath = join(actionsDir, agentName, "action.yml");
       const actionContent = readFileSync(actionPath, "utf-8");
 
-      expect(actionContent).toContain("uses: ./.github/actions/codex-exec");
+      expect(actionContent).toContain("uses: ./.github/actions/copilot-exec");
     });
 
-    it(`${agentName} should use codex-token parameter`, () => {
+    it(`${agentName} should use copilot-token parameter`, () => {
       const actionPath = join(actionsDir, agentName, "action.yml");
       const actionContent = readFileSync(actionPath, "utf-8");
 
-      expect(actionContent).toContain("codex-token:");
+      expect(actionContent).toContain("copilot-token:");
     });
   });
 });
