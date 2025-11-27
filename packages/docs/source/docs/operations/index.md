@@ -18,6 +18,7 @@ Operational guides for running, deploying, and troubleshooting the Screeps AI bo
 ### Deployment & Infrastructure
 
 - [**Deployment Troubleshooting**](deployment-troubleshooting.html) - Common deployment issues and solutions
+- [**Deployment Rollback**](deployment-rollback.html) - Manual rollback procedures when automatic rollback fails
 - [**Docker Guide**](docker-guide.html) - Container-based development and testing
 - [**Workflow Troubleshooting**](workflow-troubleshooting.html) - CI/CD pipeline debugging
 
