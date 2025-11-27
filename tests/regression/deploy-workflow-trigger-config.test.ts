@@ -131,7 +131,8 @@ describe("Deploy workflow trigger configuration", () => {
     const deployStep = workflow.jobs.deploy.steps.find(step => step.id === "deploy");
 
     expect(deployStep).toBeDefined();
-    expect(deployStep?.run).toBe("yarn deploy");
+    // The run is now multiline with `|` to include deployment timestamp output
+    expect(deployStep?.run).toContain("yarn deploy");
   });
 
   it("should have required secrets configured", () => {
@@ -147,7 +148,8 @@ describe("Deploy workflow trigger configuration", () => {
 
     expect(autospawnStep).toBeDefined();
     expect(autospawnStep?.uses).toContain("./.github/actions/screeps-autospawner");
-    expect(autospawnStep?.if).toBe("success()");
+    // Autospawn only runs after health check passes to avoid spawning if deployment failed
+    expect(autospawnStep?.if).toContain("success()");
   });
 
   it("should send notifications on success and failure", () => {
@@ -156,7 +158,8 @@ describe("Deploy workflow trigger configuration", () => {
     const failureNotification = workflow.jobs.deploy.steps.find(step => step.name === "Notify deployment failure");
 
     expect(successNotification).toBeDefined();
-    expect(successNotification?.if).toBe("success()");
+    // Success notification only runs after health check passes
+    expect(successNotification?.if).toContain("success()");
 
     expect(failureNotification).toBeDefined();
     expect(failureNotification?.if).toBe("failure()");

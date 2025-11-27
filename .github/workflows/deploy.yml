@@ -17,6 +17,7 @@ on:
         type: string
 permissions:
   contents: read
+  issues: write
 
 concurrency:
   group: deploy-${{ github.ref }}
@@ -102,24 +103,188 @@ jobs:
           SCREEPS_PROTOCOL: ${{ vars.SCREEPS_PROTOCOL }}
           SCREEPS_BRANCH: ${{ vars.SCREEPS_BRANCH }}
           SCREEPS_PATH: ${{ vars.SCREEPS_PATH }}
-        run: yarn deploy
+        run: |
+          yarn deploy
+          echo "deployed_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for deployment propagation
+        if: success()
+        run: |
+          echo "::notice::Waiting 60 seconds for Screeps to load new code..."
+          sleep 60
+
+      - name: Collect bot snapshot for validation
+        if: success()
+        id: snapshot
+        env:
+          SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
+          SCREEPS_HOST: ${{ vars.SCREEPS_HOST }}
+          SCREEPS_PORT: ${{ vars.SCREEPS_PORT }}
+          SCREEPS_PROTOCOL: ${{ vars.SCREEPS_PROTOCOL }}
+          SCREEPS_PATH: ${{ vars.SCREEPS_PATH }}
+          SCREEPS_SHARD: ${{ vars.SCREEPS_SHARD || 'shard3' }}
+        run: |
+          echo "::notice::Collecting bot snapshot for health validation..."
+          npx tsx packages/utilities/scripts/collect-bot-snapshot.ts || true
+        continue-on-error: true
+
+      - name: Validate deployment health
+        if: success()
+        id: health-check
+        env:
+          SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
+          SCREEPS_HOST: ${{ vars.SCREEPS_HOST }}
+          SCREEPS_PORT: ${{ vars.SCREEPS_PORT }}
+          SCREEPS_PROTOCOL: ${{ vars.SCREEPS_PROTOCOL }}
+          SCREEPS_PATH: ${{ vars.SCREEPS_PATH }}
+          SCREEPS_SHARD: ${{ vars.SCREEPS_SHARD || 'shard3' }}
+        run: |
+          echo "::notice::Validating deployment health..."
+          set +e
+          npx tsx packages/utilities/scripts/validate-deployment.ts
+          EXIT_CODE=$?
+          set -e
+
+          if [ $EXIT_CODE -eq 0 ]; then
+            echo "validation_passed=true" >> "$GITHUB_OUTPUT"
+            echo "recommendation=continue" >> "$GITHUB_OUTPUT"
+            echo "::notice::Deployment health check PASSED"
+          elif [ $EXIT_CODE -eq 1 ]; then
+            echo "validation_passed=true" >> "$GITHUB_OUTPUT"
+            echo "recommendation=monitor" >> "$GITHUB_OUTPUT"
+            echo "::warning::Deployment needs monitoring - no creeps detected"
+          else
+            echo "validation_passed=false" >> "$GITHUB_OUTPUT"
+            echo "recommendation=rollback" >> "$GITHUB_OUTPUT"
+            # Read actual failure reason from validation result
+            FAILURE_REASON=$(jq -r '.failureReason // "unknown"' reports/deployments/validation-latest.json 2>/dev/null || echo "unknown")
+            echo "failure_reason=$FAILURE_REASON" >> "$GITHUB_OUTPUT"
+            echo "::error::Deployment validation FAILED - rollback recommended"
+            exit 1
+          fi
+
+      - name: Rollback on validation failure
+        if: failure() && steps.health-check.outputs.validation_passed == 'false'
+        id: rollback
+        env:
+          PROFILER_ENABLED: ${{ vars.PROFILER_ENABLED || 'true' }}
+          SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
+          SCREEPS_HOST: ${{ vars.SCREEPS_HOST }}
+          SCREEPS_PORT: ${{ vars.SCREEPS_PORT }}
+          SCREEPS_PROTOCOL: ${{ vars.SCREEPS_PROTOCOL }}
+          SCREEPS_BRANCH: ${{ vars.SCREEPS_BRANCH }}
+          SCREEPS_PATH: ${{ vars.SCREEPS_PATH }}
+        run: |
+          echo "::warning::Deployment failed validation - initiating rollback"
+
+          # Get previous successful version
+          CURRENT_TAG="${{ steps.get_version.outputs.version }}"
+          if [ -z "$CURRENT_TAG" ]; then
+            echo "::error::Current version tag is not available"
+            echo "rollback_success=false" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 "${CURRENT_TAG}^" 2>/dev/null || echo "")
+
+          if [ -z "$PREVIOUS_TAG" ]; then
+            echo "::error::No previous tag found for rollback"
+            echo "rollback_success=false" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+          echo "::notice::Rolling back from $CURRENT_TAG to $PREVIOUS_TAG"
+          echo "previous_version=$PREVIOUS_TAG" >> "$GITHUB_OUTPUT"
+
+          # Checkout previous version and rebuild
+          git checkout "$PREVIOUS_TAG"
+          if ! yarn install --frozen-lockfile; then
+            echo "::error::Failed to install dependencies for $PREVIOUS_TAG"
+            echo "rollback_success=false" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+          yarn build
+          yarn deploy
+
+          echo "rollback_success=true" >> "$GITHUB_OUTPUT"
+          echo "::notice::Rollback complete - reverted to $PREVIOUS_TAG"
+
+      - name: Create deployment failure issue
+        if: >-
+          failure() &&
+          steps.health-check.outputs.validation_passed == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const reason = ${{ toJSON(steps.health-check.outputs.failure_reason) }} || 'unknown';
+            const version = ${{ toJSON(steps.get_version.outputs.version) }};
+            const rollbackSuccess = '${{ steps.rollback.outputs.rollback_success }}' === 'true';
+            const previousVersion = ${{ toJSON(steps.rollback.outputs.previous_version) }} || 'unknown';
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Deployment validation failed: ${reason} (${version})`,
+              labels: ['automation', 'type/bug', 'priority/critical', 'state/pending'],
+              body: `## Deployment Validation Failure
+
+            **Version:** ${version}
+            **Failure Reason:** ${reason}
+            **Rollback Attempted:** ${rollbackSuccess ? 'Yes' : 'No'}
+            **Rolled Back To:** ${rollbackSuccess ? previousVersion : 'N/A'}
+
+            ### Details
+
+            The deployment health check detected a critical failure:
+            - CPU usage was zero (code not executing)
+            - Bot aliveness check failed
+
+            ### Workflow Run
+
+            - **Run ID:** ${context.runId}
+            - **Workflow:** [View Run](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+            - **Commit:** ${context.sha}
+
+            ### Manual Investigation Required
+
+            Please investigate the following:
+            1. Check the deployment logs for errors
+            2. Verify the built code is syntactically correct
+            3. Check Screeps console for runtime errors
+            4. Review recent code changes that may have caused the failure
+
+            ### Related Documentation
+
+            - [Deployment Troubleshooting Guide](packages/docs/source/docs/operations/deployment-troubleshooting.md)
+            - [Manual Rollback Runbook](packages/docs/source/docs/operations/deployment-rollback.md)
+
+            ---
+            _This issue was automatically created by the deployment workflow._
+            `
+            });
+
+            console.log('Created deployment failure issue');
 
       - name: Notify deployment success
-        if: success()
+        if: >-
+          success() &&
+          steps.health-check.outputs.validation_passed == 'true'
         uses: ./.github/actions/send-push-notification
         with:
           push-token: ${{ secrets.PUSH_TOKEN }}
           title: "Screeps Deployment Success"
           body: >-
             Version ${{ steps.get_version.outputs.version }} deployed
-            successfully to production
+            and validated successfully
           link: >-
             https://github.com/${{ github.repository }}/actions/runs/${{
             github.run_id }}
           priority: "3"
 
       - name: Check spawn status and auto-respawn
-        if: success()
+        if: >-
+          success() &&
+          steps.health-check.outputs.validation_passed == 'true'
         id: autospawn
         uses: ./.github/actions/screeps-autospawner
         with:
@@ -132,6 +297,7 @@ jobs:
       - name: Start profiler after deployment
         if: >-
           success() &&
+          steps.health-check.outputs.validation_passed == 'true' &&
           (vars.PROFILER_ENABLED == 'true' || vars.PROFILER_ENABLED == '')
         env:
           SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}

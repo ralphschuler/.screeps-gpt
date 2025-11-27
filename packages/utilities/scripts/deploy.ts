@@ -1,7 +1,22 @@
-import { readFile } from "node:fs/promises";
+import { readFile, mkdir, writeFile, readdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { ScreepsAPI } from "screeps-api";
 import { buildProject } from "./lib/buildProject";
+
+/**
+ * Deployment record for tracking deployment history
+ */
+interface DeploymentRecord {
+  timestamp: string;
+  commit: string | null;
+  version: string | null;
+  branch: string;
+  hostname: string;
+  modules: string[];
+  totalSize: number;
+  status: "success" | "failed";
+  error?: string;
+}
 
 interface ApiError extends Error {
   response?: {
@@ -71,7 +86,6 @@ async function deploy(): Promise<void> {
   const modules: Record<string, string> = {};
 
   try {
-    const { readdir } = await import("node:fs/promises");
     const files = await readdir(distDir);
 
     for (const file of files) {
@@ -132,8 +146,34 @@ async function deploy(): Promise<void> {
       for (const [moduleName, code] of Object.entries(modules)) {
         console.log(`  • ${moduleName}: ${code.length} bytes`);
       }
+
+      // Record successful deployment
+      await saveDeploymentRecord({
+        timestamp: new Date().toISOString(),
+        commit: process.env.GITHUB_SHA || null,
+        version: process.env.npm_package_version || null,
+        branch,
+        hostname,
+        modules: Object.keys(modules),
+        totalSize,
+        status: "success"
+      });
     } else {
       console.error(`✗ Deployment completed but received unexpected response:`, result);
+
+      // Record failed deployment
+      await saveDeploymentRecord({
+        timestamp: new Date().toISOString(),
+        commit: process.env.GITHUB_SHA || null,
+        version: process.env.npm_package_version || null,
+        branch,
+        hostname,
+        modules: Object.keys(modules),
+        totalSize,
+        status: "failed",
+        error: "Unexpected API response"
+      });
+
       process.exitCode = 1;
     }
   } catch (error: unknown) {
@@ -147,7 +187,46 @@ async function deploy(): Promise<void> {
     } else {
       console.error(`✗ Failed to upload code to Screeps API:`, error);
     }
+
+    // Record failed deployment
+    await saveDeploymentRecord({
+      timestamp: new Date().toISOString(),
+      commit: process.env.GITHUB_SHA || null,
+      version: process.env.npm_package_version || null,
+      branch,
+      hostname,
+      modules: Object.keys(modules),
+      totalSize,
+      status: "failed",
+      error: isApiError(error) ? error.message : String(error)
+    });
+
     throw error;
+  }
+}
+
+/**
+ * Save deployment record to reports/deployments/
+ */
+async function saveDeploymentRecord(record: DeploymentRecord): Promise<void> {
+  const deploymentsDir = resolve("reports", "deployments");
+
+  try {
+    await mkdir(deploymentsDir, { recursive: true });
+
+    // Save as latest.json
+    const latestPath = resolve(deploymentsDir, "latest.json");
+    await writeFile(latestPath, JSON.stringify(record, null, 2));
+    console.log(`✓ Deployment record saved to ${latestPath}`);
+
+    // Also save timestamped record for history
+    // Use numeric timestamp for reliable cross-platform filename compatibility
+    const historyFilename = `deployment-${Date.now()}.json`;
+    const historyPath = resolve(deploymentsDir, historyFilename);
+    await writeFile(historyPath, JSON.stringify(record, null, 2));
+  } catch (error) {
+    console.warn(`⚠ Failed to save deployment record:`, error);
+    // Don't fail the deployment if we can't save the record
   }
 }
 
