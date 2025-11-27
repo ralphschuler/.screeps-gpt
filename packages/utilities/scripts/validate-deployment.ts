@@ -341,7 +341,7 @@ async function main(): Promise<void> {
 
 // Run if executed directly (cross-platform compatible)
 const currentFilePath = fileURLToPath(import.meta.url);
-const isMainModule = process.argv[1] && currentFilePath === process.argv[1];
+const isMainModule = process.argv[1] && resolve(process.argv[1]) === currentFilePath;
 if (isMainModule) {
   main().catch(error => {
     console.error("Unexpected error during validation:", error);
