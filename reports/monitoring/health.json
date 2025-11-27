@@ -1,5 +1,5 @@
 {
-  "last_successful_ping": "2025-11-27T23:44:13.139Z",
+  "last_successful_ping": "2025-11-27T23:45:58.770Z",
   "last_failed_ping": null,
   "consecutive_failures": 0,
   "health_status": "operational",
@@ -18,6 +18,11 @@
     },
     {
       "timestamp": "2025-11-27T23:44:13.139Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-27T23:45:58.770Z",
       "status": "success",
       "aliveness": "active"
     }
