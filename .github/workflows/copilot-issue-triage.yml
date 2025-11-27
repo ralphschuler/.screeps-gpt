@@ -26,7 +26,8 @@ jobs:
       - name: Run Copilot issue triage
         uses: ./.github/actions/copilot-issue-agent
         with:
-          copilot-token: ${{ secrets.OPENAI_API_KEY }}
+          copilot-token: ${{ secrets.COPILOT_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           mode: triage
           issue-number: ${{ github.event.issue.number }}
           issue-title: ${{ toJSON(github.event.issue.title) }}

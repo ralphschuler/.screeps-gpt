@@ -63,7 +63,7 @@ runs:
   steps:
     - name: Run Copilot development automation
       id: develop
-      uses: ./.github/actions/codex-exec
+      uses: ./.github/actions/copilot-exec
       env:
         REPO_NAME: ${{ inputs.repository }}
         ISSUE_NUMBER: ${{ inputs.issue-number }}
@@ -72,7 +72,7 @@ runs:
         ISSUE_HTML_URL: ${{ inputs.issue-url }}
         ISSUE_AUTHOR: ${{ inputs.issue-author }}
       with:
-        codex-token: ${{ inputs.copilot-token }}
+        copilot-token: ${{ inputs.copilot-token }}
         prompt-path: .github/copilot/prompts/todo-issue
         output-path: reports/copilot/todo-issue-${{ inputs.issue-number }}.log
         verbose: ${{ inputs.verbose }}

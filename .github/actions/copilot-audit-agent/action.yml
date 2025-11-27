@@ -11,8 +11,12 @@ description: |
 author: "ralph@nyphon.de"
 inputs:
   copilot-token:
-    description: Personal access token with Copilot Requests scope
+    description: API token for GitHub Copilot service (use secrets.COPILOT_TOKEN)
     required: true
+  github-token:
+    description: GitHub token for gh CLI authentication (use secrets.GITHUB_TOKEN)
+    required: false
+    default: ""
   repository:
     description: Repository name in owner/repo format
     required: false
@@ -44,14 +48,15 @@ runs:
   steps:
     - name: Run Copilot repository audit
       id: audit
-      uses: ./.github/actions/codex-exec
+      uses: ./.github/actions/copilot-exec
       env:
+        GH_TOKEN: ${{ inputs.github-token }}
         REPO_NAME: ${{ inputs.repository }}
         RUN_ID: ${{ inputs.run-id }}
         RUN_URL: ${{ inputs.run-url }}
       with:
         force-response: true
-        codex-token: ${{ inputs.copilot-token }}
+        copilot-token: ${{ inputs.copilot-token }}
         prompt-path: .github/copilot/prompts/repository-audit
         output-path: reports/copilot/repository-audit-${{ inputs.run-id }}.log
         verbose: ${{ inputs.verbose }}
