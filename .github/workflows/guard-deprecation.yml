@@ -6,13 +6,11 @@ on:
     branches: [main]
     paths:
       - "packages/**/*.ts"
-      - "src/**/*.ts"
       - ".github/labels.yml"
   push:
     branches: [main]
     paths:
       - "packages/**/*.ts"
-      - "src/**/*.ts"
       - ".github/labels.yml"
   workflow_dispatch:
 
@@ -73,21 +71,21 @@ jobs:
 
           deprecated_count=0
 
-          if grep -r "@deprecated" packages/ src/ \
+          if grep -r "@deprecated" packages/ \
             --include="*.ts" -n -A 3 > /dev/null 2>&1; then
             echo "### @deprecated Tags" \
               >> deprecation-report.md
             echo "" >> deprecation-report.md
             echo '```' >> deprecation-report.md
-            grep -r "@deprecated" packages/ src/ \
+            grep -r "@deprecated" packages/ \
               --include="*.ts" -n -A 3 2>/dev/null || true
-            grep -r "@deprecated" packages/ src/ \
+            grep -r "@deprecated" packages/ \
               --include="*.ts" -n -A 3 \
               >> deprecation-report.md 2>/dev/null || true
             echo '```' >> deprecation-report.md
             echo "" >> deprecation-report.md
             deprecated_count=$(grep -r "@deprecated" \
-              packages/ src/ --include="*.ts" \
+              packages/ --include="*.ts" \
               2>/dev/null | wc -l || echo "0")
           else
             echo "No @deprecated tags found." \
