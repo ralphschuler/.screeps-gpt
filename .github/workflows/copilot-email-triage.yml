@@ -37,8 +37,9 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
       - name: Run Copilot email triage
-        uses: ./.github/actions/codex-exec
+        uses: ./.github/actions/copilot-exec
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO_NAME: ${{ github.repository }}
           EVENT_URL: >-
             https://github.com/${{ github.repository }}/actions/runs/${{
@@ -53,7 +54,7 @@ jobs:
             ${{ inputs.body }}
         with:
           force-response: true
-          codex-token: ${{ secrets.OPENAI_API_KEY }}
+          copilot-token: ${{ secrets.COPILOT_TOKEN }}
           prompt-path: .github/copilot/prompts/email-triage
           output-path: >-
             reports/copilot/email-triage-${{ github.run_id }}.log

@@ -127,7 +127,7 @@ describe("Changelog to Blog workflow trigger configuration", () => {
     );
 
     expect(generateStep).toBeDefined();
-    expect(generateStep?.uses).toContain("./.github/actions/codex-exec");
+    expect(generateStep?.uses).toContain("./.github/actions/copilot-exec");
     expect(generateStep?.if).toContain("steps.check.outputs.exists == 'false'");
   });
 

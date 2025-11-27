@@ -79,13 +79,13 @@ jobs:
 
       - name: Generate blog post with Copilot
         if: steps.check.outputs.exists == 'false'
-        uses: ./.github/actions/codex-exec
+        uses: ./.github/actions/copilot-exec
         env:
           REPO_NAME: ${{ github.repository }}
           VERSION: ${{ steps.version.outputs.version }}
           CURRENT_DATE: ${{ github.event.created_at || github.run_started_at }}
         with:
-          codex-token: ${{ secrets.OPENAI_API_KEY }}
+          copilot-token: ${{ secrets.COPILOT_TOKEN }}
           prompt-path: .github/copilot/prompts/changelog-to-blog
           output-path: >-
             reports/copilot/changelog-to-blog-${{

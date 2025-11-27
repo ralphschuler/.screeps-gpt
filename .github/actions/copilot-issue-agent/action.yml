@@ -13,7 +13,10 @@ description: |
 author: "ralph@nyphon.de"
 inputs:
   copilot-token:
-    description: Personal access token with Copilot Requests scope
+    description: API token for GitHub Copilot service (use secrets.COPILOT_TOKEN)
+    required: true
+  github-token:
+    description: GitHub token for gh CLI authentication (use secrets.GITHUB_TOKEN)
     required: true
   mode:
     description: |
@@ -98,8 +101,9 @@ runs:
 
     - name: Execute Copilot agent
       id: execute
-      uses: ./.github/actions/codex-exec
+      uses: ./.github/actions/copilot-exec
       env:
+        GH_TOKEN: ${{ inputs.github-token }}
         REPO_NAME: ${{ inputs.repository }}
         ISSUE_NUMBER: ${{ inputs.issue-number }}
         ISSUE_TITLE: ${{ inputs.issue-title }}
@@ -110,7 +114,7 @@ runs:
       with:
         force-response: >-
           ${{ inputs.mode == 'triage' && 'true' || 'false' }}
-        codex-token: ${{ inputs.copilot-token }}
+        copilot-token: ${{ inputs.copilot-token }}
         prompt-path: ${{ steps.select-prompt.outputs.prompt-path }}
         output-path: >-
           reports/copilot/${{ steps.select-prompt.outputs.output-file }}
