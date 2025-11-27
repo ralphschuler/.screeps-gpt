@@ -80,11 +80,7 @@ describe("Deployment Validation", () => {
       spawningWorking: boolean;
     }): "continue" | "monitor" | "rollback" {
       const criticalChecks = checks.codeExecuting || checks.alivenessActive;
-      return criticalChecks && checks.spawningWorking
-        ? "continue"
-        : criticalChecks
-          ? "monitor"
-          : "rollback";
+      return criticalChecks && checks.spawningWorking ? "continue" : criticalChecks ? "monitor" : "rollback";
     }
 
     it("should recommend continue when fully healthy", () => {
@@ -223,9 +219,7 @@ describe("Deployment Validation", () => {
       spawns?: { total: number; active: number };
     }): boolean {
       return (
-        (snapshot.creeps?.total || 0) > 0 ||
-        (snapshot.spawns?.active || 0) > 0 ||
-        (snapshot.spawns?.total || 0) > 0
+        (snapshot.creeps?.total || 0) > 0 || (snapshot.spawns?.active || 0) > 0 || (snapshot.spawns?.total || 0) > 0
       );
     }
 
