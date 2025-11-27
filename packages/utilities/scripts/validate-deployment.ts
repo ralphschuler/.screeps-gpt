@@ -227,7 +227,7 @@ async function validateDeployment(): Promise<DeploymentValidation> {
 
   if (criticalChecks) {
     // Code is executing - deployment is at minimum functional
-    if (validation.checks.spawningWorking || validation.metrics.creepCount > 0) {
+    if (validation.checks.spawningWorking) {
       // Full health - code executing and spawning/creeps present
       validation.isHealthy = true;
       validation.recommendation = "continue";

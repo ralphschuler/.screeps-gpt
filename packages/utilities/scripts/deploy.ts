@@ -220,7 +220,8 @@ async function saveDeploymentRecord(record: DeploymentRecord): Promise<void> {
     console.log(`✓ Deployment record saved to ${latestPath}`);
 
     // Also save timestamped record for history
-    const historyFilename = `deployment-${record.timestamp.replace(/[:.]/g, "-")}.json`;
+    // Use numeric timestamp for reliable cross-platform filename compatibility
+    const historyFilename = `deployment-${Date.now()}.json`;
     const historyPath = resolve(deploymentsDir, historyFilename);
     await writeFile(historyPath, JSON.stringify(record, null, 2));
   } catch (error) {
