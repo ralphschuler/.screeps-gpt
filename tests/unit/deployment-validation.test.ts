@@ -70,6 +70,23 @@ describe("Deployment Validation", () => {
   });
 
   describe("Recommendation determination", () => {
+    /**
+     * Helper function to determine recommendation based on checks.
+     * This mirrors the logic in validate-deployment.ts for testing.
+     */
+    function determineRecommendation(checks: {
+      codeExecuting: boolean;
+      alivenessActive: boolean;
+      spawningWorking: boolean;
+    }): "continue" | "monitor" | "rollback" {
+      const criticalChecks = checks.codeExecuting || checks.alivenessActive;
+      return criticalChecks && checks.spawningWorking
+        ? "continue"
+        : criticalChecks
+          ? "monitor"
+          : "rollback";
+    }
+
     it("should recommend continue when fully healthy", () => {
       const checks = {
         codeExecuting: true,
@@ -78,9 +95,7 @@ describe("Deployment Validation", () => {
         alivenessActive: true
       };
 
-      const criticalChecks = checks.codeExecuting || checks.alivenessActive;
-      const recommendation = criticalChecks && checks.spawningWorking ? "continue" : criticalChecks ? "monitor" : "rollback";
-
+      const recommendation = determineRecommendation(checks);
       expect(recommendation).toBe("continue");
     });
 
@@ -92,9 +107,7 @@ describe("Deployment Validation", () => {
         alivenessActive: true
       };
 
-      const criticalChecks = checks.codeExecuting || checks.alivenessActive;
-      const recommendation = criticalChecks && checks.spawningWorking ? "continue" : criticalChecks ? "monitor" : "rollback";
-
+      const recommendation = determineRecommendation(checks);
       expect(recommendation).toBe("monitor");
     });
 
@@ -106,9 +119,7 @@ describe("Deployment Validation", () => {
         alivenessActive: false
       };
 
-      const criticalChecks = checks.codeExecuting || checks.alivenessActive;
-      const recommendation = criticalChecks && checks.spawningWorking ? "continue" : criticalChecks ? "monitor" : "rollback";
-
+      const recommendation = determineRecommendation(checks);
       expect(recommendation).toBe("rollback");
     });
   });
@@ -203,16 +214,28 @@ describe("Deployment Validation", () => {
   });
 
   describe("Spawning check logic", () => {
+    /**
+     * Helper function to check if spawning is working.
+     * This mirrors the logic in validate-deployment.ts for testing.
+     */
+    function isSpawningWorking(snapshot: {
+      creeps?: { total: number };
+      spawns?: { total: number; active: number };
+    }): boolean {
+      return (
+        (snapshot.creeps?.total || 0) > 0 ||
+        (snapshot.spawns?.active || 0) > 0 ||
+        (snapshot.spawns?.total || 0) > 0
+      );
+    }
+
     it("should consider spawning working when creeps exist", () => {
       const snapshot = {
         creeps: { total: 10 },
         spawns: { total: 1, active: 0 }
       };
 
-      const spawningWorking =
-        (snapshot.creeps?.total || 0) > 0 || (snapshot.spawns?.active || 0) > 0 || (snapshot.spawns?.total || 0) > 0;
-
-      expect(spawningWorking).toBe(true);
+      expect(isSpawningWorking(snapshot)).toBe(true);
     });
 
     it("should consider spawning working when spawns are active", () => {
@@ -221,10 +244,7 @@ describe("Deployment Validation", () => {
         spawns: { total: 1, active: 1 }
       };
 
-      const spawningWorking =
-        (snapshot.creeps?.total || 0) > 0 || (snapshot.spawns?.active || 0) > 0 || (snapshot.spawns?.total || 0) > 0;
-
-      expect(spawningWorking).toBe(true);
+      expect(isSpawningWorking(snapshot)).toBe(true);
     });
 
     it("should consider spawning not working when no creeps and no spawns", () => {
@@ -233,10 +253,7 @@ describe("Deployment Validation", () => {
         spawns: { total: 0, active: 0 }
       };
 
-      const spawningWorking =
-        (snapshot.creeps?.total || 0) > 0 || (snapshot.spawns?.active || 0) > 0 || (snapshot.spawns?.total || 0) > 0;
-
-      expect(spawningWorking).toBe(false);
+      expect(isSpawningWorking(snapshot)).toBe(false);
     });
   });
 

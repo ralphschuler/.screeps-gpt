@@ -105,7 +105,7 @@ jobs:
           SCREEPS_PATH: ${{ vars.SCREEPS_PATH }}
         run: |
           yarn deploy
-          echo "deployed_at=$(date -Iseconds)" >> "$GITHUB_OUTPUT"
+          echo "deployed_at=$(date -u +%Y-%m-%dT%H:%M:%S%z)" >> "$GITHUB_OUTPUT"
 
       - name: Wait for deployment propagation
         if: success()
@@ -156,7 +156,9 @@ jobs:
           else
             echo "validation_passed=false" >> "$GITHUB_OUTPUT"
             echo "recommendation=rollback" >> "$GITHUB_OUTPUT"
-            echo "failure_reason=zero_cpu" >> "$GITHUB_OUTPUT"
+            # Read actual failure reason from validation result
+            FAILURE_REASON=$(jq -r '.failureReason // "unknown"' reports/deployments/validation-latest.json 2>/dev/null || echo "unknown")
+            echo "failure_reason=$FAILURE_REASON" >> "$GITHUB_OUTPUT"
             echo "::error::Deployment validation FAILED - rollback recommended"
             exit 1
           fi
@@ -177,6 +179,12 @@ jobs:
 
           # Get previous successful version
           CURRENT_TAG="${{ steps.get_version.outputs.version }}"
+          if [ -z "$CURRENT_TAG" ]; then
+            echo "::error::Current version tag is not available"
+            echo "rollback_success=false" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
           PREVIOUS_TAG=$(git describe --tags --abbrev=0 "${CURRENT_TAG}^" 2>/dev/null || echo "")
 
           if [ -z "$PREVIOUS_TAG" ]; then
@@ -190,7 +198,11 @@ jobs:
 
           # Checkout previous version and rebuild
           git checkout "$PREVIOUS_TAG"
-          yarn install --frozen-lockfile
+          if ! yarn install --frozen-lockfile; then
+            echo "::error::Failed to install dependencies for $PREVIOUS_TAG"
+            echo "rollback_success=false" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
           yarn build
           yarn deploy
 
@@ -204,10 +216,10 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const reason = '${{ steps.health-check.outputs.failure_reason }}' || 'unknown';
-            const version = '${{ steps.get_version.outputs.version }}';
+            const reason = ${{ toJSON(steps.health-check.outputs.failure_reason) }} || 'unknown';
+            const version = ${{ toJSON(steps.get_version.outputs.version) }};
             const rollbackSuccess = '${{ steps.rollback.outputs.rollback_success }}' === 'true';
-            const previousVersion = '${{ steps.rollback.outputs.previous_version }}' || 'unknown';
+            const previousVersion = ${{ toJSON(steps.rollback.outputs.previous_version) }} || 'unknown';
 
             await github.rest.issues.create({
               owner: context.repo.owner,

@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, statSync } from "node:fs";
 import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import process from "node:process";
 import { checkBotAliveness } from "./check-bot-aliveness.js";
 import type { BotSnapshot } from "./types/bot-snapshot";
@@ -43,7 +44,23 @@ export interface DeploymentValidation {
 }
 
 /**
+ * Check if spawning is working based on bot snapshot data.
+ * Spawning is considered working if we have creeps OR active spawns OR spawns exist.
+ *
+ * @param snapshot - The bot snapshot to check
+ * @returns Whether spawning is working
+ */
+function isSpawningWorking(snapshot: BotSnapshot): boolean {
+  return (
+    (snapshot.creeps?.total || 0) > 0 ||
+    (snapshot.spawns?.active || 0) > 0 ||
+    (snapshot.spawns?.total || 0) > 0
+  );
+}
+
+/**
  * Load the most recent bot snapshot from reports/bot-snapshots/
+ * Uses efficient single-pass reduction to find the latest file without sorting all files.
  */
 function loadLatestSnapshot(): BotSnapshot | null {
   const snapshotsDir = resolve("reports", "bot-snapshots");
@@ -54,24 +71,26 @@ function loadLatestSnapshot(): BotSnapshot | null {
   }
 
   try {
-    const files = readdirSync(snapshotsDir)
+    const latestFile = readdirSync(snapshotsDir)
       .filter((f: string) => f.endsWith(".json"))
-      .map((f: string) => ({
-        name: f,
-        path: resolve(snapshotsDir, f),
-        mtime: statSync(resolve(snapshotsDir, f)).mtime
-      }))
-      .sort((a: { mtime: Date }, b: { mtime: Date }) => b.mtime.getTime() - a.mtime.getTime());
+      .map((f: string) => {
+        const path = resolve(snapshotsDir, f);
+        return { name: f, path, mtime: statSync(path).mtime };
+      })
+      .reduce(
+        (latest, current) =>
+          !latest || current.mtime > latest.mtime ? current : latest,
+        null as { name: string; path: string; mtime: Date } | null
+      );
 
-    if (files.length === 0) {
+    if (!latestFile) {
       console.log("  ⚠ No snapshot files found");
       return null;
     }
 
-    const latestPath = files[0].path;
-    const content = readFileSync(latestPath, "utf-8");
+    const content = readFileSync(latestFile.path, "utf-8");
     const snapshot = JSON.parse(content) as BotSnapshot;
-    console.log(`  ✓ Loaded snapshot: ${files[0].name}`);
+    console.log(`  ✓ Loaded snapshot: ${latestFile.name}`);
     return snapshot;
   } catch (error) {
     console.warn("  ⚠ Failed to load snapshot:", error);
@@ -202,9 +221,8 @@ async function validateDeployment(): Promise<DeploymentValidation> {
       console.log(`  Memory: ${snapshot.memory.used} bytes`);
     }
 
-    // Spawning is working if we have creeps OR active spawns
-    validation.checks.spawningWorking =
-      validation.metrics.creepCount > 0 || (snapshot.spawns?.active || 0) > 0 || validation.metrics.spawnCount > 0;
+    // Use helper function to check spawning status
+    validation.checks.spawningWorking = isSpawningWorking(snapshot);
   } else {
     console.log("  ⚠ No snapshot available for analysis");
 
@@ -273,7 +291,14 @@ function saveValidationResult(validation: DeploymentValidation): void {
 }
 
 /**
- * Main entry point
+ * Main entry point for deployment validation.
+ *
+ * Exit Codes (used by GitHub Actions workflow):
+ * - 0: Deployment is healthy, recommendation is "continue"
+ * - 1: Deployment needs monitoring, recommendation is "monitor" (code executing but no creeps)
+ * - 2: Deployment failed validation, recommendation is "rollback" (critical failure)
+ *
+ * The workflow uses these exit codes to determine whether to rollback and create failure issues.
  */
 async function main(): Promise<void> {
   const validation = await validateDeployment();
@@ -304,10 +329,7 @@ async function main(): Promise<void> {
   console.log(`  Room Count: ${validation.metrics.roomCount}`);
   console.log(`  Spawn Count: ${validation.metrics.spawnCount}`);
 
-  // Exit with appropriate code
-  // 0 = healthy, continue
-  // 1 = needs monitoring
-  // 2 = rollback recommended
+  // Exit with appropriate code (see TSDoc above for exit code contract)
   if (validation.recommendation === "continue") {
     process.exit(0);
   } else if (validation.recommendation === "monitor") {
@@ -317,12 +339,14 @@ async function main(): Promise<void> {
   }
 }
 
-// Run if executed directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Run if executed directly (cross-platform compatible)
+const currentFilePath = fileURLToPath(import.meta.url);
+const isMainModule = process.argv[1] && currentFilePath === process.argv[1];
+if (isMainModule) {
   main().catch(error => {
     console.error("Unexpected error during validation:", error);
     process.exit(2);
   });
 }
 
-export { validateDeployment, loadLatestSnapshot };
+export { validateDeployment, loadLatestSnapshot, isSpawningWorking };
