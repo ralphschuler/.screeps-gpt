@@ -277,10 +277,11 @@ Copilot automation workflows automatically use this environment when executing a
 - name: Execute Copilot Agent
   uses: ./.github/actions/copilot-exec
   with:
-    environment: .github/copilot-environment.json
     prompt: |
       Resolve issue #1234
 ```
+
+> **Note:** The Copilot agent environment is configured automatically via the `.github/workflows/copilot-setup-steps.yml` workflow. You do **not** need to pass an `environment` input to the `copilot-exec` action; it will use the environment set up by the workflow.
 
 The environment ensures:
 - Package manager is configured correctly

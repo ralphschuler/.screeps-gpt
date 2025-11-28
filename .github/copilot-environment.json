@@ -1,5 +1,5 @@
 {
-  "$schema": "https://github.com/github/copilot-schemas/blob/main/copilot-environment.schema.json",
+  "$schema": "https://raw.githubusercontent.com/github/copilot-schemas/main/copilot-environment.schema.json",
   "name": "screeps-gpt-environment",
   "description": "Custom Copilot agent environment for .screeps-gpt project with support for @ralphschuler GitHub packages",
   "version": "1.0.0",
