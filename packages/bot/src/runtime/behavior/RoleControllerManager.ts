@@ -527,9 +527,7 @@ export class RoleControllerManager {
     const needsDismantlers = roomsNeedingClearing.length > 0;
 
     if (needsDismantlers) {
-      this.logger.log?.(
-        `[RoleControllerManager] Rooms needing structure clearing: ${roomsNeedingClearing.join(", ")}`
-      );
+      this.logger.log?.(`[RoleControllerManager] Rooms needing structure clearing: ${roomsNeedingClearing.join(", ")}`);
     }
 
     // Determine spawn priority order based on combat status
@@ -815,7 +813,8 @@ export class RoleControllerManager {
             const homeRoom = integrationData?.homeRoom ?? Object.values(game.spawns)[0]?.room?.name ?? "";
 
             // Assign this dismantler to the integration room for clearing
-            (creepMemory as CreepMemory & { homeRoom?: string; targetRoom?: string; mode?: string }).homeRoom = homeRoom;
+            (creepMemory as CreepMemory & { homeRoom?: string; targetRoom?: string; mode?: string }).homeRoom =
+              homeRoom;
             (creepMemory as CreepMemory & { homeRoom?: string; targetRoom?: string; mode?: string }).targetRoom =
               roomName;
             (creepMemory as CreepMemory & { homeRoom?: string; targetRoom?: string; mode?: string }).mode = "clearing";
