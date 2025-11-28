@@ -320,7 +320,7 @@ describe("WarningDetector", () => {
       mockGame.rooms = {
         W1N1: {
           energyAvailable: 200,
-          controller: { my: true, level: 3 } as StructureController
+          controller: { my: true, level: 3, owner: { username: "testPlayer" } } as StructureController
         } as Room
       };
 
@@ -346,7 +346,7 @@ describe("WarningDetector", () => {
       mockGame.rooms = {
         W1N1: {
           energyAvailable: 500,
-          controller: { my: true, level: 4 } as StructureController
+          controller: { my: true, level: 4, owner: { username: "testPlayer" } } as StructureController
         } as Room
       };
 
@@ -359,6 +359,37 @@ describe("WarningDetector", () => {
       };
       const warnings = detector.detectWarnings(mockGame, mockMemory, healthStatus);
 
+      const energyWarning = warnings.find(w => w.type === WarningType.ENERGY_STARVATION);
+      expect(energyWarning).toBeUndefined();
+    });
+
+    it("should not warn for rooms that are visible but not owned", () => {
+      mockGame.creeps = {
+        creep1: { memory: { role: "harvester" } },
+        creep2: { memory: { role: "harvester" } }
+      } as Record<string, Creep>;
+      mockGame.rooms = {
+        W1N1: {
+          energyAvailable: 500,
+          controller: { my: true, level: 4, owner: { username: "testPlayer" } } as StructureController
+        } as Room,
+        W54N48: {
+          // This is a visible room that isn't actually owned (API quirk: my=true but no owner)
+          energyAvailable: 0,
+          controller: { my: true, level: 3 } as StructureController // No owner property
+        } as Room
+      };
+
+      const detector = new WarningDetector({ energyStarvationThreshold: 300 });
+      const healthStatus = {
+        score: 75,
+        state: HealthState.DEGRADED,
+        metrics: { workforce: 30, energy: 22, spawn: 18, infrastructure: 5 },
+        timestamp: 1000
+      };
+      const warnings = detector.detectWarnings(mockGame, mockMemory, healthStatus);
+
+      // Should not warn because the only owned room (W1N1) has sufficient energy
       const energyWarning = warnings.find(w => w.type === WarningType.ENERGY_STARVATION);
       expect(energyWarning).toBeUndefined();
     });

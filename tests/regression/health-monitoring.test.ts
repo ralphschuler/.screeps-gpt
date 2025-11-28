@@ -108,7 +108,7 @@ describe("Health Monitoring System - Regression Tests", () => {
       mockGame.rooms = {
         W1N1: {
           energyAvailable: 500,
-          controller: { my: true, level: 3 } as StructureController
+          controller: { my: true, level: 3, owner: { username: "testPlayer" } } as StructureController
         } as Room
       };
 
@@ -161,7 +161,7 @@ describe("Health Monitoring System - Regression Tests", () => {
       mockGame.rooms = {
         W1N1: {
           energyAvailable: 200,
-          controller: { my: true, level: 2 } as StructureController
+          controller: { my: true, level: 2, owner: { username: "testPlayer" } } as StructureController
         } as Room
       };
 
@@ -197,7 +197,7 @@ describe("Health Monitoring System - Regression Tests", () => {
       mockGame.rooms = {
         W1N1: {
           energyAvailable: 50,
-          controller: { my: true, level: 2 } as StructureController
+          controller: { my: true, level: 2, owner: { username: "testPlayer" } } as StructureController
         } as Room
       };
 
@@ -241,7 +241,7 @@ describe("Health Monitoring System - Regression Tests", () => {
       mockGame.rooms = {
         W1N1: {
           energyAvailable: 250, // Below starvation threshold
-          controller: { my: true, level: 3 } as StructureController
+          controller: { my: true, level: 3, owner: { username: "testPlayer" } } as StructureController
         } as Room
       };
 
@@ -274,7 +274,7 @@ describe("Health Monitoring System - Regression Tests", () => {
       mockGame.rooms = {
         W1N1: {
           energyAvailable: 100,
-          controller: { my: true, level: 2 } as StructureController
+          controller: { my: true, level: 2, owner: { username: "testPlayer" } } as StructureController
         } as Room
       };
 
@@ -313,7 +313,7 @@ describe("Health Monitoring System - Regression Tests", () => {
       mockGame.rooms = {
         W1N1: {
           energyAvailable: 600,
-          controller: { my: true, level: 4 } as StructureController
+          controller: { my: true, level: 4, owner: { username: "testPlayer" } } as StructureController
         } as Room
       };
 
@@ -361,7 +361,7 @@ describe("Health Monitoring System - Regression Tests", () => {
       mockGame.rooms = {
         W1N1: {
           energyAvailable: 250, // Low energy - triggers warning
-          controller: { my: true, level: 2 } as StructureController
+          controller: { my: true, level: 2, owner: { username: "testPlayer" } } as StructureController
         } as Room
       };
 
@@ -392,7 +392,7 @@ describe("Health Monitoring System - Regression Tests", () => {
       mockGame.rooms = {
         W1N1: {
           energyAvailable: 150,
-          controller: { my: true, level: 2 } as StructureController
+          controller: { my: true, level: 2, owner: { username: "testPlayer" } } as StructureController
         } as Room
       };
 
@@ -487,7 +487,7 @@ describe("Health Monitoring System - Regression Tests", () => {
       mockGame.rooms = {
         W1N1: {
           energyAvailable: 800,
-          controller: { my: true, level: 5 } as StructureController
+          controller: { my: true, level: 5, owner: { username: "testPlayer" } } as StructureController
         } as Room
       };
 

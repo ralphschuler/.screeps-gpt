@@ -119,7 +119,9 @@ export class WarningDetector {
   }
 
   /**
-   * Check if energy is below starvation threshold
+   * Check if energy is below starvation threshold.
+   * Only considers rooms where the controller is actually owned by the bot,
+   * not just visible rooms with the 'my' flag set due to API quirks.
    */
   private checkEnergyStarvation(game: GameContext): HealthWarning | null {
     let totalEnergy = 0;
@@ -127,7 +129,8 @@ export class WarningDetector {
 
     for (const roomName in game.rooms) {
       const room = game.rooms[roomName];
-      if (room.controller?.my) {
+      // Check controller is both 'my' AND actually owned (not just reserved/visible)
+      if (room.controller?.my && room.controller.owner) {
         totalEnergy += room.energyAvailable;
         roomCount++;
       }
@@ -177,14 +180,22 @@ export class WarningDetector {
   }
 
   /**
-   * Check if any controllers are at risk of downgrading
+   * Check if any controllers are at risk of downgrading.
+   * Only checks rooms where:
+   * - The controller is marked as 'my' (owned by current player)
+   * - The controller has an actual owner (not just visible/reserved)
+   * - The controller level is greater than 1 (RCL 1 cannot downgrade)
+   *
+   * This prevents false positive warnings for rooms that are merely visible
+   * but not actually owned by the bot.
    */
   private checkControllerDowngrade(game: GameContext): HealthWarning[] {
     const warnings: HealthWarning[] = [];
 
     for (const roomName in game.rooms) {
       const room = game.rooms[roomName];
-      if (room.controller?.my && room.controller.level > 1) {
+      // Check controller is both 'my' AND actually owned (not just reserved/visible)
+      if (room.controller?.my && room.controller.owner && room.controller.level > 1) {
         const ticksToDowngrade = room.controller.ticksToDowngrade ?? 0;
         if (ticksToDowngrade < this.config.controllerDowngradeMargin) {
           warnings.push({
