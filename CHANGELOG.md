@@ -18,6 +18,14 @@ All notable changes to this project are documented here. This changelog now main
   - Enhanced `.devcontainer/devcontainer.json` for consistency with Copilot environment
   - Resolves issue ralphschuler/.screeps-gpt#1354 (enhance Copilot integration with custom environment)
 
+### Fixed
+
+- **Empire Management**: Takeover target identification no longer includes owned rooms
+  - Added runtime safety check using `controller.my` flag in `identifyTakeoverTargets`
+  - Handles edge cases where `PLAYER_USERNAME` build constant doesn't match actual username
+  - Handles room ownership changes between scouting and takeover analysis
+  - Added regression test `takeover-excludes-own-rooms.test.ts` to prevent future regressions
+
 ## [0.175.7] - 2025-11-28
 
 ### Fixed
