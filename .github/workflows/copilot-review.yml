@@ -22,6 +22,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
       - name: Run Copilot repository audit
+        id: copilot
         uses: ./.github/actions/copilot-audit-agent
         with:
           copilot-token: ${{ secrets.COPILOT_TOKEN }}
@@ -29,3 +30,11 @@ jobs:
           run-url: >-
             https://github.com/${{ github.repository }}/actions/runs/${{
             github.run_id }}
+      - name: Upload copilot-exec logs
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: repository-audit-logs-${{ github.run_id }}
+          path: |
+            reports/copilot/repository-audit-${{ github.run_id }}.log
+          retention-days: 30

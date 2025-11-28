@@ -122,3 +122,12 @@ jobs:
           echo ""
           echo "📝 First 10 lines of content:"
           sed -n '/^---$/,/^---$/!p' "$BLOG_POST_PATH" | head -n 10
+
+      - name: Upload copilot-exec logs
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: changelog-to-blog-logs-${{ steps.version.outputs.version }}
+          path: |
+            reports/copilot/changelog-to-blog-${{ steps.version.outputs.version }}.log
+          retention-days: 30

@@ -37,6 +37,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
       - name: Run Copilot email triage
+        id: copilot
         uses: ./.github/actions/copilot-exec
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -58,3 +59,12 @@ jobs:
           prompt-path: .github/copilot/prompts/email-triage
           output-path: >-
             reports/copilot/email-triage-${{ github.run_id }}.log
+
+      - name: Upload copilot-exec logs
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: email-triage-logs-${{ github.run_id }}
+          path: |
+            reports/copilot/email-triage-${{ github.run_id }}.log
+          retention-days: 30
