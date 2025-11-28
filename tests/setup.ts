@@ -22,13 +22,16 @@ if (!globalThis.crypto) {
 }
 
 globals.OK = 0;
+globals.ERR_NOT_OWNER = -1;
+globals.ERR_NO_PATH = -2;
+globals.ERR_BUSY = -4;
 globals.ERR_NOT_ENOUGH_ENERGY = -6;
+globals.ERR_NOT_ENOUGH_RESOURCES = -6;
 globals.ERR_INVALID_TARGET = -7;
 globals.ERR_FULL = -8;
 globals.ERR_NOT_IN_RANGE = -9;
-globals.ERR_NO_PATH = -2;
+globals.ERR_INVALID_ARGS = -10;
 globals.ERR_RCL_NOT_ENOUGH = -14;
-globals.ERR_NOT_ENOUGH_RESOURCES = -6;
 globals.TERRAIN_MASK_WALL = 1;
 globals.TERRAIN_MASK_SWAMP = 2;
 globals.FIND_SOURCES = 105;
