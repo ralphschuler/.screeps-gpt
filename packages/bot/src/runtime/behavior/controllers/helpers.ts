@@ -24,7 +24,7 @@ export interface FindClosestOptions {
   /**
    * Whether to ignore creeps when pathfinding.
    * Set to true for better routing through narrow passages where only one creep fits.
-   * Default: true (to handle narrow passages properly)
+   * When not specified, defaults to true in the function implementation.
    */
   ignoreCreeps?: boolean;
 }
