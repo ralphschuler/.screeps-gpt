@@ -36,8 +36,10 @@ screeps.json
 /packages/docs/db.json
 /packages/docs/themes/cactus
 
-# Copilot workflow logs and cache (ephemeral artifacts)
-/reports/copilot/
+# Copilot workflow logs and cache (ephemeral artifacts, except PTR stats)
+/reports/copilot/*
+!/reports/copilot/.gitkeep
+!/reports/copilot/ptr-stats.json
 /.copilot-cache
 
 # ScreepsServer data from integration tests
