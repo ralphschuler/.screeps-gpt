@@ -25,7 +25,7 @@ export { RemoteBuilderController } from "./RemoteBuilderController";
 // Combat roles
 export { AttackerController } from "./AttackerController";
 export { HealerController } from "./HealerController";
-export { DismantlerController } from "./DismantlerController";
+export { DismantlerController, type DismantlerMode } from "./DismantlerController";
 
 // Support roles
 export { ClaimerController } from "./ClaimerController";
