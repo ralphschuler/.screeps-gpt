@@ -336,4 +336,198 @@ describe("Profiler auto-start functionality", () => {
       expect(mockMemory.stats).toBeDefined();
     });
   });
+
+  describe("Profiler retention policy", () => {
+    /** Maximum number of profiler entries to retain */
+    const MAX_PROFILER_ENTRIES = 500;
+    /** Interval between retention policy enforcement */
+    const PROFILER_RETENTION_INTERVAL = 100;
+
+    /**
+     * Helper function that simulates the applyProfilerRetentionPolicy logic from main.ts.
+     * Prunes profiler entries when the count exceeds MAX_PROFILER_ENTRIES.
+     */
+    const createApplyProfilerRetentionPolicy = () => {
+      const applyProfilerRetentionPolicy = () => {
+        // Only run retention policy periodically to minimize overhead
+        if (mockGame.time % PROFILER_RETENTION_INTERVAL !== 0) {
+          return { skipped: "interval" };
+        }
+
+        // Skip if profiler memory doesn't exist or has no data
+        if (!mockMemory.profiler?.data) {
+          return { skipped: "noData" };
+        }
+
+        const entries = Object.entries(mockMemory.profiler.data);
+        const entryCount = entries.length;
+
+        // Only apply retention if we exceed the limit
+        if (entryCount <= MAX_PROFILER_ENTRIES) {
+          return { skipped: "underLimit", count: entryCount };
+        }
+
+        // Sort by total CPU time (descending) to keep the most significant entries
+        entries.sort((a, b) => b[1].time - a[1].time);
+
+        // Keep top MAX_PROFILER_ENTRIES entries
+        const entriesToKeep = entries.slice(0, MAX_PROFILER_ENTRIES);
+        const prunedCount = entryCount - MAX_PROFILER_ENTRIES;
+
+        // Rebuild data object with only the retained entries
+        mockMemory.profiler.data = Object.fromEntries(entriesToKeep);
+
+        return { pruned: prunedCount, kept: MAX_PROFILER_ENTRIES };
+      };
+
+      return { applyProfilerRetentionPolicy };
+    };
+
+    it("should skip when not at retention interval", () => {
+      mockGame.time = 1001; // Not divisible by 100
+      mockMemory.profiler = {
+        data: {},
+        total: 0,
+        start: 1000
+      };
+
+      const { applyProfilerRetentionPolicy } = createApplyProfilerRetentionPolicy();
+      const result = applyProfilerRetentionPolicy();
+
+      expect(result).toEqual({ skipped: "interval" });
+    });
+
+    it("should skip when Memory.profiler does not exist", () => {
+      mockGame.time = 100; // Divisible by 100
+      mockMemory.profiler = undefined;
+
+      const { applyProfilerRetentionPolicy } = createApplyProfilerRetentionPolicy();
+      const result = applyProfilerRetentionPolicy();
+
+      expect(result).toEqual({ skipped: "noData" });
+    });
+
+    it("should skip when entry count is under limit", () => {
+      mockGame.time = 100;
+      mockMemory.profiler = {
+        data: {
+          "Function1:method": { calls: 100, time: 50.0 },
+          "Function2:method": { calls: 200, time: 100.0 }
+        },
+        total: 100,
+        start: 1
+      };
+
+      const { applyProfilerRetentionPolicy } = createApplyProfilerRetentionPolicy();
+      const result = applyProfilerRetentionPolicy();
+
+      expect(result).toEqual({ skipped: "underLimit", count: 2 });
+      // Data should be unchanged
+      expect(Object.keys(mockMemory.profiler!.data).length).toBe(2);
+    });
+
+    it("should prune entries when count exceeds limit", () => {
+      mockGame.time = 100;
+
+      // Create more than MAX_PROFILER_ENTRIES entries
+      const data: Record<string, { calls: number; time: number }> = {};
+      for (let i = 0; i < 600; i++) {
+        // Create entries with varying CPU times so sorting is meaningful
+        data[`Function${i}:method`] = { calls: 100, time: i * 1.0 };
+      }
+
+      mockMemory.profiler = {
+        data,
+        total: 100,
+        start: 1
+      };
+
+      expect(Object.keys(mockMemory.profiler.data).length).toBe(600);
+
+      const { applyProfilerRetentionPolicy } = createApplyProfilerRetentionPolicy();
+      const result = applyProfilerRetentionPolicy();
+
+      expect(result).toEqual({ pruned: 100, kept: 500 });
+      expect(Object.keys(mockMemory.profiler!.data).length).toBe(500);
+    });
+
+    it("should keep entries with highest CPU time", () => {
+      mockGame.time = 100;
+
+      // Create entries with known CPU times
+      const data: Record<string, { calls: number; time: number }> = {};
+      for (let i = 0; i < 550; i++) {
+        data[`Function${i}:method`] = { calls: 100, time: i * 1.0 };
+      }
+
+      mockMemory.profiler = {
+        data,
+        total: 100,
+        start: 1
+      };
+
+      const { applyProfilerRetentionPolicy } = createApplyProfilerRetentionPolicy();
+      applyProfilerRetentionPolicy();
+
+      // Verify the highest CPU entries are kept (indices 50-549)
+      // and lowest entries are pruned (indices 0-49)
+      expect(mockMemory.profiler!.data["Function549:method"]).toBeDefined();
+      expect(mockMemory.profiler!.data["Function50:method"]).toBeDefined();
+      expect(mockMemory.profiler!.data["Function0:method"]).toBeUndefined();
+      expect(mockMemory.profiler!.data["Function49:method"]).toBeUndefined();
+    });
+
+    it("should preserve profiler running state after pruning", () => {
+      mockGame.time = 100;
+
+      const data: Record<string, { calls: number; time: number }> = {};
+      for (let i = 0; i < 600; i++) {
+        data[`Function${i}:method`] = { calls: 100, time: i * 1.0 };
+      }
+
+      mockMemory.profiler = {
+        data,
+        total: 500,
+        start: 50 // Profiler is running
+      };
+
+      const { applyProfilerRetentionPolicy } = createApplyProfilerRetentionPolicy();
+      applyProfilerRetentionPolicy();
+
+      // Verify running state is preserved
+      expect(mockMemory.profiler!.start).toBe(50);
+      expect(mockMemory.profiler!.total).toBe(500);
+    });
+
+    it("should run exactly at retention intervals", () => {
+      const { applyProfilerRetentionPolicy } = createApplyProfilerRetentionPolicy();
+
+      // Create data that would be pruned
+      const createLargeData = () => {
+        const data: Record<string, { calls: number; time: number }> = {};
+        for (let i = 0; i < 600; i++) {
+          data[`Function${i}:method`] = { calls: 100, time: i * 1.0 };
+        }
+        return data;
+      };
+
+      // Test tick 99 (should skip)
+      mockGame.time = 99;
+      mockMemory.profiler = { data: createLargeData(), total: 100, start: 1 };
+      expect(applyProfilerRetentionPolicy()).toEqual({ skipped: "interval" });
+      expect(Object.keys(mockMemory.profiler.data).length).toBe(600);
+
+      // Test tick 100 (should run)
+      mockGame.time = 100;
+      mockMemory.profiler = { data: createLargeData(), total: 100, start: 1 };
+      expect(applyProfilerRetentionPolicy()).toEqual({ pruned: 100, kept: 500 });
+      expect(Object.keys(mockMemory.profiler.data).length).toBe(500);
+
+      // Test tick 200 (should run)
+      mockGame.time = 200;
+      mockMemory.profiler = { data: createLargeData(), total: 100, start: 1 };
+      expect(applyProfilerRetentionPolicy()).toEqual({ pruned: 100, kept: 500 });
+      expect(Object.keys(mockMemory.profiler.data).length).toBe(500);
+    });
+  });
 });

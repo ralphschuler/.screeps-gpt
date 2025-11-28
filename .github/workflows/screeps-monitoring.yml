@@ -140,6 +140,20 @@ jobs:
             echo "::warning::Profiler data fetch failed (may not be enabled)"
         continue-on-error: true
 
+      - name: Archive profiler data with retention policy
+        if: always()
+        env:
+          SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
+          SCREEPS_HOST: ${{ secrets.SCREEPS_HOST }}
+          SCREEPS_SHARD: ${{ secrets.SCREEPS_SHARD }}
+          SCREEPS_PORT: ${{ secrets.SCREEPS_PORT }}
+          SCREEPS_PROTOCOL: ${{ secrets.SCREEPS_PROTOCOL }}
+          SCREEPS_PATH: ${{ secrets.SCREEPS_PATH }}
+        run: |
+          npx tsx packages/utilities/scripts/archive-profiler-data.ts || \
+            echo "::warning::Profiler archival failed (may not be enabled)"
+        continue-on-error: true
+
       - name: Validate profiler health
         if: always()
         run: |
@@ -185,6 +199,8 @@ jobs:
           path: |
             reports/copilot/ptr-stats.json
             reports/profiler/latest.json
+            reports/profiler/archive-*.json
+            reports/profiler/archive-index.json
             reports/screeps-stats/latest.json
             reports/bot-snapshots/*.json
             reports/monitoring/health.json
