@@ -7,7 +7,6 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [0.176.0] - 2025-11-28
 
-
 ### Added
 
 - **Automation**: Custom Copilot agent environment configuration
@@ -20,7 +19,6 @@ All notable changes to this project are documented here. This changelog now main
   - Added comprehensive documentation in `packages/docs/source/docs/automation/copilot-environment.md`
   - Enhanced `.devcontainer/devcontainer.json` for consistency with Copilot environment
   - Resolves issue ralphschuler/.screeps-gpt#1354 (enhance Copilot integration with custom environment)
-
 
 ## [0.175.7] - 2025-11-28
 
