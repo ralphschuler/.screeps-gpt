@@ -7,7 +7,6 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [0.183.5] - 2025-11-28
 
-
 ### Changed
 
 - **Documentation**: Consolidated dual documentation locations into single Hexo site
@@ -26,7 +25,6 @@ All notable changes to this project are documented here. This changelog now main
     - Strategy docs: architecture.md, phase implementation guides
     - External analysis: jon-winsley-analysis.md, screeps-quorum-analysis.md
   - Resolves issue ralphschuler/.screeps-gpt#1526 (consolidate dual documentation locations)
-
 
 ## [0.180.0] - 2025-11-28
 
