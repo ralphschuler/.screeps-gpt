@@ -1,5 +1,12 @@
 {
-  "timestamp": "2025-11-28T22:02:54.932Z",
+  "timestamp": "2025-11-28T22:08:41.056Z",
+  "shards": [
+    {
+      "name": "shard3",
+      "rooms": []
+    }
+  ],
+  "totalRooms": 0,
   "cpu": {
     "used": 0,
     "limit": 0,
