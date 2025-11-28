@@ -6,6 +6,7 @@
 import type { CreepCommunicationManager } from "../CreepCommunicationManager";
 import type { EnergyPriorityManager } from "@runtime/energy";
 import type { WallUpgradeManager } from "@runtime/defense/WallUpgradeManager";
+import type { PathfindingManager } from "@runtime/pathfinding";
 
 /**
  * Global service references that can be accessed by role controllers
@@ -14,6 +15,7 @@ class ServiceRegistry {
   private communicationManager: CreepCommunicationManager | null = null;
   private energyPriorityManager: EnergyPriorityManager | null = null;
   private wallUpgradeManager: WallUpgradeManager | null = null;
+  private pathfindingManager: PathfindingManager | null = null;
 
   public setCommunicationManager(manager: CreepCommunicationManager): void {
     this.communicationManager = manager;
@@ -37,6 +39,14 @@ class ServiceRegistry {
 
   public getWallUpgradeManager(): WallUpgradeManager | null {
     return this.wallUpgradeManager;
+  }
+
+  public setPathfindingManager(manager: PathfindingManager): void {
+    this.pathfindingManager = manager;
+  }
+
+  public getPathfindingManager(): PathfindingManager | null {
+    return this.pathfindingManager;
   }
 }
 

@@ -1,5 +1,7 @@
 import { describe, expect, it, beforeEach, vi } from "vitest";
 import { RoleControllerManager } from "@runtime/behavior/RoleControllerManager";
+import { serviceRegistry } from "@runtime/behavior/controllers/ServiceLocator";
+import { MOVEMENT_PRIORITY, priorityMoveTo } from "@runtime/behavior/controllers/helpers";
 import type { GameContext, SpawnLike, CreepLike, PositionLike } from "@runtime/types/GameContext";
 
 // Minimal Screeps constants for test environment
@@ -137,5 +139,81 @@ describe("RoleControllerManager spawning", () => {
     expect(cost).toBeLessThanOrEqual(room.energyAvailable ?? 0);
     expect(usedName).toMatch(/harvester-/);
     expect(roleCounts.harvester).toBe(1);
+  });
+});
+
+describe("Traffic management integration", () => {
+  it("should register PathfindingManager in service registry on construction", () => {
+    // BodyComposer uses global Game for sustainable capacity calculations
+    const game: GameContext = {
+      time: 1,
+      cpu: { limit: 10, bucket: 10000, getUsed: () => 0 },
+      creeps: {},
+      spawns: {},
+      rooms: {}
+    };
+    (globalThis as typeof globalThis & Record<string, unknown>).Game = game as unknown as Game;
+
+    const manager = new RoleControllerManager({}, console);
+
+    // PathfindingManager should be registered
+    const pathfindingManager = serviceRegistry.getPathfindingManager();
+    expect(pathfindingManager).not.toBeNull();
+    expect(manager).toBeTruthy(); // Use manager to avoid unused variable warning
+  });
+
+  it("should have correct movement priority constants", () => {
+    // Verify priority hierarchy (higher priority = moves first)
+    expect(MOVEMENT_PRIORITY.STATIONARY_HARVESTER).toBeGreaterThan(MOVEMENT_PRIORITY.HARVESTER);
+    expect(MOVEMENT_PRIORITY.HARVESTER).toBeGreaterThan(MOVEMENT_PRIORITY.HAULER);
+    expect(MOVEMENT_PRIORITY.HAULER).toBeGreaterThan(MOVEMENT_PRIORITY.COMBAT);
+    expect(MOVEMENT_PRIORITY.COMBAT).toBeGreaterThan(MOVEMENT_PRIORITY.BUILDER);
+    expect(MOVEMENT_PRIORITY.BUILDER).toBeGreaterThan(MOVEMENT_PRIORITY.SUPPORT);
+    expect(MOVEMENT_PRIORITY.SUPPORT).toBeGreaterThan(MOVEMENT_PRIORITY.UPGRADER);
+    expect(MOVEMENT_PRIORITY.UPGRADER).toBe(0);
+  });
+
+  it("should fall back to native moveTo when PathfindingManager unavailable", () => {
+    const moveTo = vi.fn(() => OK_CODE);
+    const creep = {
+      name: "test-creep",
+      moveTo,
+      pos: { x: 10, y: 10 }
+    } as unknown as CreepLike;
+
+    const targetPos = { x: 25, y: 25 } as RoomPosition;
+
+    // Should fall back to native moveTo (PathfindingManager won't be available in test env)
+    const result = priorityMoveTo(creep, targetPos, { priority: MOVEMENT_PRIORITY.HARVESTER });
+
+    expect(moveTo).toHaveBeenCalled();
+    expect(result).toBe(OK_CODE);
+  });
+
+  it("should accept priority option in priorityMoveTo", () => {
+    const moveTo = vi.fn(() => OK_CODE);
+    const creep = {
+      name: "test-creep",
+      moveTo,
+      pos: { x: 10, y: 10 }
+    } as unknown as CreepLike;
+
+    const targetPos = { x: 25, y: 25 } as RoomPosition;
+
+    // Call with specific priority
+    priorityMoveTo(creep, targetPos, {
+      priority: MOVEMENT_PRIORITY.STATIONARY_HARVESTER,
+      range: 1,
+      reusePath: 30
+    });
+
+    expect(moveTo).toHaveBeenCalledWith(
+      targetPos,
+      expect.objectContaining({
+        range: 1,
+        reusePath: 30,
+        ignoreCreeps: true
+      })
+    );
   });
 });

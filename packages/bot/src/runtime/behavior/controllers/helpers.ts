@@ -3,6 +3,7 @@
  */
 
 import type { CreepLike } from "@runtime/types/GameContext";
+import { serviceRegistry } from "./ServiceLocator";
 
 /**
  * Type constraint for objects with room positions
@@ -16,6 +17,31 @@ interface _HasRoomPosition {
  */
 export const ROOM_CENTER_X = 25;
 export const ROOM_CENTER_Y = 25;
+
+/**
+ * Movement priority constants for traffic management.
+ * Higher priority creeps move first and can push lower priority creeps out of the way.
+ *
+ * @see https://github.com/NesCafe62/screeps-pathfinding for traffic management details
+ */
+export const MOVEMENT_PRIORITY = {
+  /** Stationary harvesters at source positions - highest priority */
+  STATIONARY_HARVESTER: 6,
+  /** Miners and mobile harvesters - critical for energy collection */
+  HARVESTER: 5,
+  /** Haulers - logistics backbone */
+  HAULER: 4,
+  /** Combat roles - need to move quickly for defense */
+  COMBAT: 3,
+  /** Builders and repairers - infrastructure support */
+  BUILDER: 2,
+  /** Scouts and claimers */
+  SUPPORT: 1,
+  /** Upgraders - lowest priority, can wait */
+  UPGRADER: 0
+} as const;
+
+export type MovementPriorityLevel = (typeof MOVEMENT_PRIORITY)[keyof typeof MOVEMENT_PRIORITY];
 
 /**
  * Options for findClosestOrFirst helper function
@@ -222,4 +248,68 @@ export function moveToTargetRoom(creep: CreepLike, targetRoom: string, reusePath
     }
   }
   return false;
+}
+
+/**
+ * Options for priority-aware movement using screeps-pathfinding
+ */
+export interface PriorityMoveOptions {
+  /** Range from target to stop at (default: 1) */
+  range?: number;
+  /** Path reuse ticks (default: 30) */
+  reusePath?: number;
+  /** Whether to ignore other creeps in pathfinding (default: true) */
+  ignoreCreeps?: boolean;
+  /** Movement priority for traffic management (default: 0) */
+  priority?: MovementPriorityLevel;
+  /** Whether to move off road when finished (default: false) */
+  moveOffRoad?: boolean;
+  /** Visualize path style (optional) */
+  visualizePathStyle?: PolyStyle;
+}
+
+/**
+ * Priority-aware movement helper using screeps-pathfinding library.
+ * Uses PathfindingManager from ServiceLocator for traffic management.
+ *
+ * When PathfindingManager is available, this enables:
+ * - Priority-based movement (higher priority creeps move first)
+ * - Traffic management (push or swap with lower priority creeps)
+ * - Move off road behavior when finished working
+ *
+ * Falls back to native creep.moveTo() when PathfindingManager is not available.
+ *
+ * @param creep - The creep to move
+ * @param target - Target position or object with pos property
+ * @param options - Movement options including priority
+ * @returns ScreepsReturnCode from moveTo operation
+ */
+export function priorityMoveTo(
+  creep: CreepLike,
+  target: RoomPosition | { pos: RoomPosition },
+  options: PriorityMoveOptions = {}
+): ScreepsReturnCode {
+  const pathfindingManager = serviceRegistry.getPathfindingManager();
+
+  const opts = {
+    range: options.range ?? 1,
+    reusePath: options.reusePath ?? 30,
+    ignoreCreeps: options.ignoreCreeps ?? true,
+    priority: options.priority ?? MOVEMENT_PRIORITY.UPGRADER,
+    moveOffRoad: options.moveOffRoad ?? false,
+    visualizePathStyle: options.visualizePathStyle
+  };
+
+  // Use PathfindingManager for traffic-managed movement when available
+  if (pathfindingManager?.isAvailable()) {
+    return pathfindingManager.moveTo(creep as Creep, target, opts);
+  }
+
+  // Fallback to native moveTo when PathfindingManager is not available
+  return creep.moveTo(target, {
+    range: opts.range,
+    reusePath: opts.reusePath,
+    ignoreCreeps: opts.ignoreCreeps,
+    visualizePathStyle: opts.visualizePathStyle
+  });
 }

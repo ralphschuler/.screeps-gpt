@@ -18,6 +18,7 @@ The runtime system is the core of the Screeps AI bot, executing every game tick 
 
 - [**Behavior State Machines**](architecture/behavior-state-machines.html) - State machine architecture for creep behaviors
 - [**Custom Kernel**](../../../../../docs/architecture/custom-kernel.html) - Kernel process architecture and integration
+- [**Pathfinding**](pathfinding.html) - Traffic management and priority-based movement
 
 ### Strategy & Decision Making
 
@@ -47,8 +48,11 @@ The runtime is organized into several key subsystems:
 - **Memory System** - State persistence and consistency, including state machine serialization
 - **Metrics System** - Performance tracking and CPU accounting
 - **Evaluation System** - Health reports and improvement recommendations
+- **Pathfinding System** - Traffic management and priority-based movement using screeps-pathfinding library
 
 **State Machine Architecture**: Each creep role is implemented as a dedicated state machine with explicit states (idle, harvesting, delivering, etc.) and valid transitions. See [Behavior State Machines](architecture/behavior-state-machines.html) for details.
+
+**Traffic Management**: The pathfinding system enables priority-based movement where higher priority creeps (harvesters, haulers) move first and can push lower priority creeps (upgraders) out of the way. See [Pathfinding](pathfinding.html) for details.
 
 ### Execution Model
 

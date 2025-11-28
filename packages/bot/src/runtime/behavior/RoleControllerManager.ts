@@ -10,6 +10,7 @@
  * - Calculate dynamic role minimums
  * - Execute creep behavior via role controllers
  * - CPU budget management
+ * - Traffic management via PathfindingManager
  */
 
 import type { BehaviorSummary } from "@shared/contracts";
@@ -25,6 +26,7 @@ import { RoleTaskQueueManager } from "./RoleTaskQueue";
 import * as TaskDiscovery from "./TaskDiscovery";
 import type { RoleController } from "./controllers/RoleController";
 import { serviceRegistry } from "./controllers/ServiceLocator";
+import { PathfindingManager } from "@runtime/pathfinding";
 import {
   HarvesterController,
   UpgraderController,
@@ -100,6 +102,7 @@ export class RoleControllerManager {
   private readonly scoutManager: ScoutManager;
   private readonly taskQueueManager: RoleTaskQueueManager;
   private readonly roleControllers: Map<string, RoleController>;
+  private readonly pathfindingManager: PathfindingManager;
 
   public constructor(options: RoleControllerManagerOptions = {}, logger: Pick<Console, "log" | "warn"> = console) {
     this.logger = logger;
@@ -117,10 +120,18 @@ export class RoleControllerManager {
     this.scoutManager = new ScoutManager(this.logger);
     this.taskQueueManager = new RoleTaskQueueManager(this.logger);
 
+    // Initialize PathfindingManager for traffic management
+    // This enables priority-based movement and creep traffic coordination
+    this.pathfindingManager = new PathfindingManager({
+      enableCaching: true,
+      logger: this.logger
+    });
+
     // Register services in service locator
     serviceRegistry.setCommunicationManager(this.communicationManager);
     serviceRegistry.setEnergyPriorityManager(this.energyPriorityManager);
     serviceRegistry.setWallUpgradeManager(this.wallUpgradeManager);
+    serviceRegistry.setPathfindingManager(this.pathfindingManager);
 
     // Initialize role controllers registry
     this.roleControllers = new Map();
@@ -202,6 +213,11 @@ export class RoleControllerManager {
 
     // Execute role-based system using individual controllers
     const result = this.executeWithRoleControllers(game, memory);
+
+    // CRITICAL: Execute all queued moves with traffic management
+    // This must be called AFTER all creep behavior has issued move intents
+    // to enable priority-based movement coordination and creep swapping
+    this.pathfindingManager.runMoves();
 
     memory.roles = roleCounts;
 
