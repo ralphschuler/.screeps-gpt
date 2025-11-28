@@ -3,7 +3,12 @@
  *
  * Dismantlers are responsible for:
  * - Moving to target rooms
- * - Dismantling hostile structures for resources
+ * - Dismantling hostile structures for resources (combat mode)
+ * - Dismantling non-owned structures in newly claimed rooms (room clearing mode)
+ *
+ * Room clearing mode is used when taking over a room from another player.
+ * Structures left by the previous owner need to be dismantled to clear
+ * the room for new construction.
  *
  * Uses state machine from screeps-xstate for declarative behavior management.
  */
@@ -20,16 +25,28 @@ import {
   type DismantlerEvent
 } from "../stateMachines/dismantler";
 
+/**
+ * Dismantler mode determines target selection behavior:
+ * - "combat": Target hostile structures (enemy-owned)
+ * - "clearing": Target non-owned structures in our rooms (room integration)
+ */
+export type DismantlerMode = "combat" | "clearing";
+
 interface DismantlerMemory extends CreepMemory {
   role: "dismantler";
   task: string;
   version: number;
   targetRoom?: string;
+  /** Dismantler mode: "combat" for hostile structures, "clearing" for room integration */
+  mode?: DismantlerMode;
+  /** Home room for returning after clearing is complete */
+  homeRoom?: string;
   stateMachine?: unknown;
 }
 
 /**
- * Controller for dismantler creeps that deconstruct enemy structures using state machines.
+ * Controller for dismantler creeps that deconstruct structures using state machines.
+ * Supports both combat mode (hostile structures) and clearing mode (room integration).
  */
 export class DismantlerController extends BaseRoleController<DismantlerMemory> {
   private machines: Map<string, StateMachine<DismantlerContext, DismantlerEvent>> = new Map();
@@ -38,11 +55,12 @@ export class DismantlerController extends BaseRoleController<DismantlerMemory> {
     const config: RoleConfig<DismantlerMemory> = {
       minimum: 0,
       body: [WORK, WORK, CARRY, MOVE, MOVE, MOVE],
-      version: 1,
+      version: 2, // Version bump for new mode support
       createMemory: () => ({
         role: "dismantler",
         task: "travel",
-        version: 1
+        version: 2,
+        mode: "clearing" // Default to clearing mode for room integration
       })
     };
     super(config);
@@ -63,6 +81,9 @@ export class DismantlerController extends BaseRoleController<DismantlerMemory> {
       this.cleanupDeadCreepMachines();
       this.lastCleanupTick = Game.time;
     }
+
+    // Ensure mode is set (migration from older versions)
+    memory.mode ??= "clearing";
 
     // Get or create state machine for this creep
     let machine = this.machines.get(creep.name);
@@ -96,24 +117,23 @@ export class DismantlerController extends BaseRoleController<DismantlerMemory> {
       machine.send({ type: "ARRIVED_AT_TARGET" });
     }
 
-    comm?.say(creep, "🔨");
+    // Find structures to dismantle based on mode
+    const targetStructures = this.findTargetStructures(creep, memory.mode ?? "clearing");
 
-    // Find hostile structures to dismantle
-    const hostileStructures = creep.room.find(FIND_HOSTILE_STRUCTURES, {
-      filter: (s: AnyStructure) => s.structureType !== STRUCTURE_CONTROLLER
-    }) as AnyOwnedStructure[];
-
-    if (hostileStructures.length > 0) {
-      const target: AnyOwnedStructure | null = creep.pos.findClosestByPath(hostileStructures);
-      const actualTarget: AnyOwnedStructure = target ?? hostileStructures[0];
-      machine.send({ type: "DISMANTLE", targetId: actualTarget.id });
+    if (targetStructures.length > 0) {
+      comm?.say(creep, memory.mode === "clearing" ? "🧹" : "🔨");
+      const target = creep.pos.findClosestByPath(targetStructures) ?? targetStructures[0];
+      machine.send({ type: "DISMANTLE", targetId: target.id });
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-      const dismantleResult = creep.dismantle(actualTarget);
+      const dismantleResult = creep.dismantle(target);
       if (dismantleResult === ERR_NOT_IN_RANGE) {
-        creep.moveTo(actualTarget, { reusePath: 10 });
+        creep.moveTo(target, { reusePath: 10 });
       } else if (dismantleResult === ERR_INVALID_TARGET) {
         machine.send({ type: "TARGET_DESTROYED" });
       }
+    } else {
+      // No structures to dismantle - idle
+      comm?.say(creep, "✅");
     }
 
     // Save state to memory
@@ -121,6 +141,68 @@ export class DismantlerController extends BaseRoleController<DismantlerMemory> {
     memory.task = machine.getState();
 
     return memory.task;
+  }
+
+  /**
+   * Find target structures based on dismantler mode.
+   *
+   * @param creep - The dismantler creep
+   * @param mode - The dismantler mode ("combat" or "clearing")
+   * @returns Array of structures to dismantle
+   */
+  private findTargetStructures(creep: CreepLike, mode: DismantlerMode): AnyStructure[] {
+    if (mode === "combat") {
+      // Combat mode: target hostile structures (enemy-owned)
+      return creep.room.find(FIND_HOSTILE_STRUCTURES, {
+        filter: (s: AnyStructure) => s.structureType !== STRUCTURE_CONTROLLER
+      }) as AnyStructure[];
+    }
+
+    // Clearing mode: target non-owned structures in our rooms
+    // This is used when taking over a room from another player
+    // We only clear structures if we own the room (controller.my)
+    const controller = creep.room.controller;
+    if (!controller?.my) {
+      // Room is not ours - nothing to clear
+      return [];
+    }
+
+    // Find all structures that are not ours
+    // This includes:
+    // - Neutral structures (abandoned by previous owner)
+    // - Structures owned by others (should not happen in our room but safety check)
+    const structuresToClear = creep.room.find(FIND_STRUCTURES, {
+      filter: (s: AnyStructure) => {
+        // Never dismantle controllers
+        if (s.structureType === STRUCTURE_CONTROLLER) {
+          return false;
+        }
+
+        // Check if structure is owned and not ours
+        if ("my" in s) {
+          // Owned structure - only dismantle if not ours
+          return (s as OwnedStructure).my === false;
+        }
+
+        // For non-ownable structures (roads, containers, walls), check if we want to keep them
+        // Roads and containers from previous owners can be kept as they're useful
+        // Only clear walls and ramparts that might block our layout
+        if (s.structureType === STRUCTURE_ROAD || s.structureType === STRUCTURE_CONTAINER) {
+          return false; // Keep roads and containers
+        }
+
+        // Clear walls (constructed walls, not natural) left by previous owner
+        // Note: STRUCTURE_WALL represents constructed walls, natural terrain walls
+        // are part of the terrain and cannot be dismantled
+        if (s.structureType === STRUCTURE_WALL) {
+          return true; // Clear constructed walls
+        }
+
+        return false;
+      }
+    }) as AnyStructure[];
+
+    return structuresToClear;
   }
 
   /**
