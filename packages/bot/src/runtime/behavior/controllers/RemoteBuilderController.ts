@@ -75,7 +75,10 @@ export class RemoteBuilderController extends BaseRoleController<RemoteBuilderMem
         const isNearEdge = creep.pos.x <= 2 || creep.pos.x >= 47 || creep.pos.y <= 2 || creep.pos.y >= 47;
         if (isNearEdge) {
           // Move toward center when at edge to avoid getting stuck
-          creep.moveTo(new RoomPosition(ROOM_CENTER_X, ROOM_CENTER_Y, memory.targetRoom), { reusePath: 0, ignoreCreeps: true });
+          creep.moveTo(new RoomPosition(ROOM_CENTER_X, ROOM_CENTER_Y, memory.targetRoom), {
+            reusePath: 0,
+            ignoreCreeps: true
+          });
           return REMOTE_BUILDER_TRAVEL_TASK;
         }
       }
