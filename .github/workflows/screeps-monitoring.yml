@@ -148,6 +148,7 @@ jobs:
           SCREEPS_SHARD: ${{ secrets.SCREEPS_SHARD }}
           SCREEPS_PORT: ${{ secrets.SCREEPS_PORT }}
           SCREEPS_PROTOCOL: ${{ secrets.SCREEPS_PROTOCOL }}
+          SCREEPS_PATH: ${{ secrets.SCREEPS_PATH }}
         run: |
           npx tsx packages/utilities/scripts/archive-profiler-data.ts || \
             echo "::warning::Profiler archival failed (may not be enabled)"

@@ -164,7 +164,7 @@ function ensureProfilerRunning(): void {
  * @see https://github.com/ralphschuler/.screeps-gpt/issues/1490
  */
 function applyProfilerRetentionPolicy(): void {
-  if (!__PROFILER_ENABLED__) {
+  if (__PROFILER_ENABLED__ !== "true") {
     return;
   }
 

@@ -1,5 +1,5 @@
 import { mkdirSync, writeFileSync, existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { resolve, relative } from "node:path";
 import process from "node:process";
 import { ScreepsAPI } from "screeps-api";
 import {
@@ -241,7 +241,7 @@ function updateArchiveIndex(archivePath: string, snapshot: ProfilerSnapshot): vo
 
   // Add new archive entry
   const entry: ArchiveEntry = {
-    path: archivePath.replace(resolve("reports", "profiler") + "/", ""),
+    path: relative(resolve("reports", "profiler"), archivePath),
     timestamp: snapshot.fetchedAt,
     functionCount: snapshot.summary?.totalFunctions || 0,
     totalTicks: snapshot.summary?.totalTicks || 0,

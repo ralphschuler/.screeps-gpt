@@ -71,10 +71,10 @@ The monitoring workflow archives profiler data every 30 minutes to preserve hist
 
 ```bash
 # Manual archival
-npx tsx packages/utilities/scripts/archive-profiler-data.ts
+yarn tsx packages/utilities/scripts/archive-profiler-data.ts
 
 # Skip clearing (archive only)
-SKIP_PROFILER_CLEAR=true npx tsx packages/utilities/scripts/archive-profiler-data.ts
+SKIP_PROFILER_CLEAR=true yarn tsx packages/utilities/scripts/archive-profiler-data.ts
 ```
 
 ### Archive Location
@@ -158,7 +158,7 @@ Check `reports/profiler/archive-index.json` for archive history. Archives are up
 
 1. **Let it run**: Leave profiler enabled for continuous monitoring
 2. **Check periodically**: Use `Profiler.output()` to review CPU hotspots
-3. **Archive before analysis**: Major archives before performance optimization
+3. **Archive before analysis**: Archive data before major performance optimization
 4. **Don't over-decorate**: Profile only significant functions to reduce overhead
 
 ## Related Documentation
