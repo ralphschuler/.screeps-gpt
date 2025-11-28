@@ -1,5 +1,29 @@
 [
   {
+    "version": "0.183.5",
+    "date": "2025-11-28",
+    "notes": [
+      "**Documentation**: Consolidated dual documentation locations into single Hexo site",
+      "Migrated all content from `packages/docs/docs/` to `packages/docs/source/docs/`",
+      "Removed legacy `packages/docs/docs/` directory",
+      "Updated workflow references from `docs/` to `packages/docs/source/docs/`",
+      "Fixed `guard-version.yml` to check correct changelog path",
+      "Fixed `guard-deprecation.yml` to link to correct deprecation policy location",
+      "Fixed `deploy.yml` to reference correct troubleshooting documentation",
+      "Fixed `performance-test.yml` to reference Docker development guide",
+      "Updated AGENTS.md to remove obsolete \"NOT root docs/\" warnings",
+      "Migrated 43 missing documentation files including:",
+      "Development guides: deprecation-policy.md, deprecation-registry.md, changelog-format.md",
+      "Operations docs: cpu-timeout-incidents.md, performance-optimization.md, monitoring-alerts-playbook.md",
+      "Runtime docs: bootstrap.md, kernel-protocols.md, task-system.md, creep-communication.md",
+      "Strategy docs: architecture.md, phase implementation guides",
+      "External analysis: jon-winsley-analysis.md, screeps-quorum-analysis.md",
+      "Resolves issue ralphschuler/.screeps-gpt#1526 (consolidate dual documentation locations)"
+    ],
+    "anchor": "01835---2025-11-28",
+    "slug": "v0-183-5"
+  },
+  {
     "version": "0.180.0",
     "date": "2025-11-28",
     "notes": [
