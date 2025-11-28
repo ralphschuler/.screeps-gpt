@@ -108,8 +108,7 @@ export class ConstructionManager {
       this.enableVisualization = config.enableVisualization ?? false;
       this.findMySpawns = typeof FIND_MY_SPAWNS !== "undefined" ? FIND_MY_SPAWNS : 104;
       this.findStructures = typeof FIND_STRUCTURES !== "undefined" ? FIND_STRUCTURES : 107;
-      this.findConstructionSites =
-        typeof FIND_MY_CONSTRUCTION_SITES !== "undefined" ? FIND_MY_CONSTRUCTION_SITES : 114;
+      this.findConstructionSites = typeof FIND_MY_CONSTRUCTION_SITES !== "undefined" ? FIND_MY_CONSTRUCTION_SITES : 114;
       this.okCode = typeof OK !== "undefined" ? OK : 0;
       this.errFull = typeof ERR_FULL !== "undefined" ? ERR_FULL : -8;
       this.errRclNotEnough = typeof ERR_RCL_NOT_ENOUGH !== "undefined" ? ERR_RCL_NOT_ENOUGH : -14;
@@ -233,18 +232,57 @@ export class ConstructionManager {
    * This enables dynamic layout management by identifying structures
    * that are not in planned positions.
    *
-   * @param roomName - Room to check for misplaced structures
-   * @returns Array of misplaced structures or empty array if room not planned
+   * @param room - Room to check for misplaced structures
+   * @returns Array of misplaced structures with reasons
    */
-  public getMisplacedStructures(roomName: string): ReturnType<BasePlanner["getMisplacedStructures"]> {
-    const state = this.roomPlanners.get(roomName);
+  public getMisplacedStructures(room: RoomLike): ReturnType<BasePlanner["getMisplacedStructures"]> {
+    const state = this.roomPlanners.get(room.name);
     if (!state) {
       return [];
     }
 
-    // Need a room reference to check structures
-    // This is a limitation - caller should use getPlanner and call directly with room reference
-    return [];
+    const terrain = room.getTerrain();
+    const currentRCL = room.controller?.level ?? 0;
+
+    return state.planner.getMisplacedStructures(room, terrain, currentRCL, this.findMySpawns, this.findStructures);
+  }
+
+  /**
+   * Check and optionally destroy misplaced structures in a room.
+   * This method identifies structures not in planned positions and can remove them.
+   *
+   * @param room - Room to check for misplaced structures
+   * @param destroyMisplaced - If true, destroy misplaced structures (default: false)
+   * @returns Object with misplaced structures and count of destroyed structures
+   */
+  public handleMisplacedStructures(
+    room: RoomLike,
+    destroyMisplaced: boolean = false
+  ): { misplaced: ReturnType<BasePlanner["getMisplacedStructures"]>; destroyed: number } {
+    const misplaced = this.getMisplacedStructures(room);
+    let destroyed = 0;
+
+    if (destroyMisplaced && misplaced.length > 0) {
+      for (const item of misplaced) {
+        // Only destroy if structure is player-owned and has a destroy method
+        const structure = item.structure as Structure & { my?: boolean; destroy?: () => number };
+        if (structure.my && typeof structure.destroy === "function") {
+          const result = structure.destroy();
+          if (result === this.okCode) {
+            destroyed++;
+            this.logger.log?.(
+              `[ConstructionManager] Destroyed misplaced ${item.structure.structureType} at ${room.name} (${item.structure.pos.x},${item.structure.pos.y}): ${item.reason}`
+            );
+          } else {
+            this.logger.warn?.(
+              `[ConstructionManager] Failed to destroy ${item.structure.structureType} at ${room.name}: ${result}`
+            );
+          }
+        }
+      }
+    }
+
+    return { misplaced, destroyed };
   }
 
   /**

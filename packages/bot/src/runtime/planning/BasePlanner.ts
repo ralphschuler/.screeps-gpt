@@ -555,18 +555,13 @@ export class BasePlanner {
     });
 
     // Draw info text
-    room.visual.text(
-      `Dynamic Layout | RCL ${rcl} | ${count} structures`,
-      this.anchor.x,
-      this.anchor.y - 2,
-      {
-        color: "#ffffff",
-        font: 0.5,
-        align: "center",
-        backgroundColor: "#000000",
-        backgroundPadding: 0.2
-      }
-    );
+    room.visual.text(`Dynamic Layout | RCL ${rcl} | ${count} structures`, this.anchor.x, this.anchor.y - 2, {
+      color: "#ffffff",
+      font: 0.5,
+      align: "center",
+      backgroundColor: "#000000",
+      backgroundPadding: 0.2
+    });
 
     return count;
   }
@@ -669,7 +664,10 @@ export class BasePlanner {
 
       // Check if this structure is in a planned position
       const isPlanned = planned.some(
-        plan => plan.pos.x === structure.pos.x && plan.pos.y === structure.pos.y && plan.structureType === structure.structureType
+        plan =>
+          plan.pos.x === structure.pos.x &&
+          plan.pos.y === structure.pos.y &&
+          plan.structureType === structure.structureType
       );
 
       if (!isPlanned) {

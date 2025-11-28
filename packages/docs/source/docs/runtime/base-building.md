@@ -142,16 +142,21 @@ const manager = new ConstructionManager({
   logger: console, // Logger instance
   maxSitesPerTick: 5, // Maximum construction sites per tick
   maxSitesPerRoom: 1, // Maximum sites per room per tick
-  defaultStrategy: "bunker", // Default layout strategy
   enableVisualization: false // Enable visual debugging
 });
 ```
 
-### Per-Room Strategy Configuration
+### Handling Misplaced Structures
+
+The system can detect and optionally remove structures that are not in planned positions:
 
 ```typescript
-// Set a specific room to use stamp layout
-manager.setRoomStrategy("W1N1", "stamp");
+// Get misplaced structures without destroying
+const misplaced = manager.getMisplacedStructures(room);
+
+// Get and destroy misplaced structures
+const result = manager.handleMisplacedStructures(room, true);
+console.log(`Destroyed ${result.destroyed} misplaced structures`);
 ```
 
 ## Visualization
@@ -160,7 +165,6 @@ The BasePlanner supports Room.visual debugging to visualize planned layouts:
 
 ```typescript
 const planner = new BasePlanner("W1N1", {
-  strategy: "bunker",
   enableVisualization: true
 });
 
@@ -174,7 +178,6 @@ planner.visualize(room, 8, true); // Show RCL 8 layout with labels
 const stats = planner.getLayoutStats(8);
 console.log(stats);
 // {
-//   strategy: "bunker",
 //   totalStructures: 92,
 //   byType: { spawn: 3, extension: 60, tower: 6, ... },
 //   byRCL: { 1: 1, 2: 6, 3: 6, ... },
