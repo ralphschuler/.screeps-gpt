@@ -192,23 +192,49 @@ describe("moveToTargetRoom", () => {
   });
 
   describe("when exit not found", () => {
-    it("should return false when findExitTo returns error", () => {
+    beforeEach(() => {
+      // Mock Game.map.findRoute for fallback behavior
+      (global as unknown as { Game: { map: { findRoute: ReturnType<typeof vi.fn> } } }).Game = {
+        ...((global as unknown as { Game: object }).Game || {}),
+        map: {
+          findRoute: vi.fn().mockReturnValue(ERR_NO_PATH)
+        }
+      };
+    });
+
+    it("should fallback to target room center when findExitTo and findRoute both fail", () => {
       mockRoom.findExitTo.mockReturnValue(ERR_NO_PATH);
 
       const result = moveToTargetRoom(mockCreep, "W5N5");
 
-      expect(result).toBe(false);
-      expect(mockCreep.moveTo).not.toHaveBeenCalled();
+      // With fallback behavior, function now moves to target room center instead of failing
+      expect(result).toBe(true);
+      expect(mockCreep.moveTo).toHaveBeenCalledWith(
+        expect.objectContaining({
+          x: ROOM_CENTER_X,
+          y: ROOM_CENTER_Y,
+          roomName: "W5N5"
+        }),
+        { reusePath: 50, ignoreCreeps: true }
+      );
     });
 
-    it("should return false when no exit positions found", () => {
+    it("should fallback to target room center when no exit positions found", () => {
       mockRoom.findExitTo.mockReturnValue(EXIT_RIGHT);
       mockRoom.find.mockReturnValue([]);
 
       const result = moveToTargetRoom(mockCreep, "W2N1");
 
-      expect(result).toBe(false);
-      expect(mockCreep.moveTo).not.toHaveBeenCalled();
+      // With fallback behavior, function now moves to target room center instead of failing
+      expect(result).toBe(true);
+      expect(mockCreep.moveTo).toHaveBeenCalledWith(
+        expect.objectContaining({
+          x: ROOM_CENTER_X,
+          y: ROOM_CENTER_Y,
+          roomName: "W2N1"
+        }),
+        { reusePath: 50, ignoreCreeps: true }
+      );
     });
   });
 
