@@ -5,6 +5,19 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Added
+
+- **Automation**: Custom Copilot agent environment configuration
+  - Created `.github/copilot-environment.json` for project-specific agent setup
+  - Configured Node.js 22 Alpine base image with Yarn 4.11.0
+  - Set up @ralphschuler GitHub Package Registry authentication
+  - Defined available tools (node, npm, yarn, git, gh, tsx, vitest, eslint, prettier)
+  - Enabled TypeScript 5.4.3 with strict mode, ESLint, Prettier, and Vitest
+  - Configured workspace structure for monorepo support
+  - Added comprehensive documentation in `packages/docs/source/docs/automation/copilot-environment.md`
+  - Enhanced `.devcontainer/devcontainer.json` for consistency with Copilot environment
+  - Resolves issue ralphschuler/.screeps-gpt#1354 (enhance Copilot integration with custom environment)
+
 ## [0.175.7] - 2025-11-28
 
 ### Fixed

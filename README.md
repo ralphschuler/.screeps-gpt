@@ -150,6 +150,33 @@ Visuals are disabled by default to minimize CPU usage. See [User Controls](packa
 
 **📚 [Complete Getting Started Guide →](packages/docs/source/docs/getting-started.md)**
 
+## Development Environment
+
+### Custom Copilot Agent Environment
+
+The repository includes a custom GitHub Copilot agent environment (`.github/copilot-environment.json`) configured for optimal development experience:
+
+- **Node.js 22 Alpine** base image with Yarn 4.11.0
+- **@ralphschuler GitHub packages** authentication pre-configured
+- **Development tools** ready: tsx, vitest, eslint, prettier, gh
+- **TypeScript 5.4.3** with strict mode enabled
+- **Workspace support** for monorepo structure
+
+This ensures Copilot agents have the correct context and tooling when automating development tasks.
+
+**[Copilot Environment Documentation →](packages/docs/source/docs/automation/copilot-environment.md)**
+
+### DevContainer Support
+
+The repository includes VSCode DevContainer configuration (`.devcontainer/devcontainer.json`) aligned with the Copilot environment:
+
+- Consistent Node.js and package manager versions
+- Pre-installed extensions (ESLint, Prettier, Copilot)
+- Automatic dependency installation
+- GitHub Package Registry authentication
+
+Open the repository in VSCode and select "Reopen in Container" to get started immediately.
+
 ## Key Features
 
 ### 🤖 Autonomous Agent Swarm
