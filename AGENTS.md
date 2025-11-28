@@ -54,7 +54,7 @@ All agents should reference these documents before making changes:
    - [`AGENTS.md`](AGENTS.md) - This file; agent rules and knowledge base
 
 2. **Structured Knowledge Base (`packages/docs/source/docs/`)**
-   - **CRITICAL**: All new documentation MUST be created in `packages/docs/source/docs/`, NOT in root `docs/`
+   - **CRITICAL**: All documentation MUST be created in `packages/docs/source/docs/`
    - **Monorepo Structure**: Following the monorepo migration (issue #539), documentation is organized under `packages/docs/` with Hexo static site generator
    - **Documentation Site**: Deployed via `.github/workflows/docs-pages.yml` to GitHub Pages
    - **Theme**: Uses Hexo Cactus theme with custom navigation configured in `packages/docs/_config.cactus.yml`
@@ -193,7 +193,7 @@ function validateGameContext(game: Game): GameContext {
 **Update triggers:**
 
 - Update `README.md` when user-facing behaviour, workflows, or automation steps change.
-- **CRITICAL**: Keep `packages/docs/source/docs/` in sync with any workflow, runtime, or operational changes - NOT root `docs/`
+- **CRITICAL**: Keep `packages/docs/source/docs/` in sync with any workflow, runtime, or operational changes
 - Document bug investigations and incident learnings in `packages/docs/source/docs/operations/` before merging fixes.
 - Maintain `TASKS.md` by adding new tasks and marking completed items with a completion note instead of removing them immediately.
 
@@ -236,10 +236,9 @@ function validateGameContext(game: Game): GameContext {
 
 **Documentation Location Rules (MANDATORY):**
 
-- ✅ **ALWAYS** create new documentation in `packages/docs/source/docs/`
+- ✅ **ALWAYS** create documentation in `packages/docs/source/docs/`
 - ✅ Structure: `packages/docs/source/docs/{category}/{filename}.md`
 - ✅ Categories: `automation/`, `operations/`, `runtime/`, `changelog/`, `security/`, `analytics/`, `strategy/`, `research/`, `architecture/`, `features/`, `development/`
-- ❌ **NEVER** create documentation in `packages/docs/docs/` (generated output)
 
 ### 4. Workflow Guidelines
 

@@ -178,9 +178,9 @@ jobs:
               '_Performance testing infrastructure is under ' +
               'development._\n';
             reportContent +=
-              '_See [docs/testing/private-server.md]' +
+              '_See [Docker Development Guide]' +
               '(https://github.com/${{ github.repository }}/blob/' +
-              '${{ github.sha }}/docs/testing/private-server.md) ' +
+              '${{ github.sha }}/packages/docs/source/docs/operations/docker-guide.md) ' +
               'for details._';
 
             // Find existing comment

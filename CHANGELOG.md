@@ -5,6 +5,25 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Changed
+
+- **Documentation**: Consolidated dual documentation locations into single Hexo site
+  - Migrated all content from `packages/docs/docs/` to `packages/docs/source/docs/`
+  - Removed legacy `packages/docs/docs/` directory
+  - Updated workflow references from `docs/` to `packages/docs/source/docs/`
+  - Fixed `guard-version.yml` to check correct changelog path
+  - Fixed `guard-deprecation.yml` to link to correct deprecation policy location
+  - Fixed `deploy.yml` to reference correct troubleshooting documentation
+  - Fixed `performance-test.yml` to reference Docker development guide
+  - Updated AGENTS.md to remove obsolete "NOT root docs/" warnings
+  - Migrated 43 missing documentation files including:
+    - Development guides: deprecation-policy.md, deprecation-registry.md, changelog-format.md
+    - Operations docs: cpu-timeout-incidents.md, performance-optimization.md, monitoring-alerts-playbook.md
+    - Runtime docs: bootstrap.md, kernel-protocols.md, task-system.md, creep-communication.md
+    - Strategy docs: architecture.md, phase implementation guides
+    - External analysis: jon-winsley-analysis.md, screeps-quorum-analysis.md
+  - Resolves issue ralphschuler/.screeps-gpt#1526 (consolidate dual documentation locations)
+
 ## [0.180.0] - 2025-11-28
 
 ### Added

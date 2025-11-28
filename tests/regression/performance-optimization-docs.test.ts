@@ -11,9 +11,9 @@ import { join } from "path";
  * Related issue: Performance optimization guide creation
  */
 describe("Performance optimization documentation", () => {
-  const docsPath = join(process.cwd(), "packages/docs/docs/operations/performance-optimization.md");
+  const docsPath = join(process.cwd(), "packages/docs/source/docs/operations/performance-optimization.md");
 
-  it("should have performance optimization guide in packages/docs/docs/operations", () => {
+  it("should have performance optimization guide in packages/docs/source/docs/operations", () => {
     expect(existsSync(docsPath)).toBe(true);
   });
 

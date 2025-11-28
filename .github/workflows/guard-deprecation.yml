@@ -151,9 +151,9 @@ jobs:
             const repoUrl = 'https://github.com/' +
               '${{ github.repository }}';
             const policyUrl = repoUrl +
-              '/blob/main/docs/development/deprecation-policy.md';
+              '/blob/main/packages/docs/source/docs/development/deprecation-policy.md';
             const registryUrl = repoUrl +
-              '/blob/main/docs/development/deprecation-registry.md';
+              '/blob/main/packages/docs/source/docs/development/deprecation-registry.md';
 
             const comment = `## 🔔 Deprecation Check Report
 
@@ -233,7 +233,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
 
           repoUrl="https://github.com/${{ github.repository }}"
-          policyUrl="$repoUrl/blob/main/docs/development"
+          policyUrl="$repoUrl/blob/main/packages/docs/source/docs/development"
           policyUrl="$policyUrl/deprecation-policy.md"
           echo "See [Deprecation Policy]($policyUrl)" \
             >> $GITHUB_STEP_SUMMARY
