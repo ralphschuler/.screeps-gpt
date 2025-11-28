@@ -465,4 +465,177 @@ describe("Controller Health Monitoring Integration", () => {
       expect(room.controllerProgressTotal).toBe(540000);
     });
   });
+
+  describe("Unclaimed Room Filtering (Issue #1432 regression)", () => {
+    /**
+     * Regression test for issue where controller downgrade warnings were triggered
+     * for rooms that are visible but not owned by the bot (like W54N48).
+     *
+     * The bug occurred because WarningDetector.checkControllerDowngrade() only checked
+     * controller.my === true, which can be true for rooms where the player has visibility
+     * but doesn't actually own the controller.
+     *
+     * The fix adds an ownership check: room.controller.owner must exist for the room
+     * to be considered owned and eligible for downgrade warnings.
+     */
+    it("should NOT generate warnings for visible but unowned rooms", async () => {
+      // Import WarningDetector for integration testing
+      const { WarningDetector, WarningType } = await import(
+        "../../../packages/bot/src/runtime/health/WarningDetector"
+      );
+      const { HealthState } = await import("../../../packages/bot/src/runtime/health/HealthMonitor");
+
+      // Create a mock game context with both owned and visible-only rooms
+      const mockGame = {
+        time: 1000,
+        cpu: { limit: 100, getUsed: () => 10 } as CPU,
+        creeps: {
+          creep1: { memory: { role: "harvester" } },
+          creep2: { memory: { role: "harvester" } }
+        } as Record<string, Creep>,
+        spawns: {},
+        rooms: {
+          // This room is actually owned by the bot (has owner property)
+          W1N1: {
+            energyAvailable: 800,
+            controller: {
+              my: true,
+              level: 4,
+              owner: { username: "testPlayer" },
+              ticksToDowngrade: 100000 // Healthy - no warning expected
+            } as StructureController
+          } as Room,
+          // This room is visible but NOT owned (no owner property) - like W54N48 in the issue
+          W54N48: {
+            energyAvailable: 0,
+            controller: {
+              my: true, // API quirk: can be true for visible rooms
+              level: 3,
+              // NO owner property - indicates this is not actually owned
+              ticksToDowngrade: 1000 // Would trigger warning if checked incorrectly
+            } as StructureController
+          } as Room
+        }
+      };
+
+      const mockMemory = {} as Memory;
+      const healthStatus = {
+        score: 75,
+        state: HealthState.DEGRADED,
+        metrics: { workforce: 30, energy: 22, spawn: 18, infrastructure: 5 },
+        timestamp: 1000
+      };
+
+      const detector = new WarningDetector({ controllerDowngradeMargin: 5000 });
+      const warnings = detector.detectWarnings(mockGame as never, mockMemory, healthStatus);
+
+      // The W54N48 room should NOT generate a controller downgrade warning
+      // because it doesn't have an owner property
+      const controllerWarnings = warnings.filter(w => w.type === WarningType.CONTROLLER_DOWNGRADE);
+      expect(controllerWarnings).toHaveLength(0);
+
+      // Verify W54N48 is NOT in any warning messages
+      const w54n48Warning = warnings.find(w => w.message?.includes("W54N48"));
+      expect(w54n48Warning).toBeUndefined();
+    });
+
+    it("should generate warnings for owned rooms with low ticksToDowngrade", async () => {
+      const { WarningDetector, WarningType } = await import(
+        "../../../packages/bot/src/runtime/health/WarningDetector"
+      );
+      const { HealthState } = await import("../../../packages/bot/src/runtime/health/HealthMonitor");
+
+      const mockGame = {
+        time: 1000,
+        cpu: { limit: 100, getUsed: () => 10 } as CPU,
+        creeps: {
+          creep1: { memory: { role: "harvester" } },
+          creep2: { memory: { role: "harvester" } }
+        } as Record<string, Creep>,
+        spawns: {},
+        rooms: {
+          // This room is actually owned and at risk of downgrade
+          W1N4: {
+            energyAvailable: 800,
+            controller: {
+              my: true,
+              level: 4,
+              owner: { username: "testPlayer" }, // Has owner - actually owned
+              ticksToDowngrade: 2000 // Below margin, should trigger warning
+            } as StructureController
+          } as Room
+        }
+      };
+
+      const mockMemory = {} as Memory;
+      const healthStatus = {
+        score: 65,
+        state: HealthState.DEGRADED,
+        metrics: { workforce: 25, energy: 20, spawn: 15, infrastructure: 5 },
+        timestamp: 1000
+      };
+
+      const detector = new WarningDetector({ controllerDowngradeMargin: 5000 });
+      const warnings = detector.detectWarnings(mockGame as never, mockMemory, healthStatus);
+
+      // Should generate a warning for the owned room W1N4
+      const controllerWarnings = warnings.filter(w => w.type === WarningType.CONTROLLER_DOWNGRADE);
+      expect(controllerWarnings).toHaveLength(1);
+      expect(controllerWarnings[0].message).toContain("W1N4");
+      expect(controllerWarnings[0].severity).toBe("critical"); // 2000 < 5000/2
+    });
+
+    it("should not generate energy starvation warnings for visible but unowned rooms", async () => {
+      const { WarningDetector, WarningType } = await import(
+        "../../../packages/bot/src/runtime/health/WarningDetector"
+      );
+      const { HealthState } = await import("../../../packages/bot/src/runtime/health/HealthMonitor");
+
+      const mockGame = {
+        time: 1000,
+        cpu: { limit: 100, getUsed: () => 10 } as CPU,
+        creeps: {
+          creep1: { memory: { role: "harvester" } },
+          creep2: { memory: { role: "harvester" } }
+        } as Record<string, Creep>,
+        spawns: {},
+        rooms: {
+          // Owned room with sufficient energy
+          W1N1: {
+            energyAvailable: 500,
+            controller: {
+              my: true,
+              level: 4,
+              owner: { username: "testPlayer" }
+            } as StructureController
+          } as Room,
+          // Visible but unowned room with zero energy
+          W54N48: {
+            energyAvailable: 0,
+            controller: {
+              my: true, // API quirk
+              level: 3
+              // No owner - not actually owned
+            } as StructureController
+          } as Room
+        }
+      };
+
+      const mockMemory = {} as Memory;
+      const healthStatus = {
+        score: 75,
+        state: HealthState.DEGRADED,
+        metrics: { workforce: 30, energy: 22, spawn: 18, infrastructure: 5 },
+        timestamp: 1000
+      };
+
+      const detector = new WarningDetector({ energyStarvationThreshold: 300 });
+      const warnings = detector.detectWarnings(mockGame as never, mockMemory, healthStatus);
+
+      // The W54N48 room's zero energy should not affect the energy calculation
+      // Only W1N1's 500 energy should be counted, which is above threshold
+      const energyWarning = warnings.find(w => w.type === WarningType.ENERGY_STARVATION);
+      expect(energyWarning).toBeUndefined();
+    });
+  });
 });
