@@ -1,5 +1,5 @@
 import type { GameContext, RoomLike } from "@runtime/types/GameContext";
-import { BasePlanner } from "@runtime/planning/BasePlanner";
+import { BasePlanner, type LayoutStrategy } from "@runtime/planning/BasePlanner";
 
 interface RoomConstructionState {
   planner: BasePlanner;
@@ -7,8 +7,25 @@ interface RoomConstructionState {
 }
 
 /**
+ * Configuration options for ConstructionManager.
+ */
+export interface ConstructionManagerConfig {
+  /** Logger instance (default: console) */
+  logger?: Pick<Console, "log" | "warn">;
+  /** Maximum construction sites to create per tick (default: 5) */
+  maxSitesPerTick?: number;
+  /** Maximum construction sites per room per tick (default: 1) */
+  maxSitesPerRoom?: number;
+  /** Default layout strategy for new rooms (default: "bunker") */
+  defaultStrategy?: LayoutStrategy;
+  /** Enable visualization for all rooms (default: false) */
+  enableVisualization?: boolean;
+}
+
+/**
  * Manages automatic construction site creation for all owned rooms.
  * Uses BasePlanner to determine optimal structure placement.
+ * Supports multiple layout strategies (bunker, stamp).
  */
 export class ConstructionManager {
   private readonly roomPlanners: Map<string, RoomConstructionState> = new Map();
@@ -20,11 +37,27 @@ export class ConstructionManager {
   private readonly okCode: number;
   private readonly errFull: number;
   private readonly errRclNotEnough: number;
+  private readonly defaultStrategy: LayoutStrategy;
+  private readonly enableVisualization: boolean;
+  private readonly logger: Pick<Console, "log" | "warn">;
 
+  /**
+   * Create a ConstructionManager.
+   *
+   * @param configOrLogger - Config object or legacy logger argument
+   * @param maxSitesPerTick - (Legacy) Maximum sites per tick
+   * @param maxSitesPerRoom - (Legacy) Maximum sites per room per tick
+   * @param findMySpawns - (Legacy) FindConstant for spawns
+   * @param findStructures - (Legacy) FindConstant for structures
+   * @param findConstructionSites - (Legacy) FindConstant for construction sites
+   * @param okCode - (Legacy) OK return code
+   * @param errFull - (Legacy) ERR_FULL return code
+   * @param errRclNotEnough - (Legacy) ERR_RCL_NOT_ENOUGH return code
+   */
   public constructor(
-    private readonly logger: Pick<Console, "log" | "warn"> = console,
-    maxSitesPerTick: number = 5,
-    maxSitesPerRoom: number = 1,
+    configOrLogger: ConstructionManagerConfig | Pick<Console, "log" | "warn"> = {},
+    maxSitesPerTick?: number,
+    maxSitesPerRoom?: number,
     findMySpawns?: FindConstant,
     findStructures?: FindConstant,
     findConstructionSites?: FindConstant,
@@ -32,16 +65,86 @@ export class ConstructionManager {
     errFull?: number,
     errRclNotEnough?: number
   ) {
-    this.maxSitesPerTick = maxSitesPerTick;
-    this.maxSitesPerRoom = maxSitesPerRoom;
-    // Use lazy evaluation - only access global constants if not provided
-    this.findMySpawns = findMySpawns ?? (typeof FIND_MY_SPAWNS !== "undefined" ? FIND_MY_SPAWNS : 104);
-    this.findStructures = findStructures ?? (typeof FIND_STRUCTURES !== "undefined" ? FIND_STRUCTURES : 107);
-    this.findConstructionSites =
-      findConstructionSites ?? (typeof FIND_MY_CONSTRUCTION_SITES !== "undefined" ? FIND_MY_CONSTRUCTION_SITES : 114);
-    this.okCode = okCode ?? (typeof OK !== "undefined" ? OK : 0);
-    this.errFull = errFull ?? (typeof ERR_FULL !== "undefined" ? ERR_FULL : -8);
-    this.errRclNotEnough = errRclNotEnough ?? (typeof ERR_RCL_NOT_ENOUGH !== "undefined" ? ERR_RCL_NOT_ENOUGH : -14);
+    // Detect if using legacy positional arguments (configOrLogger is a logger with log/warn methods)
+    const isLegacyCall =
+      configOrLogger !== null &&
+      typeof configOrLogger === "object" &&
+      (typeof (configOrLogger as Pick<Console, "log" | "warn">).log === "function" ||
+        typeof (configOrLogger as Pick<Console, "log" | "warn">).warn === "function") &&
+      maxSitesPerTick !== undefined;
+
+    if (isLegacyCall) {
+      // Legacy constructor signature
+      this.logger = configOrLogger as Pick<Console, "log" | "warn">;
+      this.maxSitesPerTick = maxSitesPerTick ?? 5;
+      this.maxSitesPerRoom = maxSitesPerRoom ?? 1;
+      this.findMySpawns = findMySpawns ?? (typeof FIND_MY_SPAWNS !== "undefined" ? FIND_MY_SPAWNS : 104);
+      this.findStructures = findStructures ?? (typeof FIND_STRUCTURES !== "undefined" ? FIND_STRUCTURES : 107);
+      this.findConstructionSites =
+        findConstructionSites ?? (typeof FIND_MY_CONSTRUCTION_SITES !== "undefined" ? FIND_MY_CONSTRUCTION_SITES : 114);
+      this.okCode = okCode ?? (typeof OK !== "undefined" ? OK : 0);
+      this.errFull = errFull ?? (typeof ERR_FULL !== "undefined" ? ERR_FULL : -8);
+      this.errRclNotEnough = errRclNotEnough ?? (typeof ERR_RCL_NOT_ENOUGH !== "undefined" ? ERR_RCL_NOT_ENOUGH : -14);
+      this.defaultStrategy = "bunker";
+      this.enableVisualization = false;
+    } else {
+      // New config object signature
+      const config = configOrLogger as ConstructionManagerConfig;
+      this.logger = config.logger ?? console;
+      this.maxSitesPerTick = config.maxSitesPerTick ?? 5;
+      this.maxSitesPerRoom = config.maxSitesPerRoom ?? 1;
+      this.defaultStrategy = config.defaultStrategy ?? "bunker";
+      this.enableVisualization = config.enableVisualization ?? false;
+      this.findMySpawns = typeof FIND_MY_SPAWNS !== "undefined" ? FIND_MY_SPAWNS : 104;
+      this.findStructures = typeof FIND_STRUCTURES !== "undefined" ? FIND_STRUCTURES : 107;
+      this.findConstructionSites =
+        typeof FIND_MY_CONSTRUCTION_SITES !== "undefined" ? FIND_MY_CONSTRUCTION_SITES : 114;
+      this.okCode = typeof OK !== "undefined" ? OK : 0;
+      this.errFull = typeof ERR_FULL !== "undefined" ? ERR_FULL : -8;
+      this.errRclNotEnough = typeof ERR_RCL_NOT_ENOUGH !== "undefined" ? ERR_RCL_NOT_ENOUGH : -14;
+    }
+  }
+
+  /**
+   * Get the current default layout strategy.
+   */
+  public getDefaultStrategy(): LayoutStrategy {
+    return this.defaultStrategy;
+  }
+
+  /**
+   * Set layout strategy for a specific room.
+   *
+   * @param roomName - Room to configure
+   * @param strategy - Layout strategy to use
+   */
+  public setRoomStrategy(roomName: string, strategy: LayoutStrategy): void {
+    const state = this.roomPlanners.get(roomName);
+    if (state) {
+      // Replace planner with new strategy
+      this.roomPlanners.set(roomName, {
+        planner: new BasePlanner(roomName, {
+          strategy,
+          enableVisualization: this.enableVisualization
+        }),
+        lastPlannedRCL: 0 // Reset to force replanning
+      });
+    }
+  }
+
+  /**
+   * Get layout statistics for a room.
+   *
+   * @param roomName - Room to get stats for
+   * @param rcl - RCL to calculate stats for (default: 8)
+   * @returns Layout statistics or null if room not planned
+   */
+  public getRoomLayoutStats(roomName: string, rcl: number = 8): ReturnType<BasePlanner["getLayoutStats"]> | null {
+    const state = this.roomPlanners.get(roomName);
+    if (!state) {
+      return null;
+    }
+    return state.planner.getLayoutStats(rcl);
   }
 
   /**
@@ -85,7 +188,10 @@ export class ConstructionManager {
     let state = this.roomPlanners.get(room.name);
     if (!state) {
       state = {
-        planner: new BasePlanner(room.name),
+        planner: new BasePlanner(room.name, {
+          strategy: this.defaultStrategy,
+          enableVisualization: this.enableVisualization
+        }),
         lastPlannedRCL: 0
       };
       this.roomPlanners.set(room.name, state);
@@ -144,5 +250,39 @@ export class ConstructionManager {
    */
   public resetRoom(roomName: string): void {
     this.roomPlanners.delete(roomName);
+  }
+
+  /**
+   * Visualize planned layouts for all managed rooms.
+   *
+   * @param game - Game context with rooms
+   * @param rcl - RCL to show layouts for (default: current room RCL)
+   * @param showLabels - Show structure type labels (default: false)
+   * @returns Total structures visualized across all rooms
+   */
+  public visualizeAll(game: GameContext, rcl?: number, showLabels: boolean = false): number {
+    let totalVisualized = 0;
+
+    for (const [roomName, state] of this.roomPlanners) {
+      const room = game.rooms[roomName];
+      if (!room?.visual) {
+        continue;
+      }
+
+      const targetRCL = rcl ?? (room.controller?.level ?? 8);
+      totalVisualized += state.planner.visualize(room, targetRCL, showLabels);
+    }
+
+    return totalVisualized;
+  }
+
+  /**
+   * Get the BasePlanner for a specific room.
+   *
+   * @param roomName - Room name to get planner for
+   * @returns BasePlanner instance or undefined if room not managed
+   */
+  public getPlanner(roomName: string): BasePlanner | undefined {
+    return this.roomPlanners.get(roomName)?.planner;
   }
 }

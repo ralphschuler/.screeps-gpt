@@ -12,6 +12,23 @@ interface StructurePlan {
 }
 
 /**
+ * Available layout strategies for base planning.
+ * - bunker: Compact, high-defense layout with all structures within rampart range
+ * - stamp: Modular layout using smaller reusable patterns
+ */
+export type LayoutStrategy = "bunker" | "stamp";
+
+/**
+ * Configuration options for the BasePlanner.
+ */
+export interface BasePlannerConfig {
+  /** Layout strategy to use (default: "bunker") */
+  strategy?: LayoutStrategy;
+  /** Enable visualization support (default: false) */
+  enableVisualization?: boolean;
+}
+
+/**
  * Spawn placement scoring constants for findBestOpenSpace algorithm.
  * These values determine optimal spawn location in newly claimed rooms.
  */
@@ -58,19 +75,22 @@ const SPAWN_PLACEMENT = {
 } as const;
 
 /**
- * Plans and manages automatic base building using a bunker layout pattern.
- * Based on the Screeps wiki automatic base building guide.
+ * Plans and manages automatic base building using configurable layout patterns.
+ * Supports bunker (compact, high-defense) and stamp (modular, expandable) strategies.
+ * Based on community research from Sy-Harabi's guide and ScreepsPlus wiki.
  */
 export class BasePlanner {
   private readonly roomName: string;
   private anchor: RoomPosition | null = null;
+  private readonly strategy: LayoutStrategy;
+  private readonly enableVisualization: boolean;
 
   /**
    * Chess/checkerboard pattern layout centered around spawn
    * Offsets are relative to the anchor point (spawn position)
    * Structures are placed at even-sum coordinates (dx+dy is even)
    * This ensures all 8 adjacent tiles to spawn remain walkable for creeps
-   * Covers RCL 1-5 for Phase 3 requirements
+   * Covers RCL 1-8 for complete base planning
    */
   private readonly bunkerLayout: Array<{
     type: BuildableStructureConstant;
@@ -133,11 +153,285 @@ export class BasePlanner {
     { type: "extension" as BuildableStructureConstant, dx: -2, dy: -6, rcl: 5 },
 
     // RCL 5: Second tower
-    { type: "tower" as BuildableStructureConstant, dx: 4, dy: -2, rcl: 5 }
+    { type: "tower" as BuildableStructureConstant, dx: -2, dy: -4, rcl: 5 },
+
+    // RCL 6: Terminal (1 allowed)
+    { type: "terminal" as BuildableStructureConstant, dx: -6, dy: -4, rcl: 6 },
+
+    // RCL 6: Extractor (1 allowed) - placed dynamically based on mineral position
+
+    // RCL 6: Labs (3 allowed) - compact cluster for reactions
+    { type: "lab" as BuildableStructureConstant, dx: 6, dy: 4, rcl: 6 },
+    { type: "lab" as BuildableStructureConstant, dx: 6, dy: 6, rcl: 6 },
+    { type: "lab" as BuildableStructureConstant, dx: 4, dy: 6, rcl: 6 },
+
+    // RCL 6: More extensions (40 total, 10 more)
+    { type: "extension" as BuildableStructureConstant, dx: -6, dy: -2, rcl: 6 },
+    { type: "extension" as BuildableStructureConstant, dx: -4, dy: -6, rcl: 6 },
+    { type: "extension" as BuildableStructureConstant, dx: 6, dy: -4, rcl: 6 },
+    { type: "extension" as BuildableStructureConstant, dx: 4, dy: -6, rcl: 6 },
+    { type: "extension" as BuildableStructureConstant, dx: -6, dy: 4, rcl: 6 },
+    { type: "extension" as BuildableStructureConstant, dx: 8, dy: 0, rcl: 6 },
+    { type: "extension" as BuildableStructureConstant, dx: 0, dy: 8, rcl: 6 },
+    { type: "extension" as BuildableStructureConstant, dx: -8, dy: 0, rcl: 6 },
+    { type: "extension" as BuildableStructureConstant, dx: 0, dy: -8, rcl: 6 },
+    { type: "extension" as BuildableStructureConstant, dx: -6, dy: 6, rcl: 6 },
+
+    // RCL 6: Third link (3 allowed)
+    { type: "link" as BuildableStructureConstant, dx: 6, dy: -6, rcl: 6 },
+
+    // RCL 7: Second spawn (2 allowed)
+    { type: "spawn" as BuildableStructureConstant, dx: -2, dy: 2, rcl: 7 },
+
+    // RCL 7: Third tower (3 allowed)
+    { type: "tower" as BuildableStructureConstant, dx: 2, dy: 2, rcl: 7 },
+
+    // RCL 7: Factory (1 allowed)
+    { type: "factory" as BuildableStructureConstant, dx: -6, dy: -6, rcl: 7 },
+
+    // RCL 7: More labs (6 total, 3 more)
+    { type: "lab" as BuildableStructureConstant, dx: 8, dy: 4, rcl: 7 },
+    { type: "lab" as BuildableStructureConstant, dx: 8, dy: 6, rcl: 7 },
+    { type: "lab" as BuildableStructureConstant, dx: 8, dy: 8, rcl: 7 },
+
+    // RCL 7: Fourth link (4 allowed)
+    { type: "link" as BuildableStructureConstant, dx: -8, dy: 2, rcl: 7 },
+
+    // RCL 7: More extensions (50 total, 10 more)
+    { type: "extension" as BuildableStructureConstant, dx: 8, dy: 2, rcl: 7 },
+    { type: "extension" as BuildableStructureConstant, dx: 2, dy: 8, rcl: 7 },
+    { type: "extension" as BuildableStructureConstant, dx: -8, dy: -2, rcl: 7 },
+    { type: "extension" as BuildableStructureConstant, dx: -2, dy: -8, rcl: 7 },
+    { type: "extension" as BuildableStructureConstant, dx: 8, dy: -2, rcl: 7 },
+    { type: "extension" as BuildableStructureConstant, dx: -8, dy: 4, rcl: 7 },
+    { type: "extension" as BuildableStructureConstant, dx: 4, dy: 8, rcl: 7 },
+    { type: "extension" as BuildableStructureConstant, dx: -4, dy: 8, rcl: 7 },
+    { type: "extension" as BuildableStructureConstant, dx: -8, dy: -4, rcl: 7 },
+    { type: "extension" as BuildableStructureConstant, dx: 2, dy: -8, rcl: 7 },
+
+    // RCL 8: Third spawn (3 allowed)
+    { type: "spawn" as BuildableStructureConstant, dx: 2, dy: -2, rcl: 8 },
+
+    // RCL 8: Three more towers (6 total)
+    { type: "tower" as BuildableStructureConstant, dx: -4, dy: 2, rcl: 8 },
+    { type: "tower" as BuildableStructureConstant, dx: 4, dy: 2, rcl: 8 },
+    { type: "tower" as BuildableStructureConstant, dx: -2, dy: 4, rcl: 8 },
+
+    // RCL 8: Observer (1 allowed)
+    { type: "observer" as BuildableStructureConstant, dx: -8, dy: 8, rcl: 8 },
+
+    // RCL 8: Power Spawn (1 allowed)
+    { type: "powerSpawn" as BuildableStructureConstant, dx: -4, dy: 4, rcl: 8 },
+
+    // RCL 8: Nuker (1 allowed)
+    { type: "nuker" as BuildableStructureConstant, dx: 8, dy: -8, rcl: 8 },
+
+    // RCL 8: More labs (10 total, 4 more)
+    { type: "lab" as BuildableStructureConstant, dx: 6, dy: 8, rcl: 8 },
+    { type: "lab" as BuildableStructureConstant, dx: 4, dy: 8, rcl: 8 },
+    { type: "lab" as BuildableStructureConstant, dx: 10, dy: 6, rcl: 8 },
+    { type: "lab" as BuildableStructureConstant, dx: 10, dy: 4, rcl: 8 },
+
+    // RCL 8: Two more links (6 total)
+    { type: "link" as BuildableStructureConstant, dx: 8, dy: -4, rcl: 8 },
+    { type: "link" as BuildableStructureConstant, dx: -8, dy: -6, rcl: 8 },
+
+    // RCL 8: More extensions (60 total, 10 more)
+    { type: "extension" as BuildableStructureConstant, dx: -4, dy: -8, rcl: 8 },
+    { type: "extension" as BuildableStructureConstant, dx: 4, dy: -8, rcl: 8 },
+    { type: "extension" as BuildableStructureConstant, dx: -8, dy: 6, rcl: 8 },
+    { type: "extension" as BuildableStructureConstant, dx: 6, dy: -8, rcl: 8 },
+    { type: "extension" as BuildableStructureConstant, dx: -6, dy: -8, rcl: 8 },
+    { type: "extension" as BuildableStructureConstant, dx: -6, dy: 8, rcl: 8 },
+    { type: "extension" as BuildableStructureConstant, dx: 8, dy: -6, rcl: 8 },
+    { type: "extension" as BuildableStructureConstant, dx: -8, dy: -8, rcl: 8 },
+    { type: "extension" as BuildableStructureConstant, dx: 10, dy: 0, rcl: 8 },
+    { type: "extension" as BuildableStructureConstant, dx: 0, dy: 10, rcl: 8 }
   ];
 
-  public constructor(roomName: string) {
+  /**
+   * Stamp-based layout using modular patterns
+   * More flexible than bunker, adapts better to irregular terrain
+   * Uses smaller repeatable stamps: extension clusters, lab clusters, tower triangles
+   */
+  private readonly stampLayout: Array<{
+    type: BuildableStructureConstant;
+    dx: number;
+    dy: number;
+    rcl: number;
+  }> = [
+    // Core stamp: Spawn and immediate surroundings
+    { type: "spawn" as BuildableStructureConstant, dx: 0, dy: 0, rcl: 1 },
+
+    // Extension cluster 1 (flower pattern around spawn) - RCL 2
+    { type: "extension" as BuildableStructureConstant, dx: 1, dy: 1, rcl: 2 },
+    { type: "extension" as BuildableStructureConstant, dx: -1, dy: 1, rcl: 2 },
+    { type: "extension" as BuildableStructureConstant, dx: 1, dy: -1, rcl: 2 },
+    { type: "extension" as BuildableStructureConstant, dx: -1, dy: -1, rcl: 2 },
+    { type: "extension" as BuildableStructureConstant, dx: 2, dy: 0, rcl: 2 },
+
+    // Container near spawn
+    { type: "container" as BuildableStructureConstant, dx: -2, dy: 0, rcl: 2 },
+
+    // Extension cluster 2 - RCL 3
+    { type: "extension" as BuildableStructureConstant, dx: 0, dy: 2, rcl: 3 },
+    { type: "extension" as BuildableStructureConstant, dx: 3, dy: 1, rcl: 3 },
+    { type: "extension" as BuildableStructureConstant, dx: 3, dy: -1, rcl: 3 },
+    { type: "extension" as BuildableStructureConstant, dx: -2, dy: 2, rcl: 3 },
+    { type: "extension" as BuildableStructureConstant, dx: 2, dy: 2, rcl: 3 },
+
+    // Tower 1 - central defense
+    { type: "tower" as BuildableStructureConstant, dx: -3, dy: 0, rcl: 3 },
+
+    // Storage - RCL 4
+    { type: "storage" as BuildableStructureConstant, dx: 0, dy: -2, rcl: 4 },
+
+    // Extension cluster 3 - RCL 4
+    { type: "extension" as BuildableStructureConstant, dx: -2, dy: -2, rcl: 4 },
+    { type: "extension" as BuildableStructureConstant, dx: 2, dy: -2, rcl: 4 },
+    { type: "extension" as BuildableStructureConstant, dx: 4, dy: 0, rcl: 4 },
+    { type: "extension" as BuildableStructureConstant, dx: 0, dy: -3, rcl: 4 },
+    { type: "extension" as BuildableStructureConstant, dx: -3, dy: 2, rcl: 4 },
+    { type: "extension" as BuildableStructureConstant, dx: 3, dy: 2, rcl: 4 },
+    { type: "extension" as BuildableStructureConstant, dx: 4, dy: 1, rcl: 4 },
+    { type: "extension" as BuildableStructureConstant, dx: 4, dy: -1, rcl: 4 },
+    { type: "extension" as BuildableStructureConstant, dx: -4, dy: 0, rcl: 4 },
+    { type: "extension" as BuildableStructureConstant, dx: -4, dy: 1, rcl: 4 },
+
+    // Links - RCL 5
+    { type: "link" as BuildableStructureConstant, dx: 1, dy: -2, rcl: 5 },
+    { type: "link" as BuildableStructureConstant, dx: -1, dy: 2, rcl: 5 },
+
+    // Extension cluster 4 - RCL 5
+    { type: "extension" as BuildableStructureConstant, dx: -4, dy: -1, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: -3, dy: -2, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: 3, dy: -2, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: 0, dy: 3, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: -2, dy: 3, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: 2, dy: 3, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: 5, dy: 0, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: 5, dy: 1, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: -5, dy: 0, rcl: 5 },
+    { type: "extension" as BuildableStructureConstant, dx: -5, dy: 1, rcl: 5 },
+
+    // Tower 2 - RCL 5
+    { type: "tower" as BuildableStructureConstant, dx: 3, dy: 0, rcl: 5 },
+
+    // Terminal - RCL 6
+    { type: "terminal" as BuildableStructureConstant, dx: -1, dy: -2, rcl: 6 },
+
+    // Lab cluster (diamond pattern) - RCL 6
+    { type: "lab" as BuildableStructureConstant, dx: 5, dy: 2, rcl: 6 },
+    { type: "lab" as BuildableStructureConstant, dx: 6, dy: 2, rcl: 6 },
+    { type: "lab" as BuildableStructureConstant, dx: 5, dy: 3, rcl: 6 },
+
+    // Extension cluster 5 - RCL 6
+    { type: "extension" as BuildableStructureConstant, dx: -5, dy: -1, rcl: 6 },
+    { type: "extension" as BuildableStructureConstant, dx: -4, dy: -2, rcl: 6 },
+    { type: "extension" as BuildableStructureConstant, dx: 4, dy: -2, rcl: 6 },
+    { type: "extension" as BuildableStructureConstant, dx: 5, dy: -1, rcl: 6 },
+    { type: "extension" as BuildableStructureConstant, dx: -3, dy: 3, rcl: 6 },
+    { type: "extension" as BuildableStructureConstant, dx: 3, dy: 3, rcl: 6 },
+    { type: "extension" as BuildableStructureConstant, dx: 0, dy: 4, rcl: 6 },
+    { type: "extension" as BuildableStructureConstant, dx: -2, dy: 4, rcl: 6 },
+    { type: "extension" as BuildableStructureConstant, dx: 2, dy: 4, rcl: 6 },
+    { type: "extension" as BuildableStructureConstant, dx: 4, dy: 2, rcl: 6 },
+
+    // Link 3 - RCL 6
+    { type: "link" as BuildableStructureConstant, dx: -5, dy: 2, rcl: 6 },
+
+    // Second spawn - RCL 7
+    { type: "spawn" as BuildableStructureConstant, dx: 0, dy: 1, rcl: 7 },
+
+    // Tower 3 - RCL 7
+    { type: "tower" as BuildableStructureConstant, dx: -3, dy: -1, rcl: 7 },
+
+    // Factory - RCL 7
+    { type: "factory" as BuildableStructureConstant, dx: -2, dy: -3, rcl: 7 },
+
+    // More labs - RCL 7
+    { type: "lab" as BuildableStructureConstant, dx: 6, dy: 3, rcl: 7 },
+    { type: "lab" as BuildableStructureConstant, dx: 7, dy: 2, rcl: 7 },
+    { type: "lab" as BuildableStructureConstant, dx: 7, dy: 3, rcl: 7 },
+
+    // Link 4 - RCL 7
+    { type: "link" as BuildableStructureConstant, dx: 2, dy: -3, rcl: 7 },
+
+    // Extension cluster 6 - RCL 7
+    { type: "extension" as BuildableStructureConstant, dx: 6, dy: 0, rcl: 7 },
+    { type: "extension" as BuildableStructureConstant, dx: 6, dy: 1, rcl: 7 },
+    { type: "extension" as BuildableStructureConstant, dx: -6, dy: 0, rcl: 7 },
+    { type: "extension" as BuildableStructureConstant, dx: -6, dy: 1, rcl: 7 },
+    { type: "extension" as BuildableStructureConstant, dx: -4, dy: 3, rcl: 7 },
+    { type: "extension" as BuildableStructureConstant, dx: 4, dy: 3, rcl: 7 },
+    { type: "extension" as BuildableStructureConstant, dx: 1, dy: 4, rcl: 7 },
+    { type: "extension" as BuildableStructureConstant, dx: -1, dy: 4, rcl: 7 },
+    { type: "extension" as BuildableStructureConstant, dx: 0, dy: -4, rcl: 7 },
+    { type: "extension" as BuildableStructureConstant, dx: 1, dy: -3, rcl: 7 },
+
+    // Third spawn - RCL 8
+    { type: "spawn" as BuildableStructureConstant, dx: 0, dy: -1, rcl: 8 },
+
+    // Three more towers - RCL 8
+    { type: "tower" as BuildableStructureConstant, dx: 3, dy: -1, rcl: 8 },
+    { type: "tower" as BuildableStructureConstant, dx: -1, dy: 3, rcl: 8 },
+    { type: "tower" as BuildableStructureConstant, dx: 1, dy: 3, rcl: 8 },
+
+    // Observer - RCL 8
+    { type: "observer" as BuildableStructureConstant, dx: -6, dy: -3, rcl: 8 },
+
+    // Power Spawn - RCL 8
+    { type: "powerSpawn" as BuildableStructureConstant, dx: -1, dy: -3, rcl: 8 },
+
+    // Nuker - RCL 8
+    { type: "nuker" as BuildableStructureConstant, dx: 6, dy: -3, rcl: 8 },
+
+    // More labs - RCL 8
+    { type: "lab" as BuildableStructureConstant, dx: 5, dy: 4, rcl: 8 },
+    { type: "lab" as BuildableStructureConstant, dx: 6, dy: 4, rcl: 8 },
+    { type: "lab" as BuildableStructureConstant, dx: 7, dy: 4, rcl: 8 },
+    { type: "lab" as BuildableStructureConstant, dx: 8, dy: 3, rcl: 8 },
+
+    // Two more links - RCL 8
+    { type: "link" as BuildableStructureConstant, dx: -3, dy: -3, rcl: 8 },
+    { type: "link" as BuildableStructureConstant, dx: 5, dy: -2, rcl: 8 },
+
+    // Extension cluster 7 - RCL 8
+    { type: "extension" as BuildableStructureConstant, dx: -1, dy: -4, rcl: 8 },
+    { type: "extension" as BuildableStructureConstant, dx: 1, dy: -4, rcl: 8 },
+    { type: "extension" as BuildableStructureConstant, dx: -5, dy: -2, rcl: 8 },
+    { type: "extension" as BuildableStructureConstant, dx: -6, dy: -1, rcl: 8 },
+    { type: "extension" as BuildableStructureConstant, dx: -6, dy: -2, rcl: 8 },
+    { type: "extension" as BuildableStructureConstant, dx: 6, dy: -1, rcl: 8 },
+    { type: "extension" as BuildableStructureConstant, dx: 6, dy: -2, rcl: 8 },
+    { type: "extension" as BuildableStructureConstant, dx: -5, dy: 3, rcl: 8 },
+    { type: "extension" as BuildableStructureConstant, dx: 5, dy: -3, rcl: 8 },
+    { type: "extension" as BuildableStructureConstant, dx: -2, dy: 5, rcl: 8 }
+  ];
+
+  public constructor(roomName: string, config: BasePlannerConfig = {}) {
     this.roomName = roomName;
+    this.strategy = config.strategy ?? "bunker";
+    this.enableVisualization = config.enableVisualization ?? false;
+  }
+
+  /**
+   * Get the current layout strategy.
+   */
+  public getStrategy(): LayoutStrategy {
+    return this.strategy;
+  }
+
+  /**
+   * Get the layout array for the current strategy.
+   */
+  private getLayout(): Array<{
+    type: BuildableStructureConstant;
+    dx: number;
+    dy: number;
+    rcl: number;
+  }> {
+    return this.strategy === "stamp" ? this.stampLayout : this.bunkerLayout;
   }
 
   /**
@@ -265,16 +559,17 @@ export class BasePlanner {
    */
   public getPlanForRCL(rcl: number, anchor: RoomPosition): StructurePlan[] {
     const plans: StructurePlan[] = [];
+    const layout = this.getLayout();
 
-    for (const layout of this.bunkerLayout) {
-      if (layout.rcl <= rcl) {
+    for (const item of layout) {
+      if (item.rcl <= rcl) {
         plans.push({
-          structureType: layout.type,
+          structureType: item.type,
           pos: {
-            x: anchor.x + layout.dx,
-            y: anchor.y + layout.dy
+            x: anchor.x + item.dx,
+            y: anchor.y + item.dy
           },
-          rcl: layout.rcl
+          rcl: item.rcl
         });
       }
     }
@@ -341,5 +636,193 @@ export class BasePlanner {
     }
 
     return missing;
+  }
+
+  /**
+   * Get structure color for visualization based on structure type.
+   */
+  private getStructureColor(structureType: BuildableStructureConstant): string {
+    const colors: Record<string, string> = {
+      spawn: "#ffff00",
+      extension: "#00ff00",
+      tower: "#ff0000",
+      storage: "#00ffff",
+      link: "#ff00ff",
+      terminal: "#ffa500",
+      lab: "#00ff88",
+      factory: "#888888",
+      observer: "#ffffff",
+      powerSpawn: "#ff8800",
+      nuker: "#ff0088",
+      container: "#aaaaaa",
+      road: "#666666",
+      rampart: "#008800",
+      constructedWall: "#444444",
+      extractor: "#8888ff"
+    };
+    return colors[structureType] ?? "#ffffff";
+  }
+
+  /**
+   * Visualize the planned base layout using Room.visual.
+   * Call this method each tick to show the layout overlay.
+   *
+   * @param room - Room to visualize in (must have visual property)
+   * @param rcl - RCL to show layout for (default: 8 for full layout)
+   * @param showLabels - Show structure type labels (default: false)
+   * @returns Number of structures visualized
+   */
+  public visualize(
+    room: { visual: RoomVisual; getTerrain: () => RoomTerrain },
+    rcl: number = 8,
+    showLabels: boolean = false
+  ): number {
+    if (!this.enableVisualization) {
+      return 0;
+    }
+
+    if (!this.anchor) {
+      const terrain = room.getTerrain();
+      // Try to calculate anchor for visualization
+      const bestPos = this.findBestOpenSpace(terrain);
+      if (bestPos) {
+        this.anchor = bestPos;
+      }
+    }
+
+    if (!this.anchor) {
+      return 0;
+    }
+
+    const plans = this.getPlanForRCL(rcl, this.anchor);
+    let count = 0;
+
+    for (const plan of plans) {
+      const color = this.getStructureColor(plan.structureType);
+
+      // Draw structure circle
+      room.visual.circle(plan.pos.x, plan.pos.y, {
+        radius: 0.35,
+        fill: color,
+        stroke: "#000000",
+        strokeWidth: 0.1,
+        opacity: 0.6
+      });
+
+      // Draw RCL indicator
+      room.visual.text(String(plan.rcl), plan.pos.x, plan.pos.y + 0.1, {
+        color: "#000000",
+        font: 0.4,
+        align: "center"
+      });
+
+      // Optionally draw structure type label
+      if (showLabels) {
+        const shortType = plan.structureType.substring(0, 3);
+        room.visual.text(shortType, plan.pos.x, plan.pos.y - 0.6, {
+          color: color,
+          font: 0.25,
+          align: "center",
+          opacity: 0.8
+        });
+      }
+
+      count++;
+    }
+
+    // Draw anchor point marker
+    room.visual.circle(this.anchor.x, this.anchor.y, {
+      radius: 0.5,
+      fill: "transparent",
+      stroke: "#ffff00",
+      strokeWidth: 0.15,
+      opacity: 1.0
+    });
+
+    // Draw info text
+    room.visual.text(
+      `${this.strategy.toUpperCase()} Layout | RCL ${rcl} | ${count} structures`,
+      this.anchor.x,
+      this.anchor.y - 2,
+      {
+        color: "#ffffff",
+        font: 0.5,
+        align: "center",
+        backgroundColor: "#000000",
+        backgroundPadding: 0.2
+      }
+    );
+
+    return count;
+  }
+
+  /**
+   * Get layout statistics for debugging and console commands.
+   *
+   * @param rcl - RCL to get statistics for (default: 8)
+   * @returns Object with layout statistics
+   */
+  public getLayoutStats(rcl: number = 8): {
+    strategy: LayoutStrategy;
+    totalStructures: number;
+    byType: Record<string, number>;
+    byRCL: Record<number, number>;
+    boundingBox: { minX: number; maxX: number; minY: number; maxY: number } | null;
+  } {
+    const layout = this.getLayout();
+    const filtered = layout.filter(item => item.rcl <= rcl);
+
+    const byType: Record<string, number> = {};
+    const byRCL: Record<number, number> = {};
+    let minX = Infinity,
+      maxX = -Infinity,
+      minY = Infinity,
+      maxY = -Infinity;
+
+    for (const item of filtered) {
+      byType[item.type] = (byType[item.type] ?? 0) + 1;
+      byRCL[item.rcl] = (byRCL[item.rcl] ?? 0) + 1;
+      minX = Math.min(minX, item.dx);
+      maxX = Math.max(maxX, item.dx);
+      minY = Math.min(minY, item.dy);
+      maxY = Math.max(maxY, item.dy);
+    }
+
+    return {
+      strategy: this.strategy,
+      totalStructures: filtered.length,
+      byType,
+      byRCL,
+      boundingBox:
+        filtered.length > 0
+          ? {
+              minX,
+              maxX,
+              minY,
+              maxY
+            }
+          : null
+    };
+  }
+
+  /**
+   * Get the room name this planner is configured for.
+   */
+  public getRoomName(): string {
+    return this.roomName;
+  }
+
+  /**
+   * Get the current anchor position if set.
+   */
+  public getAnchor(): RoomPosition | null {
+    return this.anchor;
+  }
+
+  /**
+   * Reset the anchor position to force recalculation.
+   */
+  public resetAnchor(): void {
+    this.anchor = null;
   }
 }
