@@ -324,7 +324,7 @@ runs:
         COPILOT_MCP_CONFIG: ${{ steps.mcp-config.outputs.mcp-config-file }}
         VERBOSE: ${{ inputs.verbose }}
         TIMEOUT_MINUTES: ${{ inputs.timeout }}
-        GITHUB_TOKEN: ${{ inputs.copilot-token }}
+        GH_TOKEN: ${{ inputs.copilot-token }}
       run: |
         set -euo pipefail
         export PATH="$HOME/.npm/_global/bin:$PATH"
