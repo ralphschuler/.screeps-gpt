@@ -127,8 +127,12 @@ describe("Harvester State Machine Serialization", () => {
         }),
         inRangeTo: vi.fn().mockReturnValue(true)
       } as unknown as RoomPosition,
-      get memory() { return creepMemory as CreepMemory; },
-      set memory(value: CreepMemory) { Object.assign(creepMemory, value); },
+      get memory() {
+        return creepMemory as CreepMemory;
+      },
+      set memory(value: CreepMemory) {
+        Object.assign(creepMemory, value);
+      },
       store: {
         getFreeCapacity: vi.fn(() => freeCapacity),
         getUsedCapacity: vi.fn(() => 50 - freeCapacity),

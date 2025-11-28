@@ -7,7 +7,6 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [0.180.0] - 2025-11-28
 
-
 ### Added
 
 - **Deployment**: Version history tracking for reliable rollback
@@ -22,7 +21,6 @@ All notable changes to this project are documented here. This changelog now main
   - Added unit tests and regression tests for deployment history tracking
   - Updated deployment rollback documentation with new rollback process
   - Resolves issue ralphschuler/.screeps-gpt#1496 (rollback lacks version history tracking)
-
 
 ## [0.176.0] - 2025-11-28
 
