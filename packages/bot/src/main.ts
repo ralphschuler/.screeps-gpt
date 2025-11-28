@@ -127,7 +127,7 @@ function validateGameContext(game: Game): GameContext {
  * Only runs initialization on first call or after Memory reset.
  */
 function ensureProfilerRunning(): void {
-  if (!__PROFILER_ENABLED__) {
+  if (__PROFILER_ENABLED__ !== "true") {
     return;
   }
 

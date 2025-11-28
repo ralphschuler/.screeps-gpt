@@ -14,8 +14,9 @@ let profilerEnabledCache: ProfilerCache | null = null;
 /**
  * Global flag to control profiler compilation
  * Set at build time via esbuild define
+ * Note: The value is a string "true" or "false", not a boolean
  */
-declare const __PROFILER_ENABLED__: boolean;
+declare const __PROFILER_ENABLED__: "true" | "false";
 
 /**
  * Fast profiler state check with tick-based caching
@@ -231,7 +232,8 @@ export function profile(
   _descriptor?: TypedPropertyDescriptor<Function>
 ): void {
   // Check if profiler is enabled at build time
-  if (typeof __PROFILER_ENABLED__ !== "undefined" && !__PROFILER_ENABLED__) {
+  // Note: __PROFILER_ENABLED__ is a string "true" or "false"
+  if (typeof __PROFILER_ENABLED__ !== "undefined" && __PROFILER_ENABLED__ !== "true") {
     return;
   }
 

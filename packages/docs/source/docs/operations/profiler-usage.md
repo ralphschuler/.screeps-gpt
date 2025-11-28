@@ -142,6 +142,36 @@ Profiler.start()
 
 Or wait for the next deployment - auto-start is enabled by default.
 
+### Profiler Data Returns Undefined
+
+If `Memory.profiler.data` returns undefined despite profiler being enabled:
+
+1. **Check build configuration**: Ensure `PROFILER_ENABLED` is set correctly
+   ```bash
+   # Build with profiler enabled (default)
+   yarn build
+   
+   # Verify in console
+   Profiler.status()  // Should return "Profiler is running"
+   ```
+
+2. **Verify Memory.profiler structure**: The profiler should auto-initialize Memory
+   ```javascript
+   // In console - check if structure exists
+   JSON.stringify(Memory.profiler)
+   // Expected: {"data":{},"total":0,"start":<tick>}
+   ```
+
+3. **Check for type mismatch**: The build system uses string `"true"` or `"false"` for
+   `__PROFILER_ENABLED__`. If runtime comparisons fail, verify the build output:
+   ```bash
+   # Check built output for correct conditionals
+   grep -A2 "ensureProfilerRunning" dist/main.js
+   # Should show `if (false)` when profiler is enabled
+   ```
+
+4. **Related issue**: [#1499](https://github.com/ralphschuler/.screeps-gpt/issues/1499) - Fixed a type mismatch where `__PROFILER_ENABLED__` was being interpreted as a boolean instead of a string, causing profiler data export to fail.
+
 ### High Memory Usage
 
 The retention policy should prevent this. If you see excessive `Memory.profiler` size:
@@ -170,3 +200,4 @@ Check `reports/profiler/archive-index.json` for archive history. Archives are up
 ## Related Issues
 
 - [#1490](https://github.com/ralphschuler/.screeps-gpt/issues/1490) - Profiler memory retention policy implementation
+- [#1499](https://github.com/ralphschuler/.screeps-gpt/issues/1499) - Profiler data export returns undefined - fixed type mismatch for `__PROFILER_ENABLED__`
