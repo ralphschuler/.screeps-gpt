@@ -1,7 +1,7 @@
 {
-  "fetchedAt": "2025-11-17T14:40:00.000Z",
-  "source": "placeholder",
+  "fetchedAt": "2025-11-28T18:52:18.895Z",
+  "source": "console-archive",
   "isEnabled": false,
   "hasData": false,
-  "error": "Profiler data not yet collected - awaiting first monitoring cycle after deployment"
+  "error": "\"undefined\" is not valid JSON"
 }
