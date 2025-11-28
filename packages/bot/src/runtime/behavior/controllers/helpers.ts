@@ -199,11 +199,16 @@ export function findLowEnergyTowers(
   return towers;
 }
 
+/** Threshold for detecting creeps near room exit (tiles from edge) */
+const NEAR_EXIT_THRESHOLD = 2;
+/** Upper bound for near-exit detection (ROOM_MAX - threshold) */
+const NEAR_EXIT_UPPER = 49 - NEAR_EXIT_THRESHOLD;
+
 /**
  * Helper function to move a creep to a target room.
  * Handles finding exit direction and navigating to room exits.
- * When at room edge (including after entering target room), moves toward room center
- * to avoid oscillation and cycling back through exits.
+ * When at or near room edge, moves toward target room center with fresh pathfinding
+ * to avoid oscillation, cached path issues, and ensure proper boundary crossing.
  *
  * Uses ignoreCreeps: true for better routing through narrow passages.
  *
@@ -213,41 +218,63 @@ export function findLowEnergyTowers(
  * @returns true if the creep is still moving (not yet safely in target room interior), false if done
  */
 export function moveToTargetRoom(creep: CreepLike, targetRoom: string, reusePath: number = 50): boolean {
-  // Check if creep is at room edge (coordinates 0 or 49)
-  const atEdge = creep.pos.x === 0 || creep.pos.x === 49 || creep.pos.y === 0 || creep.pos.y === 49;
+  const { x, y } = creep.pos;
+
+  // Check if creep is at or near room edge
+  // At edge: coordinates 0 or 49 (room boundary)
+  // Near exit: within NEAR_EXIT_THRESHOLD tiles of edge
+  const atEdge = x === 0 || x === 49 || y === 0 || y === 49;
+  const nearExit = x <= NEAR_EXIT_THRESHOLD || x >= NEAR_EXIT_UPPER || y <= NEAR_EXIT_THRESHOLD || y >= NEAR_EXIT_UPPER;
 
   if (creep.room.name === targetRoom) {
-    // If in target room but at edge, move toward center to avoid cycling back through exit
-    if (atEdge) {
-      // Use ignoreCreeps for better routing through narrow passages
+    // In target room but at/near edge - move toward center to avoid cycling back through exit
+    if (atEdge || nearExit) {
       creep.moveTo(new RoomPosition(ROOM_CENTER_X, ROOM_CENTER_Y, targetRoom), { reusePath: 0, ignoreCreeps: true });
       return true;
     }
     return false;
   }
 
-  // If at edge (not in target room), move directly to target room center to avoid oscillation
-  // Use reusePath: 0 to force fresh pathfinding and prevent cached path issues at room boundaries
-  if (atEdge) {
-    // Use ignoreCreeps for better routing through narrow passages
+  // Not in target room - need to navigate there
+  // When at edge or near exit, use fresh pathfinding toward target room center
+  // This prevents cached path issues and ensures proper room boundary crossing
+  if (atEdge || nearExit) {
     creep.moveTo(new RoomPosition(ROOM_CENTER_X, ROOM_CENTER_Y, targetRoom), { reusePath: 0, ignoreCreeps: true });
     return true;
   }
 
+  // Far from exit - use exit-based navigation for efficiency
+  // First try direct exit to target (for adjacent rooms)
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-  const exitDir: ExitConstant | ERR_NO_PATH | ERR_INVALID_ARGS = creep.room.findExitTo(targetRoom);
+  let exitDir: ExitConstant | ERR_NO_PATH | ERR_INVALID_ARGS = creep.room.findExitTo(targetRoom);
+
+  // If findExitTo fails (non-adjacent room), use Game.map.findRoute to find the path
+  if (exitDir === ERR_NO_PATH || exitDir === ERR_INVALID_ARGS) {
+    const route = Game.map.findRoute(creep.room.name, targetRoom);
+    if (route !== ERR_NO_PATH && Array.isArray(route) && route.length > 0) {
+      // Get the exit direction to the first room in the route
+      exitDir = route[0].exit;
+    } else {
+      // No valid route found - move directly toward target room center as fallback
+      creep.moveTo(new RoomPosition(ROOM_CENTER_X, ROOM_CENTER_Y, targetRoom), { reusePath, ignoreCreeps: true });
+      return true;
+    }
+  }
+
+  // Use exit-based navigation when we have a valid exit direction
   if (typeof exitDir === "number" && exitDir >= 1 && exitDir <= 8) {
-    const exitPositions = creep.room.find(exitDir as ExitConstant) as RoomPosition[];
+    const exitPositions = creep.room.find(exitDir) as RoomPosition[];
     if (exitPositions.length > 0) {
-      // Use ignoreCreeps for better routing through narrow passages
       const exitPos: RoomPosition | null = creep.pos.findClosestByPath(exitPositions, { ignoreCreeps: true });
       const actualExitPos: RoomPosition = exitPos ?? exitPositions[0];
-      // Use ignoreCreeps for better routing through narrow passages
       creep.moveTo(actualExitPos, { reusePath, ignoreCreeps: true });
       return true;
     }
   }
-  return false;
+
+  // Fallback: move directly toward target room center
+  creep.moveTo(new RoomPosition(ROOM_CENTER_X, ROOM_CENTER_Y, targetRoom), { reusePath, ignoreCreeps: true });
+  return true;
 }
 
 /**

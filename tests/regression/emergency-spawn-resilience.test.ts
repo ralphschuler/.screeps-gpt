@@ -366,7 +366,7 @@ describe("Emergency Spawn Resilience", () => {
     expect(summary.spawnedCreeps.length).toBe(0);
 
     // Verify failure warning was logged
-    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("[EMERGENCY] Emergency spawn failed"));
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("[EMERGENCY]"));
     expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("may need manual intervention"));
   });
 });

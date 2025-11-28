@@ -11,6 +11,7 @@ declare global {
   const ERR_INVALID_TARGET: -7;
   const ERR_FULL: -8;
   const ERR_NOT_IN_RANGE: -9;
+  const ERR_INVALID_ARGS: -10;
   const ERR_RCL_NOT_ENOUGH: -14;
 
   // Terrain constants
