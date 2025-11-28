@@ -77,9 +77,7 @@ describe("__PROFILER_ENABLED__ string type configuration", () => {
       const content = readFileSync(mainTsPath, "utf-8");
 
       // Extract the ensureProfilerRunning function
-      const functionMatch = content.match(
-        /function\s+ensureProfilerRunning\(\):\s*void\s*\{([\s\S]*?)\n\}/
-      );
+      const functionMatch = content.match(/function\s+ensureProfilerRunning\(\):\s*void\s*\{([\s\S]*?)\n\}/);
       expect(functionMatch).not.toBeNull();
 
       const functionBody = functionMatch![1];
@@ -94,9 +92,7 @@ describe("__PROFILER_ENABLED__ string type configuration", () => {
       const content = readFileSync(mainTsPath, "utf-8");
 
       // Extract the applyProfilerRetentionPolicy function
-      const functionMatch = content.match(
-        /function\s+applyProfilerRetentionPolicy\(\):\s*void\s*\{([\s\S]*?)\n\}/
-      );
+      const functionMatch = content.match(/function\s+applyProfilerRetentionPolicy\(\):\s*void\s*\{([\s\S]*?)\n\}/);
       expect(functionMatch).not.toBeNull();
 
       const functionBody = functionMatch![1];
