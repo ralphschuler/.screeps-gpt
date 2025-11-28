@@ -187,8 +187,8 @@ export class FlagCommandInterpreter {
         break;
 
       case FlagCommandType.ATTACK:
-        if (!this.hasAttackCreeps(game)) {
-          missingPrerequisites.push("No attack creeps available");
+        if (!this.hasAttackCapability(game)) {
+          missingPrerequisites.push("No attack creeps or spawn capacity available");
         }
         break;
 
@@ -219,6 +219,11 @@ export class FlagCommandInterpreter {
    * Minimum energy cost for claimer body (CLAIM + MOVE)
    */
   private static readonly CLAIMER_BODY_COST = 650;
+
+  /**
+   * Minimum energy cost for attacker body (2 TOUGH + 4 ATTACK + 4 MOVE = 560 energy)
+   */
+  private static readonly ATTACKER_BODY_COST = 560;
 
   /**
    * Check if bot has claimer capability (existing claimer OR spawn with capacity)
@@ -273,15 +278,29 @@ export class FlagCommandInterpreter {
   }
 
   /**
-   * Check if bot has attack creeps
+   * Check if bot has attack capability (existing attacker OR spawn with capacity)
+   * This allows attack flags to be valid even before an attacker is spawned.
    */
-  private hasAttackCreeps(game: GameContext): boolean {
+  private hasAttackCapability(game: GameContext): boolean {
+    // Check for existing attack creep
     for (const name in game.creeps) {
       const creep = game.creeps[name];
       if (creep?.memory?.role === "attacker" || creep?.memory?.role === "warrior" || creep?.memory?.role === "ranger") {
         return true;
       }
     }
+
+    // Check if any spawn can build an attacker body (560 energy for base attacker)
+    for (const spawnName in game.spawns) {
+      const spawn = game.spawns[spawnName];
+      // Check room energy capacity (what the room CAN hold when fully charged)
+      const room = spawn?.room;
+      const energyCapacity = room?.energyCapacityAvailable ?? 300;
+      if (energyCapacity >= FlagCommandInterpreter.ATTACKER_BODY_COST) {
+        return true;
+      }
+    }
+
     return false;
   }
 
@@ -363,6 +382,11 @@ export class FlagCommandInterpreter {
       this.enqueueExpansionRequest(command, memory, game);
     }
 
+    // When an ATTACK command is valid, enqueue attack request so RoleControllerManager spawns an attacker
+    if (command.type === FlagCommandType.ATTACK && validation.valid) {
+      this.enqueueAttackRequest(command, memory, game);
+    }
+
     this.logger.log?.(
       `[FlagCommand] ${command.type} command '${command.name}' in ${command.roomName} (${command.priority} priority) - ` +
         `${validation.valid ? "VALID" : `INVALID: ${validation.reason}`}`
@@ -421,6 +445,60 @@ export class FlagCommandInterpreter {
 
     this.logger.log?.(
       `[FlagCommand] Queued expansion to ${command.roomName} (priority: ${this.getPriorityValue(command.priority)})`
+    );
+  }
+
+  /**
+   * Enqueue an attack request for a valid ATTACK command.
+   * This ensures RoleControllerManager spawns an attacker for the target room.
+   */
+  private enqueueAttackRequest(command: FlagCommand, memory: Memory, game: GameContext): void {
+    // Initialize attack queue in memory if not present
+    memory.combat ??= {
+      attackQueue: [],
+      activeRaids: [],
+      lastAttackCheck: 0
+    };
+
+    // Type the attack queue
+    const attackQueue = memory.combat.attackQueue as Array<{
+      targetRoom: string;
+      priority: number;
+      reason: string;
+      requestedAt: number;
+      status: string;
+      flagName: string;
+      targetPos?: { x: number; y: number };
+    }>;
+
+    // Check if already queued
+    const existingRequest = attackQueue.find(
+      req => req.targetRoom === command.roomName && req.flagName === command.name
+    );
+    if (existingRequest) {
+      // Update priority if flag has higher priority
+      const flagPriority = this.getPriorityValue(command.priority);
+      if (flagPriority > existingRequest.priority) {
+        existingRequest.priority = flagPriority;
+        existingRequest.reason = `Flag command: ${command.name}`;
+        this.logger.log?.(`[FlagCommand] Updated attack priority for ${command.roomName} to ${flagPriority}`);
+      }
+      return;
+    }
+
+    // Add new attack request
+    attackQueue.push({
+      targetRoom: command.roomName,
+      priority: this.getPriorityValue(command.priority),
+      reason: `Flag command: ${command.name}`,
+      requestedAt: game.time,
+      status: "pending",
+      flagName: command.name,
+      targetPos: command.pos
+    });
+
+    this.logger.log?.(
+      `[FlagCommand] Queued attack to ${command.roomName} (priority: ${this.getPriorityValue(command.priority)})`
     );
   }
 
