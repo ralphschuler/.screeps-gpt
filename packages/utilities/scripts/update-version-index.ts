@@ -15,7 +15,7 @@ async function updateVersionIndex(): Promise<void> {
     slug: version.slug
   }));
 
-  const jsonPath = resolve("docs/changelog/versions.json");
+  const jsonPath = resolve("packages/docs/source/docs/changelog/versions.json");
   await mkdir(dirname(jsonPath), { recursive: true });
   await writeFile(jsonPath, `${JSON.stringify(releases, null, 2)}\n`, "utf8");
 
@@ -56,9 +56,18 @@ async function updateVersionIndex(): Promise<void> {
     }
   }
 
-  const markdownPath = resolve("docs/changelog/versions.md");
+  // Add Hexo front matter for the documentation site
+  const hexoMarkdownLines: string[] = [];
+  hexoMarkdownLines.push("---");
+  hexoMarkdownLines.push("title: Release History");
+  hexoMarkdownLines.push(`date: ${new Date().toISOString()}`);
+  hexoMarkdownLines.push("---");
+  hexoMarkdownLines.push("");
+  hexoMarkdownLines.push(...markdownLines);
+
+  const markdownPath = resolve("packages/docs/source/docs/changelog/versions.md");
   await mkdir(dirname(markdownPath), { recursive: true });
-  await writeFile(markdownPath, markdownLines.join("\n") + "\n", "utf8");
+  await writeFile(markdownPath, hexoMarkdownLines.join("\n") + "\n", "utf8");
 }
 
 updateVersionIndex().catch(error => {

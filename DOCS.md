@@ -1,6 +1,6 @@
 # Screeps GPT Developer Guide
 
-This document augments the main [README](README.md) with a practical onboarding walkthrough and curated learning resources for contributors who want to extend the autonomous Screeps AI. Detailed runbooks and workflow notes now live under [`docs/`](docs/); update both this guide and the knowledge base when behaviour changes so Copilot has the latest context.
+This document augments the main [README](README.md) with a practical onboarding walkthrough and curated learning resources for contributors who want to extend the autonomous Screeps AI. Detailed runbooks and workflow notes now live under [`packages/docs/source/docs/`](packages/docs/source/docs/); update both this guide and the knowledge base when behaviour changes so Copilot has the latest context.
 
 For GitHub Copilot and automation agents, comprehensive operational guidelines are maintained in [`AGENTS.md`](AGENTS.md).
 
@@ -32,9 +32,9 @@ For GitHub Copilot and automation agents, comprehensive operational guidelines a
  - Produce a Screeps bundle with `yarn build`.
  - Deploy to Screeps PTR with `SCREEPS_HOST=ptr.screeps.com yarn deploy` (requires `SCREEPS_TOKEN`).
 5. **Read the automation specs**
- - Workflow definitions live in [`.github/workflows/`](.github/workflows/) and are summarised in [`docs/automation/overview.md`](docs/automation/overview.md).
+ - Workflow definitions live in [`.github/workflows/`](.github/workflows/) and are summarised in [`packages/docs/source/docs/automation/overview.md`](packages/docs/source/docs/automation/overview.md).
  - Prompts for Copilot-driven automation live in [`.github/copilot/prompts/`](.github/copilot/prompts/).
- - Operational procedures (PTR monitoring, CI auto-fixes, etc.) live in [`docs/operations/`](docs/operations/).
+ - Operational procedures (PTR monitoring, CI auto-fixes, etc.) live in [`packages/docs/source/docs/operations/`](packages/docs/source/docs/operations/).
 
 ## Working with GitHub Copilot CLI Automation
 
@@ -49,8 +49,7 @@ The repository replaces previous Codex integrations with the [GitHub Copilot CLI
 Use the following material to deepen your Screeps expertise and tooling knowledge:
 
 - **Internal References**:
-  - [Competitive Screeps Bot Development Guide](docs/reference/screeps-competitive-guide.md) - Comprehensive strategic reference covering game mechanics, optimization techniques, and competitive play patterns
-  - [Overmind Architecture Analysis](docs/research/overmind-analysis.md) - Research on Overmind bot patterns for integration (Task persistence, CPU optimization, multi-room scaling)
+  - [Overmind Architecture Analysis](packages/docs/source/docs/research/overmind-analysis.md) - Research on Overmind bot patterns for integration (Task persistence, CPU optimization, multi-room scaling)
 - Official Screeps Documentation: [Game Guide](https://docs.screeps.com/index.html) · [API Reference](https://docs.screeps.com/api/)
 - Type Definitions & Tooling:
   - [`@types/screeps`](https://www.npmjs.com/package/@types/screeps)
@@ -76,9 +75,9 @@ For architectural inspiration and large-scale automation patterns, explore the o
 
 ## Documentation Expectations
 
-- When you fix a defect or address an operational issue, record the scenario and your findings in `docs/` (usually under `docs/operations/`) before landing the fix.
+- When you fix a defect or address an operational issue, record the scenario and your findings in `packages/docs/source/docs/` (usually under `packages/docs/source/docs/operations/`) before landing the fix.
 - Add a regression test that reproduces the bug *before* applying the fix; reference that test in both the documentation and `CHANGELOG.md`.
-- Update the `[Unreleased]` section of `CHANGELOG.md` with every pull request and run `yarn versions:update` to refresh the generated release index under `docs/changelog/`.
+- Update the `[Unreleased]` section of `CHANGELOG.md` with every pull request and run `yarn versions:update` to refresh the generated release index under `packages/docs/source/docs/changelog/`.
 - Regenerate the static documentation site locally with `yarn build:docs-site` when editing docs so you can preview what GitHub Pages will publish.
 - Generate blog posts for new releases automatically (via workflow) or manually with `yarn docs:generate-blog-posts` for bulk generation of missing posts.
 

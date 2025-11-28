@@ -24,7 +24,7 @@ A TypeScript-based Screeps bot with autonomous creep management, resource optimi
 **Key Components:**
 
 - Behavior controllers for creep roles (harvesters, upgraders, builders, miners)
-- Bootstrap phase system for optimal early-game RCL progression ([docs](docs/runtime/bootstrap-phases.md))
+- Bootstrap phase system for optimal early-game RCL progression ([docs](packages/docs/source/docs/runtime/bootstrap-phases.md))
 - Memory management and state persistence
 - Performance monitoring and CPU optimization
 - Health evaluation and improvement recommendation system
@@ -124,7 +124,7 @@ yarn deploy
 
 The bot uses a priority-based task management system. **Benchmark testing shows 58.8% lower CPU usage** compared to previous implementations.
 
-See [Task System Architecture](docs/runtime/task-system.md) and [Evaluation Report](docs/runtime/task-system-evaluation.md) for details.
+See [Task System Architecture](packages/docs/source/docs/runtime/task-queue-system.md) for details.
 
 ### Room Visuals
 
@@ -146,9 +146,9 @@ Room visuals display:
 - Spawn queue status and production progress
 - CPU usage and tick counter per room
 
-Visuals are disabled by default to minimize CPU usage. See [Logging and Room Visuals](docs/runtime/logging-and-visuals.md) for configuration options and usage guide.
+Visuals are disabled by default to minimize CPU usage. See [User Controls](packages/docs/source/docs/runtime/user-controls.md) for configuration options and usage guide.
 
-**📚 [Complete Getting Started Guide →](docs/getting-started.md)**
+**📚 [Complete Getting Started Guide →](packages/docs/source/docs/getting-started.md)**
 
 ## Key Features
 
@@ -201,43 +201,41 @@ Multiple specialized Copilot agents collaborate on different aspects of developm
 
 ### 📖 Core Documentation
 
-- **[Getting Started Guide](docs/getting-started.md)** - Complete setup and development workflow
+- **[Getting Started Guide](packages/docs/source/docs/getting-started.md)** - Complete setup and development workflow
 - **[Developer Guide](DOCS.md)** - In-depth learning resources and best practices
 - **[Agent Guidelines](AGENTS.md)** - Comprehensive automation agent documentation
 
 ### 🔧 Technical Documentation
 
 - **[Automation Overview](packages/docs/source/docs/automation/overview.md)** - Complete workflow documentation
-- **[Runtime Architecture](docs/getting-started.md#runtime-architecture)** - Bot component overview
-- **[Creep Communication System](docs/runtime/creep-communication.md)** - Visual feedback and debugging
-- **[Docker Development](docs/operations/docker-guide.md)** - Containerized development guide
-- **[Deployment](docs/operations/deployment-troubleshooting.md)** - Deployment and troubleshooting
-- **[Performance Testing](docs/testing/private-server.md)** - Bot benchmarking with private Screeps server
+- **[Runtime Architecture](packages/docs/source/docs/getting-started.md#runtime-architecture)** - Bot component overview
+- **[Creep Communication System](packages/docs/source/docs/runtime/communication.md)** - Visual feedback and debugging
+- **[Docker Development](packages/docs/source/docs/operations/docker-guide.md)** - Containerized development guide
+- **[Deployment](packages/docs/source/docs/operations/deployment-troubleshooting.md)** - Deployment and troubleshooting
+- **[Performance Testing](packages/docs/source/docs/development/package-testing.md)** - Bot testing and benchmarking
 
 ### 📊 Monitoring & Operations
 
-- **[Resource Allocation](docs/operations/resource-allocation.md)** - Account configuration and CPU/memory limits
-- **[CPU Timeout Diagnostic Runbook](docs/operations/cpu-timeout-diagnosis.md)** - CPU timeout diagnosis and resolution
-- **[Monitoring Alert Playbook](docs/operations/monitoring-alerts-playbook.md)** - Alert response procedures
-- **[CPU Optimization Strategies](docs/runtime/operations/cpu-optimization-strategies.md)** - CPU budget allocation and optimization
-- **[PTR Monitoring](docs/operations/stats-monitoring.md)** - Performance tracking on test realm
-- **[Respawn Handling](docs/operations/respawn-handling.md)** - Automatic respawn detection
-- **[Workflow Troubleshooting](docs/operations/workflow-troubleshooting.md)** - Common CI/CD issues
+- **[Monitoring Baselines](packages/docs/source/docs/operations/monitoring-baselines.md)** - Performance baselines and anomaly detection
+- **[Troubleshooting Telemetry](packages/docs/source/docs/operations/troubleshooting-telemetry.md)** - Troubleshooting bot telemetry issues
+- **[Runbooks](packages/docs/source/docs/operations/runbooks.md)** - Operational procedures
+- **[PTR Monitoring](packages/docs/source/docs/operations/stats-monitoring.md)** - Performance tracking on test realm
+- **[Respawn Handling](packages/docs/source/docs/operations/respawn-handling.md)** - Automatic respawn detection
+- **[Workflow Troubleshooting](packages/docs/source/docs/operations/workflow-troubleshooting.md)** - Common CI/CD issues
 
 ### 🎯 Strategy & Development
 
-- **[Strategic Roadmap](docs/strategy/roadmap.md)** - Current phase status, success metrics, and strategic priorities (Phase 1-5)
-- **[Phase Documentation](docs/strategy/phases/)** - Detailed objectives and implementation status for each development phase
-- **[Learning Insights](docs/strategy/learning/)** - Documented patterns, lessons learned, and strategic insights
-- **[Architectural Decisions](docs/strategy/decisions/)** - ADRs documenting significant design choices
-- **[Creep Roles](docs/runtime/strategy/creep-roles.md)** - Bot behavior documentation
-- **[Task System Architecture](docs/runtime/task-system.md)** - Priority-based task management system (experimental)
-- **[Task Prioritization](docs/runtime/strategy/task-prioritization.md)** - Decision-making logic
-- **[Scaling Strategies](docs/runtime/strategy/scaling-strategies.md)** - Room expansion plans
-- **[Competitive Bot Development Guide](docs/reference/screeps-competitive-guide.md)** - Advanced strategies reference covering game mechanics, optimization, and competitive play
-- **[Overmind Architecture Analysis](docs/research/overmind-analysis.md)** - Research on Overmind bot patterns for integration (Task persistence, CPU optimization, multi-room scaling)
+- **[Strategic Roadmap](packages/docs/source/docs/strategy/roadmap.md)** - Current phase status, success metrics, and strategic priorities (Phase 1-5)
+- **[Phase Documentation](packages/docs/source/docs/strategy/phases/)** - Detailed objectives and implementation status for each development phase
+- **[Learning Insights](packages/docs/source/docs/strategy/learning/)** - Documented patterns, lessons learned, and strategic insights
+- **[Architectural Decisions](packages/docs/source/docs/strategy/decisions/)** - ADRs documenting significant design choices
+- **[Creep Roles](packages/docs/source/docs/runtime/strategy/creep-roles.md)** - Bot behavior documentation
+- **[Task System Architecture](packages/docs/source/docs/runtime/task-queue-system.md)** - Priority-based task management system
+- **[Task Prioritization](packages/docs/source/docs/runtime/strategy/task-prioritization.md)** - Decision-making logic
+- **[Scaling Strategies](packages/docs/source/docs/runtime/strategy/scaling-strategies.md)** - Room expansion plans
+- **[Overmind Architecture Analysis](packages/docs/source/docs/research/overmind-analysis.md)** - Research on Overmind bot patterns for integration (Task persistence, CPU optimization, multi-room scaling)
 
-**[📚 Complete Documentation Index →](docs/index.md)**
+**[📚 Complete Documentation Index →](packages/docs/source/docs/index.md)**
 
 ## Contributing
 
@@ -252,7 +250,7 @@ We welcome contributions! Here's how to get started:
 
 **Need help?** Check out:
 
-- [Contributing Guidelines](docs/getting-started.md#contributing) - Detailed contribution workflow
+- [Contributing Guidelines](packages/docs/source/docs/getting-started.md#contributing) - Detailed contribution workflow
 - [Good First Issues](https://github.com/ralphschuler/.screeps-gpt/labels/good-first-issue) - Beginner-friendly tasks
 - [TASKS.md](TASKS.md) - Active development priorities
 
@@ -338,9 +336,9 @@ If `PROJECT_NUMBER` and `PROJECT_OWNER` are not set, project sync workflows will
 npm run validate:project-config
 ```
 
-See [GitHub Projects Setup Guide](docs/automation/github-projects-setup.md) for detailed project integration documentation.
+See the repository variables section above for detailed project integration documentation.
 
-See [Push Notification Documentation](docs/automation/push-notifications.md) for details on notification setup.
+See [Push Notification Documentation](packages/docs/source/docs/automation/push-notifications.md) for details on notification setup.
 
 ## Project Status
 

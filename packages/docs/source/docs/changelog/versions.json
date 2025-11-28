@@ -1,5 +1,24 @@
 [
   {
+    "version": "0.175.7",
+    "date": "2025-11-28",
+    "notes": [
+      "**Pathfinding in Narrow Passages**: Creeps now properly navigate through single-tile corridors by ignoring other creeps in pathfinding calculations",
+      "Added `ignoreCreeps: true` to all pathfinding operations (findClosestByPath, moveTo) across all role controllers",
+      "Updated helper functions in `helpers.ts`: `findClosestOrFirst`, `tryPickupDroppedEnergy`, `moveToTargetRoom`",
+      "Updated role controllers: HarvesterController, HaulerController, UpgraderController, BuilderController, RepairerController",
+      "Paths are now calculated based on terrain and structures only, not temporary creep positions",
+      "Prevents pathfinding failures when passages are temporarily occupied by other creeps",
+      "Creeps will still physically collide at runtime; traffic management handles actual collision avoidance",
+      "Added comprehensive unit tests for `findClosestOrFirst` helper validating `ignoreCreeps` behavior",
+      "Updated regression tests in `room-exit-crossing.test.ts` to expect `ignoreCreeps: true`",
+      "Resolves issue ralphschuler/.screeps-gpt#1466 (creeps stuck in narrow passages)",
+      "Addresses issue ralphschuler/.screeps-gpt#1450 (pathfinding not working in single-tile corridors)"
+    ],
+    "anchor": "01757---2025-11-28",
+    "slug": "v0-175-7"
+  },
+  {
     "version": "0.174.0",
     "date": "2025-11-28",
     "notes": [
