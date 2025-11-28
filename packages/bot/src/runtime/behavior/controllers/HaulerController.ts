@@ -232,8 +232,7 @@ export class HaulerController extends BaseRoleController<HaulerMemory> {
         // Priority 8: Any container with free capacity (general energy distribution)
         creep.room.find(FIND_STRUCTURES, {
           filter: (structure: AnyStructure): structure is StructureContainer =>
-            structure.structureType === STRUCTURE_CONTAINER &&
-            structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+            structure.structureType === STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
         })
       ];
 
