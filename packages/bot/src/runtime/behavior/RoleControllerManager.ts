@@ -82,6 +82,7 @@ const COMBAT_MIN_REPAIRERS = 1; // Minimum repairers during combat
  */
 const UPGRADERS_PER_INTEGRATION_ROOM = 2; // Remote upgraders spawned per room needing integration
 const BUILDERS_PER_INTEGRATION_ROOM = 2; // Remote builders spawned per room needing integration
+const DISMANTLERS_PER_INTEGRATION_ROOM = 1; // Dismantlers spawned per room needing structure clearing
 
 /**
  * Attack flag constants for attacker spawning
@@ -503,6 +504,7 @@ export class RoleControllerManager {
     // Pre-calculate remote worker assignments for rooms needing integration
     const assignedRemoteUpgraders = new Map<string, number>(); // targetRoom -> count
     const assignedRemoteBuilders = new Map<string, number>(); // targetRoom -> count
+    const assignedDismantlers = new Map<string, number>(); // targetRoom -> count
     if (needsRemoteWorkforce) {
       for (const creep of Object.values(game.creeps)) {
         const targetRoom = creep.memory.targetRoom;
@@ -513,12 +515,24 @@ export class RoleControllerManager {
         } else if (creep.memory.role === "remoteBuilder") {
           // Count remote builders assigned to integration rooms
           assignedRemoteBuilders.set(targetRoom, (assignedRemoteBuilders.get(targetRoom) ?? 0) + 1);
+        } else if (creep.memory.role === "dismantler") {
+          // Count dismantlers assigned to integration rooms for structure clearing
+          assignedDismantlers.set(targetRoom, (assignedDismantlers.get(targetRoom) ?? 0) + 1);
         }
       }
 
       this.logger.log?.(
         `[RoleControllerManager] Rooms needing workforce: ${roomsNeedingIntegration.map(r => r.roomName).join(", ")}`
       );
+    }
+
+    // Detect integration rooms that need structure clearing (non-owned structures to dismantle)
+    // This identifies rooms where dismantlers should be spawned to clear leftover structures
+    const roomsNeedingClearing = this.detectRoomsNeedingClearing(game, roomsNeedingIntegration);
+    const needsDismantlers = roomsNeedingClearing.length > 0;
+
+    if (needsDismantlers) {
+      this.logger.log?.(`[RoleControllerManager] Rooms needing structure clearing: ${roomsNeedingClearing.join(", ")}`);
     }
 
     // Determine spawn priority order based on combat status
@@ -575,12 +589,14 @@ export class RoleControllerManager {
       roleOrder = baseRoleOrder.filter(r => r !== "claimer");
       roleOrder.splice(1, 0, "claimer");
     } else if (needsRemoteWorkforce) {
-      // Normal mode with room integration: prioritize remote upgraders and builders (after harvesters and upgraders)
+      // Normal mode with room integration: prioritize remote upgraders, builders, and dismantlers
+      // Dismantlers are included if rooms need structure clearing
       roleOrder = [
         "harvester",
         "upgrader",
         "remoteUpgrader",
         "remoteBuilder",
+        ...(needsDismantlers ? ["dismantler" as const] : []),
         "builder",
         "stationaryHarvester",
         "hauler",
@@ -589,7 +605,7 @@ export class RoleControllerManager {
         "scout",
         "attacker",
         "healer",
-        "dismantler",
+        ...(needsDismantlers ? [] : ["dismantler" as const]), // Keep dismantler in list if not already added
         "claimer"
       ];
     } else {
@@ -659,6 +675,17 @@ export class RoleControllerManager {
           neededBuilders += Math.max(0, BUILDERS_PER_INTEGRATION_ROOM - assigned);
         }
         targetMinimum = Math.max(targetMinimum, Math.min(neededBuilders, roleMaximum));
+      }
+
+      // Dynamically increase dismantler minimum when integration rooms need structure clearing
+      // Spawn dismantlers to clear leftover structures from previous room owners
+      if (role === "dismantler" && needsDismantlers) {
+        let neededDismantlers = 0;
+        for (const roomName of roomsNeedingClearing) {
+          const assigned = assignedDismantlers.get(roomName) ?? 0;
+          neededDismantlers += Math.max(0, DISMANTLERS_PER_INTEGRATION_ROOM - assigned);
+        }
+        targetMinimum = Math.max(targetMinimum, neededDismantlers);
       }
 
       // Dynamically increase attacker minimum when attack flags are pending
@@ -795,6 +822,32 @@ export class RoleControllerManager {
             assignedRemoteBuilders.set(integrationRoom.roomName, assigned + 1);
             this.logger.log?.(
               `[RoleControllerManager] Assigning remote builder ${name} to integration room: ${integrationRoom.roomName} (home: ${integrationRoom.homeRoom})`
+            );
+            break;
+          }
+        }
+      }
+
+      // If spawning a dismantler for room clearing, assign home and target rooms
+      if (role === "dismantler" && needsDismantlers) {
+        // Find an integration room that needs structure clearing
+        for (const roomName of roomsNeedingClearing) {
+          const assigned = assignedDismantlers.get(roomName) ?? 0;
+          if (assigned < DISMANTLERS_PER_INTEGRATION_ROOM) {
+            // Find the home room for this integration room
+            const integrationData = roomsNeedingIntegration.find(r => r.roomName === roomName);
+            const homeRoom = integrationData?.homeRoom ?? Object.values(game.spawns)[0]?.room?.name ?? "";
+
+            // Assign this dismantler to the integration room for clearing
+            (creepMemory as CreepMemory & { homeRoom?: string; targetRoom?: string; mode?: string }).homeRoom =
+              homeRoom;
+            (creepMemory as CreepMemory & { homeRoom?: string; targetRoom?: string; mode?: string }).targetRoom =
+              roomName;
+            (creepMemory as CreepMemory & { homeRoom?: string; targetRoom?: string; mode?: string }).mode = "clearing";
+            // Update pre-calculated count for subsequent iterations
+            assignedDismantlers.set(roomName, assigned + 1);
+            this.logger.log?.(
+              `[RoleControllerManager] Assigning dismantler ${name} to clear structures in: ${roomName} (home: ${homeRoom})`
             );
             break;
           }
@@ -942,5 +995,66 @@ export class RoleControllerManager {
     } else {
       return { success: false, blocked: true, error: `Spawn failed: ${result}` };
     }
+  }
+
+  /**
+   * Detect integration rooms that need structure clearing.
+   * Returns a list of room names that have non-owned structures requiring dismantling.
+   *
+   * This method checks each integration room for structures that:
+   * - Are not owned by us (my === false)
+   * - Are not controllers (cannot be dismantled)
+   * - Are owned structures (spawns, extensions, towers, etc.) left by previous owner
+   *
+   * Note: Roads and containers are deliberately kept as they are useful.
+   * Only walls and owned structures are targeted for clearing.
+   *
+   * @param game - Game context with rooms
+   * @param roomsNeedingIntegration - List of rooms currently being integrated
+   * @returns Array of room names that need structure clearing
+   */
+  private detectRoomsNeedingClearing(
+    game: GameContext,
+    roomsNeedingIntegration: Array<{ roomName: string; status: string; homeRoom: string }>
+  ): string[] {
+    const roomsNeedingClearing: string[] = [];
+
+    for (const integrationData of roomsNeedingIntegration) {
+      const room = game.rooms[integrationData.roomName];
+      if (!room?.controller?.my) {
+        continue; // Room not visible or not owned
+      }
+
+      // Check if the room has structures that need clearing
+      // We only target structures we don't own and that are not useful
+      const structuresToClear = room.find(FIND_STRUCTURES, {
+        filter: (s: AnyStructure) => {
+          // Never clear controllers
+          if (s.structureType === STRUCTURE_CONTROLLER) {
+            return false;
+          }
+
+          // Check if structure is owned and not ours
+          if ("my" in s) {
+            // Owned structure - only count if not ours
+            return (s as OwnedStructure).my === false;
+          }
+
+          // For non-ownable structures, only count walls (constructed)
+          // Roads and containers are useful and should be kept
+          if (s.structureType === STRUCTURE_WALL) {
+            return true;
+          }
+
+          return false;
+        }
+      });
+
+      if (structuresToClear.length > 0) {
+        roomsNeedingClearing.push(integrationData.roomName);
+      }
+    }
+
+    return roomsNeedingClearing;
   }
 }

@@ -480,9 +480,7 @@ describe("Controller Health Monitoring Integration", () => {
      */
     it("should NOT generate warnings for visible but unowned rooms", async () => {
       // Import WarningDetector for integration testing
-      const { WarningDetector, WarningType } = await import(
-        "../../../packages/bot/src/runtime/health/WarningDetector"
-      );
+      const { WarningDetector, WarningType } = await import("../../../packages/bot/src/runtime/health/WarningDetector");
       const { HealthState } = await import("../../../packages/bot/src/runtime/health/HealthMonitor");
 
       // Create a mock game context with both owned and visible-only rooms
@@ -540,9 +538,7 @@ describe("Controller Health Monitoring Integration", () => {
     });
 
     it("should generate warnings for owned rooms with low ticksToDowngrade", async () => {
-      const { WarningDetector, WarningType } = await import(
-        "../../../packages/bot/src/runtime/health/WarningDetector"
-      );
+      const { WarningDetector, WarningType } = await import("../../../packages/bot/src/runtime/health/WarningDetector");
       const { HealthState } = await import("../../../packages/bot/src/runtime/health/HealthMonitor");
 
       const mockGame = {
@@ -586,9 +582,7 @@ describe("Controller Health Monitoring Integration", () => {
     });
 
     it("should not generate energy starvation warnings for visible but unowned rooms", async () => {
-      const { WarningDetector, WarningType } = await import(
-        "../../../packages/bot/src/runtime/health/WarningDetector"
-      );
+      const { WarningDetector, WarningType } = await import("../../../packages/bot/src/runtime/health/WarningDetector");
       const { HealthState } = await import("../../../packages/bot/src/runtime/health/HealthMonitor");
 
       const mockGame = {
