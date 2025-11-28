@@ -6,21 +6,14 @@
   "extends": "node",
   "environment": {
     "image": "node:22-alpine",
-    "setup": [
-      "apk add --no-cache git",
-      "npm install -g yarn@4.11.0",
-      "yarn set version 4.11.0"
-    ],
+    "setup": ["apk add --no-cache git", "npm install -g yarn@4.11.0", "yarn set version 4.11.0"],
     "variables": {
       "NODE_ENV": "development",
       "NPM_CONFIG_REGISTRY": "https://registry.npmjs.org/",
       "NPM_CONFIG_@RALPHSCHULER:REGISTRY": "https://npm.pkg.github.com",
       "NPM_CONFIG_ALWAYS_AUTH": "true"
     },
-    "secrets": [
-      "GITHUB_TOKEN",
-      "NPM_TOKEN"
-    ]
+    "secrets": ["GITHUB_TOKEN", "NPM_TOKEN"]
   },
   "packages": {
     "manager": "yarn",
@@ -30,27 +23,11 @@
         "alwaysAuth": true
       }
     },
-    "install": [
-      "yarn install --immutable"
-    ]
+    "install": ["yarn install --immutable"]
   },
   "tools": {
-    "available": [
-      "node",
-      "npm",
-      "yarn",
-      "git",
-      "gh",
-      "tsx",
-      "vitest",
-      "eslint",
-      "prettier"
-    ],
-    "paths": [
-      "/usr/local/bin",
-      "/node_modules/.bin",
-      ".yarn/releases"
-    ]
+    "available": ["node", "npm", "yarn", "git", "gh", "tsx", "vitest", "eslint", "prettier"],
+    "paths": ["/usr/local/bin", "/node_modules/.bin", ".yarn/releases"]
   },
   "features": {
     "typescript": {
@@ -75,9 +52,7 @@
   },
   "workspace": {
     "type": "yarn-workspaces",
-    "packages": [
-      "packages/*"
-    ],
+    "packages": ["packages/*"],
     "root": true
   },
   "documentation": {
