@@ -7,7 +7,6 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [0.174.0] - 2025-11-28
 
-
 ### Added
 
 - **Automation**: Enhanced Copilot prompts with Screeps MCP server documentation
@@ -15,7 +14,6 @@ All notable changes to this project are documented here. This changelog now main
   - Added MCP tool references to all relevant prompts: `researcher`, `issue-triage`, `strategist`, `strategic-planner`, `repository-audit`, `repository-review`, `todo-issue`, `todo-automation`, `screeps-monitor`
   - Prompts now instruct agents to use `screeps_docs_search`, `screeps_docs_get_api`, `screeps_docs_get_mechanics`, `screeps_wiki_search`, and `screeps_wiki_get_article` for game knowledge
   - Enables automated workflows to gather Screeps game context when handling issues and implementing features
-
 
 ## [0.165.1] - 2025-11-26
 

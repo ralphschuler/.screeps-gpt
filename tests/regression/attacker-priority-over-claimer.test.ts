@@ -344,8 +344,6 @@ describe("Regression: Attacker Priority Over Claimer", () => {
     );
 
     // Assert: No expansion log
-    expect(logger.log).not.toHaveBeenCalledWith(
-      expect.stringContaining("[RoleControllerManager] Expansion pending")
-    );
+    expect(logger.log).not.toHaveBeenCalledWith(expect.stringContaining("[RoleControllerManager] Expansion pending"));
   });
 });
