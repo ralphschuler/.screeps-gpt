@@ -8,7 +8,7 @@ import type { CreepLike } from "@runtime/types/GameContext";
  * Regression test for issue: screeps that should leave the room stay at the rooms edge without moving further
  *
  * Root Cause:
- * - When a creep arrived in the target room but was still near the edge (positions 2-47),
+ * - When a creep arrived in the target room but was still near the edge (positions ≤2 or ≥47),
  *   the execute method didn't call moveTo, causing creeps to get stuck at the room edge
  *
  * Fix:
