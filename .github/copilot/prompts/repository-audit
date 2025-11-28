@@ -7,13 +7,39 @@ the repository into `$GITHUB_WORKSPACE/repo`, and audit it end-to-end with empha
 - Automation workflows, deployment, and evaluation scripts that could break continuous delivery.
 - Documentation gaps that make autonomous improvements unreliable.
 
+## Available MCP Tools
+
+**GitHub MCP** (repository operations):
+
+- Issue and PR search, code search, commit inspection
+
+**Screeps Docs MCP** (official game documentation):
+
+- `screeps_docs_search` - Search Screeps documentation
+- `screeps_docs_get_api` - Get API object documentation
+- `screeps_docs_get_mechanics` - Get game mechanics documentation
+- `screeps_docs_list_apis` - List available Screeps API objects
+
+**Screeps Wiki MCP** (community knowledge):
+
+- `screeps_wiki_search` - Search the Screeps community wiki
+- `screeps_wiki_get_article` - Fetch wiki articles
+
+Use these tools to verify that runtime code correctly implements Screeps APIs and follows game mechanics best practices.
+When auditing bot behavior code, use `screeps_docs_get_api` to verify correct API usage and `screeps_wiki_search` to check
+for known patterns or anti-patterns.
+
+## Audit Process
+
 Whenever you identify an actionable finding:
 
 1. Search existing issues to avoid duplicates.
-2. Create (or update) a GitHub issue using `gh issue create` / `gh issue comment` with labels `copilot`, `state/pending`,
+2. For Screeps-related issues, use MCP tools to gather context on correct game API usage.
+3. Create (or update) a GitHub issue using `gh issue create` / `gh issue comment` with labels `copilot`, `state/pending`,
    appropriate type label (`type/bug`, `type/enhancement`, `type/chore`), and priority label
    (`priority/critical`, `priority/high`, `priority/medium`, or `priority/low`). Prefix new issue titles with `[Copilot]`.
-3. Capture concrete reproduction steps or remediation guidance referencing specific files or workflows.
+4. Capture concrete reproduction steps or remediation guidance referencing specific files or workflows.
+5. Include relevant Screeps API documentation or mechanics references when applicable.
 
 After processing all findings, print minified JSON with this shape so the workflow log records what happened:
 
@@ -23,6 +49,7 @@ After processing all findings, print minified JSON with this shape so the workfl
   "run_url": "${RUN_URL}",
   "created": ["issue-number-or-url", ...],
   "updated": ["issue-number-or-url", ...],
+  "screeps_apis_verified": ["Creep", "Room", ...],
   "notes": "short free-form summary"
 }
 ```
@@ -32,3 +59,4 @@ Rules:
 - Do not wrap the JSON in Markdown fences.
 - Leave `created`/`updated` as empty arrays when no changes were required.
 - Keep the summary concise but specific (e.g. mention key subsystems touched).
+- Include any Screeps APIs that were verified using MCP tools in `screeps_apis_verified`.

@@ -3,8 +3,26 @@ You are GitHub Copilot CLI acting as an autonomous research agent for the Screep
 This workflow provides comprehensive access to:
 
 - **GitHub repository** (via github MCP server): Issues, PRs, code search, file access
-- **Screeps documentation** (via web search): Official Screeps docs, community resources
+- **Screeps documentation** (via screeps-docs-mcp MCP server): Official API docs, game mechanics
+- **Screeps community wiki** (via screeps-wiki-mcp MCP server): Community strategies, guides, best practices
 - **Repository data**: Bot snapshots, research documents, existing analyses
+
+Available MCP tools for Screeps game knowledge:
+
+**Screeps Docs MCP** (official documentation):
+
+- `screeps_docs_search` - Search Screeps documentation for specific topics
+- `screeps_docs_get_api` - Get detailed API object documentation (e.g., Creep, Room, StructureSpawn)
+- `screeps_docs_get_mechanics` - Get game mechanics documentation (e.g., pathfinding, spawning, combat)
+- `screeps_docs_list_apis` - List all available Screeps API objects
+- `screeps_docs_list_mechanics` - List all game mechanics topics
+
+**Screeps Wiki MCP** (community knowledge):
+
+- `screeps_wiki_search` - Search the Screeps community wiki
+- `screeps_wiki_get_article` - Fetch a specific wiki article by title
+- `screeps_wiki_list_categories` - List wiki categories for browsing
+- `screeps_wiki_get_table` - Extract table data from wiki articles (useful for game constants)
 
 Available environment variables:
 
@@ -80,20 +98,57 @@ gh issue list --search "${RESEARCH_TOPIC}" --json number,title,state,labels,body
 
 ### PHASE 3: EXTERNAL RESEARCH (if scope includes external)
 
-Research external resources for the topic:
+Research external resources for the topic using MCP tools:
 
-**A. Screeps Documentation**
+**A. Screeps Official Documentation (via screeps-docs-mcp)**
 
-- [ ] Official Screeps API documentation
-- [ ] Game mechanics documentation
-- [ ] Performance optimization guides
-- [ ] Community best practices
+Use MCP tools to query official Screeps documentation:
 
-**B. Community Resources**
+```javascript
+// Search for topic-related documentation
+screeps_docs_search("${RESEARCH_TOPIC}");
 
-- [ ] Screeps GitHub repositories (patterns and implementations)
-- [ ] Community strategies and approaches
-- [ ] Known limitations and workarounds
+// Get specific API documentation when relevant
+screeps_docs_get_api("Creep"); // Example for creep-related research
+screeps_docs_get_api("Room"); // Example for room-related research
+
+// Get game mechanics if topic relates to game systems
+screeps_docs_get_mechanics("pathfinding");
+screeps_docs_get_mechanics("spawning");
+
+// List all APIs/mechanics for comprehensive research
+screeps_docs_list_apis();
+screeps_docs_list_mechanics();
+```
+
+- [ ] Search documentation for topic keywords
+- [ ] Get relevant API object documentation
+- [ ] Review game mechanics related to the topic
+- [ ] Note any API limitations or quirks documented
+
+**B. Screeps Community Wiki (via screeps-wiki-mcp)**
+
+Use MCP tools to query community knowledge:
+
+```javascript
+// Search wiki for community strategies
+screeps_wiki_search("${RESEARCH_TOPIC}");
+
+// Get specific articles on strategies or patterns
+screeps_wiki_get_article("Harvesting");
+screeps_wiki_get_article("Defense");
+
+// Get game constants and data tables
+screeps_wiki_get_table("BODYPART_COST");
+
+// Browse categories for comprehensive research
+screeps_wiki_list_categories();
+```
+
+- [ ] Search wiki for community strategies and approaches
+- [ ] Review articles on best practices
+- [ ] Extract relevant data tables for game constants
+- [ ] Identify community-recommended patterns
 
 **C. Technical Research**
 

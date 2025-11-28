@@ -3,7 +3,26 @@ You are GitHub Copilot CLI acting as an autonomous strategic planning agent for 
 This workflow provides comprehensive access to:
 
 - **GitHub repository** (via github MCP server): Issues, PRs, code search, file access
+- **Screeps documentation** (via screeps-docs-mcp MCP server): Official API docs, game mechanics
+- **Screeps community wiki** (via screeps-wiki-mcp MCP server): Community strategies, guides, best practices
 - **Repository data**: Bot snapshots, PTR stats, profiler data, documentation
+
+Available MCP tools for Screeps game knowledge:
+
+**Screeps Docs MCP** (official documentation):
+
+- `screeps_docs_search` - Search Screeps documentation for specific topics
+- `screeps_docs_get_api` - Get detailed API object documentation
+- `screeps_docs_get_mechanics` - Get game mechanics documentation
+- `screeps_docs_list_apis` - List all available Screeps API objects
+- `screeps_docs_list_mechanics` - List all game mechanics topics
+
+**Screeps Wiki MCP** (community knowledge):
+
+- `screeps_wiki_search` - Search the Screeps community wiki
+- `screeps_wiki_get_article` - Fetch a specific wiki article by title
+- `screeps_wiki_list_categories` - List wiki categories for browsing
+- `screeps_wiki_get_table` - Extract table data from wiki articles (useful for game constants)
 
 Available environment variables:
 
@@ -113,7 +132,24 @@ Analyze current bot state comprehensively:
 
 ### PHASE 3: OPPORTUNITY IDENTIFICATION
 
-Based on analysis, identify improvement opportunities in these categories:
+Based on analysis, identify improvement opportunities in these categories. Use Screeps MCP tools for game knowledge:
+
+**Game Knowledge Research:**
+
+Before identifying opportunities, gather relevant game knowledge:
+
+```javascript
+// Search for optimization patterns
+screeps_wiki_search("optimization techniques");
+screeps_docs_get_mechanics("pathfinding");
+
+// Get API documentation for relevant game objects
+screeps_docs_list_apis(); // List all available APIs
+
+// Get game constants for calculations
+screeps_wiki_get_table("BODYPART_COST");
+screeps_wiki_get_table("STRUCTURE_HITS");
+```
 
 #### Performance Optimization
 
@@ -122,6 +158,7 @@ Based on analysis, identify improvement opportunities in these categories:
 - Caching opportunities for expensive calculations
 - Batch processing for repeated operations
 - Profiler-identified hotspots
+- Use `screeps_docs_get_mechanics("pathfinding")` and `screeps_wiki_search("cpu optimization")` for techniques
 
 **Priority Criteria:**
 
@@ -136,6 +173,7 @@ Based on analysis, identify improvement opportunities in these categories:
 - Storage and logistics improvements
 - Market trading opportunities
 - Construction prioritization
+- Use `screeps_docs_get_api("Source")`, `screeps_docs_get_api("StructureStorage")` for API details
 
 **Priority Criteria:**
 
@@ -150,6 +188,7 @@ Based on analysis, identify improvement opportunities in these categories:
 - Territory control and defense
 - Scout and exploration automation
 - Colony coordination
+- Use `screeps_docs_get_mechanics("claiming")` and `screeps_wiki_search("expansion strategy")` for guidance
 
 **Priority Criteria:**
 
