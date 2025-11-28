@@ -57,9 +57,9 @@ describe("Room Exit Crossing - Regression", () => {
     expect(result).toBe(true);
     expect(creep.moveTo).toHaveBeenCalled();
 
-    // Verify reusePath: 0 is used (fresh pathfinding)
+    // Verify reusePath: 0 is used (fresh pathfinding) and ignoreCreeps: true for narrow passages
     const moveToCall = (creep.moveTo as ReturnType<typeof vi.fn>).mock.calls[0];
-    expect(moveToCall[1]).toEqual({ reusePath: 0 });
+    expect(moveToCall[1]).toEqual({ reusePath: 0, ignoreCreeps: true });
   });
 
   it("should use fresh pathfinding (reusePath: 0) when creep is at right edge (x=49)", () => {
@@ -69,9 +69,9 @@ describe("Room Exit Crossing - Regression", () => {
     expect(result).toBe(true);
     expect(creep.moveTo).toHaveBeenCalled();
 
-    // Verify reusePath: 0 is used
+    // Verify reusePath: 0 is used and ignoreCreeps: true for narrow passages
     const moveToCall = (creep.moveTo as ReturnType<typeof vi.fn>).mock.calls[0];
-    expect(moveToCall[1]).toEqual({ reusePath: 0 });
+    expect(moveToCall[1]).toEqual({ reusePath: 0, ignoreCreeps: true });
   });
 
   it("should use fresh pathfinding (reusePath: 0) when creep is at top edge (y=0)", () => {
@@ -81,9 +81,9 @@ describe("Room Exit Crossing - Regression", () => {
     expect(result).toBe(true);
     expect(creep.moveTo).toHaveBeenCalled();
 
-    // Verify reusePath: 0 is used
+    // Verify reusePath: 0 is used and ignoreCreeps: true for narrow passages
     const moveToCall = (creep.moveTo as ReturnType<typeof vi.fn>).mock.calls[0];
-    expect(moveToCall[1]).toEqual({ reusePath: 0 });
+    expect(moveToCall[1]).toEqual({ reusePath: 0, ignoreCreeps: true });
   });
 
   it("should use fresh pathfinding (reusePath: 0) when creep is at bottom edge (y=49)", () => {
@@ -93,9 +93,9 @@ describe("Room Exit Crossing - Regression", () => {
     expect(result).toBe(true);
     expect(creep.moveTo).toHaveBeenCalled();
 
-    // Verify reusePath: 0 is used
+    // Verify reusePath: 0 is used and ignoreCreeps: true for narrow passages
     const moveToCall = (creep.moveTo as ReturnType<typeof vi.fn>).mock.calls[0];
-    expect(moveToCall[1]).toEqual({ reusePath: 0 });
+    expect(moveToCall[1]).toEqual({ reusePath: 0, ignoreCreeps: true });
   });
 
   it("should use fresh pathfinding at corner (x=0, y=0)", () => {
@@ -105,9 +105,9 @@ describe("Room Exit Crossing - Regression", () => {
     expect(result).toBe(true);
     expect(creep.moveTo).toHaveBeenCalled();
 
-    // Verify reusePath: 0 is used
+    // Verify reusePath: 0 is used and ignoreCreeps: true for narrow passages
     const moveToCall = (creep.moveTo as ReturnType<typeof vi.fn>).mock.calls[0];
-    expect(moveToCall[1]).toEqual({ reusePath: 0 });
+    expect(moveToCall[1]).toEqual({ reusePath: 0, ignoreCreeps: true });
   });
 
   it("should use provided reusePath parameter when creep is NOT at edge", () => {
@@ -145,9 +145,9 @@ describe("Room Exit Crossing - Regression", () => {
     expect(result).toBe(true);
     expect(moveTo).toHaveBeenCalled();
 
-    // When NOT at edge, should use provided reusePath (50)
+    // When NOT at edge, should use provided reusePath (50) and ignoreCreeps: true for narrow passages
     const moveToCall = moveTo.mock.calls[0];
-    expect(moveToCall[1]).toEqual({ reusePath: 50 });
+    expect(moveToCall[1]).toEqual({ reusePath: 50, ignoreCreeps: true });
   });
 
   it("should return false when creep is already in target room", () => {
@@ -198,7 +198,7 @@ describe("Room Exit Crossing - Regression", () => {
     expect(targetPos.x).toBe(25);
     expect(targetPos.y).toBe(25);
     expect(targetPos.roomName).toBe("W4N5");
-    expect(moveToCall[1]).toEqual({ reusePath: 0 }); // Fresh pathfinding at edge
+    expect(moveToCall[1]).toEqual({ reusePath: 0, ignoreCreeps: true }); // Fresh pathfinding at edge
   });
 
   it("should continue moving toward center when in target room but at right edge (x=49)", () => {
@@ -213,7 +213,7 @@ describe("Room Exit Crossing - Regression", () => {
     expect(targetPos.x).toBe(25);
     expect(targetPos.y).toBe(25);
     expect(targetPos.roomName).toBe("W4N5");
-    expect(moveToCall[1]).toEqual({ reusePath: 0 });
+    expect(moveToCall[1]).toEqual({ reusePath: 0, ignoreCreeps: true });
   });
 
   it("should continue moving toward center when in target room but at top edge (y=0)", () => {
@@ -228,7 +228,7 @@ describe("Room Exit Crossing - Regression", () => {
     expect(targetPos.x).toBe(25);
     expect(targetPos.y).toBe(25);
     expect(targetPos.roomName).toBe("W4N5");
-    expect(moveToCall[1]).toEqual({ reusePath: 0 });
+    expect(moveToCall[1]).toEqual({ reusePath: 0, ignoreCreeps: true });
   });
 
   it("should continue moving toward center when in target room but at bottom edge (y=49)", () => {
@@ -243,7 +243,7 @@ describe("Room Exit Crossing - Regression", () => {
     expect(targetPos.x).toBe(25);
     expect(targetPos.y).toBe(25);
     expect(targetPos.roomName).toBe("W4N5");
-    expect(moveToCall[1]).toEqual({ reusePath: 0 });
+    expect(moveToCall[1]).toEqual({ reusePath: 0, ignoreCreeps: true });
   });
 
   it("should continue moving toward center when in target room at corner (x=0, y=0)", () => {
@@ -258,6 +258,6 @@ describe("Room Exit Crossing - Regression", () => {
     expect(targetPos.x).toBe(25);
     expect(targetPos.y).toBe(25);
     expect(targetPos.roomName).toBe("W4N5");
-    expect(moveToCall[1]).toEqual({ reusePath: 0 });
+    expect(moveToCall[1]).toEqual({ reusePath: 0, ignoreCreeps: true });
   });
 });
