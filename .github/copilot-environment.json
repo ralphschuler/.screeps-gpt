@@ -1,0 +1,90 @@
+{
+  "$schema": "https://github.com/github/copilot-schemas/blob/main/copilot-environment.schema.json",
+  "name": "screeps-gpt-environment",
+  "description": "Custom Copilot agent environment for .screeps-gpt project with support for @ralphschuler GitHub packages",
+  "version": "1.0.0",
+  "extends": "node",
+  "environment": {
+    "image": "node:22-alpine",
+    "setup": [
+      "apk add --no-cache git",
+      "npm install -g yarn@4.11.0",
+      "yarn set version 4.11.0"
+    ],
+    "variables": {
+      "NODE_ENV": "development",
+      "NPM_CONFIG_REGISTRY": "https://registry.npmjs.org/",
+      "NPM_CONFIG_@RALPHSCHULER:REGISTRY": "https://npm.pkg.github.com",
+      "NPM_CONFIG_ALWAYS_AUTH": "true"
+    },
+    "secrets": [
+      "GITHUB_TOKEN",
+      "NPM_TOKEN"
+    ]
+  },
+  "packages": {
+    "manager": "yarn",
+    "scopes": {
+      "@ralphschuler": {
+        "registry": "https://npm.pkg.github.com",
+        "alwaysAuth": true
+      }
+    },
+    "install": [
+      "yarn install --immutable"
+    ]
+  },
+  "tools": {
+    "available": [
+      "node",
+      "npm",
+      "yarn",
+      "git",
+      "gh",
+      "tsx",
+      "vitest",
+      "eslint",
+      "prettier"
+    ],
+    "paths": [
+      "/usr/local/bin",
+      "/node_modules/.bin",
+      ".yarn/releases"
+    ]
+  },
+  "features": {
+    "typescript": {
+      "enabled": true,
+      "version": "5.4.3",
+      "strict": true,
+      "tsconfig": "tsconfig.json"
+    },
+    "linting": {
+      "enabled": true,
+      "config": "eslint.config.mjs"
+    },
+    "formatting": {
+      "enabled": true,
+      "config": ".prettierrc"
+    },
+    "testing": {
+      "enabled": true,
+      "framework": "vitest",
+      "config": "vitest.config.ts"
+    }
+  },
+  "workspace": {
+    "type": "yarn-workspaces",
+    "packages": [
+      "packages/*"
+    ],
+    "root": true
+  },
+  "documentation": {
+    "readme": "README.md",
+    "contributing": "DOCS.md",
+    "agents": "AGENTS.md",
+    "tasks": "TASKS.md",
+    "changelog": "CHANGELOG.md"
+  }
+}
