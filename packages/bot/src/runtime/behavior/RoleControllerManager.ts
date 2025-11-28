@@ -189,6 +189,14 @@ export class RoleControllerManager {
   }
 
   /**
+   * Get all role controllers (for testing/introspection)
+   * @returns Map of role name to controller
+   */
+  public getRoleControllers(): Map<string, RoleController> {
+    return this.roleControllers;
+  }
+
+  /**
    * Run a full behavior tick and return a summary of executed actions.
    * Implements CPU budget management to prevent script execution timeouts.
    */

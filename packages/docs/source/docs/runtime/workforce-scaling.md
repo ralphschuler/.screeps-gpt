@@ -112,7 +112,7 @@ if (role === "attacker" && needsAttackers) {
     const assigned = assignedAttackersByTarget.get(attackRequest.targetRoom) ?? 0;
     neededAttackers += Math.max(0, ATTACKERS_PER_ATTACK_FLAG - assigned);
   }
-  targetMinimum = Math.max(targetMinimum, neededAttackers);
+  targetMinimum = Math.max(targetMinimum, Math.min(neededAttackers, roleMaximum));
 }
 ```
 
@@ -226,5 +226,5 @@ The system is validated by regression tests in:
 
 ## References
 
-- **Issue #1537**: Dynamic min/max workforce scaling system implementation
+- **Issue #1484**: Dynamic min/max workforce scaling system implementation
 - **PR**: feat(runtime): implement dynamic min/max workforce scaling system
