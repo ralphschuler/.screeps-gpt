@@ -210,7 +210,7 @@ jobs:
           retention-days: 30
 
       - name: Commit bot snapshots and health state
-        if: success() && steps.collect_snapshot.outcome == 'success'
+        if: success()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email \
@@ -220,6 +220,21 @@ jobs:
           if [ -d "reports/bot-snapshots" ] && \
             [ "$(ls -A reports/bot-snapshots/*.json 2>/dev/null)" ]; then
             git add reports/bot-snapshots/
+          fi
+
+          # Add PTR stats when collected
+          if [ -f "reports/copilot/ptr-stats.json" ]; then
+            git add reports/copilot/ptr-stats.json
+          fi
+
+          # Add profiler data when collected
+          if [ -f "reports/profiler/latest.json" ]; then
+            git add reports/profiler/latest.json
+          fi
+
+          # Add screeps-stats when collected
+          if [ -f "reports/screeps-stats/latest.json" ]; then
+            git add reports/screeps-stats/latest.json
           fi
 
           # Add analytics data when generated
