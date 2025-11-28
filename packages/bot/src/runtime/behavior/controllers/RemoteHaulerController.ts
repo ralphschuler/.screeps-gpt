@@ -69,9 +69,12 @@ export class RemoteHaulerController extends BaseRoleController<RemoteHaulerMemor
 
       // Transition to pickup when arrived and away from edges
       const isNearEdge = creep.pos.x <= 2 || creep.pos.x >= 47 || creep.pos.y <= 2 || creep.pos.y >= 47;
-      if (!isNearEdge) {
-        memory.task = REMOTE_HAULER_PICKUP_TASK;
+      if (isNearEdge) {
+        // Move toward center when at edge to avoid getting stuck
+        creep.moveTo(new RoomPosition(ROOM_CENTER_X, ROOM_CENTER_Y, creep.room.name), { reusePath: 0, ignoreCreeps: true });
+        return REMOTE_HAULER_TRAVEL_TASK;
       }
+      memory.task = REMOTE_HAULER_PICKUP_TASK;
 
       return REMOTE_HAULER_TRAVEL_TASK;
     }
