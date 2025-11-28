@@ -126,7 +126,7 @@ export function getLastValidatedVersion(currentVersion: string): string | null {
   // Find the first entry that is not the current version
   for (const entry of history.history) {
     if (entry.version !== currentVersion) {
-      console.log(`✓ Found rollback target: ${entry.version} (validated at ${entry.validatedAt})`);
+      console.error(`✓ Found rollback target: ${entry.version} (validated at ${entry.validatedAt})`);
       return entry.version;
     }
   }
@@ -187,7 +187,7 @@ function loadValidationMetrics(): DeploymentValidationMetrics | null {
 /**
  * CLI: Record validated deployment
  *
- * Usage: npx tsx record-validated-deployment.ts <version> <commit> <workflow_url>
+ * Usage: npx tsx manage-deployment-history.ts <command> [args]
  */
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
@@ -226,7 +226,7 @@ async function main(): Promise<void> {
       process.exit(1);
     }
 
-    console.log(`\n🔍 Finding rollback target (excluding ${currentVersion})\n`);
+    console.error(`\n🔍 Finding rollback target (excluding ${currentVersion})\n`);
 
     const target = getLastValidatedVersion(currentVersion);
     if (target) {

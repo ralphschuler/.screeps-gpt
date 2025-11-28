@@ -85,7 +85,7 @@ describe("Deployment Rollback Version History", () => {
      * From issue:
      * 1. Deploy v1.0.0 (success)
      * 2. Deploy v1.0.1 (fails, rollback to v1.0.0)
-     * 4. Rollback to broken version → infinite failure loop
+     * 3. Rollback to broken version → infinite failure loop
      *
      * With history tracking:
      * - Only v1.0.0 is recorded as validated

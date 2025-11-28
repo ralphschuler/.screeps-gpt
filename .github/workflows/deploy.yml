@@ -157,9 +157,11 @@ jobs:
             echo "validation_passed=false" >> "$GITHUB_OUTPUT"
             echo "recommendation=rollback" >> "$GITHUB_OUTPUT"
             # Read actual failure reason from validation result
-            FAILURE_REASON=$(jq -r '.failureReason // "unknown"' reports/deployments/validation-latest.json 2>/dev/null || echo "unknown")
+            VAL_FILE="reports/deployments/validation-latest.json"
+            FAILURE_REASON=$(jq -r '.failureReason // "unknown"' \
+              "$VAL_FILE" 2>/dev/null || echo "unknown")
             echo "failure_reason=$FAILURE_REASON" >> "$GITHUB_OUTPUT"
-            echo "::error::Deployment validation FAILED - rollback recommended"
+            echo "::error::Deployment validation FAILED - rollback"
             exit 1
           fi
 
@@ -172,23 +174,33 @@ jobs:
         run: |
           VERSION="${{ steps.get_version.outputs.version }}"
           COMMIT="${{ github.sha }}"
-          WORKFLOW_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          
+          REPO="${{ github.repository }}"
+          RUN_ID="${{ github.run_id }}"
+          WORKFLOW_URL="https://github.com/${REPO}/actions/runs/${RUN_ID}"
+
           echo "::notice::Recording validated deployment: $VERSION"
           npx tsx packages/utilities/scripts/manage-deployment-history.ts \
             record "$VERSION" "$COMMIT" "$WORKFLOW_URL"
-          
+
           # Commit and push the updated history file
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.email \
+            "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          
-          if git diff --quiet reports/deployments/deployment-history.json 2>/dev/null; then
+
+          HISTORY_FILE="reports/deployments/deployment-history.json"
+          if git diff --quiet "$HISTORY_FILE" 2>/dev/null; then
             echo "::notice::No changes to deployment history"
           else
-            git add reports/deployments/deployment-history.json
-            git commit -m "chore: record validated deployment $VERSION [skip ci]"
-            git push origin HEAD:${{ github.ref_name }} || \
-              echo "::warning::Failed to push deployment history - may require manual update"
+            git add "$HISTORY_FILE"
+            git commit -m "chore: record deployment $VERSION [skip ci]"
+            # Push to main for tag-triggered deploys, else use ref_name
+            if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+              TARGET_BRANCH="main"
+            else
+              TARGET_BRANCH="${{ github.ref_name }}"
+            fi
+            git push origin HEAD:$TARGET_BRANCH || \
+              echo "::warning::Failed to push history - may need manual update"
           fi
 
       - name: Rollback on validation failure
@@ -203,7 +215,7 @@ jobs:
           SCREEPS_BRANCH: ${{ vars.SCREEPS_BRANCH }}
           SCREEPS_PATH: ${{ vars.SCREEPS_PATH }}
         run: |
-          echo "::warning::Deployment failed validation - initiating rollback"
+          echo "::warning::Deployment failed - initiating rollback"
 
           CURRENT_TAG="${{ steps.get_version.outputs.version }}"
           if [ -z "$CURRENT_TAG" ]; then
@@ -213,9 +225,10 @@ jobs:
           fi
 
           # Try to get rollback target from deployment history first
-          echo "::notice::Checking deployment history for validated rollback target..."
+          echo "::notice::Checking deployment history for rollback target..."
           set +e
-          HISTORY_OUTPUT=$(npx tsx packages/utilities/scripts/manage-deployment-history.ts \
+          SCRIPT="packages/utilities/scripts/manage-deployment-history.ts"
+          HISTORY_OUTPUT=$(npx tsx "$SCRIPT" \
             get-rollback-target "$CURRENT_TAG" 2>&1)
           HISTORY_EXIT=$?
           set -e
@@ -223,16 +236,18 @@ jobs:
           PREVIOUS_TAG=""
           if [ $HISTORY_EXIT -eq 0 ]; then
             # Extract version from output
-            PREVIOUS_TAG=$(echo "$HISTORY_OUTPUT" | grep "ROLLBACK_TARGET=" | cut -d= -f2)
+            PREVIOUS_TAG=$(echo "$HISTORY_OUTPUT" | \
+              grep "ROLLBACK_TARGET=" | cut -d= -f2)
             if [ -n "$PREVIOUS_TAG" ]; then
-              echo "::notice::Found validated rollback target from history: $PREVIOUS_TAG"
+              echo "::notice::Found rollback target: $PREVIOUS_TAG"
             fi
           fi
 
           # Fallback to git tags if history doesn't have a target
           if [ -z "$PREVIOUS_TAG" ]; then
-            echo "::warning::No validated rollback target in history, falling back to git tags"
-            PREVIOUS_TAG=$(git describe --tags --abbrev=0 "${CURRENT_TAG}^" 2>/dev/null || echo "")
+            echo "::warning::No history target, falling back to git tags"
+            PREVIOUS_TAG=$(git describe --tags --abbrev=0 \
+              "${CURRENT_TAG}^" 2>/dev/null || echo "")
           fi
 
           if [ -z "$PREVIOUS_TAG" ]; then
@@ -241,13 +256,13 @@ jobs:
             exit 1
           fi
 
-          echo "::notice::Rolling back from $CURRENT_TAG to $PREVIOUS_TAG"
+          echo "::notice::Rolling back $CURRENT_TAG to $PREVIOUS_TAG"
           echo "previous_version=$PREVIOUS_TAG" >> "$GITHUB_OUTPUT"
 
           # Checkout previous version and rebuild
           git checkout "$PREVIOUS_TAG"
           if ! yarn install --frozen-lockfile; then
-            echo "::error::Failed to install dependencies for $PREVIOUS_TAG"
+            echo "::error::Failed to install deps for $PREVIOUS_TAG"
             echo "rollback_success=false" >> "$GITHUB_OUTPUT"
             exit 1
           fi
@@ -264,16 +279,32 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const reason = ${{ toJSON(steps.health-check.outputs.failure_reason) }} || 'unknown';
-            const version = ${{ toJSON(steps.get_version.outputs.version) }};
-            const rollbackSuccess = '${{ steps.rollback.outputs.rollback_success }}' === 'true';
-            const previousVersion = ${{ toJSON(steps.rollback.outputs.previous_version) }} || 'unknown';
+            const reason = ${{
+              toJSON(steps.health-check.outputs.failure_reason)
+            }} || 'unknown';
+            const version = ${{
+              toJSON(steps.get_version.outputs.version)
+            }};
+            const rollbackSuccess = '${{
+              steps.rollback.outputs.rollback_success
+            }}' === 'true';
+            const previousVersion = ${{
+              toJSON(steps.rollback.outputs.previous_version)
+            }} || 'unknown';
+
+            const repoUrl = `https://github.com/${context.repo.owner}`;
+            const runUrl = `${repoUrl}/${context.repo.repo}/actions/runs`;
 
             await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `Deployment validation failed: ${reason} (${version})`,
-              labels: ['automation', 'type/bug', 'priority/critical', 'state/pending'],
+              title: `Deployment failed: ${reason} (${version})`,
+              labels: [
+                'automation',
+                'type/bug',
+                'priority/critical',
+                'state/pending'
+              ],
               body: `## Deployment Validation Failure
 
             **Version:** ${version}
@@ -290,7 +321,7 @@ jobs:
             ### Workflow Run
 
             - **Run ID:** ${context.runId}
-            - **Workflow:** [View Run](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+            - **Workflow:** [View Run](${runUrl}/${context.runId})
             - **Commit:** ${context.sha}
 
             ### Manual Investigation Required
@@ -299,12 +330,12 @@ jobs:
             1. Check the deployment logs for errors
             2. Verify the built code is syntactically correct
             3. Check Screeps console for runtime errors
-            4. Review recent code changes that may have caused the failure
+            4. Review recent code changes
 
             ### Related Documentation
 
-            - [Deployment Troubleshooting Guide](packages/docs/source/docs/operations/deployment-troubleshooting.md)
-            - [Manual Rollback Runbook](packages/docs/source/docs/operations/deployment-rollback.md)
+            - [Troubleshooting](docs/operations/deployment-troubleshooting.md)
+            - [Rollback Runbook](docs/operations/deployment-rollback.md)
 
             ---
             _This issue was automatically created by the deployment workflow._
