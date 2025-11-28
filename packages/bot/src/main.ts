@@ -40,7 +40,7 @@ let profilerInitialized = false;
 
 /**
  * Maximum number of profiler entries to retain in Memory.profiler.data.
- * Older entries (by cumulative CPU time) are pruned when this limit is exceeded.
+ * Entries with lowest cumulative CPU time are pruned when this limit is exceeded.
  * This prevents unbounded memory growth during long-running profiler sessions.
  * @see https://github.com/ralphschuler/.screeps-gpt/issues/1490
  */
