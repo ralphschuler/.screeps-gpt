@@ -1,7 +1,7 @@
 import { describe, expect, it, beforeEach, vi } from "vitest";
 import { RoleControllerManager } from "@runtime/behavior/RoleControllerManager";
 import { serviceRegistry } from "@runtime/behavior/controllers/ServiceLocator";
-import { MOVEMENT_PRIORITY, priorityMoveTo } from "@runtime/behavior/controllers/helpers";
+import { MOVEMENT_PRIORITY, priorityMoveTo, type MovementPriorityLevel } from "@runtime/behavior/controllers/helpers";
 import type { GameContext, SpawnLike, CreepLike, PositionLike } from "@runtime/types/GameContext";
 
 // Minimal Screeps constants for test environment
@@ -154,12 +154,14 @@ describe("Traffic management integration", () => {
     };
     (globalThis as typeof globalThis & Record<string, unknown>).Game = game as unknown as Game;
 
-    const manager = new RoleControllerManager({}, console);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _manager = new RoleControllerManager({}, console);
 
-    // PathfindingManager should be registered
+    // PathfindingManager should be registered in the service registry
     const pathfindingManager = serviceRegistry.getPathfindingManager();
     expect(pathfindingManager).not.toBeNull();
-    expect(manager).toBeTruthy(); // Use manager to avoid unused variable warning
+    // Verify the provider name is set correctly
+    expect(pathfindingManager?.getProviderName()).toBe("nescafe");
   });
 
   it("should have correct movement priority constants", () => {
@@ -215,5 +217,26 @@ describe("Traffic management integration", () => {
         ignoreCreeps: true
       })
     );
+  });
+
+  it("should clamp invalid priority values to valid range 0-6", () => {
+    const moveTo = vi.fn(() => OK_CODE);
+    const creep = {
+      name: "test-creep",
+      moveTo,
+      pos: { x: 10, y: 10 }
+    } as unknown as CreepLike;
+
+    const targetPos = { x: 25, y: 25 } as RoomPosition;
+
+    // Test with out-of-range priority values
+    // These should be clamped internally (though we can't directly observe the clamped value
+    // in the native moveTo fallback, we verify no errors occur)
+    priorityMoveTo(creep, targetPos, { priority: -5 as MovementPriorityLevel });
+    expect(moveTo).toHaveBeenCalled();
+
+    moveTo.mockClear();
+    priorityMoveTo(creep, targetPos, { priority: 100 as MovementPriorityLevel });
+    expect(moveTo).toHaveBeenCalled();
   });
 });

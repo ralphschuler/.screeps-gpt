@@ -122,10 +122,18 @@ export class RoleControllerManager {
 
     // Initialize PathfindingManager for traffic management
     // This enables priority-based movement and creep traffic coordination
+    // Note: PathfindingManager gracefully handles library loading failures via isAvailable() checks
     this.pathfindingManager = new PathfindingManager({
       enableCaching: true,
       logger: this.logger
     });
+
+    // Log pathfinding availability status for monitoring
+    if (!this.pathfindingManager.isAvailable()) {
+      this.logger.warn?.(
+        `[RoleControllerManager] PathfindingManager unavailable - traffic management disabled, falling back to native pathfinding`
+      );
+    }
 
     // Register services in service locator
     serviceRegistry.setCommunicationManager(this.communicationManager);

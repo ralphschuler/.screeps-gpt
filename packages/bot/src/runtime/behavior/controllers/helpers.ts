@@ -291,11 +291,15 @@ export function priorityMoveTo(
 ): ScreepsReturnCode {
   const pathfindingManager = serviceRegistry.getPathfindingManager();
 
+  // Validate and clamp priority to valid range (0-6)
+  const rawPriority = options.priority ?? MOVEMENT_PRIORITY.UPGRADER;
+  const priority = Math.max(0, Math.min(6, rawPriority));
+
   const opts = {
     range: options.range ?? 1,
     reusePath: options.reusePath ?? 30,
     ignoreCreeps: options.ignoreCreeps ?? true,
-    priority: options.priority ?? MOVEMENT_PRIORITY.UPGRADER,
+    priority,
     moveOffRoad: options.moveOffRoad ?? false,
     visualizePathStyle: options.visualizePathStyle
   };
