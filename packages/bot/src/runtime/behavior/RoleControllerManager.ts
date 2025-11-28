@@ -545,6 +545,16 @@ export class RoleControllerManager {
         "claimer"
       ];
       this.logger.log?.(`[RoleControllerManager] Combat mode active in rooms: ${roomsUnderCombat.join(", ")}`);
+    } else if (needsAttackers && needsClaimers) {
+      // Attack flags pending with expansion: prioritize attackers over claimers
+      // Attackers should spawn before claimers since attacks are typically more urgent
+      roleOrder = baseRoleOrder.filter(r => r !== "attacker" && r !== "claimer");
+      roleOrder.splice(1, 0, "attacker"); // Attackers second (after harvesters)
+      roleOrder.splice(2, 0, "claimer"); // Claimers third
+    } else if (needsAttackers) {
+      // Attack flags pending: prioritize attackers (second after harvesters)
+      roleOrder = baseRoleOrder.filter(r => r !== "attacker");
+      roleOrder.splice(1, 0, "attacker");
     } else if (needsClaimers) {
       // Normal mode with expansion: prioritize claimers (second after harvesters)
       roleOrder = baseRoleOrder.filter(r => r !== "claimer");
