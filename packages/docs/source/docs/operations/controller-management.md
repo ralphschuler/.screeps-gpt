@@ -153,6 +153,22 @@ As of release 0.161.2, the screeps-monitoring.yml workflow includes proactive co
 4. Critical and warning alerts trigger email notifications to configured recipients
 5. Alert history is tracked in reports/bot-snapshots/ for trend analysis
 
+**Room Ownership Verification:**
+
+As of the fix for Issue #1432, the `WarningDetector` class verifies actual room ownership before generating controller downgrade or energy starvation warnings. This prevents false positive notifications for rooms that are:
+
+- Visible but not owned by the bot (due to scout visibility)
+- Reserved but not claimed
+- Experiencing API quirks where `controller.my` returns `true` for visible rooms
+
+**Technical Implementation:**
+
+The warning detector checks both `room.controller.my === true` AND `room.controller.owner !== undefined` to confirm the bot actually owns the room. This ensures:
+
+- W54N48 (or similar visible rooms) won't trigger false downgrade warnings
+- Only rooms with active claims will be monitored for downgrade risk
+- Energy starvation calculations only include owned rooms
+
 **Metrics Tracked:**
 - Time until downgrade (ticks and hours)
 - Controller progress toward next level
