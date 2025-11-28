@@ -176,7 +176,7 @@ describe("Takeover target identification regression", () => {
       const empire = new EmpireManager({ logger: { log: vi.fn(), warn: vi.fn() } });
 
       // Setup: scout report with owner matching PLAYER_USERNAME
-      // PLAYER_USERNAME is set to "ralphschuler" in vitest.config.ts
+      // PLAYER_USERNAME is set to "ralphschuler" in the root vitest.config.ts
       const scoutMemory = memory.scout as { rooms: Record<string, unknown> };
       scoutMemory.rooms["W3N3"] = {
         roomName: "W3N3",
