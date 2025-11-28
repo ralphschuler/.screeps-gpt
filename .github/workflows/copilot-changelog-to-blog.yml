@@ -66,8 +66,7 @@ jobs:
         shell: bash
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          VERSION_SLUG="${VERSION//./-}"
-          BLOG_POST_PATH="packages/docs/source/_posts/release-${VERSION_SLUG}.md"
+          BLOG_POST_PATH="packages/docs/source/_posts/release-${VERSION}.md"
 
           if [ -f "$BLOG_POST_PATH" ]; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
@@ -98,8 +97,7 @@ jobs:
         shell: bash
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          VERSION_SLUG="${VERSION//./-}"
-          BLOG_POST_PATH="packages/docs/source/_posts/release-${VERSION_SLUG}.md"
+          BLOG_POST_PATH="packages/docs/source/_posts/release-${VERSION}.md"
 
           if [ ! -f "$BLOG_POST_PATH" ]; then
             echo "❌ Blog post was not created at $BLOG_POST_PATH"
@@ -117,8 +115,7 @@ jobs:
         shell: bash
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          VERSION_SLUG="${VERSION//./-}"
-          BLOG_POST_PATH="packages/docs/source/_posts/release-${VERSION_SLUG}.md"
+          BLOG_POST_PATH="packages/docs/source/_posts/release-${VERSION}.md"
 
           echo "📋 Blog Post Front Matter:"
           sed -n '/^---$/,/^---$/p' "$BLOG_POST_PATH"
