@@ -385,10 +385,20 @@ export class EmpireManager {
 
     // Find owned rooms by other players
     const occupiedRooms = scouts.filter(report => {
+      // Skip if report owner matches our username
+      if (report.owner === PLAYER_USERNAME) return false;
+
+      // Additional runtime check: skip if we control this room
+      // This handles cases where PLAYER_USERNAME doesn't match Game.username
+      // or room ownership changed between scouting and analysis
+      if (typeof Game !== "undefined") {
+        const room = Game.rooms[report.roomName];
+        if (room?.controller?.my) return false;
+      }
+
       return (
         report.owned &&
         report.owner !== undefined &&
-        report.owner !== PLAYER_USERNAME && // Not our own rooms
         report.sourceCount >= 1 &&
         report.controllerLevel !== undefined &&
         report.controllerLevel > 0
