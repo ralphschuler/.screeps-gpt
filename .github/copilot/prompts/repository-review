@@ -7,6 +7,28 @@ the repository into `$GITHUB_WORKSPACE/repo`, and audit it end-to-end with empha
 - Automation workflows, deployment, and evaluation scripts that could break continuous delivery.
 - Documentation gaps that make autonomous improvements unreliable (check `packages/docs/source/` for Hexo documentation).
 
+## Available MCP Tools
+
+**GitHub MCP** (repository operations):
+
+- Issue and PR search, code search, commit inspection
+
+**Screeps Docs MCP** (official game documentation):
+
+- `screeps_docs_search` - Search Screeps documentation
+- `screeps_docs_get_api` - Get API object documentation
+- `screeps_docs_get_mechanics` - Get game mechanics documentation
+- `screeps_docs_list_apis` - List available Screeps API objects
+
+**Screeps Wiki MCP** (community knowledge):
+
+- `screeps_wiki_search` - Search the Screeps community wiki
+- `screeps_wiki_get_article` - Fetch wiki articles
+
+Use these tools to verify that runtime code correctly implements Screeps APIs and follows game mechanics best practices.
+When reviewing bot behavior code, use `screeps_docs_get_api` to verify correct API usage and `screeps_wiki_search` to check
+for known patterns or anti-patterns.
+
 ## MANDATORY ACTIONS (failure to complete any item is a workflow failure)
 
 - [ ] **MUST authenticate GitHub CLI** and verify repository access

@@ -7,6 +7,31 @@ below for reference:
 
 ## ${ISSUE_BODY}
 
+## Available MCP Tools
+
+**GitHub MCP** (repository operations):
+
+- Issue and PR search, code search, commit inspection
+
+**Screeps Docs MCP** (official game documentation):
+
+- `screeps_docs_search` - Search Screeps documentation
+- `screeps_docs_get_api` - Get API object documentation (e.g., Creep, Room, StructureSpawn)
+- `screeps_docs_get_mechanics` - Get game mechanics documentation (e.g., pathfinding, spawning)
+- `screeps_docs_list_apis` - List available Screeps API objects
+
+**Screeps Wiki MCP** (community knowledge):
+
+- `screeps_wiki_search` - Search the Screeps community wiki
+- `screeps_wiki_get_article` - Fetch wiki articles for strategies and best practices
+- `screeps_wiki_get_table` - Extract game constants tables
+
+When implementing features or fixes related to Screeps game mechanics, use these MCP tools to:
+
+- Verify correct API usage before implementing
+- Find community best practices and patterns
+- Look up game constants and mechanics
+
 The workflow has already provided `GITHUB_TOKEN`/`GH_TOKEN`. Authenticate the GitHub CLI, clone the repository into
 `$GITHUB_WORKSPACE/repo`, and create a working branch named `copilot/todo-${ISSUE_NUMBER}`.
 

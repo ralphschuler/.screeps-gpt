@@ -4,8 +4,27 @@ This workflow provides comprehensive access to:
 
 - **GitHub repository** (via github MCP server): Issues, PRs, code search, file access
 - **Screeps bot console** (via screeps-mcp MCP server): Console commands, memory access, room data
+- **Screeps documentation** (via screeps-docs-mcp MCP server): Official API docs, game mechanics
+- **Screeps community wiki** (via screeps-wiki-mcp MCP server): Community strategies, guides, best practices
 - **Screeps API data**: User stats, shard info, bot state
 - **Repository data**: Bot snapshots, PTR stats, profiler data, documentation
+
+Available MCP tools for Screeps game knowledge:
+
+**Screeps Docs MCP** (official documentation):
+
+- `screeps_docs_search` - Search Screeps documentation for specific topics
+- `screeps_docs_get_api` - Get detailed API object documentation
+- `screeps_docs_get_mechanics` - Get game mechanics documentation
+- `screeps_docs_list_apis` - List all available Screeps API objects
+- `screeps_docs_list_mechanics` - List all game mechanics topics
+
+**Screeps Wiki MCP** (community knowledge):
+
+- `screeps_wiki_search` - Search the Screeps community wiki
+- `screeps_wiki_get_article` - Fetch a specific wiki article by title
+- `screeps_wiki_list_categories` - List wiki categories for browsing
+- `screeps_wiki_get_table` - Extract table data from wiki articles
 
 Available environment variables:
 
@@ -90,7 +109,26 @@ Analyze the current state for strategic planning:
 
 ### PHASE 3: OPPORTUNITY IDENTIFICATION
 
-Based on state analysis, identify strategic opportunities:
+Based on state analysis, identify strategic opportunities. Use Screeps MCP tools to gather game knowledge:
+
+**Game Knowledge Gathering:**
+
+Before identifying domain-specific opportunities, use MCP tools to understand relevant game mechanics:
+
+```javascript
+// Get relevant game mechanics for the strategy domain
+screeps_docs_get_mechanics("${STRATEGY_DOMAIN}");
+
+// Search for domain-specific documentation
+screeps_docs_search("${STRATEGY_DOMAIN} optimization");
+
+// Get community strategies and best practices
+screeps_wiki_search("${STRATEGY_DOMAIN} strategy");
+
+// For specific game objects, get API documentation
+screeps_docs_get_api("Tower"); // For defense domain
+screeps_docs_get_api("Source"); // For economy domain
+```
 
 **A. Domain-Specific Opportunities**
 
@@ -100,6 +138,7 @@ For **expansion** domain:
 - Remote mining opportunities
 - Source keeper rooms potential
 - Highway access
+- Use `screeps_docs_get_mechanics("claiming")` and `screeps_wiki_search("expansion strategy")` for guidance
 
 For **economy** domain:
 
@@ -107,6 +146,7 @@ For **economy** domain:
 - Hauler optimization
 - Link network improvements
 - Storage management
+- Use `screeps_docs_get_api("Source")`, `screeps_docs_get_api("StructureLink")` for API details
 
 For **defense** domain:
 
@@ -114,6 +154,7 @@ For **defense** domain:
 - Tower coverage gaps
 - Wall/rampart improvements
 - Response automation
+- Use `screeps_docs_get_api("StructureTower")`, `screeps_wiki_search("defense patterns")` for strategies
 
 For **combat** domain:
 
@@ -121,6 +162,7 @@ For **combat** domain:
 - Squad composition needs
 - Target selection improvements
 - Coordination systems
+- Use `screeps_docs_get_mechanics("combat")`, `screeps_wiki_search("attack strategy")` for guidance
 
 For **infrastructure** domain:
 
@@ -128,6 +170,7 @@ For **infrastructure** domain:
 - Structure placement improvements
 - Extension filling efficiency
 - Container/link positioning
+- Use `screeps_docs_get_api("StructureRoad")`, `screeps_wiki_search("room layout")` for patterns
 
 For **optimization** domain:
 
@@ -135,6 +178,7 @@ For **optimization** domain:
 - Memory efficiency
 - Algorithm improvements
 - Caching opportunities
+- Use `screeps_docs_get_mechanics("pathfinding")`, `screeps_wiki_search("cpu optimization")` for techniques
 
 **B. Cross-Cutting Opportunities**
 

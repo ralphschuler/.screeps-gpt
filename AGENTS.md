@@ -278,6 +278,39 @@ Agents have access to Model Context Protocol (MCP) servers that extend their cap
    - Configuration: `.github/mcp/playwright.json`
    - Use cases: Web UI testing, visual regression checks, automated form filling
 
+3. **Screeps MCP Server** (`@ralphschuler/screeps-mcp`)
+   - Console command execution for bot interaction
+   - Memory access for reading/writing bot state
+   - Room data retrieval for strategic analysis
+   - Configuration: `.github/mcp/screeps-mcp.json`
+   - Use cases: Bot monitoring, performance analysis, strategic decision making
+   - Required environment: `SCREEPS_TOKEN`, `SCREEPS_SHARD`
+
+4. **Screeps Docs MCP Server** (`@ralphschuler/screeps-docs-mcp`)
+   - Official Screeps API documentation lookup
+   - Game mechanics documentation search
+   - API object reference retrieval
+   - Configuration: `.github/mcp/screeps-docs-mcp.json`
+   - Use cases: Understanding game APIs, verifying method signatures, learning game mechanics
+   - **Tools available:**
+     - `screeps_docs_search` - Search Screeps documentation
+     - `screeps_docs_get_api` - Get API object documentation
+     - `screeps_docs_get_mechanics` - Get game mechanics documentation
+     - `screeps_docs_list_apis` - List available Screeps API objects
+     - `screeps_docs_list_mechanics` - List game mechanics topics
+
+5. **Screeps Wiki MCP Server** (`@ralphschuler/screeps-wiki-mcp`)
+   - Community wiki article search and retrieval
+   - Strategy guides and best practices
+   - Community-contributed documentation
+   - Configuration: `.github/mcp/screeps-wiki-mcp.json`
+   - Use cases: Learning community strategies, finding optimization techniques, understanding advanced patterns
+   - **Tools available:**
+     - `screeps_wiki_search` - Search the Screeps community wiki
+     - `screeps_wiki_get_article` - Fetch a wiki article by title
+     - `screeps_wiki_list_categories` - List wiki categories
+     - `screeps_wiki_get_table` - Extract table data from wiki articles
+
 **Using MCP Servers in Workflows:**
 
 To enable additional MCP servers in a workflow, use the `additional-mcp-config` parameter:
@@ -299,6 +332,8 @@ The configuration files in `.github/mcp/` define MCP server commands and environ
 - Use environment variables for credentials, never hardcode secrets in MCP configuration files
 - Test MCP integrations locally when possible before deploying to workflows
 - Document new MCP use cases in workflow-specific documentation
+- **For Screeps game knowledge**: Use Screeps Docs MCP and Wiki MCP servers to understand game APIs, mechanics, and community strategies before implementing features or fixes
+- **For bot interaction**: Use Screeps MCP server for console commands, memory access, and room data retrieval
 
 **Key Workflows:**
 
@@ -433,6 +468,13 @@ When a new agent or contributor starts work:
 - [Game Guide](https://docs.screeps.com/index.html)
 - [API Reference](https://docs.screeps.com/api/)
 - [Screeps TypeScript Starter Guide](https://screepers.gitbook.io/screeps-typescript-starter/)
+
+**MCP-Based Documentation Access:**
+Agents should prefer using MCP servers for documentation lookup when available:
+
+- Use `screeps-docs-mcp` tools for official API documentation and game mechanics
+- Use `screeps-wiki-mcp` tools for community strategies and best practices
+- These provide structured, queryable access to game knowledge during automated workflows
 
 ### Type Definitions and Tooling
 

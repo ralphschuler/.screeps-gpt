@@ -14,10 +14,30 @@ Issue metadata:
 ${ISSUE_BODY}
 ```
 
+## Available MCP Tools
+
+**GitHub MCP** (repository operations):
+
+- Issue and PR search, code search, commit inspection
+
+**Screeps Docs MCP** (official game documentation):
+
+- `screeps_docs_search` - Search Screeps documentation
+- `screeps_docs_get_api` - Get API object documentation
+- `screeps_docs_get_mechanics` - Get game mechanics documentation
+- `screeps_docs_list_apis` - List available Screeps API objects
+
+**Screeps Wiki MCP** (community knowledge):
+
+- `screeps_wiki_search` - Search the Screeps community wiki
+- `screeps_wiki_get_article` - Fetch wiki articles
+- `screeps_wiki_list_categories` - List wiki categories
+
 ## MANDATORY ACTIONS (failure to complete any item is a workflow failure)
 
 - [ ] **MUST authenticate GitHub CLI** with provided token and verify permissions
 - [ ] **MUST analyze issue content** and detect duplicates using GitHub MCP server
+- [ ] **MUST gather Screeps game context** using screeps-docs-mcp and screeps-wiki-mcp when issue relates to game mechanics
 - [ ] **MUST reformulate issue** with clear structure and actionable content
 - [ ] **MUST apply appropriate labels** based on content analysis (excluding Todo label)
 - [ ] **MUST add triage comment** with summary and recommendations
@@ -28,6 +48,7 @@ ${ISSUE_BODY}
 - **All applied labels MUST accurately reflect** the issue content and scope
 - **All triage comments MUST be professional** and provide concrete guidance
 - **All relationship detection MUST be thorough** using GitHub MCP server queries
+- **Game-related issues MUST include** relevant Screeps API/mechanics context from MCP tools
 
 ## FAILURE HANDLING
 
@@ -35,6 +56,7 @@ ${ISSUE_BODY}
 - **IF duplicate detection fails** → Proceed with reformulation but log the limitation
 - **IF label application fails** → Retry once, then proceed without labeling
 - **IF reformulation is unclear** → Preserve original content and add clarification request
+- **IF Screeps MCP tools fail** → Proceed without game context and note the limitation
 
 ---
 
@@ -49,6 +71,12 @@ Follow this process:
      - Use the GitHub MCP server `search_code` function to find related code in the repository
      - Search for relevant files in key directories: `.github/workflows/`, `.github/actions/`, `src/`, `tests/`, `packages/docs/source/`
      - Note any related configuration files, implementation files, test files, or documentation files
+   - **Screeps Game Context Gathering:**
+     - If the issue relates to game mechanics, creep behavior, or Screeps APIs, use MCP tools to gather context:
+       - `screeps_docs_search` to find relevant official documentation
+       - `screeps_docs_get_api` to get specific API documentation for mentioned game objects
+       - `screeps_wiki_search` to find community strategies or known patterns
+     - Include relevant game context in the reformulated issue body
    - **Issue Cross-Referencing:**
      - Use the GitHub MCP server to search for related issues (both open and closed)
      - Look for issues with similar keywords, labels, or technical context
@@ -93,6 +121,7 @@ Follow this process:
      - Reference related pull requests that provide implementation context
      - Note any recent changes in related areas that might be relevant
      - Include links to related documentation or configuration files
+     - Include relevant Screeps game context (API docs, mechanics, wiki articles) if applicable
 
 5. **Reformulate and Update**
    - Reformulate the issue with:
@@ -101,6 +130,7 @@ Follow this process:
        - **Problem/Requirement:** What needs to be addressed
        - **Proposed Changes:** Specific changes or implementation approach
        - **Acceptance Criteria:** Clear success conditions
+       - **Screeps Game Context:** (if applicable) Relevant API documentation, game mechanics, or community strategies discovered via MCP tools
        - **Related Code:** List relevant files, workflows, modules, or documentation (prefer `packages/docs/source/` for structured docs) discovered during context gathering
        - **Related Issues:** Links to related, parent, or blocking issues (if detected)
        - **Related PRs:** Links to relevant pull requests that provide context or touch related areas
@@ -152,6 +182,8 @@ Finish by printing minified JSON so the workflow log captures the triage:
   "related_issues": [123, 456],
   "related_prs": [234, 567],
   "related_code_files": ["path/to/file.ts", ...],
+  "screeps_context_gathered": true,
+  "screeps_apis_referenced": ["Creep", "Room", ...],
   "sub_tasks_detected": [789],
   "parent_issue_detected": null,
   "notes": "short triage summary"
@@ -168,4 +200,6 @@ Rules:
 - Set `is_duplicate` to true if a duplicate was detected and the issue was closed.
 - Set `duplicate_of` to the issue number of the original issue if a duplicate was found.
 - List detected related, sub-task, and parent issue numbers in their respective arrays.
+- Set `screeps_context_gathered` to true if Screeps MCP tools were used to gather game context.
+- List any Screeps APIs or game objects referenced in `screeps_apis_referenced`.
 - Only add ONE comment per triage - avoid redundant comments when only updating the description.

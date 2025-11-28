@@ -5,7 +5,28 @@ This workflow provides comprehensive access to:
 - **GitHub repository** (via github MCP server): Issues, PRs, code search, workflow logs
 - **Screeps bot console** (via screeps-mcp MCP server): Console commands, memory access, room data
 - **Screeps API data** (via screeps-api MCP server): User stats, shard info, PTR metrics
+- **Screeps documentation** (via screeps-docs-mcp MCP server): Official API docs, game mechanics
+- **Screeps community wiki** (via screeps-wiki-mcp MCP server): Community strategies, guides, best practices
 - **Playwright browser** (via playwright MCP server): Web interaction if needed
+
+Available MCP tools for Screeps game knowledge:
+
+**Screeps Docs MCP** (official documentation):
+
+- `screeps_docs_search` - Search Screeps documentation for specific topics
+- `screeps_docs_get_api` - Get detailed API object documentation
+- `screeps_docs_get_mechanics` - Get game mechanics documentation
+- `screeps_docs_list_apis` - List all available Screeps API objects
+- `screeps_docs_list_mechanics` - List all game mechanics topics
+
+**Screeps Wiki MCP** (community knowledge):
+
+- `screeps_wiki_search` - Search the Screeps community wiki
+- `screeps_wiki_get_article` - Fetch a specific wiki article by title
+- `screeps_wiki_list_categories` - List wiki categories for browsing
+- `screeps_wiki_get_table` - Extract table data from wiki articles
+
+Use these tools to understand game mechanics when analyzing bot performance and creating issues.
 
 Available environment variables:
 
