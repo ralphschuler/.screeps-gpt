@@ -82,6 +82,11 @@ const UPGRADERS_PER_INTEGRATION_ROOM = 2; // Remote upgraders spawned per room n
 const BUILDERS_PER_INTEGRATION_ROOM = 2; // Remote builders spawned per room needing integration
 
 /**
+ * Attack flag constants for attacker spawning
+ */
+const ATTACKERS_PER_ATTACK_FLAG = 2; // Attackers spawned per attack flag command
+
+/**
  * Coordinates spawning and per-tick behavior execution using individual role controllers.
  */
 @profile
@@ -451,6 +456,26 @@ export class RoleControllerManager {
       }
     }
 
+    // Check for pending attack requests from attack flag commands
+    // Access combat memory attack queue (set by FlagCommandInterpreter)
+    const attackQueue = memory.combat?.attackQueue as
+      | Array<{ targetRoom: string; status: string; flagName: string; targetPos?: { x: number; y: number } }>
+      | undefined;
+    const pendingAttacks = attackQueue?.filter(req => req.status === "pending") ?? [];
+    const needsAttackers = pendingAttacks.length > 0;
+
+    // Pre-calculate attacker assignments to avoid repeated iterations
+    // Map of targetRoom:flagName to assigned attacker count
+    const assignedAttackersByTarget = new Map<string, number>();
+    if (needsAttackers) {
+      for (const creep of Object.values(game.creeps)) {
+        if (creep.memory.role === "attacker" && creep.memory.targetRoom) {
+          const targetKey = creep.memory.targetRoom;
+          assignedAttackersByTarget.set(targetKey, (assignedAttackersByTarget.get(targetKey) ?? 0) + 1);
+        }
+      }
+    }
+
     // Check for newly claimed rooms needing workforce deployment
     // These are rooms with controller.my but no operational spawn
     // Note: We access memory directly because RoleControllerManager doesn't own ColonyManager
@@ -553,6 +578,12 @@ export class RoleControllerManager {
       );
     }
 
+    if (needsAttackers) {
+      this.logger.log?.(
+        `[RoleControllerManager] Attack pending to ${pendingAttacks.map(a => a.targetRoom).join(", ")} - prioritizing attacker spawning`
+      );
+    }
+
     for (const role of roleOrder) {
       const controller = this.getRoleController(role);
       if (!controller) {
@@ -590,6 +621,17 @@ export class RoleControllerManager {
           neededBuilders += Math.max(0, BUILDERS_PER_INTEGRATION_ROOM - assigned);
         }
         targetMinimum = Math.max(targetMinimum, neededBuilders);
+      }
+
+      // Dynamically increase attacker minimum when attack flags are pending
+      // Spawn attackers per attack flag command (to fulfill attack requests)
+      if (role === "attacker" && needsAttackers) {
+        let neededAttackers = 0;
+        for (const attackRequest of pendingAttacks) {
+          const assigned = assignedAttackersByTarget.get(attackRequest.targetRoom) ?? 0;
+          neededAttackers += Math.max(0, ATTACKERS_PER_ATTACK_FLAG - assigned);
+        }
+        targetMinimum = Math.max(targetMinimum, neededAttackers);
       }
 
       // Dynamically reduce upgrader minimum during combat to focus on defense
@@ -707,6 +749,24 @@ export class RoleControllerManager {
             assignedRemoteBuilders.set(integrationRoom.roomName, assigned + 1);
             this.logger.log?.(
               `[RoleControllerManager] Assigning remote builder ${name} to integration room: ${integrationRoom.roomName} (home: ${integrationRoom.homeRoom})`
+            );
+            break;
+          }
+        }
+      }
+
+      // If spawning an attacker for attack flag command, assign target room
+      if (role === "attacker" && needsAttackers) {
+        // Find an attack target that needs more attackers
+        for (const attackRequest of pendingAttacks) {
+          const assigned = assignedAttackersByTarget.get(attackRequest.targetRoom) ?? 0;
+          if (assigned < ATTACKERS_PER_ATTACK_FLAG) {
+            // Assign this attacker to the attack target
+            (creepMemory as CreepMemory & { targetRoom?: string }).targetRoom = attackRequest.targetRoom;
+            // Update pre-calculated count for subsequent iterations
+            assignedAttackersByTarget.set(attackRequest.targetRoom, assigned + 1);
+            this.logger.log?.(
+              `[RoleControllerManager] Assigning attacker ${name} to attack target: ${attackRequest.targetRoom}`
             );
             break;
           }

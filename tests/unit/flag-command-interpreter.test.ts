@@ -490,6 +490,135 @@ describe("FlagCommandInterpreter", () => {
       expect(mockMemory.flagCommands?.RemoteMine.validationReason).toContain("Prerequisites not met");
     });
 
+    it("should enqueue attack request when ATTACK command is valid", () => {
+      const command = {
+        name: "AttackE5S3",
+        type: FlagCommandType.ATTACK,
+        priority: FlagPriority.HIGH,
+        roomName: "E5S3",
+        pos: { x: 25, y: 25 },
+        flag: {} as Flag
+      };
+
+      // Setup valid prerequisites with spawn capacity (560 energy for base attacker)
+      mockGame.spawns = {
+        Spawn1: {
+          name: "Spawn1",
+          spawning: null,
+          room: {
+            name: "W1N1",
+            energyCapacityAvailable: 600
+          } as Room
+        } as unknown as SpawnLike
+      };
+      mockGame.rooms = {
+        W1N1: {
+          controller: { my: true } as StructureController,
+          storage: {
+            store: {
+              getUsedCapacity: (resource: ResourceConstant) => (resource === RESOURCE_ENERGY ? 15000 : 0)
+            }
+          } as StructureStorage
+        } as Room
+      };
+
+      interpreter.storeCommand(command, mockMemory, mockGame);
+
+      // Verify attack queue was created and populated
+      expect(mockMemory.combat).toBeDefined();
+      const combat = mockMemory.combat as {
+        attackQueue: Array<{ targetRoom: string; status: string; flagName: string }>;
+      };
+      expect(combat.attackQueue).toBeDefined();
+      expect(combat.attackQueue.length).toBe(1);
+      expect(combat.attackQueue[0].targetRoom).toBe("E5S3");
+      expect(combat.attackQueue[0].status).toBe("pending");
+      expect(combat.attackQueue[0].flagName).toBe("AttackE5S3");
+    });
+
+    it("should validate ATTACK command with spawn capacity but no attack creeps", () => {
+      const command = {
+        name: "AttackTarget",
+        type: FlagCommandType.ATTACK,
+        priority: FlagPriority.HIGH,
+        roomName: "E5S3",
+        pos: { x: 25, y: 25 },
+        flag: {} as Flag
+      };
+
+      // No attack creeps
+      mockGame.creeps = {};
+
+      // Add spawn with sufficient energy capacity (560 for base attacker)
+      mockGame.spawns = {
+        Spawn1: {
+          name: "Spawn1",
+          spawning: null,
+          room: {
+            name: "W1N1",
+            energyCapacityAvailable: 600, // Sufficient for attacker
+            controller: { my: true, level: 4 } as StructureController,
+            storage: {
+              store: {
+                getUsedCapacity: (resource: ResourceConstant) => (resource === RESOURCE_ENERGY ? 15000 : 0)
+              }
+            } as StructureStorage
+          } as Room
+        } as unknown as SpawnLike
+      };
+
+      // Add room with energy
+      mockGame.rooms = {
+        W1N1: {
+          controller: { my: true, level: 4 } as StructureController,
+          storage: {
+            store: {
+              getUsedCapacity: (resource: ResourceConstant) => (resource === RESOURCE_ENERGY ? 15000 : 0)
+            }
+          } as StructureStorage
+        } as Room
+      };
+
+      const validation = interpreter.validateCommand(command, mockGame, mockMemory);
+
+      expect(validation.valid).toBe(true);
+      expect(validation.reason).toBeUndefined();
+    });
+
+    it("should invalidate ATTACK command without attack creeps or spawn capacity", () => {
+      const command = {
+        name: "AttackTarget",
+        type: FlagCommandType.ATTACK,
+        priority: FlagPriority.HIGH,
+        roomName: "E5S3",
+        pos: { x: 25, y: 25 },
+        flag: {} as Flag
+      };
+
+      // No attack creeps
+      mockGame.creeps = {};
+
+      // No spawns (or spawn with insufficient capacity)
+      mockGame.spawns = {};
+
+      // Add storage with energy
+      mockGame.rooms = {
+        W1N1: {
+          controller: { my: true } as StructureController,
+          storage: {
+            store: {
+              getUsedCapacity: (resource: ResourceConstant) => (resource === RESOURCE_ENERGY ? 15000 : 0)
+            }
+          } as StructureStorage
+        } as Room
+      };
+
+      const validation = interpreter.validateCommand(command, mockGame, mockMemory);
+
+      expect(validation.valid).toBe(false);
+      expect(validation.reason).toContain("No attack creeps or spawn capacity available");
+    });
+
     it("should remove command from memory", () => {
       mockMemory.flagCommands = {
         TestFlag: {
