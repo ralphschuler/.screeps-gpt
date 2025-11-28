@@ -22,12 +22,19 @@ interface AnalyticsDataPoint {
   activeSpawnCount?: number;
   controllerProgress?: number;
   controllerProgressTotal?: number;
+  // Multi-shard metrics
+  shardCount?: number;
+  shards?: string[];
 }
 
 interface AnalyticsData {
   generated: string;
   period: string;
   dataPoints: AnalyticsDataPoint[];
+  // Multi-shard summary
+  multiShardSupport: boolean;
+  totalShardsObserved?: number;
+  shardsObserved?: string[];
 }
 
 /**
@@ -63,6 +70,7 @@ function generateAnalytics(): void {
 
   const dataPoints: AnalyticsDataPoint[] = [];
   let failedSnapshots = 0;
+  const allShardsObserved = new Set<string>();
 
   // Process each snapshot
   for (const file of files) {
@@ -74,6 +82,21 @@ function generateAnalytics(): void {
       const dataPoint: AnalyticsDataPoint = {
         date: extractDate(snapshot.timestamp)
       };
+
+      // Extract shard metadata (multi-shard support)
+      if (snapshot.shards && snapshot.shards.length > 0) {
+        dataPoint.shardCount = snapshot.shards.length;
+        dataPoint.shards = snapshot.shards.map(s => s.name);
+        // Track all shards observed across snapshots
+        for (const shard of snapshot.shards) {
+          allShardsObserved.add(shard.name);
+        }
+      }
+
+      // Use totalRooms from snapshot if available (multi-shard aware)
+      if (snapshot.totalRooms !== undefined) {
+        dataPoint.roomCount = snapshot.totalRooms;
+      }
 
       // Extract CPU metrics
       if (snapshot.cpu) {
@@ -91,7 +114,10 @@ function generateAnalytics(): void {
       if (snapshot.rooms) {
         const roomEntries = Object.entries(snapshot.rooms).filter(([name]) => /^[EW]\d+[NS]\d+$/.test(name));
         const rooms = roomEntries.map(([, data]) => data);
-        dataPoint.roomCount = rooms.length;
+        // Only override roomCount if not already set from totalRooms
+        if (dataPoint.roomCount === undefined) {
+          dataPoint.roomCount = rooms.length;
+        }
 
         if (rooms.length > 0) {
           dataPoint.totalEnergy = rooms.reduce((sum, room) => sum + (room.energy || 0), 0);
@@ -144,10 +170,17 @@ function generateAnalytics(): void {
     console.warn(`⚠ ${failedSnapshots} snapshot(s) failed to process`);
   }
 
+  // Convert Set to sorted array for consistent output
+  const shardsObservedArray = Array.from(allShardsObserved).sort();
+
   const analytics: AnalyticsData = {
     generated: new Date().toISOString(),
     period: "30 days",
-    dataPoints
+    dataPoints,
+    // Multi-shard summary
+    multiShardSupport: true,
+    totalShardsObserved: shardsObservedArray.length || undefined,
+    shardsObserved: shardsObservedArray.length > 0 ? shardsObservedArray : undefined
   };
 
   // Ensure output directory exists
@@ -157,6 +190,9 @@ function generateAnalytics(): void {
   writeFileSync(outputPath, JSON.stringify(analytics, null, 2));
   console.log(`✓ Analytics data generated: ${outputPath}`);
   console.log(`✓ Data points: ${dataPoints.length}`);
+  if (shardsObservedArray.length > 0) {
+    console.log(`✓ Shards observed: ${shardsObservedArray.join(", ")}`);
+  }
 }
 
 generateAnalytics();
