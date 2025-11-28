@@ -101,7 +101,10 @@ export class HarvesterController extends BaseRoleController<HarvesterMemory> {
         if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
           machine.send({ type: "ENERGY_FULL" });
         }
-        return currentState;
+        // Save state to memory and return current state
+        memory.stateMachine = serialize(machine);
+        memory.task = machine.getState();
+        return memory.task;
       }
 
       if (ctx.sourceId) {
@@ -205,9 +208,9 @@ export class HarvesterController extends BaseRoleController<HarvesterMemory> {
 
     // Save state to memory
     memory.stateMachine = serialize(machine);
-    memory.task = currentState;
+    memory.task = machine.getState();
 
-    return currentState;
+    return machine.getState();
   }
 
   /**
