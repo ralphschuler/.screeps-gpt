@@ -154,3 +154,6 @@ packages/*/vitest.config.d.ts.map
 node_modules/.vite/
 **/node_modules/
 packages/pserver/.env
+
+# Legacy documentation archive (migrated to packages/docs/source/docs/)
+.archive/

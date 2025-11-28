@@ -174,19 +174,18 @@ yarn deploy             # Deploy to Screeps (requires secrets)
 ### When to Update Docs
 
 - **README.md**: User-facing behavior, workflows, or automation changes
-- **packages/docs/source/docs/**: **CRITICAL** - Any workflow, runtime, or operational changes MUST go here, NOT in root `docs/`
+- **packages/docs/source/docs/**: **CRITICAL** - Any workflow, runtime, or operational changes MUST go here
 - **TASKS.md**: Add new tasks, mark completed items (don't delete immediately)
 - **AGENTS.md**: Changes to agent guidelines or automation behavior
 
 ### Documentation Structure
 
 - Keep main documentation in root (`README.md`, `DOCS.md`, `AGENTS.md`, `TASKS.md`)
-- **CRITICAL**: Place detailed runbooks in `packages/docs/source/docs/` subdirectories (NOT root `docs/`)
+- **CRITICAL**: Place detailed runbooks in `packages/docs/source/docs/` subdirectories
 - Structure: `packages/docs/source/docs/{category}/{filename}.md`
-- Categories: `automation/`, `operations/`, `runtime/`, `changelog/`, `security/`, `analytics/`
+- Categories: `automation/`, `operations/`, `runtime/`, `changelog/`, `security/`, `analytics/`, `strategy/`, `research/`, `architecture/`, `features/`, `development/`
 - Link new documents from `README.md`, `DOCS.md`, or `packages/docs/source/docs/index.md`
 - Generate documentation site with `yarn build:docs-site`
-- **Root `docs/` is legacy** and being phased out - DO NOT add new documentation there
 
 ## Automation & Workflows
 
@@ -253,7 +252,7 @@ The bot uses a **state machine architecture** for creep behaviors:
 
 **Important Documentation:**
 
-- [ADR-004: State Machine Architecture](../docs/strategy/decisions/adr-004-state-machine-behavior-architecture.md)
+- [ADR-004: State Machine Architecture](../packages/docs/source/docs/strategy/decisions/adr-004-state-machine-behavior-architecture.md)
 - [Behavior State Machines](../packages/docs/source/docs/runtime/architecture/behavior-state-machines.md)
 - [Behavior Migration Guide](../packages/docs/source/docs/operations/behavior-migration-guide.md)
 

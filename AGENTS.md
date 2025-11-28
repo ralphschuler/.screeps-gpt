@@ -66,13 +66,12 @@ All agents should reference these documents before making changes:
      - [`packages/docs/source/docs/operations/respawn-handling.md`](packages/docs/source/docs/operations/respawn-handling.md) - Automatic respawn detection and handling
      - [`packages/docs/source/docs/changelog/versions.md`](packages/docs/source/docs/changelog/versions.md) - Generated release history (do not edit manually)
    - **Blog Posts**: Generated from CHANGELOG.md releases and placed in `packages/docs/source/_posts/`
-   - **Note**: Root `docs/` contains legacy documentation (primarily `docs/strategy/` for strategic planning)
 
-3. **Strategic Documentation (`docs/strategy/`)**
-   - [`docs/strategy/roadmap.md`](docs/strategy/roadmap.md) - Current phase status, success metrics, and strategic priorities
-   - [`docs/strategy/phases/`](docs/strategy/phases/) - Phase-specific documentation (Phase 1-5)
-   - [`docs/strategy/learning/`](docs/strategy/learning/) - Documented patterns and lessons learned
-   - [`docs/strategy/decisions/`](docs/strategy/decisions/) - Architectural Decision Records (ADRs)
+3. **Strategic Documentation (`packages/docs/source/docs/strategy/`)**
+   - [`packages/docs/source/docs/strategy/roadmap.md`](packages/docs/source/docs/strategy/roadmap.md) - Current phase status, success metrics, and strategic priorities
+   - [`packages/docs/source/docs/strategy/phases/`](packages/docs/source/docs/strategy/phases/) - Phase-specific documentation (Phase 1-5)
+   - [`packages/docs/source/docs/strategy/learning/`](packages/docs/source/docs/strategy/learning/) - Documented patterns and lessons learned
+   - [`packages/docs/source/docs/strategy/decisions/`](packages/docs/source/docs/strategy/decisions/) - Architectural Decision Records (ADRs)
 
 4. **Workflow Configuration**
    - `.github/workflows/*.yml` - GitHub Actions workflow definitions
@@ -112,7 +111,7 @@ The bot uses a **state machine architecture** for creep behaviors:
 
 **Key Documentation:**
 
-- [ADR-004: State Machine Architecture](docs/strategy/decisions/adr-004-state-machine-behavior-architecture.md)
+- [ADR-004: State Machine Architecture](packages/docs/source/docs/strategy/decisions/adr-004-state-machine-behavior-architecture.md)
 - [Behavior State Machines](packages/docs/source/docs/runtime/architecture/behavior-state-machines.md)
 - [Behavior Migration Guide](packages/docs/source/docs/operations/behavior-migration-guide.md)
 
@@ -210,15 +209,8 @@ function validateGameContext(game: Game): GameContext {
 
 - **Blog Posts**: `packages/docs/source/_posts/` - Generated from CHANGELOG.md via changelog-to-blog workflow
 
-- **Root `docs/` Directory**: Legacy location retained for:
-  - Strategic planning: `docs/strategy/` (roadmap, phases, learning, decisions)
-  - Quick-reference guides that don't fit Hexo structure
-  - Backwards compatibility with existing links
-
 - **Agent Rules**:
   - When creating new documentation, **always use `packages/docs/source/docs/`**
-  - When updating existing documentation, check both locations and consolidate to `packages/docs/source/docs/` when possible
-  - Update agent prompts to reference correct paths
   - Build documentation site with `cd packages/docs && yarn build`
 
 **Documentation Site:**
@@ -246,8 +238,7 @@ function validateGameContext(game: Game): GameContext {
 
 - ✅ **ALWAYS** create new documentation in `packages/docs/source/docs/`
 - ✅ Structure: `packages/docs/source/docs/{category}/{filename}.md`
-- ✅ Categories: `automation/`, `operations/`, `runtime/`, `changelog/`, `security/`, `analytics/`
-- ❌ **NEVER** create documentation in root `docs/` (legacy location being phased out)
+- ✅ Categories: `automation/`, `operations/`, `runtime/`, `changelog/`, `security/`, `analytics/`, `strategy/`, `research/`, `architecture/`, `features/`, `development/`
 - ❌ **NEVER** create documentation in `packages/docs/docs/` (generated output)
 
 ### 4. Workflow Guidelines
@@ -453,7 +444,7 @@ When a new agent or contributor starts work:
 1. ✓ Read this `AGENTS.md` file completely
 2. ✓ Review [`README.md`](README.md) for repository overview
 3. ✓ Study [`DOCS.md`](DOCS.md) for developer resources
-4. ✓ Browse [`docs/`](docs/) knowledge base, especially `packages/docs/source/docs/automation/overview.md`
+4. ✓ Browse [`packages/docs/source/docs/`](packages/docs/source/docs/) knowledge base, especially `packages/docs/source/docs/automation/overview.md`
 5. ✓ Review [`TASKS.md`](TASKS.md) for current priorities
 6. ✓ Check [`CHANGELOG.md`](CHANGELOG.md) for recent changes
 7. ✓ Run `yarn install && yarn lint && yarn test:unit` to verify environment
