@@ -60,7 +60,16 @@ function initializeApi(): ScreepsAPI {
 
   const hostname = process.env.SCREEPS_HOST || "screeps.com";
   const protocol = process.env.SCREEPS_PROTOCOL || "https";
-  const port = process.env.SCREEPS_PORT ? parseInt(process.env.SCREEPS_PORT, 10) : undefined;
+  const portStr = process.env.SCREEPS_PORT;
+  let port: number | undefined;
+  if (portStr) {
+    const parsedPort = parseInt(portStr, 10);
+    if (!Number.isNaN(parsedPort) && parsedPort > 0 && parsedPort < 65536) {
+      port = parsedPort;
+    } else {
+      console.warn(`Invalid SCREEPS_PORT value "${portStr}", using default`);
+    }
+  }
   const path = process.env.SCREEPS_PATH || "/";
 
   return new ScreepsAPI({ token, hostname, protocol, port, path });
