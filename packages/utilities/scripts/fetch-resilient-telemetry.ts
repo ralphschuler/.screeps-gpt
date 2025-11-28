@@ -7,16 +7,20 @@ interface TelemetryResult {
   success: boolean;
   source: "stats_api" | "console" | "none";
   error?: string;
+  shard?: string;
 }
 
 /**
  * Execute a script and capture its output
  */
-async function executeScript(scriptPath: string): Promise<{ exitCode: number; stdout: string; stderr: string }> {
+async function executeScript(
+  scriptPath: string,
+  env?: Record<string, string>
+): Promise<{ exitCode: number; stdout: string; stderr: string }> {
   return new Promise((resolve, reject) => {
     const proc = spawn("npx", ["tsx", scriptPath], {
       cwd: process.cwd(),
-      env: process.env,
+      env: { ...process.env, ...env },
       stdio: ["pipe", "pipe", "pipe"]
     });
 
@@ -49,15 +53,21 @@ async function executeScript(scriptPath: string): Promise<{ exitCode: number; st
  * 1. Try Stats API first (primary source, historical data)
  * 2. If Stats API fails, fall back to console telemetry (redundant source, real-time data)
  * 3. If both fail, create comprehensive failure snapshot
+ *
+ * @param shard - Optional shard to collect from. If not provided, uses SCREEPS_SHARD environment variable.
  */
-async function fetchResilientTelemetry(): Promise<TelemetryResult> {
+async function fetchResilientTelemetry(shard?: string): Promise<TelemetryResult> {
+  const targetShard = shard || process.env.SCREEPS_SHARD || "shard3";
+  const shardEnv = shard ? { SCREEPS_SHARD: shard } : undefined;
+
   console.log("=== Resilient Telemetry Collection ===");
+  console.log(`Target shard: ${targetShard}`);
   console.log("Strategy: Profiler Fetch → Stats API → Console Fallback → Failure Snapshot\n");
 
   // Phase 0: Fetch profiler data for CPU analysis (non-blocking)
   console.log("Phase 0: Fetching profiler data for CPU analysis...");
   try {
-    const profilerResult = await executeScript("packages/utilities/scripts/fetch-profiler-console.ts");
+    const profilerResult = await executeScript("packages/utilities/scripts/fetch-profiler-console.ts", shardEnv);
 
     if (profilerResult.exitCode === 0) {
       console.log("✓ Profiler data fetch successful");
@@ -75,12 +85,12 @@ async function fetchResilientTelemetry(): Promise<TelemetryResult> {
   // Phase 1: Try Stats API
   console.log("Phase 1: Attempting Stats API telemetry...");
   try {
-    const statsResult = await executeScript("packages/utilities/scripts/fetch-screeps-stats.mjs");
+    const statsResult = await executeScript("packages/utilities/scripts/fetch-screeps-stats.mjs", shardEnv);
 
     if (statsResult.exitCode === 0) {
       console.log("✓ Stats API telemetry successful");
       console.log(statsResult.stdout);
-      return { success: true, source: "stats_api" };
+      return { success: true, source: "stats_api", shard: targetShard };
     }
 
     console.log("✗ Stats API telemetry failed (exit code: " + statsResult.exitCode + ")");
@@ -92,7 +102,7 @@ async function fetchResilientTelemetry(): Promise<TelemetryResult> {
   // Phase 2: Fall back to Console Telemetry
   console.log("\nPhase 2: Falling back to Console telemetry...");
   try {
-    const consoleResult = await executeScript("packages/utilities/scripts/fetch-console-telemetry.ts");
+    const consoleResult = await executeScript("packages/utilities/scripts/fetch-console-telemetry.ts", shardEnv);
 
     if (consoleResult.exitCode === 0) {
       console.log("✓ Console telemetry successful (fallback activated)");
@@ -106,9 +116,10 @@ async function fetchResilientTelemetry(): Promise<TelemetryResult> {
       const snapshot = JSON.parse(content);
       snapshot.fallback_activated = true;
       snapshot.primary_source_failed = true;
+      snapshot.shard = targetShard;
       await fs.writeFile(filePath, JSON.stringify(snapshot, null, 2));
 
-      return { success: true, source: "console" };
+      return { success: true, source: "console", shard: targetShard };
     }
 
     console.log("✗ Console telemetry failed (exit code: " + consoleResult.exitCode + ")");
@@ -128,6 +139,7 @@ async function fetchResilientTelemetry(): Promise<TelemetryResult> {
     status: "all_sources_unavailable",
     failureType: "infrastructure_failure",
     timestamp: new Date().toISOString(),
+    shard: targetShard,
     error: "Both Stats API and Console telemetry sources failed",
     attempted_sources: ["stats_api", "console"],
     resilience_status: "critical",
@@ -137,7 +149,7 @@ async function fetchResilientTelemetry(): Promise<TelemetryResult> {
   writeFileSync(filePath, JSON.stringify(failureSnapshot, null, 2));
   console.error("⚠ Comprehensive failure snapshot saved to:", filePath);
 
-  return { success: false, source: "none", error: "All telemetry sources failed" };
+  return { success: false, source: "none", error: "All telemetry sources failed", shard: targetShard };
 }
 
 /**

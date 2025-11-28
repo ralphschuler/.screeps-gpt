@@ -2,9 +2,25 @@
  * Shared type definitions for bot state snapshots
  */
 
+/**
+ * Shard metadata in a snapshot
+ */
+export interface ShardMetadata {
+  name: string;
+  rooms: string[];
+}
+
 export interface BotSnapshot {
   timestamp: string;
   tick?: number;
+  /**
+   * Shard metadata for multi-shard support
+   */
+  shards?: ShardMetadata[];
+  /**
+   * Total rooms across all shards
+   */
+  totalRooms?: number;
   cpu?: {
     used: number;
     limit: number;
@@ -34,6 +50,10 @@ export interface BotSnapshot {
       controllerProgress?: number;
       controllerProgressTotal?: number;
       ticksToDowngrade?: number;
+      /**
+       * Shard where this room is located
+       */
+      shard?: string;
     }
   >;
   creeps?: {

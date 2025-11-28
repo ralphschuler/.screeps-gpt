@@ -2,6 +2,7 @@ import { mkdirSync, readdirSync, statSync, unlinkSync, writeFileSync, readFileSy
 import { resolve } from "node:path";
 import type { BotSnapshot } from "./types/bot-snapshot";
 import { fetchConsoleTelemetry } from "./fetch-console-telemetry";
+import { discoverBotShards, type ShardDiscoveryResult } from "./lib/shard-discovery";
 
 const SNAPSHOTS_DIR = resolve("reports", "bot-snapshots");
 const MAX_SNAPSHOTS = 30; // Keep last 30 days of snapshots
@@ -77,13 +78,30 @@ function hasSubstantiveData(snapshot: BotSnapshot): boolean {
 }
 
 /**
- * Collect bot state snapshot from Screeps stats
+ * Collect bot state snapshot from Screeps stats with multi-shard support
  */
 async function collectBotSnapshot(): Promise<void> {
   console.log("Collecting bot state snapshot...\n");
 
   // Create snapshots directory
   mkdirSync(SNAPSHOTS_DIR, { recursive: true });
+
+  // Phase 1: Discover all shards where bot has rooms
+  console.log("Phase 1: Discovering bot shards...");
+  let shardDiscovery: ShardDiscoveryResult;
+  try {
+    shardDiscovery = await discoverBotShards();
+    console.log(
+      `Discovered ${shardDiscovery.shards.length} shard(s) with ${shardDiscovery.totalRooms} total room(s)\n`
+    );
+  } catch (error) {
+    console.warn("Shard discovery failed, using default shard:", error);
+    shardDiscovery = {
+      shards: [{ name: process.env.SCREEPS_SHARD || "shard3", rooms: [] }],
+      totalRooms: 0,
+      discoveredAt: new Date().toISOString()
+    };
+  }
 
   // Try to read the latest stats from screeps-stats
   const statsPath = resolve("reports", "screeps-stats", "latest.json");
@@ -98,7 +116,10 @@ async function collectBotSnapshot(): Promise<void> {
 
   const timestamp = new Date().toISOString();
   const snapshot: BotSnapshot = {
-    timestamp
+    timestamp,
+    // Add shard metadata
+    shards: shardDiscovery.shards.map(s => ({ name: s.name, rooms: s.rooms })),
+    totalRooms: shardDiscovery.totalRooms
   };
 
   // Extract data from stats if available
