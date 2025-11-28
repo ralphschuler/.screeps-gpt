@@ -35,6 +35,7 @@ jobs:
           status-field: In Progress
           automation-state-field: Implementing
       - name: Run Copilot Todo automation
+        id: copilot
         uses: ./.github/actions/copilot-issue-agent
         with:
           copilot-token: ${{ secrets.COPILOT_TOKEN }}
@@ -45,6 +46,14 @@ jobs:
           issue-body: ${{ toJSON(github.event.issue.body || '') }}
           issue-url: ${{ toJSON(github.event.issue.html_url) }}
           issue-author: ${{ toJSON(github.event.issue.user.login) }}
+      - name: Upload copilot-exec logs
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: todo-issue-logs-${{ github.event.issue.number }}-${{ github.run_id }}
+          path: |
+            reports/copilot/todo-issue-${{ github.event.issue.number }}.log
+          retention-days: 30
       - name: Update project status after completion
         if: success()
         uses: ./.github/actions/project-sync

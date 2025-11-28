@@ -21,6 +21,7 @@ Comprehensive documentation for the repository's GitHub Actions workflows, Copil
 - [**Modular Deployment**](modular-deployment.html) - Automated deployment workflows and practices
 - [**Push Notifications**](push-notifications.html) - Real-time alerts for CI/CD events
 - [**Prompt Audit**](prompt-audit.html) - Copilot prompt management and maintenance
+- [**Debugging Workflows**](debugging-workflows.html) - Troubleshooting copilot-exec workflows using artifacts
 
 ### Best Practices
 
