@@ -2,10 +2,13 @@
  * Upgrader Role Controller
  *
  * Upgraders are responsible for:
- * - Gathering energy from containers, storage, or sources
+ * - Gathering energy from containers, storage, or sources (until full)
  * - Upgrading the room controller
  * - Emergency spawn refilling when needed
  * - Pausing during defensive postures
+ *
+ * Note: Upgraders do NOT pick up dropped energy during recharge state to avoid
+ * premature state transitions. Dropped energy collection is handled by haulers.
  *
  * Uses state machine from screeps-xstate for declarative behavior management.
  */
@@ -20,7 +23,7 @@ import {
   type UpgraderContext,
   type UpgraderEvent
 } from "../stateMachines/upgrader";
-import { tryPickupDroppedEnergy, isValidEnergySource } from "./helpers";
+import { isValidEnergySource } from "./helpers";
 
 interface UpgraderMemory extends CreepMemory {
   role: "upgrader";
@@ -151,19 +154,12 @@ export class UpgraderController extends BaseRoleController<UpgraderMemory> {
     if (currentState === "recharge") {
       comm?.say(creep, "⚡gather");
 
-      // Priority 1: Pick up dropped energy
-      if (tryPickupDroppedEnergy(creep)) {
-        // Check if full after pickup
-        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
-          machine.send({ type: "ENERGY_FULL" });
-        }
-        // Save state to memory and return current state
-        memory.stateMachine = serialize(machine);
-        memory.task = machine.getState();
-        return memory.task;
-      }
+      // Note: We intentionally do NOT pick up dropped energy during recharge state.
+      // Picking up energy can interfere with the gather cycle and cause premature
+      // state transitions. Dropped energy collection is handled by haulers.
+      // Issue #1501/#1504: This fix ensures upgraders fill to capacity before upgrading.
 
-      // Priority 2: Use energy priority manager to get available sources (respecting reserves)
+      // Priority 1: Use energy priority manager to get available sources (respecting reserves)
       const energySources = energyMgr
         ? energyMgr.getAvailableEnergySources(creep.room, 0, true)
         : creep.room.find(FIND_STRUCTURES, {
@@ -185,31 +181,23 @@ export class UpgraderController extends BaseRoleController<UpgraderMemory> {
         if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
           machine.send({ type: "ENERGY_FULL" });
         }
-        // Save state to memory and return current state
-        memory.stateMachine = serialize(machine);
-        memory.task = machine.getState();
-        return memory.task;
-      }
-
-      // Priority 3: Harvest from sources directly if no other options
-      const sources = creep.room.find(FIND_SOURCES_ACTIVE) as Source[];
-      // Use ignoreCreeps for better routing through narrow passages
-      const source =
-        sources.length > 0 ? (creep.pos.findClosestByPath(sources, { ignoreCreeps: true }) ?? sources[0]) : null;
-      if (source) {
-        const result = creep.harvest(source);
-        if (result === ERR_NOT_IN_RANGE) {
-          // Use ignoreCreeps for better routing through narrow passages
-          creep.moveTo(source, { range: 1, reusePath: 30, ignoreCreeps: true });
+      } else {
+        // Priority 2: Harvest from sources directly if no containers/storage available
+        const sources = creep.room.find(FIND_SOURCES_ACTIVE) as Source[];
+        // Use ignoreCreeps for better routing through narrow passages
+        const source =
+          sources.length > 0 ? (creep.pos.findClosestByPath(sources, { ignoreCreeps: true }) ?? sources[0]) : null;
+        if (source) {
+          const result = creep.harvest(source);
+          if (result === ERR_NOT_IN_RANGE) {
+            // Use ignoreCreeps for better routing through narrow passages
+            creep.moveTo(source, { range: 1, reusePath: 30, ignoreCreeps: true });
+          }
+          // Check if full after harvest
+          if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+            machine.send({ type: "ENERGY_FULL" });
+          }
         }
-        // Check if full after harvest
-        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
-          machine.send({ type: "ENERGY_FULL" });
-        }
-        // Save state to memory and return current state
-        memory.stateMachine = serialize(machine);
-        memory.task = machine.getState();
-        return memory.task;
       }
     } else if (currentState === "upgrading") {
       comm?.say(creep, "⚡upgrade");

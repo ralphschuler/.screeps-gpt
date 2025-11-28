@@ -2,12 +2,14 @@
  * Harvester Role Controller
  *
  * Harvesters are responsible for:
- * - Picking up dropped energy when available (during harvest phase)
- * - Harvesting energy from sources
+ * - Harvesting energy from sources until full
  * - Delivering energy to spawns and extensions (priority 1)
  * - Filling towers below threshold capacity (priority 2)
  * - Filling containers when spawns/extensions/towers are full (priority 3)
  * - Upgrading controller as fallback when no delivery targets
+ *
+ * Note: Harvesters do NOT pick up dropped energy during harvesting to avoid
+ * premature state transitions. Dropped energy collection is handled by haulers.
  *
  * Uses state machine from screeps-xstate for declarative behavior management.
  */
@@ -22,7 +24,7 @@ import {
   type HarvesterContext,
   type HarvesterEvent
 } from "../stateMachines/harvester";
-import { tryPickupDroppedEnergy, findLowEnergyTowers } from "./helpers";
+import { findLowEnergyTowers } from "./helpers";
 import { DEFAULT_ENERGY_CONFIG } from "@runtime/energy";
 
 interface HarvesterMemory extends CreepMemory {
@@ -95,17 +97,10 @@ export class HarvesterController extends BaseRoleController<HarvesterMemory> {
     } else if (currentState === "harvesting") {
       comm?.say(creep, "⛏️");
 
-      // Try to pick up dropped energy first before harvesting
-      if (tryPickupDroppedEnergy(creep)) {
-        // Check if full after pickup
-        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
-          machine.send({ type: "ENERGY_FULL" });
-        }
-        // Save state to memory and return current state
-        memory.stateMachine = serialize(machine);
-        memory.task = machine.getState();
-        return memory.task;
-      }
+      // Note: We intentionally do NOT pick up dropped energy during harvesting state.
+      // Picking up energy can prematurely fill the creep and trigger ENERGY_FULL transition
+      // before the creep has had a chance to harvest from the source.
+      // Dropped energy pickup should only happen in delivering state or by haulers.
 
       if (ctx.sourceId) {
         const source = Game.getObjectById(ctx.sourceId);
