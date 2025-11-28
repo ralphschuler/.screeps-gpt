@@ -96,11 +96,17 @@ export class BuilderController extends BaseRoleController<BuilderMemory> {
       if (spawnsNeedingEnergy.length > 0) {
         comm?.say(creep, "🚨spawn");
         // Use ignoreCreeps for better routing through narrow passages
-        const spawn = creep.pos.findClosestByPath(spawnsNeedingEnergy, { ignoreCreeps: true }) ?? spawnsNeedingEnergy[0];
+        const spawn =
+          creep.pos.findClosestByPath(spawnsNeedingEnergy, { ignoreCreeps: true }) ?? spawnsNeedingEnergy[0];
         const result = creep.transfer(spawn, RESOURCE_ENERGY);
         if (result === ERR_NOT_IN_RANGE) {
           // Use ignoreCreeps for better routing through narrow passages
-          creep.moveTo(spawn, { range: 1, reusePath: 10, visualizePathStyle: { stroke: "#ff0000" }, ignoreCreeps: true });
+          creep.moveTo(spawn, {
+            range: 1,
+            reusePath: 10,
+            visualizePathStyle: { stroke: "#ff0000" },
+            ignoreCreeps: true
+          });
         }
         // Check if empty after transfer
         if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
@@ -137,7 +143,10 @@ export class BuilderController extends BaseRoleController<BuilderMemory> {
           });
 
       // Use ignoreCreeps for better routing through narrow passages
-      const target = energySources.length > 0 ? (creep.pos.findClosestByPath(energySources, { ignoreCreeps: true }) ?? energySources[0]) : null;
+      const target =
+        energySources.length > 0
+          ? (creep.pos.findClosestByPath(energySources, { ignoreCreeps: true }) ?? energySources[0])
+          : null;
       if (target) {
         const result = creep.withdraw(target, RESOURCE_ENERGY);
         if (result === ERR_NOT_IN_RANGE) {
@@ -157,7 +166,8 @@ export class BuilderController extends BaseRoleController<BuilderMemory> {
       // Priority 3: Harvest from sources directly if no other options
       const sources = creep.room.find(FIND_SOURCES_ACTIVE) as Source[];
       // Use ignoreCreeps for better routing through narrow passages
-      const source = sources.length > 0 ? (creep.pos.findClosestByPath(sources, { ignoreCreeps: true }) ?? sources[0]) : null;
+      const source =
+        sources.length > 0 ? (creep.pos.findClosestByPath(sources, { ignoreCreeps: true }) ?? sources[0]) : null;
       if (source) {
         const harvestResult = creep.harvest(source);
         if (harvestResult === ERR_NOT_IN_RANGE) {
@@ -236,7 +246,10 @@ export class BuilderController extends BaseRoleController<BuilderMemory> {
       }) as Structure[];
 
       // Use ignoreCreeps for better routing through narrow passages
-      const target = repairTargets.length > 0 ? (creep.pos.findClosestByPath(repairTargets, { ignoreCreeps: true }) ?? repairTargets[0]) : null;
+      const target =
+        repairTargets.length > 0
+          ? (creep.pos.findClosestByPath(repairTargets, { ignoreCreeps: true }) ?? repairTargets[0])
+          : null;
       if (target) {
         machine.send({ type: "START_MAINTAIN", targetId: target.id });
         const result = creep.repair(target);

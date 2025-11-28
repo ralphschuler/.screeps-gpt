@@ -52,9 +52,7 @@ describe("findClosestOrFirst", () => {
   });
 
   it("should default to ignoreCreeps: true when no options provided", () => {
-    const targets: MockTarget[] = [
-      { pos: { x: 10, y: 10, roomName: "W5N5" } as RoomPosition, id: "target1" }
-    ];
+    const targets: MockTarget[] = [{ pos: { x: 10, y: 10, roomName: "W5N5" } as RoomPosition, id: "target1" }];
     findClosestByPathMock.mockReturnValue(targets[0]);
 
     findClosestOrFirst(mockCreep, targets);
@@ -63,9 +61,7 @@ describe("findClosestOrFirst", () => {
   });
 
   it("should use ignoreCreeps: true when options object is empty", () => {
-    const targets: MockTarget[] = [
-      { pos: { x: 10, y: 10, roomName: "W5N5" } as RoomPosition, id: "target1" }
-    ];
+    const targets: MockTarget[] = [{ pos: { x: 10, y: 10, roomName: "W5N5" } as RoomPosition, id: "target1" }];
     findClosestByPathMock.mockReturnValue(targets[0]);
 
     findClosestOrFirst(mockCreep, targets, {});
@@ -74,9 +70,7 @@ describe("findClosestOrFirst", () => {
   });
 
   it("should respect explicit ignoreCreeps: false when passed", () => {
-    const targets: MockTarget[] = [
-      { pos: { x: 10, y: 10, roomName: "W5N5" } as RoomPosition, id: "target1" }
-    ];
+    const targets: MockTarget[] = [{ pos: { x: 10, y: 10, roomName: "W5N5" } as RoomPosition, id: "target1" }];
     findClosestByPathMock.mockReturnValue(targets[0]);
 
     findClosestOrFirst(mockCreep, targets, { ignoreCreeps: false });
@@ -85,9 +79,7 @@ describe("findClosestOrFirst", () => {
   });
 
   it("should respect explicit ignoreCreeps: true when passed", () => {
-    const targets: MockTarget[] = [
-      { pos: { x: 10, y: 10, roomName: "W5N5" } as RoomPosition, id: "target1" }
-    ];
+    const targets: MockTarget[] = [{ pos: { x: 10, y: 10, roomName: "W5N5" } as RoomPosition, id: "target1" }];
     findClosestByPathMock.mockReturnValue(targets[0]);
 
     findClosestOrFirst(mockCreep, targets, { ignoreCreeps: true });

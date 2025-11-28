@@ -201,7 +201,8 @@ export class RepairerController extends BaseRoleController<RepairerMemory> {
 
       if (infrastructureTargets.length > 0) {
         // Use ignoreCreeps for better routing through narrow passages
-        const target = creep.pos.findClosestByPath(infrastructureTargets, { ignoreCreeps: true }) ?? infrastructureTargets[0];
+        const target =
+          creep.pos.findClosestByPath(infrastructureTargets, { ignoreCreeps: true }) ?? infrastructureTargets[0];
         if (target) {
           machine.send({ type: "START_REPAIR", targetId: target.id });
           const result = creep.repair(target);
