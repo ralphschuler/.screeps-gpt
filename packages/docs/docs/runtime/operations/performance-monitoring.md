@@ -794,8 +794,8 @@ console.log(JSON.stringify(profile));
 | 2   | 5      | 2.5      | 25%           | Increasing   | ✓ Good       |
 | 3   | 8      | 3.7      | 37%           | Stable       | ✓ Good       |
 | 4   | 12     | 5.5      | 55%           | Stable       | ✓ Acceptable |
-| 5   | 15     | 6.6      | 66%           | Stable       | ⚠ Monitor   |
-| 6   | 18     | 8.5      | 85%           | Decreasing   | ⚠ Warning   |
+| 5   | 15     | 6.6      | 66%           | Stable       | ⚠ Monitor    |
+| 6   | 18     | 8.5      | 85%           | Decreasing   | ⚠ Warning    |
 
 **Note**: Free tier (10 CPU limit) becomes constraining at RCL 5+. Subscription recommended for further growth.
 

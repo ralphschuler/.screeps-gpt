@@ -316,7 +316,9 @@ async function main(): Promise<void> {
         if (snapshot.summary.topCpuConsumers.length > 0) {
           console.log(`\n   Top 5 CPU Consumers:`);
           snapshot.summary.topCpuConsumers.slice(0, 5).forEach((func, i) => {
-            console.log(`   ${i + 1}. ${func.name}: ${func.cpuPerTick.toFixed(2)}ms/tick (${func.percentOfTotal.toFixed(1)}%)`);
+            console.log(
+              `   ${i + 1}. ${func.name}: ${func.cpuPerTick.toFixed(2)}ms/tick (${func.percentOfTotal.toFixed(1)}%)`
+            );
           });
         }
       }
@@ -333,10 +335,7 @@ async function main(): Promise<void> {
     console.error(`   ${error instanceof Error ? error.message : String(error)}`);
 
     // Save failure snapshot for visibility
-    const failureSnapshot = createProfilerSnapshot(
-      null,
-      error instanceof Error ? error.message : String(error)
-    );
+    const failureSnapshot = createProfilerSnapshot(null, error instanceof Error ? error.message : String(error));
     saveProfilerArchive(failureSnapshot);
 
     process.exit(1);

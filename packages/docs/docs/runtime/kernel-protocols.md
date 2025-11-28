@@ -414,7 +414,8 @@ export type { IMyNewProtocol } from "./MyNewProtocol";
 
 // Add to RuntimeProtocols interface
 export interface RuntimeProtocols
-  extends IStateCoordinationProtocol,
+  extends
+    IStateCoordinationProtocol,
     // ... other protocols
     IMyNewProtocol {}
 ```

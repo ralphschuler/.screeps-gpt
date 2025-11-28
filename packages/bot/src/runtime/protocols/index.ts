@@ -54,7 +54,8 @@ export type { BehaviorSummary } from "@shared/contracts";
  * }
  */
 export interface RuntimeProtocols
-  extends IStateCoordinationProtocol,
+  extends
+    IStateCoordinationProtocol,
     IRoleManagementProtocol,
     IBehaviorCoordinationProtocol,
     IBootstrapCoordinationProtocol,

@@ -196,10 +196,9 @@ function applyProfilerRetentionPolicy(): void {
   // Rebuild data object with only the retained entries
   Memory.profiler.data = Object.fromEntries(entriesToKeep);
 
-  logger.info(
-    `Profiler retention: pruned ${prunedCount} entries, kept ${MAX_PROFILER_ENTRIES} (tick: ${Game.time})`,
-    { component: "Profiler" }
-  );
+  logger.info(`Profiler retention: pruned ${prunedCount} entries, kept ${MAX_PROFILER_ENTRIES} (tick: ${Game.time})`, {
+    component: "Profiler"
+  });
 }
 
 /**
