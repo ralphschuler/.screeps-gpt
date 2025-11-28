@@ -327,4 +327,275 @@ describe("Regression: RoleControllerManager Spawning", () => {
     // Should not spawn since minimums are met
     expect(summary.spawnedCreeps.length).toBe(0);
   });
+
+  /**
+   * Regression test for Issue: RoleControllerManager spawn prioritization may starve critical roles during energy scarcity
+   * 
+   * Tests the scenario where:
+   * 1. Room has energy (enough for 1 creep)
+   * 2. Last harvester dies but other creeps exist
+   * 3. System must spawn harvester first to prevent energy starvation deadlock
+   */
+  describe("Harvester priority spawn (energy scarcity prevention)", () => {
+    const createMockCreep = (name: string, role: string): Creep =>
+      ({
+        name,
+        memory: { role } as CreepMemory,
+        room: mockRoom,
+        pos: {
+          x: 25,
+          y: 25,
+          roomName: "E54N39",
+          findClosestByPath: vi.fn().mockReturnValue(mockSource),
+          isNearTo: vi.fn().mockReturnValue(false)
+        },
+        store: {
+          getFreeCapacity: vi.fn().mockReturnValue(50),
+          getUsedCapacity: vi.fn().mockReturnValue(0)
+        },
+        harvest: vi.fn(),
+        transfer: vi.fn(),
+        upgradeController: vi.fn(),
+        build: vi.fn(),
+        repair: vi.fn(),
+        moveTo: vi.fn()
+      }) as unknown as Creep;
+
+    it("should spawn harvester first when harvesters = 0 but other creeps exist", () => {
+      const manager = new RoleControllerManager({}, logger);
+
+      // Create mock creeps - NO harvesters, but upgraders and builders exist
+      const mockCreeps: Record<string, Creep> = {
+        "upgrader-0": createMockCreep("upgrader-0", "upgrader"),
+        "upgrader-1": createMockCreep("upgrader-1", "upgrader"),
+        "builder-0": createMockCreep("builder-0", "builder")
+      };
+
+      // Set Game.creeps for controller cleanup
+      global.Game.creeps = mockCreeps;
+
+      const game: GameContext = {
+        time: 100,
+        cpu: {
+          getUsed: vi.fn().mockReturnValue(5),
+          limit: 20,
+          bucket: 1000
+        },
+        creeps: mockCreeps, // Has creeps, but no harvesters
+        spawns: { Spawn1: mockSpawn },
+        rooms: { E54N39: mockRoom }
+      };
+
+      const memory = { creepCounter: 3 } as Memory;
+      const roleCounts: Record<string, number> = {
+        harvester: 0, // CRITICAL: No harvesters
+        upgrader: 2,
+        builder: 1
+      };
+
+      // Execute spawning
+      const summary = manager.execute(game, memory, roleCounts);
+
+      // Verify harvester was spawned (not upgrader or builder)
+      expect(summary.spawnedCreeps.length).toBeGreaterThan(0);
+      expect(summary.spawnedCreeps[0]).toContain("harvester");
+      expect(mockSpawn.spawnCreep).toHaveBeenCalled();
+      
+      // Verify the spawned creep is a harvester
+      const spawnCall = mockSpawn.spawnCreep.mock.calls[0];
+      const creepMemory = spawnCall[2]?.memory as CreepMemory | undefined;
+      expect(creepMemory?.role).toBe("harvester");
+    });
+
+    it("should block non-harvester spawns when harvesters = 0 and energy is low", () => {
+      const manager = new RoleControllerManager({}, logger);
+
+      // Create mock creeps - NO harvesters
+      const mockCreeps: Record<string, Creep> = {
+        "upgrader-0": createMockCreep("upgrader-0", "upgrader")
+      };
+
+      // Set Game.creeps for controller cleanup
+      global.Game.creeps = mockCreeps;
+
+      // Low energy room - enough for a spawner but must use it for harvester
+      const lowEnergyRoom = {
+        ...mockRoom,
+        energyAvailable: 300,
+        energyCapacityAvailable: 300
+      } as unknown as Room;
+
+      const lowEnergySpawn = {
+        ...mockSpawn,
+        room: lowEnergyRoom,
+        spawnCreep: vi.fn(() => OK)
+      } as unknown as StructureSpawn;
+
+      const game: GameContext = {
+        time: 100,
+        cpu: {
+          getUsed: vi.fn().mockReturnValue(5),
+          limit: 20,
+          bucket: 1000
+        },
+        creeps: mockCreeps,
+        spawns: { Spawn1: lowEnergySpawn },
+        rooms: { E54N39: lowEnergyRoom }
+      };
+
+      const memory = { creepCounter: 1 } as Memory;
+      const roleCounts: Record<string, number> = {
+        harvester: 0, // CRITICAL: No harvesters
+        upgrader: 1  // Upgrader exists but shouldn't spawn more
+      };
+
+      // Execute spawning
+      const summary = manager.execute(game, memory, roleCounts);
+
+      // Verify ONLY harvester was spawned, no upgraders
+      expect(summary.spawnedCreeps.length).toBe(1);
+      expect(summary.spawnedCreeps[0]).toContain("harvester");
+      
+      // Verify spawnCreep was called exactly once (for harvester only)
+      expect(lowEnergySpawn.spawnCreep).toHaveBeenCalledTimes(1);
+    });
+
+    it("should use minimal body for priority harvester spawn", () => {
+      const manager = new RoleControllerManager({}, logger);
+
+      // Create mock creeps - NO harvesters
+      const mockCreeps: Record<string, Creep> = {
+        "builder-0": createMockCreep("builder-0", "builder")
+      };
+
+      global.Game.creeps = mockCreeps;
+
+      // Exactly 200 energy - minimum for emergency body
+      const minimalEnergyRoom = {
+        ...mockRoom,
+        energyAvailable: 200,
+        energyCapacityAvailable: 300
+      } as unknown as Room;
+
+      const minimalEnergySpawn = {
+        ...mockSpawn,
+        room: minimalEnergyRoom,
+        spawnCreep: vi.fn(() => OK)
+      } as unknown as StructureSpawn;
+
+      const game: GameContext = {
+        time: 100,
+        cpu: {
+          getUsed: vi.fn().mockReturnValue(5),
+          limit: 20,
+          bucket: 1000
+        },
+        creeps: mockCreeps,
+        spawns: { Spawn1: minimalEnergySpawn },
+        rooms: { E54N39: minimalEnergyRoom }
+      };
+
+      const memory = { creepCounter: 1 } as Memory;
+      const roleCounts: Record<string, number> = {
+        harvester: 0,
+        builder: 1
+      };
+
+      const summary = manager.execute(game, memory, roleCounts);
+
+      expect(summary.spawnedCreeps.length).toBe(1);
+      expect(summary.spawnedCreeps[0]).toContain("harvester");
+      
+      // Verify minimal body was used [WORK, CARRY, MOVE] = 200 energy
+      const spawnCall = minimalEnergySpawn.spawnCreep.mock.calls[0];
+      const body = spawnCall[0] as BodyPartConstant[];
+      expect(body).toEqual([WORK, CARRY, MOVE]);
+    });
+
+    it("should block all spawns when harvesters = 0 and energy is insufficient", () => {
+      const manager = new RoleControllerManager({}, logger);
+
+      // Create mock creeps - NO harvesters
+      const mockCreeps: Record<string, Creep> = {
+        "upgrader-0": createMockCreep("upgrader-0", "upgrader")
+      };
+
+      global.Game.creeps = mockCreeps;
+
+      // Insufficient energy for even minimal body (< 200)
+      const insufficientEnergyRoom = {
+        ...mockRoom,
+        energyAvailable: 150,
+        energyCapacityAvailable: 300
+      } as unknown as Room;
+
+      const insufficientEnergySpawn = {
+        ...mockSpawn,
+        room: insufficientEnergyRoom,
+        spawnCreep: vi.fn(() => OK)
+      } as unknown as StructureSpawn;
+
+      const game: GameContext = {
+        time: 100,
+        cpu: {
+          getUsed: vi.fn().mockReturnValue(5),
+          limit: 20,
+          bucket: 1000
+        },
+        creeps: mockCreeps,
+        spawns: { Spawn1: insufficientEnergySpawn },
+        rooms: { E54N39: insufficientEnergyRoom }
+      };
+
+      const memory = { creepCounter: 1 } as Memory;
+      const roleCounts: Record<string, number> = {
+        harvester: 0,
+        upgrader: 1
+      };
+
+      const summary = manager.execute(game, memory, roleCounts);
+
+      // Verify NO spawns occurred - waiting for energy to spawn harvester
+      expect(summary.spawnedCreeps.length).toBe(0);
+      expect(insufficientEnergySpawn.spawnCreep).not.toHaveBeenCalled();
+    });
+
+    it("should allow normal spawning when at least one harvester exists", () => {
+      const manager = new RoleControllerManager({}, logger);
+
+      // Create mock creeps - ONE harvester exists
+      const mockCreeps: Record<string, Creep> = {
+        "harvester-0": createMockCreep("harvester-0", "harvester"),
+        "upgrader-0": createMockCreep("upgrader-0", "upgrader")
+      };
+
+      global.Game.creeps = mockCreeps;
+
+      const game: GameContext = {
+        time: 100,
+        cpu: {
+          getUsed: vi.fn().mockReturnValue(5),
+          limit: 20,
+          bucket: 1000
+        },
+        creeps: mockCreeps,
+        spawns: { Spawn1: mockSpawn },
+        rooms: { E54N39: mockRoom }
+      };
+
+      const memory = { creepCounter: 2 } as Memory;
+      const roleCounts: Record<string, number> = {
+        harvester: 1, // One harvester exists - normal spawning should work
+        upgrader: 1
+      };
+
+      // Execute spawning
+      const summary = manager.execute(game, memory, roleCounts);
+
+      // Verify spawning occurred (more harvesters needed to meet minimum)
+      expect(summary.spawnedCreeps.length).toBeGreaterThan(0);
+      // Should spawn more harvesters to meet minimum (4)
+      expect(summary.spawnedCreeps[0]).toContain("harvester");
+    });
+  });
 });
