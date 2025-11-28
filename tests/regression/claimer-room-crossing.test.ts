@@ -61,7 +61,8 @@ describe("Regression: claimer stuck at room boundary", () => {
         name: roomName,
         findExitTo,
         find,
-        controller: roomName === targetRoom ? ({ my: false, id: "controller-1" } as unknown as StructureController) : null
+        controller:
+          roomName === targetRoom ? ({ my: false, id: "controller-1" } as unknown as StructureController) : null
       },
       moveTo,
       memory: {
@@ -86,7 +87,7 @@ describe("Regression: claimer stuck at room boundary", () => {
     };
   }
 
-  it("claimer near exit (x=3) should use exit-based navigation (not near enough for direct crossing)", () => {
+  it("claimer at x=3 should use exit-based navigation", () => {
     const creep = createMockCreep(3, 25, "W1N1", "W0N1");
     const result = moveToTargetRoom(creep, "W0N1", 50);
 
@@ -94,8 +95,14 @@ describe("Regression: claimer stuck at room boundary", () => {
     expect(creep.moveTo).toHaveBeenCalled();
 
     // At x=3, the creep is NOT within the "near exit" zone (x <= 2 or x >= 47)
-    // So it should use exit-based navigation (moving to exit tile, not target room center)
-    // The key assertion is that moveTo was called
+    // So it should use exit-based navigation with reusePath parameter (not 0)
+    const moveToCall = (creep.moveTo as ReturnType<typeof vi.fn>).mock.calls[0];
+    const targetPos = moveToCall[0];
+
+    // Should move toward exit position (x=0), not room center
+    expect(targetPos.x).toBe(0);
+    expect(targetPos.roomName).toBe("W1N1");
+    expect(moveToCall[1]).toMatchObject({ reusePath: 50, ignoreCreeps: true });
   });
 
   it("claimer near exit (x=2) should move toward target room center", () => {
@@ -114,15 +121,21 @@ describe("Regression: claimer stuck at room boundary", () => {
     expect(moveToCall[1]).toMatchObject({ reusePath: 0, ignoreCreeps: true });
   });
 
-  it("claimer far from exit (x=25) should use exit-based navigation", () => {
+  it("claimer far from exit (x=25) uses exit-based navigation", () => {
     const creep = createMockCreep(25, 25, "W1N1", "W0N1");
     const result = moveToTargetRoom(creep, "W0N1", 50);
 
     expect(result).toBe(true);
     expect(creep.moveTo).toHaveBeenCalled();
 
-    // When far from exit, exit-based navigation is used (varies by implementation)
-    // The key assertion is that moveTo is called to move the creep
+    // Far from exit, should use exit-based navigation with reusePath parameter
+    const moveToCall = (creep.moveTo as ReturnType<typeof vi.fn>).mock.calls[0];
+    const targetPos = moveToCall[0];
+
+    // Should move toward exit position (x=0), not room center
+    expect(targetPos.x).toBe(0);
+    expect(targetPos.roomName).toBe("W1N1");
+    expect(moveToCall[1]).toMatchObject({ reusePath: 50, ignoreCreeps: true });
   });
 
   it("claimer at edge (x=0) should move toward target room center", () => {

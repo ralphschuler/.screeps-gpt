@@ -50,7 +50,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v5
         with:
-          name: todo-issue-logs-${{ github.event.issue.number }}-${{ github.run_id }}
+          name: >-
+            todo-issue-logs-${{ github.event.issue.number }}-${{ github.run_id }}
           path: |
             reports/copilot/todo-issue-${{ github.event.issue.number }}.log
           retention-days: 30
