@@ -197,8 +197,17 @@ export class DismantlerController extends BaseRoleController<DismantlerMemory> {
         // STRUCTURE_WALL refers to walls constructed by players using Wall.build()
         // These are distinct from natural terrain walls (blocked tiles) which are
         // part of the map terrain and cannot be targeted or dismantled
+        //
+        // Additionally, novice/respawn zone walls are special indestructible walls
+        // that appear around protected areas. These walls:
+        // - Cannot be dismantled or attacked by any player action
+        // - Do not have a 'hits' property (unlike constructed walls)
+        // - Are automatically removed when the zone timer expires
+        // We filter these out by checking for the presence of 'hits'
         if (s.structureType === STRUCTURE_WALL) {
-          return true; // Clear constructed walls
+          // Only target walls that have hits (player-constructed walls)
+          // Novice/respawn zone walls don't have hits and cannot be dismantled
+          return "hits" in s && typeof s.hits === "number";
         }
 
         return false;

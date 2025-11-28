@@ -339,8 +339,10 @@ describe("DismantlerController", () => {
 
       const wall = {
         id: "old-wall" as Id<Structure>,
-        structureType: STRUCTURE_WALL
-        // Constructed walls don't have 'my' property
+        structureType: STRUCTURE_WALL,
+        // Constructed walls have hits property (unlike novice/respawn zone walls)
+        hits: 1000,
+        hitsMax: 300000000
       };
 
       const room = {
@@ -377,6 +379,55 @@ describe("DismantlerController", () => {
 
       // Should have called dismantle (or move to target) for the wall
       expect(creep.dismantle).toHaveBeenCalled();
+    });
+
+    it("should NOT target novice/respawn zone walls (walls without hits property)", () => {
+      const controller = new DismantlerController();
+
+      // Novice/respawn zone walls are special indestructible walls that:
+      // - Cannot be dismantled or attacked
+      // - Do not have a 'hits' property
+      // - Decay automatically when the zone timer expires
+      const noviceZoneWall = {
+        id: "zone-wall" as Id<Structure>,
+        structureType: STRUCTURE_WALL
+        // No hits property - this is a novice/respawn zone wall
+      };
+
+      const room = {
+        name: "W1N1",
+        controller: { my: true },
+        find: vi.fn((type: number, opts?: { filter?: (s: AnyStructure) => boolean }) => {
+          if (type === FIND_STRUCTURES && opts?.filter) {
+            const structures = [noviceZoneWall];
+            return structures.filter(s => opts.filter!(s as unknown as AnyStructure));
+          }
+          return [];
+        })
+      };
+
+      const creep = {
+        name: "dismantler-clear",
+        memory: {
+          role: "dismantler",
+          task: "travel",
+          version: 2,
+          mode: "clearing" as DismantlerMode
+        } as CreepMemory & { mode?: DismantlerMode },
+        room,
+        pos: {
+          findClosestByPath: vi.fn(() => null),
+          x: 10,
+          y: 10
+        },
+        dismantle: vi.fn(() => OK_CODE),
+        moveTo: vi.fn(() => OK_CODE)
+      } as unknown as CreepLike;
+
+      controller.execute(creep);
+
+      // Should NOT have called dismantle since novice/respawn zone walls cannot be dismantled
+      expect(creep.dismantle).not.toHaveBeenCalled();
     });
 
     it("should not clear structures in unowned rooms", () => {
