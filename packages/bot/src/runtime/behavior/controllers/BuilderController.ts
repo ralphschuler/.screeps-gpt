@@ -37,6 +37,8 @@ export class BuilderController extends BaseRoleController<BuilderMemory> {
   public constructor() {
     const config: RoleConfig<BuilderMemory> = {
       minimum: 2,
+      maximum: 5,
+      scalingFactor: 4,
       body: [WORK, CARRY, MOVE, MOVE],
       version: 1,
       createMemory: () => ({

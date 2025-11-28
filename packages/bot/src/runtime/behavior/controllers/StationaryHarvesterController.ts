@@ -38,6 +38,8 @@ export class StationaryHarvesterController extends BaseRoleController<Stationary
   public constructor() {
     const config: RoleConfig<StationaryHarvesterMemory> = {
       minimum: 0,
+      maximum: 4,
+      scalingFactor: 1,
       body: [WORK, WORK, WORK, WORK, WORK, MOVE],
       version: 1,
       createMemory: () => ({

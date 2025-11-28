@@ -38,6 +38,8 @@ export class AttackerController extends BaseRoleController<AttackerMemory> {
   public constructor() {
     const config: RoleConfig<AttackerMemory> = {
       minimum: 0,
+      maximum: 8,
+      scalingFactor: 1,
       body: [ATTACK, ATTACK, MOVE, MOVE],
       version: 1,
       createMemory: () => ({

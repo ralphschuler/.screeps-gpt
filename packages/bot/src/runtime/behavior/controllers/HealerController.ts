@@ -32,6 +32,8 @@ export class HealerController extends BaseRoleController<HealerMemory> {
   public constructor() {
     const config: RoleConfig<HealerMemory> = {
       minimum: 0,
+      maximum: 4,
+      scalingFactor: 1,
       body: [HEAL, HEAL, MOVE, MOVE],
       version: 1,
       createMemory: () => ({

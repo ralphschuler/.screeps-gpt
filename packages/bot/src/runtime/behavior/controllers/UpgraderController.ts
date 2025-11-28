@@ -41,6 +41,8 @@ export class UpgraderController extends BaseRoleController<UpgraderMemory> {
   public constructor() {
     const config: RoleConfig<UpgraderMemory> = {
       minimum: 3,
+      maximum: 8,
+      scalingFactor: 4,
       body: [WORK, CARRY, MOVE],
       version: 1,
       createMemory: () => ({

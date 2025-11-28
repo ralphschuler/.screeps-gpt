@@ -89,6 +89,11 @@ const BUILDERS_PER_INTEGRATION_ROOM = 2; // Remote builders spawned per room nee
 const ATTACKERS_PER_ATTACK_FLAG = 2; // Attackers spawned per attack flag command
 
 /**
+ * Default maximum workforce value when not specified in role config
+ */
+const DEFAULT_ROLE_MAXIMUM = 10;
+
+/**
  * Coordinates spawning and per-tick behavior execution using individual role controllers.
  */
 @profile
@@ -612,7 +617,18 @@ export class RoleControllerManager {
 
       const current = roleCounts[role] ?? 0;
       const config = controller.getConfig();
+      const roleMaximum = config.maximum ?? DEFAULT_ROLE_MAXIMUM;
+      const scalingFactor = config.scalingFactor ?? 4;
       let targetMinimum = bootstrapMinimums[role] ?? config.minimum;
+
+      // Task-based demand calculation: scale workforce based on pending tasks
+      // Get pending task count for this role from task queue
+      const taskQueue = memory.taskQueue as { [role: string]: unknown[] } | undefined;
+      const pendingTasks = taskQueue?.[role]?.length ?? 0;
+      if (pendingTasks > 0 && scalingFactor > 0) {
+        const demandBasedTarget = Math.ceil(pendingTasks / scalingFactor);
+        targetMinimum = Math.max(targetMinimum, Math.min(demandBasedTarget, roleMaximum));
+      }
 
       // Dynamically increase claimer minimum when expansion is pending
       if (role === "claimer" && needsClaimers) {
@@ -675,6 +691,11 @@ export class RoleControllerManager {
       }
       if (role === "repairer" && isUnderCombat) {
         targetMinimum = Math.max(config.minimum, COMBAT_MIN_REPAIRERS);
+      }
+
+      // Enforce maximum constraint: never exceed role maximum
+      if (current >= roleMaximum) {
+        continue; // Already at max capacity for this role
       }
 
       if (current >= targetMinimum) {

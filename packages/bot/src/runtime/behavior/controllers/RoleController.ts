@@ -13,6 +13,10 @@ import type { CreepLike } from "@runtime/types/GameContext";
 export interface RoleConfig<TMemory extends CreepMemory = CreepMemory> {
   /** Minimum number of creeps of this role that should be maintained */
   minimum: number;
+  /** Maximum number of creeps of this role allowed (default: 10 if not specified) */
+  maximum?: number;
+  /** Number of tasks per creep for scaling calculations (default: 4) */
+  scalingFactor?: number;
   /** Default body parts for this role */
   body: BodyPartConstant[];
   /** Factory function to create initial memory for a new creep */
