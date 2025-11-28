@@ -36,7 +36,7 @@ export default defineConfig({
     // which uses JSON.stringify() to create a proper string literal.
     __PROFILER_ENABLED__: JSON.stringify("true"),
     __ROOM_VISUALS_ENABLED__: JSON.stringify("false"),
-    __TASK_SYSTEM_ENABLED__: false,
+    __TASK_SYSTEM_ENABLED__: JSON.stringify("false"),
     __PLAYER_USERNAME__: JSON.stringify("ralphschuler")
   },
   test: {
