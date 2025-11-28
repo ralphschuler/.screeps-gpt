@@ -372,43 +372,12 @@ export class RoleControllerManager {
     if (isEmergency) {
       this.logger.log?.(`[EMERGENCY] Total workforce collapse detected - forcing minimal spawn`);
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const spawn = this.findAvailableSpawn(game.spawns);
-      if (!spawn) {
-        this.logger.warn?.(`[EMERGENCY] No spawn available - cannot recover`);
-        return;
-      }
+      const result = this.attemptEmergencyHarvesterSpawn(game, spawned, roleCounts, "EMERGENCY", "emergency");
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      const room = spawn.room as Room;
-      const energyAvailable = room.energyAvailable;
-
-      // Generate minimal viable body using BodyComposer's emergency logic
-      const minimalBody = this.bodyComposer.generateEmergencyBody(energyAvailable);
-
-      if (minimalBody.length === 0) {
-        const minimalCost = 200; // Minimum required for [WORK, CARRY, MOVE]
-        this.logger.warn?.(
-          `[EMERGENCY] Insufficient energy (${energyAvailable}) for minimal body (need ${minimalCost})`
-        );
-        return;
-      }
-
-      const roleName: RoleName = "harvester";
-      const name = `emergency-${roleName}-${game.time}`;
-      const creepMemory = { role: roleName };
-      const result = this.spawnCreepSafely(spawn, minimalBody, name, creepMemory);
-
-      if (result === OK) {
-        spawned.push(name);
-        roleCounts[roleName] = 1;
-        const spawnCost = this.bodyComposer.calculateBodyCost(minimalBody);
-        this.logger.log?.(
-          `[EMERGENCY] Spawned ${name} with minimal body (${minimalBody.length} parts, ${spawnCost} energy)`
-        );
+      if (result.success) {
         return; // Skip normal spawn logic - emergency spawn takes priority
       } else {
-        this.logger.warn?.(`[EMERGENCY] Emergency spawn failed: ${result} - may need manual intervention`);
+        this.logger.warn?.(`[EMERGENCY] ${result.error} - may need manual intervention`);
         return; // Prevent fallthrough to normal spawn logic after emergency spawn failure
       }
     }
@@ -419,45 +388,13 @@ export class RoleControllerManager {
     if (harvesterCount === 0 && totalCreeps > 0) {
       this.logger.log?.(`[CRITICAL] No harvesters alive - forcing harvester priority spawn`);
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const spawn = this.findAvailableSpawn(game.spawns);
-      if (!spawn) {
-        this.logger.warn?.(`[CRITICAL] No spawn available - harvester priority spawn blocked`);
-        return; // Block all spawns until harvester can be spawned
-      }
+      const result = this.attemptEmergencyHarvesterSpawn(game, spawned, roleCounts, "CRITICAL", "priority");
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      const room = spawn.room as Room;
-      const energyAvailable = room.energyAvailable;
-
-      // Use emergency body to spawn harvester with minimum energy requirement
-      // This ensures we can spawn even with low energy (200 energy minimum)
-      const minimalBody = this.bodyComposer.generateEmergencyBody(energyAvailable);
-
-      if (minimalBody.length === 0) {
-        const minimalCost = 200; // Minimum required for [WORK, CARRY, MOVE]
-        this.logger.warn?.(
-          `[CRITICAL] Insufficient energy (${energyAvailable}) for harvester (need ${minimalCost}) - blocking other spawns`
-        );
-        return; // Block all spawns until we have enough energy for harvester
-      }
-
-      const roleName: RoleName = "harvester";
-      const name = `priority-${roleName}-${game.time}`;
-      const controller = this.getRoleController(roleName);
-      const creepMemory = controller?.createMemory() ?? { role: roleName };
-      const result = this.spawnCreepSafely(spawn, minimalBody, name, creepMemory);
-
-      if (result === OK) {
-        spawned.push(name);
-        roleCounts[roleName] = 1;
-        const spawnCost = this.bodyComposer.calculateBodyCost(minimalBody);
-        this.logger.log?.(
-          `[CRITICAL] Spawned priority ${name} (${minimalBody.length} parts, ${spawnCost} energy) - unblocking normal spawns`
-        );
+      if (result.success) {
+        this.logger.log?.(`[CRITICAL] Unblocking normal spawns`);
         return; // Skip normal spawn logic - priority spawn takes precedence
       } else {
-        this.logger.warn?.(`[CRITICAL] Priority harvester spawn failed: ${result} - blocking other spawns`);
+        this.logger.warn?.(`[CRITICAL] ${result.error} - blocking other spawns`);
         return; // Block all spawns until harvester can be spawned
       }
     }
@@ -896,5 +833,64 @@ export class RoleControllerManager {
   ): ScreepsReturnCode {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     return spawn.spawnCreep(body, name, { memory });
+  }
+
+  /**
+   * Attempt to spawn an emergency harvester using minimal body composition.
+   * Used during workforce collapse scenarios (total emergency or harvester priority).
+   *
+   * @param game - Game context
+   * @param spawned - Array to track spawned creep names
+   * @param roleCounts - Role counts to update on successful spawn
+   * @param logPrefix - Prefix for log messages (e.g., "EMERGENCY", "CRITICAL")
+   * @param namePrefix - Prefix for creep name (e.g., "emergency", "priority")
+   * @returns Object with success status and optional error message
+   */
+  private attemptEmergencyHarvesterSpawn(
+    game: GameContext,
+    spawned: string[],
+    roleCounts: Record<string, number>,
+    logPrefix: string,
+    namePrefix: string
+  ): { success: boolean; blocked: boolean; error?: string } {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const spawn = this.findAvailableSpawn(game.spawns);
+    if (!spawn) {
+      return { success: false, blocked: true, error: "No spawn available" };
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const room = spawn.room as Room;
+    const energyAvailable = room.energyAvailable;
+
+    // Generate minimal viable body using BodyComposer's emergency logic
+    const minimalBody = this.bodyComposer.generateEmergencyBody(energyAvailable);
+
+    if (minimalBody.length === 0) {
+      const minimalCost = 200; // Minimum required for [WORK, CARRY, MOVE]
+      return {
+        success: false,
+        blocked: true,
+        error: `Insufficient energy (${energyAvailable}) for minimal body (need ${minimalCost})`
+      };
+    }
+
+    const roleName: RoleName = "harvester";
+    const name = `${namePrefix}-${roleName}-${game.time}`;
+    const controller = this.getRoleController(roleName);
+    const creepMemory = controller?.createMemory() ?? { role: roleName };
+    const result = this.spawnCreepSafely(spawn, minimalBody, name, creepMemory);
+
+    if (result === OK) {
+      spawned.push(name);
+      roleCounts[roleName] = (roleCounts[roleName] ?? 0) + 1;
+      const spawnCost = this.bodyComposer.calculateBodyCost(minimalBody);
+      this.logger.log?.(
+        `[${logPrefix}] Spawned ${name} with minimal body (${minimalBody.length} parts, ${spawnCost} energy)`
+      );
+      return { success: true, blocked: false };
+    } else {
+      return { success: false, blocked: true, error: `Spawn failed: ${result}` };
+    }
   }
 }
