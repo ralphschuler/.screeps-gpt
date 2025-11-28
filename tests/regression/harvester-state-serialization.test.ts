@@ -6,7 +6,7 @@
  * - Used `currentState` variable captured before events were sent
  * - State machine transitioned correctly but return value was outdated
  *
- * Fix: Changed lines 211-213 to use `machine.getState()` instead of `currentState`
+ * Fix: Changed lines 211 and 213 to use `machine.getState()` instead of `currentState`
  * - Also fixed early return in tryPickupDroppedEnergy case to serialize properly
  *
  * This test validates that:
