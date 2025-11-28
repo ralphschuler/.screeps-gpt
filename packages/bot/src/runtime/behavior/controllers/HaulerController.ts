@@ -102,12 +102,14 @@ export class HaulerController extends BaseRoleController<HaulerMemory> {
       }) as StructureContainer[];
 
       if (containers.length > 0) {
-        const closest = creep.pos.findClosestByPath(containers);
+        // Use ignoreCreeps for better routing through narrow passages
+        const closest = creep.pos.findClosestByPath(containers, { ignoreCreeps: true });
         const target = closest ?? containers[0];
         machine.send({ type: "START_PICKUP", targetId: target.id });
         const result = creep.withdraw(target, RESOURCE_ENERGY);
         if (result === ERR_NOT_IN_RANGE) {
-          creep.moveTo(target, { range: 1, reusePath: 30 });
+          // Use ignoreCreeps for better routing through narrow passages
+          creep.moveTo(target, { range: 1, reusePath: 30, ignoreCreeps: true });
         }
         // Check if full after withdrawal
         if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
@@ -135,12 +137,14 @@ export class HaulerController extends BaseRoleController<HaulerMemory> {
       });
 
       if (criticalSpawns.length > 0) {
-        const closest = creep.pos.findClosestByPath(criticalSpawns);
+        // Use ignoreCreeps for better routing through narrow passages
+        const closest = creep.pos.findClosestByPath(criticalSpawns, { ignoreCreeps: true });
         const target = closest !== null ? closest : criticalSpawns[0];
         machine.send({ type: "START_DELIVER", targetId: target.id as Id<AnyStoreStructure> });
         const result = creep.transfer(target, RESOURCE_ENERGY);
         if (result === ERR_NOT_IN_RANGE) {
-          creep.moveTo(target, { range: 1, reusePath: 30 });
+          // Use ignoreCreeps for better routing through narrow passages
+          creep.moveTo(target, { range: 1, reusePath: 30, ignoreCreeps: true });
         }
         // Check if empty after transfer
         if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
@@ -156,12 +160,14 @@ export class HaulerController extends BaseRoleController<HaulerMemory> {
       const lowTowers = findLowEnergyTowers(creep.room, DEFAULT_ENERGY_CONFIG.towerMinCapacity);
 
       if (lowTowers.length > 0) {
-        const closest = creep.pos.findClosestByPath(lowTowers);
+        // Use ignoreCreeps for better routing through narrow passages
+        const closest = creep.pos.findClosestByPath(lowTowers, { ignoreCreeps: true });
         const target = closest ?? lowTowers[0];
         machine.send({ type: "START_DELIVER", targetId: target.id });
         const result = creep.transfer(target, RESOURCE_ENERGY);
         if (result === ERR_NOT_IN_RANGE) {
-          creep.moveTo(target, { range: 1, reusePath: 30 });
+          // Use ignoreCreeps for better routing through narrow passages
+          creep.moveTo(target, { range: 1, reusePath: 30, ignoreCreeps: true });
         }
         if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
           machine.send({ type: "ENERGY_EMPTY" });
@@ -176,12 +182,14 @@ export class HaulerController extends BaseRoleController<HaulerMemory> {
         const lowSpawnContainers = findSpawnAdjacentContainers(creep.room, DEFAULT_ENERGY_CONFIG.spawnContainerReserve);
 
         if (lowSpawnContainers.length > 0) {
-          const closest = creep.pos.findClosestByPath(lowSpawnContainers);
+          // Use ignoreCreeps for better routing through narrow passages
+          const closest = creep.pos.findClosestByPath(lowSpawnContainers, { ignoreCreeps: true });
           const target = closest ?? lowSpawnContainers[0];
           machine.send({ type: "START_DELIVER", targetId: target.id });
           const result = creep.transfer(target, RESOURCE_ENERGY);
           if (result === ERR_NOT_IN_RANGE) {
-            creep.moveTo(target, { range: 1, reusePath: 30 });
+            // Use ignoreCreeps for better routing through narrow passages
+            creep.moveTo(target, { range: 1, reusePath: 30, ignoreCreeps: true });
           }
           if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
             machine.send({ type: "ENERGY_EMPTY" });
@@ -213,12 +221,14 @@ export class HaulerController extends BaseRoleController<HaulerMemory> {
 
       for (const targetList of targets) {
         if (targetList.length > 0) {
-          const closest = creep.pos.findClosestByPath(targetList);
+          // Use ignoreCreeps for better routing through narrow passages
+          const closest = creep.pos.findClosestByPath(targetList, { ignoreCreeps: true });
           const target = closest !== null ? closest : targetList[0];
           machine.send({ type: "START_DELIVER", targetId: target.id as Id<AnyStoreStructure> });
           const result = creep.transfer(target, RESOURCE_ENERGY);
           if (result === ERR_NOT_IN_RANGE) {
-            creep.moveTo(target, { range: 1, reusePath: 30 });
+            // Use ignoreCreeps for better routing through narrow passages
+            creep.moveTo(target, { range: 1, reusePath: 30, ignoreCreeps: true });
           }
           if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
             machine.send({ type: "ENERGY_EMPTY" });
@@ -234,7 +244,8 @@ export class HaulerController extends BaseRoleController<HaulerMemory> {
       if (controller) {
         const result = creep.upgradeController(controller);
         if (result === ERR_NOT_IN_RANGE) {
-          creep.moveTo(controller, { range: 3, reusePath: 30 });
+          // Use ignoreCreeps for better routing through narrow passages
+          creep.moveTo(controller, { range: 3, reusePath: 30, ignoreCreeps: true });
         }
         if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
           machine.send({ type: "ENERGY_EMPTY" });

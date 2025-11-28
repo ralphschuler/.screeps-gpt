@@ -18,23 +18,48 @@ export const ROOM_CENTER_X = 25;
 export const ROOM_CENTER_Y = 25;
 
 /**
+ * Options for findClosestOrFirst helper function
+ */
+export interface FindClosestOptions {
+  /**
+   * Whether to ignore creeps when pathfinding.
+   * Set to true for better routing through narrow passages where only one creep fits.
+   * When not specified, defaults to true in the function implementation.
+   */
+  ignoreCreeps?: boolean;
+}
+
+/**
  * Helper function to find the closest target by path or fall back to the first target.
  * Reduces code duplication throughout role controllers.
  *
+ * By default, ignores other creeps when calculating paths to properly handle
+ * narrow passages where only one creep can fit through. This prevents creeps
+ * from getting stuck or choosing suboptimal paths due to temporary blockages.
+ *
  * @param creep - The creep to find a path from
  * @param targets - Array of potential targets
+ * @param options - Optional pathfinding options
  * @returns The closest target by path, or the first target if pathfinding fails, or null if no targets
  */
-export function findClosestOrFirst<T extends _HasRoomPosition>(creep: CreepLike, targets: T[]): T | null {
+export function findClosestOrFirst<T extends _HasRoomPosition>(
+  creep: CreepLike,
+  targets: T[],
+  options: FindClosestOptions = {}
+): T | null {
   if (targets.length === 0) {
     return null;
   }
-  return creep.pos.findClosestByPath(targets) ?? targets[0];
+  // Default to ignoring creeps for better narrow passage handling
+  const ignoreCreeps = options.ignoreCreeps ?? true;
+  return creep.pos.findClosestByPath(targets, { ignoreCreeps }) ?? targets[0];
 }
 
 /**
  * Helper function to pick up nearby dropped energy if the creep has capacity.
  * Returns true if the creep picked up or is moving to pick up energy.
+ *
+ * Uses ignoreCreeps: true when finding paths to handle narrow passages properly.
  *
  * @param creep - The creep that should pick up energy
  * @param minAmount - Minimum amount of energy to consider picking up (default: 50)
@@ -54,12 +79,14 @@ export function tryPickupDroppedEnergy(creep: CreepLike, minAmount = 50): boolea
     return false;
   }
 
-  const closest = creep.pos.findClosestByPath(droppedEnergy);
+  // Use ignoreCreeps for better routing through narrow passages
+  const closest = creep.pos.findClosestByPath(droppedEnergy, { ignoreCreeps: true });
   const target = closest ?? droppedEnergy[0];
 
   const result = creep.pickup(target);
   if (result === ERR_NOT_IN_RANGE) {
-    creep.moveTo(target, { range: 1, reusePath: 10 });
+    // Use ignoreCreeps for better routing through narrow passages
+    creep.moveTo(target, { range: 1, reusePath: 10, ignoreCreeps: true });
     return true;
   } else if (result === OK) {
     return true;
@@ -152,6 +179,8 @@ export function findLowEnergyTowers(
  * When at room edge (including after entering target room), moves toward room center
  * to avoid oscillation and cycling back through exits.
  *
+ * Uses ignoreCreeps: true for better routing through narrow passages.
+ *
  * @param creep - The creep to move
  * @param targetRoom - Target room name
  * @param reusePath - Path reuse parameter
@@ -164,7 +193,8 @@ export function moveToTargetRoom(creep: CreepLike, targetRoom: string, reusePath
   if (creep.room.name === targetRoom) {
     // If in target room but at edge, move toward center to avoid cycling back through exit
     if (atEdge) {
-      creep.moveTo(new RoomPosition(ROOM_CENTER_X, ROOM_CENTER_Y, targetRoom), { reusePath: 0 });
+      // Use ignoreCreeps for better routing through narrow passages
+      creep.moveTo(new RoomPosition(ROOM_CENTER_X, ROOM_CENTER_Y, targetRoom), { reusePath: 0, ignoreCreeps: true });
       return true;
     }
     return false;
@@ -173,7 +203,8 @@ export function moveToTargetRoom(creep: CreepLike, targetRoom: string, reusePath
   // If at edge (not in target room), move directly to target room center to avoid oscillation
   // Use reusePath: 0 to force fresh pathfinding and prevent cached path issues at room boundaries
   if (atEdge) {
-    creep.moveTo(new RoomPosition(ROOM_CENTER_X, ROOM_CENTER_Y, targetRoom), { reusePath: 0 });
+    // Use ignoreCreeps for better routing through narrow passages
+    creep.moveTo(new RoomPosition(ROOM_CENTER_X, ROOM_CENTER_Y, targetRoom), { reusePath: 0, ignoreCreeps: true });
     return true;
   }
 
@@ -182,9 +213,11 @@ export function moveToTargetRoom(creep: CreepLike, targetRoom: string, reusePath
   if (typeof exitDir === "number" && exitDir >= 1 && exitDir <= 8) {
     const exitPositions = creep.room.find(exitDir as ExitConstant) as RoomPosition[];
     if (exitPositions.length > 0) {
-      const exitPos: RoomPosition | null = creep.pos.findClosestByPath(exitPositions);
+      // Use ignoreCreeps for better routing through narrow passages
+      const exitPos: RoomPosition | null = creep.pos.findClosestByPath(exitPositions, { ignoreCreeps: true });
       const actualExitPos: RoomPosition = exitPos ?? exitPositions[0];
-      creep.moveTo(actualExitPos, { reusePath });
+      // Use ignoreCreeps for better routing through narrow passages
+      creep.moveTo(actualExitPos, { reusePath, ignoreCreeps: true });
       return true;
     }
   }

@@ -100,7 +100,8 @@ export class UpgraderController extends BaseRoleController<UpgraderMemory> {
         safeSpot = spawns[0];
       }
       if (safeSpot && !creep.pos.inRangeTo(safeSpot, 3)) {
-        creep.moveTo(safeSpot, { range: 3, reusePath: 10 });
+        // Use ignoreCreeps for better routing through narrow passages
+        creep.moveTo(safeSpot, { range: 3, reusePath: 10, ignoreCreeps: true });
       }
       // Save state to memory and return current state
       memory.stateMachine = serialize(machine);
@@ -122,10 +123,12 @@ export class UpgraderController extends BaseRoleController<UpgraderMemory> {
 
       if (spawnsNeedingEnergy.length > 0) {
         comm?.say(creep, "🚨spawn");
-        const spawn = creep.pos.findClosestByPath(spawnsNeedingEnergy) ?? spawnsNeedingEnergy[0];
+        // Use ignoreCreeps for better routing through narrow passages
+        const spawn = creep.pos.findClosestByPath(spawnsNeedingEnergy, { ignoreCreeps: true }) ?? spawnsNeedingEnergy[0];
         const result = creep.transfer(spawn, RESOURCE_ENERGY);
         if (result === ERR_NOT_IN_RANGE) {
-          creep.moveTo(spawn, { range: 1, reusePath: 10, visualizePathStyle: { stroke: "#ff0000" } });
+          // Use ignoreCreeps for better routing through narrow passages
+          creep.moveTo(spawn, { range: 1, reusePath: 10, visualizePathStyle: { stroke: "#ff0000" }, ignoreCreeps: true });
         }
         // Check if empty after transfer
         if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
@@ -161,11 +164,13 @@ export class UpgraderController extends BaseRoleController<UpgraderMemory> {
             filter: isValidEnergySource
           });
 
-      const target = energySources.length > 0 ? (creep.pos.findClosestByPath(energySources) ?? energySources[0]) : null;
+      // Use ignoreCreeps for better routing through narrow passages
+      const target = energySources.length > 0 ? (creep.pos.findClosestByPath(energySources, { ignoreCreeps: true }) ?? energySources[0]) : null;
       if (target) {
         const result = creep.withdraw(target, RESOURCE_ENERGY);
         if (result === ERR_NOT_IN_RANGE) {
-          creep.moveTo(target, { range: 1, reusePath: 30 });
+          // Use ignoreCreeps for better routing through narrow passages
+          creep.moveTo(target, { range: 1, reusePath: 30, ignoreCreeps: true });
         }
         // Check if full after withdrawal
         if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
@@ -179,11 +184,13 @@ export class UpgraderController extends BaseRoleController<UpgraderMemory> {
 
       // Priority 3: Harvest from sources directly if no other options
       const sources = creep.room.find(FIND_SOURCES_ACTIVE) as Source[];
-      const source = sources.length > 0 ? (creep.pos.findClosestByPath(sources) ?? sources[0]) : null;
+      // Use ignoreCreeps for better routing through narrow passages
+      const source = sources.length > 0 ? (creep.pos.findClosestByPath(sources, { ignoreCreeps: true }) ?? sources[0]) : null;
       if (source) {
         const result = creep.harvest(source);
         if (result === ERR_NOT_IN_RANGE) {
-          creep.moveTo(source, { range: 1, reusePath: 30 });
+          // Use ignoreCreeps for better routing through narrow passages
+          creep.moveTo(source, { range: 1, reusePath: 30, ignoreCreeps: true });
         }
         // Check if full after harvest
         if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
@@ -201,7 +208,8 @@ export class UpgraderController extends BaseRoleController<UpgraderMemory> {
       if (controller) {
         const result = creep.upgradeController(controller);
         if (result === ERR_NOT_IN_RANGE) {
-          creep.moveTo(controller, { range: 3, reusePath: 30 });
+          // Use ignoreCreeps for better routing through narrow passages
+          creep.moveTo(controller, { range: 3, reusePath: 30, ignoreCreeps: true });
         }
 
         // Check if empty after upgrade - this is the KEY FIX

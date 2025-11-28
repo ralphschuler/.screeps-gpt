@@ -88,7 +88,8 @@ export class HarvesterController extends BaseRoleController<HarvesterMemory> {
       // Find nearest source and start harvesting
       const sources = creep.room.find(FIND_SOURCES_ACTIVE) as Source[];
       if (sources.length > 0) {
-        const source = creep.pos.findClosestByPath(sources) ?? sources[0];
+        // Use ignoreCreeps for better routing through narrow passages
+        const source = creep.pos.findClosestByPath(sources, { ignoreCreeps: true }) ?? sources[0];
         machine.send({ type: "START_HARVEST", sourceId: source.id });
       }
     } else if (currentState === "harvesting") {
@@ -108,7 +109,8 @@ export class HarvesterController extends BaseRoleController<HarvesterMemory> {
         if (source && source.energy > 0) {
           const result = creep.harvest(source);
           if (result === ERR_NOT_IN_RANGE) {
-            creep.moveTo(source, { range: 1, reusePath: 30 });
+            // Use ignoreCreeps for better routing through narrow passages
+            creep.moveTo(source, { range: 1, reusePath: 30, ignoreCreeps: true });
           }
 
           // Check if full
@@ -130,10 +132,12 @@ export class HarvesterController extends BaseRoleController<HarvesterMemory> {
       }) as AnyStoreStructure[];
 
       if (criticalTargets.length > 0) {
-        const target = creep.pos.findClosestByPath(criticalTargets) ?? criticalTargets[0];
+        // Use ignoreCreeps for better routing through narrow passages
+        const target = creep.pos.findClosestByPath(criticalTargets, { ignoreCreeps: true }) ?? criticalTargets[0];
         const result = creep.transfer(target, RESOURCE_ENERGY);
         if (result === ERR_NOT_IN_RANGE) {
-          creep.moveTo(target, { range: 1, reusePath: 30 });
+          // Use ignoreCreeps for better routing through narrow passages
+          creep.moveTo(target, { range: 1, reusePath: 30, ignoreCreeps: true });
         }
 
         // Check if empty
@@ -145,10 +149,12 @@ export class HarvesterController extends BaseRoleController<HarvesterMemory> {
         const lowTowers = findLowEnergyTowers(creep.room, DEFAULT_ENERGY_CONFIG.towerMinCapacity);
 
         if (lowTowers.length > 0) {
-          const target = creep.pos.findClosestByPath(lowTowers) ?? lowTowers[0];
+          // Use ignoreCreeps for better routing through narrow passages
+          const target = creep.pos.findClosestByPath(lowTowers, { ignoreCreeps: true }) ?? lowTowers[0];
           const result = creep.transfer(target, RESOURCE_ENERGY);
           if (result === ERR_NOT_IN_RANGE) {
-            creep.moveTo(target, { range: 1, reusePath: 30 });
+            // Use ignoreCreeps for better routing through narrow passages
+            creep.moveTo(target, { range: 1, reusePath: 30, ignoreCreeps: true });
           }
 
           if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
@@ -163,10 +169,12 @@ export class HarvesterController extends BaseRoleController<HarvesterMemory> {
           }) as AnyStoreStructure[];
 
           if (containers.length > 0) {
-            const target = creep.pos.findClosestByPath(containers) ?? containers[0];
+            // Use ignoreCreeps for better routing through narrow passages
+            const target = creep.pos.findClosestByPath(containers, { ignoreCreeps: true }) ?? containers[0];
             const result = creep.transfer(target, RESOURCE_ENERGY);
             if (result === ERR_NOT_IN_RANGE) {
-              creep.moveTo(target, { range: 1, reusePath: 30 });
+              // Use ignoreCreeps for better routing through narrow passages
+              creep.moveTo(target, { range: 1, reusePath: 30, ignoreCreeps: true });
             }
 
             if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
@@ -185,7 +193,8 @@ export class HarvesterController extends BaseRoleController<HarvesterMemory> {
       if (controller) {
         const result = creep.upgradeController(controller);
         if (result === ERR_NOT_IN_RANGE) {
-          creep.moveTo(controller, { range: 3, reusePath: 30 });
+          // Use ignoreCreeps for better routing through narrow passages
+          creep.moveTo(controller, { range: 3, reusePath: 30, ignoreCreeps: true });
         }
 
         if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {

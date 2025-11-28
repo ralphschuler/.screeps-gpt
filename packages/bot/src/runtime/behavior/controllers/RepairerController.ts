@@ -101,7 +101,8 @@ export class RepairerController extends BaseRoleController<RepairerMemory> {
       if (target) {
         const result = creep.withdraw(target, RESOURCE_ENERGY);
         if (result === ERR_NOT_IN_RANGE) {
-          creep.moveTo(target, { range: 1, reusePath: 30 });
+          // Use ignoreCreeps for better routing through narrow passages
+          creep.moveTo(target, { range: 1, reusePath: 30, ignoreCreeps: true });
         }
         // Check if full after withdrawal
         if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
@@ -131,7 +132,8 @@ export class RepairerController extends BaseRoleController<RepairerMemory> {
       if (source) {
         const harvestResult = creep.harvest(source);
         if (harvestResult === ERR_NOT_IN_RANGE) {
-          creep.moveTo(source, { range: 1, reusePath: 30 });
+          // Use ignoreCreeps for better routing through narrow passages
+          creep.moveTo(source, { range: 1, reusePath: 30, ignoreCreeps: true });
         }
         // Check if full after harvest
         if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
@@ -198,12 +200,14 @@ export class RepairerController extends BaseRoleController<RepairerMemory> {
       }
 
       if (infrastructureTargets.length > 0) {
-        const target = creep.pos.findClosestByPath(infrastructureTargets) ?? infrastructureTargets[0];
+        // Use ignoreCreeps for better routing through narrow passages
+        const target = creep.pos.findClosestByPath(infrastructureTargets, { ignoreCreeps: true }) ?? infrastructureTargets[0];
         if (target) {
           machine.send({ type: "START_REPAIR", targetId: target.id });
           const result = creep.repair(target);
           if (result === ERR_NOT_IN_RANGE) {
-            creep.moveTo(target, { range: 3, reusePath: 30 });
+            // Use ignoreCreeps for better routing through narrow passages
+            creep.moveTo(target, { range: 3, reusePath: 30, ignoreCreeps: true });
           }
           // Check if empty after repair
           if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
@@ -246,7 +250,8 @@ export class RepairerController extends BaseRoleController<RepairerMemory> {
         machine.send({ type: "START_REPAIR", targetId: target.id });
         const result = creep.repair(target);
         if (result === ERR_NOT_IN_RANGE) {
-          creep.moveTo(target, { range: 3, reusePath: 30 });
+          // Use ignoreCreeps for better routing through narrow passages
+          creep.moveTo(target, { range: 3, reusePath: 30, ignoreCreeps: true });
         }
         // Check if empty after repair
         if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
@@ -263,7 +268,8 @@ export class RepairerController extends BaseRoleController<RepairerMemory> {
       if (controller) {
         const upgrade = creep.upgradeController(controller);
         if (upgrade === ERR_NOT_IN_RANGE) {
-          creep.moveTo(controller, { range: 3, reusePath: 30 });
+          // Use ignoreCreeps for better routing through narrow passages
+          creep.moveTo(controller, { range: 3, reusePath: 30, ignoreCreeps: true });
         }
         // Check if empty after upgrade
         if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
