@@ -41,9 +41,7 @@ describe("shard-discovery", () => {
         }
       });
 
-      const { discoverBotShards, clearShardDiscoveryCache } = await import(
-        "../../scripts/lib/shard-discovery"
-      );
+      const { discoverBotShards, clearShardDiscoveryCache } = await import("../../scripts/lib/shard-discovery");
       clearShardDiscoveryCache();
 
       const result = await discoverBotShards(undefined, false);
@@ -64,9 +62,7 @@ describe("shard-discovery", () => {
         }
       });
 
-      const { discoverBotShards, clearShardDiscoveryCache } = await import(
-        "../../scripts/lib/shard-discovery"
-      );
+      const { discoverBotShards, clearShardDiscoveryCache } = await import("../../scripts/lib/shard-discovery");
       clearShardDiscoveryCache();
 
       const result = await discoverBotShards(undefined, false);
@@ -83,9 +79,7 @@ describe("shard-discovery", () => {
         shards: {}
       });
 
-      const { discoverBotShards, clearShardDiscoveryCache } = await import(
-        "../../scripts/lib/shard-discovery"
-      );
+      const { discoverBotShards, clearShardDiscoveryCache } = await import("../../scripts/lib/shard-discovery");
       clearShardDiscoveryCache();
 
       const result = await discoverBotShards(undefined, false);
@@ -98,9 +92,7 @@ describe("shard-discovery", () => {
     it("should fall back to default shard on API error", async () => {
       mockRawUserRooms.mockRejectedValueOnce(new Error("API Error"));
 
-      const { discoverBotShards, clearShardDiscoveryCache } = await import(
-        "../../scripts/lib/shard-discovery"
-      );
+      const { discoverBotShards, clearShardDiscoveryCache } = await import("../../scripts/lib/shard-discovery");
       clearShardDiscoveryCache();
 
       const result = await discoverBotShards(undefined, false);
@@ -116,9 +108,7 @@ describe("shard-discovery", () => {
         error: "Unauthorized"
       });
 
-      const { discoverBotShards, clearShardDiscoveryCache } = await import(
-        "../../scripts/lib/shard-discovery"
-      );
+      const { discoverBotShards, clearShardDiscoveryCache } = await import("../../scripts/lib/shard-discovery");
       clearShardDiscoveryCache();
 
       const result = await discoverBotShards(undefined, false);
@@ -134,9 +124,7 @@ describe("shard-discovery", () => {
         shards: {}
       });
 
-      const { discoverBotShards, clearShardDiscoveryCache } = await import(
-        "../../scripts/lib/shard-discovery"
-      );
+      const { discoverBotShards, clearShardDiscoveryCache } = await import("../../scripts/lib/shard-discovery");
       clearShardDiscoveryCache();
 
       const result = await discoverBotShards(undefined, false);
@@ -153,9 +141,7 @@ describe("shard-discovery", () => {
         }
       });
 
-      const { discoverBotShards, clearShardDiscoveryCache } = await import(
-        "../../scripts/lib/shard-discovery"
-      );
+      const { discoverBotShards, clearShardDiscoveryCache } = await import("../../scripts/lib/shard-discovery");
       clearShardDiscoveryCache();
 
       const result = await discoverBotShards(undefined, false);
@@ -172,9 +158,7 @@ describe("shard-discovery", () => {
         }
       });
 
-      const { discoverBotShards, clearShardDiscoveryCache } = await import(
-        "../../scripts/lib/shard-discovery"
-      );
+      const { discoverBotShards, clearShardDiscoveryCache } = await import("../../scripts/lib/shard-discovery");
       clearShardDiscoveryCache();
 
       const before = new Date().toISOString();
@@ -196,9 +180,7 @@ describe("shard-discovery", () => {
         }
       });
 
-      const { discoverBotShards, clearShardDiscoveryCache } = await import(
-        "../../scripts/lib/shard-discovery"
-      );
+      const { discoverBotShards, clearShardDiscoveryCache } = await import("../../scripts/lib/shard-discovery");
       clearShardDiscoveryCache();
 
       // First call
@@ -218,9 +200,7 @@ describe("shard-discovery", () => {
         }
       });
 
-      const { discoverBotShards, clearShardDiscoveryCache } = await import(
-        "../../scripts/lib/shard-discovery"
-      );
+      const { discoverBotShards, clearShardDiscoveryCache } = await import("../../scripts/lib/shard-discovery");
       clearShardDiscoveryCache();
 
       // First call with cache
@@ -240,11 +220,8 @@ describe("shard-discovery", () => {
         }
       });
 
-      const {
-        discoverBotShards,
-        clearShardDiscoveryCache,
-        getShardDiscoveryCacheStatus
-      } = await import("../../scripts/lib/shard-discovery");
+      const { discoverBotShards, clearShardDiscoveryCache, getShardDiscoveryCacheStatus } =
+        await import("../../scripts/lib/shard-discovery");
       clearShardDiscoveryCache();
 
       // First call
@@ -277,11 +254,8 @@ describe("shard-discovery", () => {
         }
       });
 
-      const {
-        discoverBotShards,
-        getShardDiscoveryCacheStatus,
-        clearShardDiscoveryCache
-      } = await import("../../scripts/lib/shard-discovery");
+      const { discoverBotShards, getShardDiscoveryCacheStatus, clearShardDiscoveryCache } =
+        await import("../../scripts/lib/shard-discovery");
       clearShardDiscoveryCache();
 
       await discoverBotShards(undefined, true);
@@ -299,9 +273,7 @@ describe("shard-discovery", () => {
     it("should require SCREEPS_TOKEN environment variable", async () => {
       delete process.env.SCREEPS_TOKEN;
 
-      const { discoverBotShards, clearShardDiscoveryCache } = await import(
-        "../../scripts/lib/shard-discovery"
-      );
+      const { discoverBotShards, clearShardDiscoveryCache } = await import("../../scripts/lib/shard-discovery");
       clearShardDiscoveryCache();
 
       // When no API instance is provided and no token is set, it should throw
@@ -316,9 +288,7 @@ describe("shard-discovery", () => {
         shards: null // malformed response
       });
 
-      const { discoverBotShards, clearShardDiscoveryCache } = await import(
-        "../../scripts/lib/shard-discovery"
-      );
+      const { discoverBotShards, clearShardDiscoveryCache } = await import("../../scripts/lib/shard-discovery");
       clearShardDiscoveryCache();
 
       const result = await discoverBotShards(undefined, false);
@@ -336,9 +306,7 @@ describe("shard-discovery", () => {
         }
       });
 
-      const { discoverBotShards, clearShardDiscoveryCache } = await import(
-        "../../scripts/lib/shard-discovery"
-      );
+      const { discoverBotShards, clearShardDiscoveryCache } = await import("../../scripts/lib/shard-discovery");
       clearShardDiscoveryCache();
 
       const result = await discoverBotShards(undefined, false);
