@@ -263,6 +263,46 @@ The bot uses a **state machine architecture** for creep behaviors:
 
 All new behavior development MUST use the state machine pattern with role controllers.
 
+## Using MCP Servers for Screeps Knowledge
+
+When working on runtime code or strategic planning, leverage MCP servers to access accurate game information:
+
+### Available MCP Tools
+
+**Screeps Documentation MCP** (official API docs):
+
+- `screeps_docs_search` - Search documentation for specific topics
+- `screeps_docs_get_api` - Get API object documentation (e.g., `Spawn`, `Source`, `StructureLink`)
+- `screeps_docs_get_mechanics` - Get game mechanics documentation (e.g., `pathfinding`, `claiming`)
+- `screeps_docs_list_apis` - List all available Screeps API objects
+- `screeps_docs_list_mechanics` - List all game mechanics topics
+
+**Screeps Wiki MCP** (community knowledge):
+
+- `screeps_wiki_search` - Search community wiki for strategies and patterns
+- `screeps_wiki_get_article` - Fetch specific wiki articles
+- `screeps_wiki_list_categories` - List available wiki categories
+- `screeps_wiki_get_table` - Extract table data (useful for game constants like `BODYPART_COST`)
+
+### When to Use MCP Tools
+
+**Use MCP tools when:**
+
+- Implementing features that require accurate API knowledge
+- Triaging issues related to game mechanics
+- Planning strategic improvements to bot behavior
+- Validating assumptions about game constants
+- Researching optimization techniques from community knowledge
+
+**Research workflow:**
+
+1. Query official API docs for structure/creep details
+2. Search community wiki for optimization patterns
+3. Reference game constants for accurate calculations
+4. Validate assumptions against current game mechanics
+
+For detailed documentation, see `packages/docs/source/docs/automation/mcp-integration.md`.
+
 ## Additional Resources
 
 For comprehensive guidelines, architecture details, and agent-specific instructions, refer to:

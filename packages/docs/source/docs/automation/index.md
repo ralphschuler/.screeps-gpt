@@ -13,6 +13,7 @@ Comprehensive documentation for the repository's GitHub Actions workflows, Copil
 ### Core Automation
 
 - [**Automation Overview**](overview.html) - Complete overview of GitHub workflows and Copilot CLI integration
+- [**MCP Server Integration**](mcp-integration.html) - Using Screeps documentation and wiki MCP servers for game knowledge access
 - [**Autonomous Monitoring**](autonomous-monitoring.html) - Strategic analysis and PTR monitoring systems
 - [**Label System**](label-system.html) - Standardized three-tier label taxonomy
 
