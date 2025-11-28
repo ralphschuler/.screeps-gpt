@@ -191,9 +191,10 @@ export class DismantlerController extends BaseRoleController<DismantlerMemory> {
           return false; // Keep roads and containers
         }
 
-        // Clear walls (constructed walls, not natural) left by previous owner
-        // Note: STRUCTURE_WALL represents constructed walls, natural terrain walls
-        // are part of the terrain and cannot be dismantled
+        // Clear player-built walls left by previous owner
+        // STRUCTURE_WALL refers to walls constructed by players using Wall.build()
+        // These are distinct from natural terrain walls (blocked tiles) which are
+        // part of the map terrain and cannot be targeted or dismantled
         if (s.structureType === STRUCTURE_WALL) {
           return true; // Clear constructed walls
         }
