@@ -29,12 +29,12 @@ jobs:
       - name: Validate version index
         run: |
           yarn versions:update
-          if ! git diff --quiet docs/changelog/versions.json \
-            docs/changelog/versions.md; then
+          if ! git diff --quiet packages/docs/source/docs/changelog/versions.json \
+            packages/docs/source/docs/changelog/versions.md; then
             echo "::error::Release index is out of date. Run \
               'yarn versions:update' locally and commit the \
               changes." >&2
-            git diff -- docs/changelog/versions.json \
-              docs/changelog/versions.md
+            git diff -- packages/docs/source/docs/changelog/versions.json \
+              packages/docs/source/docs/changelog/versions.md
             exit 1
           fi

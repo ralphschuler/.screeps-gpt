@@ -112,12 +112,18 @@ describe("Builder Full Capacity Gather (Issue #1501, #1504)", () => {
       name: "builder-capacity-test",
       id: "creep-builder-1" as Id<Creep>,
       pos: {
-        x: 20, y: 20, roomName: "W1N1",
+        x: 20,
+        y: 20,
+        roomName: "W1N1",
         findClosestByPath: vi.fn((targets: unknown[]) => targets[0] ?? null),
         inRangeTo: vi.fn().mockReturnValue(true)
       } as unknown as RoomPosition,
-      get memory() { return creepMemory as CreepMemory; },
-      set memory(value: CreepMemory) { Object.assign(creepMemory, value); },
+      get memory() {
+        return creepMemory as CreepMemory;
+      },
+      set memory(value: CreepMemory) {
+        Object.assign(creepMemory, value);
+      },
       store: {
         getFreeCapacity: vi.fn(() => freeCapacity),
         getUsedCapacity: vi.fn(() => 50 - freeCapacity),
@@ -148,7 +154,7 @@ describe("Builder Full Capacity Gather (Issue #1501, #1504)", () => {
   it("should NOT pick up dropped energy while gathering (prevents premature transition)", () => {
     // Execute multiple ticks in gather state
     for (let i = 0; i < 5; i++) {
-      freeCapacity = 50 - (i * 10);
+      freeCapacity = 50 - i * 10;
       controller.execute(mockCreep);
     }
 
@@ -229,12 +235,18 @@ describe("Upgrader Full Capacity Recharge (Issue #1501, #1504)", () => {
       name: "upgrader-capacity-test",
       id: "creep-upgrader-1" as Id<Creep>,
       pos: {
-        x: 20, y: 20, roomName: "W1N1",
+        x: 20,
+        y: 20,
+        roomName: "W1N1",
         findClosestByPath: vi.fn((targets: unknown[]) => targets[0] ?? null),
         inRangeTo: vi.fn().mockReturnValue(true)
       } as unknown as RoomPosition,
-      get memory() { return creepMemory as CreepMemory; },
-      set memory(value: CreepMemory) { Object.assign(creepMemory, value); },
+      get memory() {
+        return creepMemory as CreepMemory;
+      },
+      set memory(value: CreepMemory) {
+        Object.assign(creepMemory, value);
+      },
       store: {
         getFreeCapacity: vi.fn(() => freeCapacity),
         getUsedCapacity: vi.fn(() => 50 - freeCapacity),
@@ -262,7 +274,7 @@ describe("Upgrader Full Capacity Recharge (Issue #1501, #1504)", () => {
 
   it("should NOT pick up dropped energy while recharging (prevents premature transition)", () => {
     for (let i = 0; i < 5; i++) {
-      freeCapacity = 50 - (i * 10);
+      freeCapacity = 50 - i * 10;
       controller.execute(mockCreep);
     }
 
