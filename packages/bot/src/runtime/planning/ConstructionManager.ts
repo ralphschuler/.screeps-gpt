@@ -65,8 +65,25 @@ export class ConstructionManager {
     errFull?: number,
     errRclNotEnough?: number
   ) {
-    // Detect if using legacy positional arguments (configOrLogger is a logger with log/warn methods)
+    // Detect if using legacy positional arguments
+    // Legacy signature: (logger, maxSitesPerTick, maxSitesPerRoom, findMySpawns, ...)
+    // New signature: (config) where config is { logger?, maxSitesPerTick?, ... }
+    //
+    // Detection logic:
+    // - If configOrLogger has config-specific keys (defaultStrategy, enableVisualization, maxSitesPerTick, maxSitesPerRoom)
+    //   it's a new-style config object
+    // - If configOrLogger only has log/warn methods and maxSitesPerTick is provided as second arg,
+    //   it's a legacy call
+    const hasConfigKeys =
+      configOrLogger !== null &&
+      typeof configOrLogger === "object" &&
+      ("defaultStrategy" in configOrLogger ||
+        "enableVisualization" in configOrLogger ||
+        "maxSitesPerTick" in configOrLogger ||
+        "maxSitesPerRoom" in configOrLogger);
+
     const isLegacyCall =
+      !hasConfigKeys &&
       configOrLogger !== null &&
       typeof configOrLogger === "object" &&
       (typeof (configOrLogger as Pick<Console, "log" | "warn">).log === "function" ||
