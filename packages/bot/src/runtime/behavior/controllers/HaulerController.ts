@@ -83,13 +83,13 @@ export class HaulerController extends BaseRoleController<HaulerMemory> {
 
     if (currentState === "pickup") {
       comm?.say(creep, "pickup");
+      // Check if full before pickup
+      if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+        machine.send({ type: "ENERGY_FULL" });
+      }
 
       // Priority 1: Pick up dropped energy
       if (tryPickupDroppedEnergy(creep)) {
-        // Check if full after pickup
-        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
-          machine.send({ type: "ENERGY_FULL" });
-        }
         // Save state to memory and return current state
         memory.stateMachine = serialize(machine);
         memory.task = machine.getState();
@@ -112,10 +112,6 @@ export class HaulerController extends BaseRoleController<HaulerMemory> {
         if (result === ERR_NOT_IN_RANGE) {
           // Use ignoreCreeps for better routing through narrow passages
           creep.moveTo(target, { range: 1, reusePath: 30, ignoreCreeps: true });
-        }
-        // Check if full after withdrawal
-        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
-          machine.send({ type: "ENERGY_FULL" });
         }
       }
     } else if (currentState === "deliver") {
