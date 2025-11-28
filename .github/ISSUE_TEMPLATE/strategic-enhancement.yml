@@ -1,0 +1,162 @@
+name: Strategic Enhancement
+description: Propose a strategic improvement based on game analysis and documentation research
+title: "feat(strategy): "
+labels: ["type/enhancement", "state/pending", "strategic-planning"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for strategic improvements that require game mechanics research.
+        Before submitting, search existing issues and review the [MCP Integration Guide](../../packages/docs/source/docs/automation/mcp-integration.md).
+
+  - type: textarea
+    id: strategic_context
+    attributes:
+      label: Strategic Context
+      description: Why this enhancement matters for bot performance and strategic goals
+      placeholder: |
+        Describe the strategic importance of this enhancement.
+        - What game phase does this target? (RCL 1-2, 3-5, 6-8)
+        - What performance area is impacted? (CPU, energy, defense, expansion)
+        - How does this align with current strategic goals?
+    validations:
+      required: true
+
+  - type: textarea
+    id: current_state
+    attributes:
+      label: Current State Analysis
+      description: What is the current state and what evidence supports this enhancement?
+      placeholder: |
+        **Bot Performance:**
+        - Current metrics (CPU usage, energy efficiency, etc.)
+        - PTR stats or monitoring data
+
+        **Current Implementation:**
+        - How does the bot currently handle this?
+        - What are the limitations?
+    validations:
+      required: true
+
+  - type: textarea
+    id: game_mechanics
+    attributes:
+      label: Game Mechanics Reference
+      description: Relevant Screeps API documentation and game constants
+      placeholder: |
+        **API Documentation:**
+        - Which game objects are involved? (e.g., Spawn, Source, StructureLink)
+        - What are the relevant API methods?
+
+        **Community Knowledge:**
+        - What do community best practices suggest?
+        - Are there established patterns for this?
+
+        **Game Constants:**
+        - Relevant constants (e.g., BODYPART_COST, STRUCTURE_HITS)
+        - Important calculations or formulas
+
+  - type: textarea
+    id: proposed_changes
+    attributes:
+      label: Proposed Changes
+      description: What specific changes should be implemented?
+      placeholder: |
+        **Implementation Approach:**
+        1. Step-by-step implementation plan
+        2. Files to modify
+        3. New modules to create
+
+        **Alternative Approaches:**
+        - Other approaches considered
+        - Trade-offs between approaches
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_impact
+    attributes:
+      label: Expected Impact
+      description: What improvements are expected from this enhancement?
+      placeholder: |
+        **Performance Improvement:**
+        - CPU savings (estimated percentage)
+        - Energy efficiency gains
+        - Other metrics improvements
+
+        **Strategic Value:**
+        - How does this advance strategic goals?
+        - What future work does this enable?
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: How will we know this enhancement is complete and successful?
+      placeholder: |
+        - [ ] Specific measurable criterion 1
+        - [ ] Performance benchmark met
+        - [ ] Tests pass
+        - [ ] Documentation updated
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority Assessment
+      description: How important is this enhancement?
+      options:
+        - Critical (blocking game progression)
+        - High (significant performance impact >10%)
+        - Medium (moderate improvement 5-10%)
+        - Low (minor optimization <5%)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Enhancement Category
+      description: Which area does this enhancement target?
+      options:
+        - Performance Optimization (CPU, pathfinding, caching)
+        - Economic Improvement (harvesting, energy, logistics)
+        - Strategic Expansion (multi-room, remote mining)
+        - Defense and Combat (towers, safe mode, threats)
+        - Infrastructure (roads, structures, base layout)
+        - Automation (monitoring, workflows, testing)
+    validations:
+      required: true
+
+  - type: textarea
+    id: monitoring_validation
+    attributes:
+      label: Monitoring Validation
+      description: How will we verify this enhancement succeeds?
+      placeholder: |
+        **Metrics to Watch:**
+        - PTR metrics to monitor
+        - Bot behavior to observe
+
+        **Regression Tests:**
+        - Tests to add for validation
+        - Edge cases to cover
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      description: Please confirm before submitting
+      options:
+        - label: I have searched for existing issues and this is not a duplicate
+          required: true
+        - label: I have researched relevant game mechanics and documentation
+          required: true
+        - label: I have provided concrete acceptance criteria with measurable outcomes
+          required: true
+        - label: This enhancement aligns with current strategic goals
+          required: true

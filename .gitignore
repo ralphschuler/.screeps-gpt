@@ -138,6 +138,9 @@ packages/docs/public/
 !/reports/monitoring/strategic-analysis-*.md
 !/reports/monitoring/monitoring-summary-*.json
 
+# Game constants cache (regenerated on demand)
+/reports/game-constants/
+
 # Video rendering pipeline artifacts
 /reports/replay-data/
 /reports/video-frames/
