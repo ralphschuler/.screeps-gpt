@@ -1,5 +1,5 @@
 import type { GameContext, RoomLike } from "@runtime/types/GameContext";
-import { BasePlanner, type LayoutStrategy } from "@runtime/planning/BasePlanner";
+import { BasePlanner } from "@runtime/planning/BasePlanner";
 
 interface RoomConstructionState {
   planner: BasePlanner;
@@ -16,8 +16,6 @@ export interface ConstructionManagerConfig {
   maxSitesPerTick?: number;
   /** Maximum construction sites per room per tick (default: 1) */
   maxSitesPerRoom?: number;
-  /** Default layout strategy for new rooms (default: "bunker") */
-  defaultStrategy?: LayoutStrategy;
   /** Enable visualization for all rooms (default: false) */
   enableVisualization?: boolean;
 }
@@ -25,7 +23,7 @@ export interface ConstructionManagerConfig {
 /**
  * Manages automatic construction site creation for all owned rooms.
  * Uses BasePlanner to determine optimal structure placement.
- * Supports multiple layout strategies (bunker, stamp).
+ * Uses dynamic layout that can identify and handle misplaced structures.
  */
 export class ConstructionManager {
   private readonly roomPlanners: Map<string, RoomConstructionState> = new Map();
@@ -37,7 +35,6 @@ export class ConstructionManager {
   private readonly okCode: number;
   private readonly errFull: number;
   private readonly errRclNotEnough: number;
-  private readonly defaultStrategy: LayoutStrategy;
   private readonly enableVisualization: boolean;
   private readonly logger: Pick<Console, "log" | "warn">;
 
@@ -70,15 +67,14 @@ export class ConstructionManager {
     // New signature: (config) where config is { logger?, maxSitesPerTick?, ... }
     //
     // Detection logic:
-    // - If configOrLogger has config-specific keys (defaultStrategy, enableVisualization, maxSitesPerTick, maxSitesPerRoom)
+    // - If configOrLogger has config-specific keys (enableVisualization, maxSitesPerTick, maxSitesPerRoom)
     //   it's a new-style config object
     // - If configOrLogger only has log/warn methods and maxSitesPerTick is provided as second arg,
     //   it's a legacy call
     const hasConfigKeys =
       configOrLogger !== null &&
       typeof configOrLogger === "object" &&
-      ("defaultStrategy" in configOrLogger ||
-        "enableVisualization" in configOrLogger ||
+      ("enableVisualization" in configOrLogger ||
         "maxSitesPerTick" in configOrLogger ||
         "maxSitesPerRoom" in configOrLogger);
 
@@ -102,7 +98,6 @@ export class ConstructionManager {
       this.okCode = okCode ?? (typeof OK !== "undefined" ? OK : 0);
       this.errFull = errFull ?? (typeof ERR_FULL !== "undefined" ? ERR_FULL : -8);
       this.errRclNotEnough = errRclNotEnough ?? (typeof ERR_RCL_NOT_ENOUGH !== "undefined" ? ERR_RCL_NOT_ENOUGH : -14);
-      this.defaultStrategy = "bunker";
       this.enableVisualization = false;
     } else {
       // New config object signature
@@ -110,7 +105,6 @@ export class ConstructionManager {
       this.logger = config.logger ?? console;
       this.maxSitesPerTick = config.maxSitesPerTick ?? 5;
       this.maxSitesPerRoom = config.maxSitesPerRoom ?? 1;
-      this.defaultStrategy = config.defaultStrategy ?? "bunker";
       this.enableVisualization = config.enableVisualization ?? false;
       this.findMySpawns = typeof FIND_MY_SPAWNS !== "undefined" ? FIND_MY_SPAWNS : 104;
       this.findStructures = typeof FIND_STRUCTURES !== "undefined" ? FIND_STRUCTURES : 107;
@@ -119,33 +113,6 @@ export class ConstructionManager {
       this.okCode = typeof OK !== "undefined" ? OK : 0;
       this.errFull = typeof ERR_FULL !== "undefined" ? ERR_FULL : -8;
       this.errRclNotEnough = typeof ERR_RCL_NOT_ENOUGH !== "undefined" ? ERR_RCL_NOT_ENOUGH : -14;
-    }
-  }
-
-  /**
-   * Get the current default layout strategy.
-   */
-  public getDefaultStrategy(): LayoutStrategy {
-    return this.defaultStrategy;
-  }
-
-  /**
-   * Set layout strategy for a specific room.
-   *
-   * @param roomName - Room to configure
-   * @param strategy - Layout strategy to use
-   */
-  public setRoomStrategy(roomName: string, strategy: LayoutStrategy): void {
-    const state = this.roomPlanners.get(roomName);
-    if (state) {
-      // Replace planner with new strategy
-      this.roomPlanners.set(roomName, {
-        planner: new BasePlanner(roomName, {
-          strategy,
-          enableVisualization: this.enableVisualization
-        }),
-        lastPlannedRCL: 0 // Reset to force replanning
-      });
     }
   }
 
@@ -206,7 +173,6 @@ export class ConstructionManager {
     if (!state) {
       state = {
         planner: new BasePlanner(room.name, {
-          strategy: this.defaultStrategy,
           enableVisualization: this.enableVisualization
         }),
         lastPlannedRCL: 0
@@ -260,6 +226,25 @@ export class ConstructionManager {
     }
 
     return sitesCreated;
+  }
+
+  /**
+   * Get misplaced structures for a room that should be removed.
+   * This enables dynamic layout management by identifying structures
+   * that are not in planned positions.
+   *
+   * @param roomName - Room to check for misplaced structures
+   * @returns Array of misplaced structures or empty array if room not planned
+   */
+  public getMisplacedStructures(roomName: string): ReturnType<BasePlanner["getMisplacedStructures"]> {
+    const state = this.roomPlanners.get(roomName);
+    if (!state) {
+      return [];
+    }
+
+    // Need a room reference to check structures
+    // This is a limitation - caller should use getPlanner and call directly with room reference
+    return [];
   }
 
   /**

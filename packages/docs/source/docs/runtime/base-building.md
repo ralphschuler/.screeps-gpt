@@ -4,12 +4,14 @@ This document describes the automatic base building system that dynamically plac
 
 ## Overview
 
-The automatic base building system supports multiple **layout strategies** to plan and create construction sites for structures based on the room's Controller Level (RCL). The system integrates with the existing builder creep role to automatically construct the planned structures.
+The automatic base building system uses a **dynamic layout** to plan and create construction sites for structures based on the room's Controller Level (RCL). The system integrates with the existing builder creep role to automatically construct the planned structures.
 
-**Supported Layout Strategies:**
+**Key Features:**
 
-- **Bunker**: Compact, high-defense layout with all structures within rampart range (default)
-- **Stamp**: Modular layout using smaller reusable patterns, better terrain adaptation
+- Dynamic structure placement based on RCL 1-8
+- Automatic detection of misplaced structures
+- Chess/checkerboard pattern for optimal pathing
+- Visualization support for debugging
 
 ## Architecture
 
@@ -17,9 +19,9 @@ The automatic base building system supports multiple **layout strategies** to pl
 
 1. **BasePlanner** (`src/runtime/planning/BasePlanner.ts`)
    - Calculates optimal anchor point for the base using spawn position or distance transform
-   - Supports multiple layout strategies (bunker, stamp)
-   - Defines layouts with fixed offsets from anchor for RCL 1-8
+   - Uses dynamic layout with fixed offsets from anchor for RCL 1-8
    - Filters out invalid positions (walls, edges)
+   - Detects misplaced structures that need to be removed
    - Provides visualization support for debugging
    - Includes layout statistics for analysis
 
@@ -27,7 +29,6 @@ The automatic base building system supports multiple **layout strategies** to pl
    - Manages construction site creation for all owned rooms
    - Tracks planning state per room to avoid unnecessary re-planning
    - Creates construction sites incrementally (CPU-efficient)
-   - Supports per-room strategy configuration
    - Integrates with kernel to run each tick
 
 ### Integration
@@ -41,11 +42,9 @@ this.constructionManager.planConstructionSites(game);
 
 This runs once per tick before creep behavior execution, ensuring construction sites are available for builders.
 
-## Layout Strategies
+## Dynamic Layout
 
-### Bunker Layout (Default)
-
-The bunker layout uses a **chess/checkerboard pattern** where structures are placed at fixed offsets from an anchor point (typically the spawn). This pattern ensures that all 8 adjacent tiles to the spawn remain walkable, preventing spawning blockage.
+The dynamic layout uses a **chess/checkerboard pattern** where structures are placed at fixed offsets from an anchor point (typically the spawn). This pattern ensures that all 8 adjacent tiles to the spawn remain walkable, preventing spawning blockage.
 
 **Characteristics:**
 
@@ -53,6 +52,7 @@ The bunker layout uses a **chess/checkerboard pattern** where structures are pla
 - All structures within rampart protection range
 - Efficient for energy logistics (short creep paths)
 - Requires large open area (approximately 11x11 minimum)
+- Can detect and flag misplaced structures for removal
 
 **Pattern Rules:**
 
@@ -61,20 +61,7 @@ The bunker layout uses a **chess/checkerboard pattern** where structures are pla
 - All tiles adjacent to the spawn (distance 1) remain walkable at all RCL levels
 - Structures are distributed evenly in all four quadrants
 
-### Stamp Layout
-
-The stamp layout uses modular patterns that can be placed flexibly around the room. This strategy is better suited for irregular terrain and rooms with limited open space.
-
-**Characteristics:**
-
-- Modular, expandable design
-- Better adaptation to irregular terrain
-- Uses smaller repeatable stamps (extension clusters, lab clusters)
-- More flexible placement options
-
 ## Structure Progression by RCL
-
-### Bunker Layout
 
 | RCL | Spawns | Extensions | Towers | Storage | Links | Terminal | Labs | Factory | Observer | Power Spawn | Nuker |
 | --- | ------ | ---------- | ------ | ------- | ----- | -------- | ---- | ------- | -------- | ----------- | ----- |

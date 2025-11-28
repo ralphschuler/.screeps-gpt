@@ -1,4 +1,4 @@
-export { BasePlanner, type LayoutStrategy, type BasePlannerConfig } from "./BasePlanner";
+export { BasePlanner, type BasePlannerConfig, type MisplacedStructure } from "./BasePlanner";
 export {
   ColonyManager,
   type ColonyManagerMemory,

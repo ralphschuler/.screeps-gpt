@@ -12,18 +12,17 @@ interface StructurePlan {
 }
 
 /**
- * Available layout strategies for base planning.
- * - bunker: Compact, high-defense layout with all structures within rampart range
- * - stamp: Modular layout using smaller reusable patterns
+ * Result of structure removal check - structures that need to be demolished.
  */
-export type LayoutStrategy = "bunker" | "stamp";
+export interface MisplacedStructure {
+  structure: Structure;
+  reason: string;
+}
 
 /**
  * Configuration options for the BasePlanner.
  */
 export interface BasePlannerConfig {
-  /** Layout strategy to use (default: "bunker") */
-  strategy?: LayoutStrategy;
   /** Enable visualization support (default: false) */
   enableVisualization?: boolean;
 }
@@ -75,24 +74,23 @@ const SPAWN_PLACEMENT = {
 } as const;
 
 /**
- * Plans and manages automatic base building using configurable layout patterns.
- * Supports bunker (compact, high-defense) and stamp (modular, expandable) strategies.
+ * Plans and manages automatic base building using a dynamic layout pattern.
+ * Dynamically places structures based on RCL and can identify misplaced structures for removal.
  * Based on community research from Sy-Harabi's guide and ScreepsPlus wiki.
  */
 export class BasePlanner {
   private readonly roomName: string;
   private anchor: RoomPosition | null = null;
-  private readonly strategy: LayoutStrategy;
   private readonly enableVisualization: boolean;
 
   /**
-   * Chess/checkerboard pattern layout centered around spawn
-   * Offsets are relative to the anchor point (spawn position)
-   * Structures are placed at even-sum coordinates (dx+dy is even)
-   * This ensures all 8 adjacent tiles to spawn remain walkable for creeps
-   * Covers RCL 1-8 for complete base planning
+   * Dynamic layout centered around spawn anchor point.
+   * Offsets are relative to the anchor point (spawn position).
+   * Uses chess/checkerboard pattern where structures are at even-sum coordinates (dx+dy is even).
+   * This ensures all 8 adjacent tiles to spawn remain walkable for creeps.
+   * Covers RCL 1-8 for complete base planning.
    */
-  private readonly bunkerLayout: Array<{
+  private readonly layout: Array<{
     type: BuildableStructureConstant;
     dx: number;
     dy: number;
@@ -157,8 +155,6 @@ export class BasePlanner {
 
     // RCL 6: Terminal (1 allowed)
     { type: "terminal" as BuildableStructureConstant, dx: -6, dy: -4, rcl: 6 },
-
-    // RCL 6: Extractor (1 allowed) - placed dynamically based on mineral position
 
     // RCL 6: Labs (3 allowed) - compact cluster for reactions
     { type: "lab" as BuildableStructureConstant, dx: 6, dy: 4, rcl: 6 },
@@ -249,189 +245,9 @@ export class BasePlanner {
     { type: "extension" as BuildableStructureConstant, dx: 0, dy: 10, rcl: 8 }
   ];
 
-  /**
-   * Stamp-based layout using modular patterns
-   * More flexible than bunker, adapts better to irregular terrain
-   * Uses smaller repeatable stamps: extension clusters, lab clusters, tower triangles
-   */
-  private readonly stampLayout: Array<{
-    type: BuildableStructureConstant;
-    dx: number;
-    dy: number;
-    rcl: number;
-  }> = [
-    // Core stamp: Spawn and immediate surroundings
-    { type: "spawn" as BuildableStructureConstant, dx: 0, dy: 0, rcl: 1 },
-
-    // Extension cluster 1 (flower pattern around spawn) - RCL 2
-    { type: "extension" as BuildableStructureConstant, dx: 1, dy: 1, rcl: 2 },
-    { type: "extension" as BuildableStructureConstant, dx: -1, dy: 1, rcl: 2 },
-    { type: "extension" as BuildableStructureConstant, dx: 1, dy: -1, rcl: 2 },
-    { type: "extension" as BuildableStructureConstant, dx: -1, dy: -1, rcl: 2 },
-    { type: "extension" as BuildableStructureConstant, dx: 2, dy: 0, rcl: 2 },
-
-    // Container near spawn
-    { type: "container" as BuildableStructureConstant, dx: -2, dy: 0, rcl: 2 },
-
-    // Extension cluster 2 - RCL 3
-    { type: "extension" as BuildableStructureConstant, dx: 0, dy: 2, rcl: 3 },
-    { type: "extension" as BuildableStructureConstant, dx: 3, dy: 1, rcl: 3 },
-    { type: "extension" as BuildableStructureConstant, dx: 3, dy: -1, rcl: 3 },
-    { type: "extension" as BuildableStructureConstant, dx: -2, dy: 2, rcl: 3 },
-    { type: "extension" as BuildableStructureConstant, dx: 2, dy: 2, rcl: 3 },
-
-    // Tower 1 - central defense
-    { type: "tower" as BuildableStructureConstant, dx: -3, dy: 0, rcl: 3 },
-
-    // Storage - RCL 4
-    { type: "storage" as BuildableStructureConstant, dx: 0, dy: -2, rcl: 4 },
-
-    // Extension cluster 3 - RCL 4
-    { type: "extension" as BuildableStructureConstant, dx: -2, dy: -2, rcl: 4 },
-    { type: "extension" as BuildableStructureConstant, dx: 2, dy: -2, rcl: 4 },
-    { type: "extension" as BuildableStructureConstant, dx: 4, dy: 0, rcl: 4 },
-    { type: "extension" as BuildableStructureConstant, dx: 0, dy: -3, rcl: 4 },
-    { type: "extension" as BuildableStructureConstant, dx: -3, dy: 2, rcl: 4 },
-    { type: "extension" as BuildableStructureConstant, dx: 3, dy: 2, rcl: 4 },
-    { type: "extension" as BuildableStructureConstant, dx: 4, dy: 1, rcl: 4 },
-    { type: "extension" as BuildableStructureConstant, dx: 4, dy: -1, rcl: 4 },
-    { type: "extension" as BuildableStructureConstant, dx: -4, dy: 0, rcl: 4 },
-    { type: "extension" as BuildableStructureConstant, dx: -4, dy: 1, rcl: 4 },
-
-    // Links - RCL 5
-    { type: "link" as BuildableStructureConstant, dx: 1, dy: -2, rcl: 5 },
-    { type: "link" as BuildableStructureConstant, dx: -1, dy: 2, rcl: 5 },
-
-    // Extension cluster 4 - RCL 5
-    { type: "extension" as BuildableStructureConstant, dx: -4, dy: -1, rcl: 5 },
-    { type: "extension" as BuildableStructureConstant, dx: -3, dy: -2, rcl: 5 },
-    { type: "extension" as BuildableStructureConstant, dx: 3, dy: -2, rcl: 5 },
-    { type: "extension" as BuildableStructureConstant, dx: 0, dy: 3, rcl: 5 },
-    { type: "extension" as BuildableStructureConstant, dx: -2, dy: 3, rcl: 5 },
-    { type: "extension" as BuildableStructureConstant, dx: 2, dy: 3, rcl: 5 },
-    { type: "extension" as BuildableStructureConstant, dx: 5, dy: 0, rcl: 5 },
-    { type: "extension" as BuildableStructureConstant, dx: 5, dy: 1, rcl: 5 },
-    { type: "extension" as BuildableStructureConstant, dx: -5, dy: 0, rcl: 5 },
-    { type: "extension" as BuildableStructureConstant, dx: -5, dy: 1, rcl: 5 },
-
-    // Tower 2 - RCL 5
-    { type: "tower" as BuildableStructureConstant, dx: 3, dy: 0, rcl: 5 },
-
-    // Terminal - RCL 6
-    { type: "terminal" as BuildableStructureConstant, dx: -1, dy: -2, rcl: 6 },
-
-    // Lab cluster (diamond pattern) - RCL 6
-    { type: "lab" as BuildableStructureConstant, dx: 5, dy: 2, rcl: 6 },
-    { type: "lab" as BuildableStructureConstant, dx: 6, dy: 2, rcl: 6 },
-    { type: "lab" as BuildableStructureConstant, dx: 5, dy: 3, rcl: 6 },
-
-    // Extension cluster 5 - RCL 6
-    { type: "extension" as BuildableStructureConstant, dx: -5, dy: -1, rcl: 6 },
-    { type: "extension" as BuildableStructureConstant, dx: -4, dy: -2, rcl: 6 },
-    { type: "extension" as BuildableStructureConstant, dx: 4, dy: -2, rcl: 6 },
-    { type: "extension" as BuildableStructureConstant, dx: 5, dy: -1, rcl: 6 },
-    { type: "extension" as BuildableStructureConstant, dx: -3, dy: 3, rcl: 6 },
-    { type: "extension" as BuildableStructureConstant, dx: 3, dy: 3, rcl: 6 },
-    { type: "extension" as BuildableStructureConstant, dx: 0, dy: 4, rcl: 6 },
-    { type: "extension" as BuildableStructureConstant, dx: -2, dy: 4, rcl: 6 },
-    { type: "extension" as BuildableStructureConstant, dx: 2, dy: 4, rcl: 6 },
-    { type: "extension" as BuildableStructureConstant, dx: 4, dy: 2, rcl: 6 },
-
-    // Link 3 - RCL 6
-    { type: "link" as BuildableStructureConstant, dx: -5, dy: 2, rcl: 6 },
-
-    // Second spawn - RCL 7
-    { type: "spawn" as BuildableStructureConstant, dx: 0, dy: 1, rcl: 7 },
-
-    // Tower 3 - RCL 7
-    { type: "tower" as BuildableStructureConstant, dx: -3, dy: -1, rcl: 7 },
-
-    // Factory - RCL 7
-    { type: "factory" as BuildableStructureConstant, dx: -2, dy: -3, rcl: 7 },
-
-    // More labs - RCL 7
-    { type: "lab" as BuildableStructureConstant, dx: 6, dy: 3, rcl: 7 },
-    { type: "lab" as BuildableStructureConstant, dx: 7, dy: 2, rcl: 7 },
-    { type: "lab" as BuildableStructureConstant, dx: 7, dy: 3, rcl: 7 },
-
-    // Link 4 - RCL 7
-    { type: "link" as BuildableStructureConstant, dx: 2, dy: -3, rcl: 7 },
-
-    // Extension cluster 6 - RCL 7
-    { type: "extension" as BuildableStructureConstant, dx: 6, dy: 0, rcl: 7 },
-    { type: "extension" as BuildableStructureConstant, dx: 6, dy: 1, rcl: 7 },
-    { type: "extension" as BuildableStructureConstant, dx: -6, dy: 0, rcl: 7 },
-    { type: "extension" as BuildableStructureConstant, dx: -6, dy: 1, rcl: 7 },
-    { type: "extension" as BuildableStructureConstant, dx: -4, dy: 3, rcl: 7 },
-    { type: "extension" as BuildableStructureConstant, dx: 4, dy: 3, rcl: 7 },
-    { type: "extension" as BuildableStructureConstant, dx: 1, dy: 4, rcl: 7 },
-    { type: "extension" as BuildableStructureConstant, dx: -1, dy: 4, rcl: 7 },
-    { type: "extension" as BuildableStructureConstant, dx: 0, dy: -4, rcl: 7 },
-    { type: "extension" as BuildableStructureConstant, dx: 1, dy: -3, rcl: 7 },
-
-    // Third spawn - RCL 8
-    { type: "spawn" as BuildableStructureConstant, dx: 0, dy: -1, rcl: 8 },
-
-    // Three more towers - RCL 8
-    { type: "tower" as BuildableStructureConstant, dx: 3, dy: -1, rcl: 8 },
-    { type: "tower" as BuildableStructureConstant, dx: -1, dy: 3, rcl: 8 },
-    { type: "tower" as BuildableStructureConstant, dx: 1, dy: 3, rcl: 8 },
-
-    // Observer - RCL 8
-    { type: "observer" as BuildableStructureConstant, dx: -6, dy: -3, rcl: 8 },
-
-    // Power Spawn - RCL 8
-    { type: "powerSpawn" as BuildableStructureConstant, dx: -1, dy: -3, rcl: 8 },
-
-    // Nuker - RCL 8
-    { type: "nuker" as BuildableStructureConstant, dx: 6, dy: -3, rcl: 8 },
-
-    // More labs - RCL 8
-    { type: "lab" as BuildableStructureConstant, dx: 5, dy: 4, rcl: 8 },
-    { type: "lab" as BuildableStructureConstant, dx: 6, dy: 4, rcl: 8 },
-    { type: "lab" as BuildableStructureConstant, dx: 7, dy: 4, rcl: 8 },
-    { type: "lab" as BuildableStructureConstant, dx: 8, dy: 3, rcl: 8 },
-
-    // Two more links - RCL 8
-    { type: "link" as BuildableStructureConstant, dx: -3, dy: -3, rcl: 8 },
-    { type: "link" as BuildableStructureConstant, dx: 5, dy: -2, rcl: 8 },
-
-    // Extension cluster 7 - RCL 8
-    { type: "extension" as BuildableStructureConstant, dx: -1, dy: -4, rcl: 8 },
-    { type: "extension" as BuildableStructureConstant, dx: 1, dy: -4, rcl: 8 },
-    { type: "extension" as BuildableStructureConstant, dx: -5, dy: -2, rcl: 8 },
-    { type: "extension" as BuildableStructureConstant, dx: -6, dy: -1, rcl: 8 },
-    { type: "extension" as BuildableStructureConstant, dx: -6, dy: -2, rcl: 8 },
-    { type: "extension" as BuildableStructureConstant, dx: 6, dy: -1, rcl: 8 },
-    { type: "extension" as BuildableStructureConstant, dx: 6, dy: -2, rcl: 8 },
-    { type: "extension" as BuildableStructureConstant, dx: -5, dy: 3, rcl: 8 },
-    { type: "extension" as BuildableStructureConstant, dx: 5, dy: -3, rcl: 8 },
-    { type: "extension" as BuildableStructureConstant, dx: -2, dy: 5, rcl: 8 }
-  ];
-
   public constructor(roomName: string, config: BasePlannerConfig = {}) {
     this.roomName = roomName;
-    this.strategy = config.strategy ?? "bunker";
     this.enableVisualization = config.enableVisualization ?? false;
-  }
-
-  /**
-   * Get the current layout strategy.
-   */
-  public getStrategy(): LayoutStrategy {
-    return this.strategy;
-  }
-
-  /**
-   * Get the layout array for the current strategy.
-   */
-  private getLayout(): Array<{
-    type: BuildableStructureConstant;
-    dx: number;
-    dy: number;
-    rcl: number;
-  }> {
-    return this.strategy === "stamp" ? this.stampLayout : this.bunkerLayout;
   }
 
   /**
@@ -559,9 +375,8 @@ export class BasePlanner {
    */
   public getPlanForRCL(rcl: number, anchor: RoomPosition): StructurePlan[] {
     const plans: StructurePlan[] = [];
-    const layout = this.getLayout();
 
-    for (const item of layout) {
+    for (const item of this.layout) {
       if (item.rcl <= rcl) {
         plans.push({
           structureType: item.type,
@@ -741,7 +556,7 @@ export class BasePlanner {
 
     // Draw info text
     room.visual.text(
-      `${this.strategy.toUpperCase()} Layout | RCL ${rcl} | ${count} structures`,
+      `Dynamic Layout | RCL ${rcl} | ${count} structures`,
       this.anchor.x,
       this.anchor.y - 2,
       {
@@ -763,14 +578,12 @@ export class BasePlanner {
    * @returns Object with layout statistics
    */
   public getLayoutStats(rcl: number = 8): {
-    strategy: LayoutStrategy;
     totalStructures: number;
     byType: Record<string, number>;
     byRCL: Record<number, number>;
     boundingBox: { minX: number; maxX: number; minY: number; maxY: number } | null;
   } {
-    const layout = this.getLayout();
-    const filtered = layout.filter(item => item.rcl <= rcl);
+    const filtered = this.layout.filter(item => item.rcl <= rcl);
 
     const byType: Record<string, number> = {};
     const byRCL: Record<number, number> = {};
@@ -789,7 +602,6 @@ export class BasePlanner {
     }
 
     return {
-      strategy: this.strategy,
       totalStructures: filtered.length,
       byType,
       byRCL,
@@ -803,6 +615,72 @@ export class BasePlanner {
             }
           : null
     };
+  }
+
+  /**
+   * Identify structures that are misplaced (not in planned positions) and should be removed.
+   * This enables the dynamic planner to clean up structures in wrong positions.
+   *
+   * @param room - Room to check for misplaced structures
+   * @param terrain - Room terrain data
+   * @param currentRCL - Current room controller level
+   * @param findMySpawns - FindConstant for spawns
+   * @param findStructures - FindConstant for structures
+   * @returns Array of misplaced structures with reasons
+   */
+  public getMisplacedStructures(
+    room: RoomLike,
+    terrain: RoomTerrain,
+    currentRCL: number,
+    findMySpawns: FindConstant,
+    findStructures: FindConstant
+  ): MisplacedStructure[] {
+    const anchor = this.calculateAnchor(room, terrain, findMySpawns);
+    if (!anchor) {
+      return [];
+    }
+
+    const planned = this.getPlanForRCL(currentRCL, anchor);
+    const misplaced: MisplacedStructure[] = [];
+
+    // Get existing structures (exclude controller, sources, minerals, etc.)
+    const existingStructures = room.find(findStructures) as Structure[];
+
+    // Structure types that the planner manages (excludes roads, ramparts, walls, containers that may be placed elsewhere)
+    const managedTypes = new Set<string>([
+      "spawn",
+      "extension",
+      "tower",
+      "storage",
+      "link",
+      "terminal",
+      "lab",
+      "factory",
+      "observer",
+      "powerSpawn",
+      "nuker"
+    ]);
+
+    for (const structure of existingStructures) {
+      // Skip structure types we don't manage
+      if (!managedTypes.has(structure.structureType)) {
+        continue;
+      }
+
+      // Check if this structure is in a planned position
+      const isPlanned = planned.some(
+        plan => plan.pos.x === structure.pos.x && plan.pos.y === structure.pos.y && plan.structureType === structure.structureType
+      );
+
+      if (!isPlanned) {
+        misplaced.push({
+          structure,
+          reason: `${structure.structureType} at (${structure.pos.x},${structure.pos.y}) is not in planned layout position`
+        });
+      }
+    }
+
+    return misplaced;
   }
 
   /**

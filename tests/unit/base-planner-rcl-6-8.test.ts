@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { BasePlanner, type LayoutStrategy } from "@runtime/planning/BasePlanner";
+import { BasePlanner } from "@runtime/planning/BasePlanner";
 
 /**
- * Unit tests for BasePlanner with RCL 6-8 support and multiple layout strategies.
+ * Unit tests for BasePlanner with RCL 6-8 support and dynamic layout.
  */
 describe("BasePlanner", () => {
   // Mock terrain that returns plain terrain for all positions except edges
@@ -13,23 +13,6 @@ describe("BasePlanner", () => {
       }
       return 0; // Plain terrain
     }
-  });
-
-  describe("Strategy Configuration", () => {
-    it("should default to bunker strategy", () => {
-      const planner = new BasePlanner("W1N1");
-      expect(planner.getStrategy()).toBe("bunker");
-    });
-
-    it("should accept bunker strategy in config", () => {
-      const planner = new BasePlanner("W1N1", { strategy: "bunker" });
-      expect(planner.getStrategy()).toBe("bunker");
-    });
-
-    it("should accept stamp strategy in config", () => {
-      const planner = new BasePlanner("W1N1", { strategy: "stamp" });
-      expect(planner.getStrategy()).toBe("stamp");
-    });
   });
 
   describe("Room Name", () => {
@@ -64,11 +47,11 @@ describe("BasePlanner", () => {
     });
   });
 
-  describe("Bunker Layout - RCL 6-8", () => {
+  describe("Dynamic Layout - RCL 6-8", () => {
     let planner: BasePlanner;
 
     beforeEach(() => {
-      planner = new BasePlanner("W1N1", { strategy: "bunker" });
+      planner = new BasePlanner("W1N1");
     });
 
     it("should include terminal at RCL 6", () => {
@@ -184,90 +167,20 @@ describe("BasePlanner", () => {
     });
   });
 
-  describe("Stamp Layout - RCL 6-8", () => {
-    let planner: BasePlanner;
-
-    beforeEach(() => {
-      planner = new BasePlanner("W1N1", { strategy: "stamp" });
-    });
-
-    it("should use stamp strategy", () => {
-      expect(planner.getStrategy()).toBe("stamp");
-    });
-
-    it("should include terminal at RCL 6", () => {
-      const anchor = { x: 25, y: 25 };
-      const plans = planner.getPlanForRCL(6, anchor);
-
-      const terminalPlans = plans.filter(p => p.structureType === "terminal");
-      expect(terminalPlans.length).toBe(1);
-    });
-
-    it("should include 3 labs at RCL 6", () => {
-      const anchor = { x: 25, y: 25 };
-      const plans = planner.getPlanForRCL(6, anchor);
-
-      const labPlans = plans.filter(p => p.structureType === "lab");
-      expect(labPlans.length).toBe(3);
-    });
-
-    it("should include second spawn at RCL 7", () => {
-      const anchor = { x: 25, y: 25 };
-      const plans = planner.getPlanForRCL(7, anchor);
-
-      const spawnPlans = plans.filter(p => p.structureType === "spawn");
-      expect(spawnPlans.length).toBe(2);
-    });
-
-    it("should include third spawn at RCL 8", () => {
-      const anchor = { x: 25, y: 25 };
-      const plans = planner.getPlanForRCL(8, anchor);
-
-      const spawnPlans = plans.filter(p => p.structureType === "spawn");
-      expect(spawnPlans.length).toBe(3);
-    });
-
-    it("should include 6 towers at RCL 8", () => {
-      const anchor = { x: 25, y: 25 };
-      const plans = planner.getPlanForRCL(8, anchor);
-
-      const towerPlans = plans.filter(p => p.structureType === "tower");
-      expect(towerPlans.length).toBe(6);
-    });
-
-    it("should include all RCL 8 special structures", () => {
-      const anchor = { x: 25, y: 25 };
-      const plans = planner.getPlanForRCL(8, anchor);
-
-      expect(plans.filter(p => p.structureType === "observer").length).toBe(1);
-      expect(plans.filter(p => p.structureType === "powerSpawn").length).toBe(1);
-      expect(plans.filter(p => p.structureType === "nuker").length).toBe(1);
-    });
-  });
-
   describe("Layout Statistics", () => {
-    it("should return correct stats for bunker layout at RCL 8", () => {
-      const planner = new BasePlanner("W1N1", { strategy: "bunker" });
+    it("should return correct stats at RCL 8", () => {
+      const planner = new BasePlanner("W1N1");
       const stats = planner.getLayoutStats(8);
 
-      expect(stats.strategy).toBe("bunker");
-      expect(stats.totalStructures).toBeGreaterThan(80); // Layout includes 60 extensions + spawns + towers + other structures
+      expect(stats.totalStructures).toBeGreaterThan(80);
       expect(stats.byType["spawn"]).toBe(3);
       expect(stats.byType["extension"]).toBe(60);
       expect(stats.byType["tower"]).toBe(6);
       expect(stats.boundingBox).not.toBeNull();
     });
 
-    it("should return correct stats for stamp layout at RCL 8", () => {
-      const planner = new BasePlanner("W1N1", { strategy: "stamp" });
-      const stats = planner.getLayoutStats(8);
-
-      expect(stats.strategy).toBe("stamp");
-      expect(stats.byType["spawn"]).toBe(3);
-    });
-
     it("should filter structures by RCL", () => {
-      const planner = new BasePlanner("W1N1", { strategy: "bunker" });
+      const planner = new BasePlanner("W1N1");
 
       const stats5 = planner.getLayoutStats(5);
       const stats8 = planner.getLayoutStats(8);
@@ -278,7 +191,7 @@ describe("BasePlanner", () => {
     });
 
     it("should calculate bounding box correctly", () => {
-      const planner = new BasePlanner("W1N1", { strategy: "bunker" });
+      const planner = new BasePlanner("W1N1");
       const stats = planner.getLayoutStats(8);
 
       expect(stats.boundingBox).not.toBeNull();
@@ -291,7 +204,7 @@ describe("BasePlanner", () => {
     });
 
     it("should count structures by RCL", () => {
-      const planner = new BasePlanner("W1N1", { strategy: "bunker" });
+      const planner = new BasePlanner("W1N1");
       const stats = planner.getLayoutStats(8);
 
       expect(stats.byRCL[1]).toBeGreaterThan(0);
@@ -302,7 +215,7 @@ describe("BasePlanner", () => {
 
   describe("Visualization", () => {
     it("should return 0 when visualization is disabled", () => {
-      const planner = new BasePlanner("W1N1", { strategy: "bunker", enableVisualization: false });
+      const planner = new BasePlanner("W1N1", { enableVisualization: false });
       const mockRoom = {
         visual: {
           circle: vi.fn(),
@@ -316,7 +229,7 @@ describe("BasePlanner", () => {
     });
 
     it("should visualize when enabled and anchor is set", () => {
-      const planner = new BasePlanner("W1N1", { strategy: "bunker", enableVisualization: true });
+      const planner = new BasePlanner("W1N1", { enableVisualization: true });
 
       // Set anchor manually by calling calculateAnchor first
       const terrain = createMockTerrain();
@@ -342,8 +255,85 @@ describe("BasePlanner", () => {
     });
   });
 
+  describe("Misplaced Structures Detection", () => {
+    it("should identify structures not in planned positions", () => {
+      const planner = new BasePlanner("W1N1");
+      const terrain = createMockTerrain();
+
+      const mockRoom = {
+        name: "W1N1",
+        find: vi.fn().mockImplementation((type: number) => {
+          if (type === 104) {
+            return [{ pos: { x: 25, y: 25 }, structureType: "spawn" }];
+          }
+          if (type === 107) {
+            return [
+              { pos: { x: 25, y: 25 }, structureType: "spawn" },
+              { pos: { x: 10, y: 10 }, structureType: "extension" }
+            ];
+          }
+          return [];
+        }),
+        controller: { my: true, level: 3 }
+      };
+
+      const misplaced = planner.getMisplacedStructures(mockRoom as any, terrain as any, 3, 104, 107);
+
+      expect(misplaced.length).toBe(1);
+      expect(misplaced[0].structure.structureType).toBe("extension");
+      expect(misplaced[0].structure.pos.x).toBe(10);
+      expect(misplaced[0].structure.pos.y).toBe(10);
+    });
+
+    it("should not flag correctly placed structures", () => {
+      const planner = new BasePlanner("W1N1");
+      const terrain = createMockTerrain();
+
+      const mockRoom = {
+        name: "W1N1",
+        find: vi.fn().mockImplementation((type: number) => {
+          if (type === 104) {
+            return [{ pos: { x: 25, y: 25 }, structureType: "spawn" }];
+          }
+          if (type === 107) {
+            return [{ pos: { x: 25, y: 25 }, structureType: "spawn" }];
+          }
+          return [];
+        }),
+        controller: { my: true, level: 1 }
+      };
+
+      const misplaced = planner.getMisplacedStructures(mockRoom as any, terrain as any, 1, 104, 107);
+      expect(misplaced.length).toBe(0);
+    });
+
+    it("should ignore non-managed structure types", () => {
+      const planner = new BasePlanner("W1N1");
+      const terrain = createMockTerrain();
+
+      const mockRoom = {
+        name: "W1N1",
+        find: vi.fn().mockImplementation((type: number) => {
+          if (type === 104) {
+            return [{ pos: { x: 25, y: 25 }, structureType: "spawn" }];
+          }
+          if (type === 107) {
+            return [
+              { pos: { x: 25, y: 25 }, structureType: "spawn" },
+              { pos: { x: 5, y: 5 }, structureType: "road" }
+            ];
+          }
+          return [];
+        }),
+        controller: { my: true, level: 1 }
+      };
+
+      const misplaced = planner.getMisplacedStructures(mockRoom as any, terrain as any, 1, 104, 107);
+      expect(misplaced.length).toBe(0);
+    });
+  });
+
   describe("Structure Compliance with Game Limits", () => {
-    // CONTROLLER_STRUCTURES limits from Screeps documentation
     const CONTROLLER_STRUCTURES: Record<string, Record<number, number>> = {
       spawn: { 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 2, 8: 3 },
       extension: { 1: 0, 2: 5, 3: 10, 4: 20, 5: 30, 6: 40, 7: 50, 8: 60 },
@@ -358,43 +348,30 @@ describe("BasePlanner", () => {
       nuker: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 1 }
     };
 
-    const testCompliance = (strategy: LayoutStrategy, structureType: string) => {
-      const planner = new BasePlanner("W1N1", { strategy });
+    const testCompliance = (structureType: string) => {
+      const planner = new BasePlanner("W1N1");
 
       for (let rcl = 1; rcl <= 8; rcl++) {
         const limit = CONTROLLER_STRUCTURES[structureType]?.[rcl] ?? 0;
         const anchor = { x: 25, y: 25 };
         const plans = planner.getPlanForRCL(rcl, anchor);
         const count = plans.filter(p => p.structureType === structureType).length;
-
-        // Allow structures to be planned up to limit
         expect(count).toBeLessThanOrEqual(limit);
       }
     };
 
-    describe("Bunker Layout Compliance", () => {
-      it("should not exceed spawn limits", () => testCompliance("bunker", "spawn"));
-      it("should not exceed extension limits", () => testCompliance("bunker", "extension"));
-      it("should not exceed tower limits", () => testCompliance("bunker", "tower"));
-      it("should not exceed storage limits", () => testCompliance("bunker", "storage"));
-      it("should not exceed link limits", () => testCompliance("bunker", "link"));
-      it("should not exceed terminal limits", () => testCompliance("bunker", "terminal"));
-      it("should not exceed lab limits", () => testCompliance("bunker", "lab"));
-      it("should not exceed factory limits", () => testCompliance("bunker", "factory"));
-      it("should not exceed observer limits", () => testCompliance("bunker", "observer"));
-      it("should not exceed power spawn limits", () => testCompliance("bunker", "powerSpawn"));
-      it("should not exceed nuker limits", () => testCompliance("bunker", "nuker"));
-    });
-
-    describe("Stamp Layout Compliance", () => {
-      it("should not exceed spawn limits", () => testCompliance("stamp", "spawn"));
-      it("should not exceed tower limits", () => testCompliance("stamp", "tower"));
-      it("should not exceed storage limits", () => testCompliance("stamp", "storage"));
-      it("should not exceed terminal limits", () => testCompliance("stamp", "terminal"));
-      it("should not exceed factory limits", () => testCompliance("stamp", "factory"));
-      it("should not exceed observer limits", () => testCompliance("stamp", "observer"));
-      it("should not exceed power spawn limits", () => testCompliance("stamp", "powerSpawn"));
-      it("should not exceed nuker limits", () => testCompliance("stamp", "nuker"));
+    describe("Layout Compliance", () => {
+      it("should not exceed spawn limits", () => testCompliance("spawn"));
+      it("should not exceed extension limits", () => testCompliance("extension"));
+      it("should not exceed tower limits", () => testCompliance("tower"));
+      it("should not exceed storage limits", () => testCompliance("storage"));
+      it("should not exceed link limits", () => testCompliance("link"));
+      it("should not exceed terminal limits", () => testCompliance("terminal"));
+      it("should not exceed lab limits", () => testCompliance("lab"));
+      it("should not exceed factory limits", () => testCompliance("factory"));
+      it("should not exceed observer limits", () => testCompliance("observer"));
+      it("should not exceed power spawn limits", () => testCompliance("powerSpawn"));
+      it("should not exceed nuker limits", () => testCompliance("nuker"));
     });
   });
 });
