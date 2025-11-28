@@ -24,20 +24,20 @@ describe("Regression: Memory.stats Defensive Initialization (#863)", () => {
   // Store original global state to restore after each test
   let originalGame: Game | undefined;
   let originalMemory: Memory | undefined;
-  let originalProfilerEnabled: boolean | undefined;
+  let originalProfilerEnabled: "true" | "false" | undefined;
 
   beforeEach(() => {
     // Save original global state
     originalGame = (global as unknown as { Game: Game }).Game;
     originalMemory = (global as unknown as { Memory: Memory }).Memory;
-    originalProfilerEnabled = (global as unknown as { __PROFILER_ENABLED__: boolean }).__PROFILER_ENABLED__;
+    originalProfilerEnabled = (global as unknown as { __PROFILER_ENABLED__: "true" | "false" }).__PROFILER_ENABLED__;
   });
 
   afterEach(() => {
     // Restore original global state to prevent test pollution
     (global as unknown as { Game: Game }).Game = originalGame;
     (global as unknown as { Memory: Memory }).Memory = originalMemory;
-    (global as unknown as { __PROFILER_ENABLED__: boolean }).__PROFILER_ENABLED__ = originalProfilerEnabled;
+    (global as unknown as { __PROFILER_ENABLED__: "true" | "false" }).__PROFILER_ENABLED__ = originalProfilerEnabled;
   });
 
   it("should initialize Memory.stats structure in loop function", async () => {
@@ -188,7 +188,8 @@ describe("Regression: Memory.stats Defensive Initialization (#863)", () => {
     (global as unknown as { Memory: Memory }).Memory = mockMemory;
 
     // Enable profiler to test both initializations
-    (global as unknown as { __PROFILER_ENABLED__: boolean }).__PROFILER_ENABLED__ = true;
+    // Note: __PROFILER_ENABLED__ is a string "true" or "false", not a boolean
+    (global as unknown as { __PROFILER_ENABLED__: "true" | "false" }).__PROFILER_ENABLED__ = "true";
 
     // Execute loop
     mainModule.loop();
