@@ -6,10 +6,17 @@ description: |
   - Automatic caching based on prompt content and model
   - Configurable timeout (default: 30 minutes)
   - Verbose logging for debugging
-  - MCP (Model Context Protocol) configuration support
+  - MCP (Model Context Protocol) server configuration support with environment variable substitution
   - Conditional repository checkout (skips if already present)
   - Dependency caching for npm global packages and project node_modules
   - Performance optimizations for faster workflow execution
+
+  MCP Server Integration:
+  - Supports multiple MCP servers via JSON configuration
+  - Environment variables in MCP configs (e.g., ${SCREEPS_TOKEN}) are automatically substituted
+  - Use @path syntax to reference MCP config files (e.g., '@.github/mcp/all-servers.json')
+  - Base GitHub MCP server is included by default
+  - MCP config is passed via both --mcp-config flag and COPILOT_MCP_CONFIG env var
 author: "ralph@nyphon.de"
 inputs:
   prompt-path:
@@ -28,7 +35,11 @@ inputs:
     required: false
     default: ""
   additional-mcp-config:
-    description: Optional MCP configuration JSON or @path to extend Copilot's capabilities
+    description: |
+      Optional MCP configuration JSON or @path to extend Copilot's capabilities.
+      Environment variables using ${VAR} or ${VAR:-default} syntax are automatically substituted.
+      Example file reference: '@.github/mcp/all-servers.json'
+      Example inline: '{"mcpServers": {"custom": {"command": "npx", "args": ["-y", "my-server"]}}}'
     required: false
     default: ""
   allow-all-paths:
@@ -282,17 +293,21 @@ runs:
             config_file="${ADDITIONAL_MCP_CONFIG:1}"
             if [ -f "$config_file" ]; then
               echo "📋 Merging MCP config from $config_file"
+              # Substitute environment variables in the config file before merging
+              # This allows MCP configs to use ${VAR} or ${VAR:-default} syntax
+              envsubst < "$config_file" > "$mcp_config_file.additional"
               # Use jq to merge the configurations
               jq -s '.[0].mcpServers * .[1].mcpServers | {mcpServers: .}' \
-                "$mcp_config_file" "$config_file" > "$mcp_config_file.tmp"
+                "$mcp_config_file" "$mcp_config_file.additional" > "$mcp_config_file.tmp"
               mv "$mcp_config_file.tmp" "$mcp_config_file"
+              rm -f "$mcp_config_file.additional"
             else
               echo "⚠️  MCP config file not found: $config_file"
             fi
           else
-            # It's inline JSON
+            # It's inline JSON - substitute environment variables
             echo "📋 Merging inline MCP config"
-            echo "$ADDITIONAL_MCP_CONFIG" > "$mcp_config_file.tmp"
+            echo "$ADDITIONAL_MCP_CONFIG" | envsubst > "$mcp_config_file.tmp"
             jq -s '.[0].mcpServers * .[1].mcpServers | {mcpServers: .}' \
               "$mcp_config_file" "$mcp_config_file.tmp" > "$mcp_config_file.merged"
             mv "$mcp_config_file.merged" "$mcp_config_file"
@@ -319,6 +334,7 @@ runs:
         RAW_OUTPUT_PATH: ${{ inputs.output-path }}
         EXTRA_ARGS: ${{ inputs.extra-args }}
         RESOLVED_MODEL: ${{ steps.resolve-model.outputs.model }}
+        MCP_CONFIG_FILE: ${{ steps.mcp-config.outputs.mcp-config-file }}
         COPILOT_ALLOW_ALL: "1"
         COPILOT_TELEMETRY_OPTOUT: "1"
         COPILOT_MCP_CONFIG: ${{ steps.mcp-config.outputs.mcp-config-file }}
@@ -335,8 +351,13 @@ runs:
         mkdir -p "$WORKDIR" "$(dirname "$out")"
         prompt="$(cat "$PROMPT_FILE")"
 
+        # Build the command with MCP config support
         cmd=(copilot -p "$prompt" --allow-all-tools --no-color --add-dir "$WORKDIR")
         [ -n "$RESOLVED_MODEL" ] && cmd+=(--model "$RESOLVED_MODEL")
+        # Add MCP config via command line flag for explicit configuration
+        if [ -n "$MCP_CONFIG_FILE" ] && [ -f "$MCP_CONFIG_FILE" ]; then
+          cmd+=(--mcp-config "$MCP_CONFIG_FILE")
+        fi
         if [ -n "$EXTRA_ARGS" ]; then read -r -a extra <<< "$EXTRA_ARGS"; cmd+=("${extra[@]}"); fi
 
         if [ "$VERBOSE" = "true" ]; then
@@ -345,6 +366,7 @@ runs:
           echo "   Working directory: $WORKDIR"
           echo "   Output path: $out"
           echo "   Model: ${RESOLVED_MODEL:-<default>}"
+          echo "   MCP Config: ${MCP_CONFIG_FILE:-<none>}"
         else
           echo "🚀 ${cmd[*]}" >&2
         fi
