@@ -16,7 +16,7 @@ on:
         required: false
         type: string
 permissions:
-  contents: read
+  contents: write
   issues: write
 
 concurrency:
@@ -163,6 +163,34 @@ jobs:
             exit 1
           fi
 
+      - name: Record validated deployment
+        if: >-
+          success() &&
+          steps.health-check.outputs.validation_passed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          COMMIT="${{ github.sha }}"
+          WORKFLOW_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          
+          echo "::notice::Recording validated deployment: $VERSION"
+          npx tsx packages/utilities/scripts/manage-deployment-history.ts \
+            record "$VERSION" "$COMMIT" "$WORKFLOW_URL"
+          
+          # Commit and push the updated history file
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          if git diff --quiet reports/deployments/deployment-history.json 2>/dev/null; then
+            echo "::notice::No changes to deployment history"
+          else
+            git add reports/deployments/deployment-history.json
+            git commit -m "chore: record validated deployment $VERSION [skip ci]"
+            git push origin HEAD:${{ github.ref_name }} || \
+              echo "::warning::Failed to push deployment history - may require manual update"
+          fi
+
       - name: Rollback on validation failure
         if: failure() && steps.health-check.outputs.validation_passed == 'false'
         id: rollback
@@ -177,7 +205,6 @@ jobs:
         run: |
           echo "::warning::Deployment failed validation - initiating rollback"
 
-          # Get previous successful version
           CURRENT_TAG="${{ steps.get_version.outputs.version }}"
           if [ -z "$CURRENT_TAG" ]; then
             echo "::error::Current version tag is not available"
@@ -185,10 +212,31 @@ jobs:
             exit 1
           fi
 
-          PREVIOUS_TAG=$(git describe --tags --abbrev=0 "${CURRENT_TAG}^" 2>/dev/null || echo "")
+          # Try to get rollback target from deployment history first
+          echo "::notice::Checking deployment history for validated rollback target..."
+          set +e
+          HISTORY_OUTPUT=$(npx tsx packages/utilities/scripts/manage-deployment-history.ts \
+            get-rollback-target "$CURRENT_TAG" 2>&1)
+          HISTORY_EXIT=$?
+          set -e
+
+          PREVIOUS_TAG=""
+          if [ $HISTORY_EXIT -eq 0 ]; then
+            # Extract version from output
+            PREVIOUS_TAG=$(echo "$HISTORY_OUTPUT" | grep "ROLLBACK_TARGET=" | cut -d= -f2)
+            if [ -n "$PREVIOUS_TAG" ]; then
+              echo "::notice::Found validated rollback target from history: $PREVIOUS_TAG"
+            fi
+          fi
+
+          # Fallback to git tags if history doesn't have a target
+          if [ -z "$PREVIOUS_TAG" ]; then
+            echo "::warning::No validated rollback target in history, falling back to git tags"
+            PREVIOUS_TAG=$(git describe --tags --abbrev=0 "${CURRENT_TAG}^" 2>/dev/null || echo "")
+          fi
 
           if [ -z "$PREVIOUS_TAG" ]; then
-            echo "::error::No previous tag found for rollback"
+            echo "::error::No previous version found for rollback"
             echo "rollback_success=false" >> "$GITHUB_OUTPUT"
             exit 1
           fi

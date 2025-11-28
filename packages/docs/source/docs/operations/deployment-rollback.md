@@ -1,6 +1,6 @@
 ---
 title: Deployment Rollback Runbook
-date: 2025-11-27T01:00:00.000Z
+date: 2025-11-28T00:00:00.000Z
 ---
 
 # Deployment Rollback Runbook
@@ -21,10 +21,43 @@ The deployment workflow includes automatic rollback when health checks fail. How
 When a deployment health check fails, the workflow automatically:
 
 1. **Detects failure** - CPU usage is zero or aliveness check fails
-2. **Gets previous version** - Finds the last successful release tag
-3. **Rebuilds previous code** - Checks out and builds the previous version
+2. **Finds rollback target** - Queries deployment history for last validated version
+3. **Rebuilds previous code** - Checks out and builds the rollback target
 4. **Redeploys** - Uploads the previous version to Screeps
 5. **Creates issue** - Opens a GitHub issue for investigation
+
+### Deployment History Tracking
+
+The workflow tracks validated deployments in `reports/deployments/deployment-history.json`:
+
+```json
+{
+  "lastValidated": "v0.175.4",
+  "lastValidatedCommit": "abc123",
+  "lastUpdated": "2025-11-28T00:00:00Z",
+  "history": [
+    {
+      "version": "v0.175.4",
+      "validatedAt": "2025-11-28T00:00:00Z",
+      "commitSha": "abc123",
+      "validation": {
+        "cpuUsed": 45.2,
+        "cpuBucket": 9500,
+        "creepCount": 12,
+        "roomCount": 1,
+        "spawnCount": 1
+      },
+      "workflowRunUrl": "https://github.com/..."
+    }
+  ]
+}
+```
+
+**Key benefits:**
+- Only validated deployments are recorded (failed deployments are excluded)
+- Rollback skips any versions that failed validation
+- History is independent of git tag ordering
+- Maintains last 5 validated versions for reliable rollback
 
 ### Health Check Criteria
 
@@ -37,6 +70,18 @@ The deployment is considered healthy if:
 A deployment fails validation if:
 
 - CPU usage is 0 AND aliveness check fails
+
+## Rollback Target Selection
+
+When finding a rollback target, the system:
+
+1. **Checks deployment history** - Looks for the most recent validated version (excluding current)
+2. **Falls back to git tags** - If history is empty, uses `git describe --tags` as fallback
+
+This ensures that:
+- Multiple consecutive failed deployments still rollback to the last working version
+- Failed versions are automatically skipped
+- No infinite rollback loops can occur
 
 ## Manual Rollback Procedures
 
@@ -76,7 +121,31 @@ export SCREEPS_TOKEN="your-api-token"
 yarn deploy
 ```
 
-### Option 3: Direct Screeps Console
+### Option 3: View Deployment History
+
+Check the deployment history to find a known-good version:
+
+```bash
+npx tsx packages/utilities/scripts/manage-deployment-history.ts show
+```
+
+Output:
+```
+📜 Deployment History
+
+Last Validated: v0.175.4
+Last Updated: 2025-11-28T00:00:00Z
+
+History (3 entries):
+
+  v0.175.4
+    Validated: 2025-11-28T00:00:00Z
+    Commit: abc123
+    CPU: 45.20
+    Creeps: 12
+```
+
+### Option 4: Direct Screeps Console
 
 For emergency situations, deploy code directly via Screeps console:
 
@@ -91,16 +160,18 @@ For emergency situations, deploy code directly via Screeps console:
 ```
 Deploy fails health check
 │
+├── Check deployment history for validated version
+│   ├── FOUND → Rollback to that version
+│   └── NOT FOUND → Check git tags
+│       ├── FOUND → Rollback to previous tag
+│       └── NOT FOUND → Manual intervention required
+│
 ├── Automatic rollback succeeds?
 │   ├── YES → Monitor bot, investigate issue
 │   └── NO → Manual intervention required
 │
-├── Previous version available?
-│   ├── YES → Use Option 1 (re-run deployment)
-│   └── NO → Use Option 3 (direct console)
-│
 └── Is this an emergency?
-    ├── YES → Use Option 3 for fastest recovery
+    ├── YES → Use Option 4 for fastest recovery
     └── NO → Use Option 1 or 2 for proper tracking
 ```
 
@@ -175,4 +246,4 @@ For critical issues affecting production:
 
 ---
 
-_Last updated: 2025-11-27_
+_Last updated: 2025-11-28_

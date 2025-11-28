@@ -5,6 +5,21 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Added
+
+- **Deployment**: Version history tracking for reliable rollback
+  - Added `reports/deployments/deployment-history.json` to track validated deployments
+  - Created `manage-deployment-history.ts` script for recording and querying validated versions
+  - Created `types/deployment-history.ts` with type definitions for deployment history
+  - Workflow now records validated deployments after successful health checks
+  - Rollback now uses deployment history to find last validated version (not just git tags)
+  - History maintains last 5 validated deployments with validation metrics
+  - Falls back to git tags if history is empty (backwards compatible)
+  - Prevents infinite rollback loops by only recording successful deployments
+  - Added unit tests and regression tests for deployment history tracking
+  - Updated deployment rollback documentation with new rollback process
+  - Resolves issue ralphschuler/.screeps-gpt#1496 (rollback lacks version history tracking)
+
 ## [0.176.0] - 2025-11-28
 
 ### Added
