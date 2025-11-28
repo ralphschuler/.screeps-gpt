@@ -81,7 +81,8 @@ declare global {
   let Profiler: import("./types.js").Profiler | undefined;
 
   // Declare the build-time constant
-  const __PROFILER_ENABLED__: boolean;
+  // Note: The value is a string "true" or "false", not a boolean
+  const __PROFILER_ENABLED__: "true" | "false";
 }
 
 export {};

@@ -52,7 +52,7 @@ export function validateProfilerEnabled(): boolean {
  * - __PLAYER_USERNAME__: "ralphschuler" (default player username)
  */
 const RUNTIME_DEFINES = {
-  __PROFILER_ENABLED__: validateProfilerEnabled() ? "true" : "false",
+  __PROFILER_ENABLED__: JSON.stringify(validateProfilerEnabled() ? "true" : "false"),
   __ROOM_VISUALS_ENABLED__: JSON.stringify(process.env.ROOM_VISUALS_ENABLED ?? "false"),
   __PLAYER_USERNAME__: JSON.stringify(process.env.PLAYER_USERNAME ?? "ralphschuler"),
   // Map globalThis to global for Screeps runtime compatibility (ES2020 -> ES5)
