@@ -38,6 +38,21 @@ import "@runtime/processes";
  */
 let profilerInitialized = false;
 
+/**
+ * Maximum number of profiler entries to retain in Memory.profiler.data.
+ * Older entries (by cumulative CPU time) are pruned when this limit is exceeded.
+ * This prevents unbounded memory growth during long-running profiler sessions.
+ * @see https://github.com/ralphschuler/.screeps-gpt/issues/1490
+ */
+const MAX_PROFILER_ENTRIES = 500;
+
+/**
+ * Interval (in ticks) between profiler retention policy enforcement.
+ * Running every tick would add unnecessary CPU overhead; running every 100 ticks
+ * provides a good balance between memory control and performance.
+ */
+const PROFILER_RETENTION_INTERVAL = 100;
+
 // Create kernel instance using screeps-kernel
 const kernel = new Kernel({
   logger: console,
@@ -139,6 +154,55 @@ function ensureProfilerRunning(): void {
 }
 
 /**
+ * Applies retention policy to profiler data to prevent unbounded memory growth.
+ * When the number of profiled functions exceeds MAX_PROFILER_ENTRIES, the least
+ * significant entries (lowest total CPU time) are pruned.
+ *
+ * This function is called periodically (every PROFILER_RETENTION_INTERVAL ticks)
+ * to minimize CPU overhead while still preventing memory bloat.
+ *
+ * @see https://github.com/ralphschuler/.screeps-gpt/issues/1490
+ */
+function applyProfilerRetentionPolicy(): void {
+  if (!__PROFILER_ENABLED__) {
+    return;
+  }
+
+  // Only run retention policy periodically to minimize overhead
+  if (Game.time % PROFILER_RETENTION_INTERVAL !== 0) {
+    return;
+  }
+
+  // Skip if profiler memory doesn't exist or has no data
+  if (!Memory.profiler?.data) {
+    return;
+  }
+
+  const entries = Object.entries(Memory.profiler.data);
+  const entryCount = entries.length;
+
+  // Only apply retention if we exceed the limit
+  if (entryCount <= MAX_PROFILER_ENTRIES) {
+    return;
+  }
+
+  // Sort by total CPU time (descending) to keep the most significant entries
+  entries.sort((a, b) => b[1].time - a[1].time);
+
+  // Keep top MAX_PROFILER_ENTRIES entries
+  const entriesToKeep = entries.slice(0, MAX_PROFILER_ENTRIES);
+  const prunedCount = entryCount - MAX_PROFILER_ENTRIES;
+
+  // Rebuild data object with only the retained entries
+  Memory.profiler.data = Object.fromEntries(entriesToKeep);
+
+  logger.info(
+    `Profiler retention: pruned ${prunedCount} entries, kept ${MAX_PROFILER_ENTRIES} (tick: ${Game.time})`,
+    { component: "Profiler" }
+  );
+}
+
+/**
  * Main game loop executed by the Screeps runtime every tick.
  *
  * This function is the entry point for all bot logic. It performs:
@@ -172,6 +236,10 @@ export const loop = (): void => {
     // Ensure profiler is running on every tick
     // This handles Memory resets and ensures continuous data collection
     ensureProfilerRunning();
+
+    // Apply profiler retention policy periodically to prevent memory bloat
+    // Runs every PROFILER_RETENTION_INTERVAL ticks to minimize CPU overhead
+    applyProfilerRetentionPolicy();
 
     // Defensive initialization: ensure Memory.stats exists BEFORE kernel runs
     // This prevents TypeError crashes when external console automation (screeps-mcp probes,
