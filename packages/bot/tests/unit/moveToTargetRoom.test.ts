@@ -49,7 +49,7 @@ describe("moveToTargetRoom", () => {
   });
 
   describe("when not at room edge", () => {
-    it("should find exit and move to exit position", () => {
+    it("should find exit and move to exit position with ignoreCreeps", () => {
       const exitPositions = [
         { x: 49, y: 25, roomName: "W1N1" },
         { x: 49, y: 26, roomName: "W1N1" }
@@ -64,12 +64,14 @@ describe("moveToTargetRoom", () => {
       expect(result).toBe(true);
       expect(mockRoom.findExitTo).toHaveBeenCalledWith("W2N1");
       expect(mockRoom.find).toHaveBeenCalledWith(EXIT_RIGHT);
-      expect(mockCreep.moveTo).toHaveBeenCalledWith(exitPositions[0], { reusePath: 50 });
+      // Should use ignoreCreeps for better routing through narrow passages
+      expect(mockCreep.pos.findClosestByPath).toHaveBeenCalledWith(exitPositions, { ignoreCreeps: true });
+      expect(mockCreep.moveTo).toHaveBeenCalledWith(exitPositions[0], { reusePath: 50, ignoreCreeps: true });
     });
   });
 
   describe("when at room edge (x=0)", () => {
-    it("should move directly to target room center with fresh pathfinding", () => {
+    it("should move directly to target room center with fresh pathfinding and ignoreCreeps", () => {
       mockCreep.pos.x = 0;
       mockCreep.pos.y = 25;
 
@@ -82,7 +84,7 @@ describe("moveToTargetRoom", () => {
           y: ROOM_CENTER_Y,
           roomName: "W0N1"
         }),
-        { reusePath: 0 } // Force fresh pathfinding at room edges to prevent cycling
+        { reusePath: 0, ignoreCreeps: true } // Force fresh pathfinding at room edges to prevent cycling
       );
       // Should not call findExitTo when at edge
       expect(mockRoom.findExitTo).not.toHaveBeenCalled();
@@ -90,7 +92,7 @@ describe("moveToTargetRoom", () => {
   });
 
   describe("when at room edge (x=49)", () => {
-    it("should move directly to target room center with fresh pathfinding", () => {
+    it("should move directly to target room center with fresh pathfinding and ignoreCreeps", () => {
       mockCreep.pos.x = 49;
       mockCreep.pos.y = 25;
 
@@ -103,14 +105,14 @@ describe("moveToTargetRoom", () => {
           y: ROOM_CENTER_Y,
           roomName: "W2N1"
         }),
-        { reusePath: 0 } // Force fresh pathfinding at room edges to prevent cycling
+        { reusePath: 0, ignoreCreeps: true } // Force fresh pathfinding at room edges to prevent cycling
       );
       expect(mockRoom.findExitTo).not.toHaveBeenCalled();
     });
   });
 
   describe("when at room edge (y=0)", () => {
-    it("should move directly to target room center with fresh pathfinding", () => {
+    it("should move directly to target room center with fresh pathfinding and ignoreCreeps", () => {
       mockCreep.pos.x = 25;
       mockCreep.pos.y = 0;
 
@@ -123,14 +125,14 @@ describe("moveToTargetRoom", () => {
           y: ROOM_CENTER_Y,
           roomName: "W1N2"
         }),
-        { reusePath: 0 } // Force fresh pathfinding at room edges to prevent cycling
+        { reusePath: 0, ignoreCreeps: true } // Force fresh pathfinding at room edges to prevent cycling
       );
       expect(mockRoom.findExitTo).not.toHaveBeenCalled();
     });
   });
 
   describe("when at room edge (y=49)", () => {
-    it("should move directly to target room center with fresh pathfinding", () => {
+    it("should move directly to target room center with fresh pathfinding and ignoreCreeps", () => {
       mockCreep.pos.x = 25;
       mockCreep.pos.y = 49;
 
@@ -143,14 +145,14 @@ describe("moveToTargetRoom", () => {
           y: ROOM_CENTER_Y,
           roomName: "W1N0"
         }),
-        { reusePath: 0 } // Force fresh pathfinding at room edges to prevent cycling
+        { reusePath: 0, ignoreCreeps: true } // Force fresh pathfinding at room edges to prevent cycling
       );
       expect(mockRoom.findExitTo).not.toHaveBeenCalled();
     });
   });
 
   describe("when at corner (x=0, y=0)", () => {
-    it("should move directly to target room center with fresh pathfinding", () => {
+    it("should move directly to target room center with fresh pathfinding and ignoreCreeps", () => {
       mockCreep.pos.x = 0;
       mockCreep.pos.y = 0;
 
@@ -163,9 +165,29 @@ describe("moveToTargetRoom", () => {
           y: ROOM_CENTER_Y,
           roomName: "W0N2"
         }),
-        { reusePath: 0 } // Force fresh pathfinding at room edges to prevent cycling
+        { reusePath: 0, ignoreCreeps: true } // Force fresh pathfinding at room edges to prevent cycling
       );
       expect(mockRoom.findExitTo).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("when in target room but at edge", () => {
+    it("should move to room center with ignoreCreeps to prevent oscillation", () => {
+      mockCreep.pos.x = 0;
+      mockCreep.pos.y = 25;
+      mockRoom.name = "W1N1";
+
+      const result = moveToTargetRoom(mockCreep, "W1N1", 50);
+
+      expect(result).toBe(true);
+      expect(mockCreep.moveTo).toHaveBeenCalledWith(
+        expect.objectContaining({
+          x: ROOM_CENTER_X,
+          y: ROOM_CENTER_Y,
+          roomName: "W1N1"
+        }),
+        { reusePath: 0, ignoreCreeps: true }
+      );
     });
   });
 
@@ -191,7 +213,7 @@ describe("moveToTargetRoom", () => {
   });
 
   describe("when pathfinding fails", () => {
-    it("should use first exit position as fallback", () => {
+    it("should use first exit position as fallback with ignoreCreeps", () => {
       const exitPositions = [
         { x: 49, y: 25, roomName: "W1N1" },
         { x: 49, y: 26, roomName: "W1N1" }
@@ -204,7 +226,7 @@ describe("moveToTargetRoom", () => {
       const result = moveToTargetRoom(mockCreep, "W2N1", 50);
 
       expect(result).toBe(true);
-      expect(mockCreep.moveTo).toHaveBeenCalledWith(exitPositions[0], { reusePath: 50 });
+      expect(mockCreep.moveTo).toHaveBeenCalledWith(exitPositions[0], { reusePath: 50, ignoreCreeps: true });
     });
   });
 });

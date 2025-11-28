@@ -95,10 +95,12 @@ export class BuilderController extends BaseRoleController<BuilderMemory> {
 
       if (spawnsNeedingEnergy.length > 0) {
         comm?.say(creep, "🚨spawn");
-        const spawn = creep.pos.findClosestByPath(spawnsNeedingEnergy) ?? spawnsNeedingEnergy[0];
+        // Use ignoreCreeps for better routing through narrow passages
+        const spawn = creep.pos.findClosestByPath(spawnsNeedingEnergy, { ignoreCreeps: true }) ?? spawnsNeedingEnergy[0];
         const result = creep.transfer(spawn, RESOURCE_ENERGY);
         if (result === ERR_NOT_IN_RANGE) {
-          creep.moveTo(spawn, { range: 1, reusePath: 10, visualizePathStyle: { stroke: "#ff0000" } });
+          // Use ignoreCreeps for better routing through narrow passages
+          creep.moveTo(spawn, { range: 1, reusePath: 10, visualizePathStyle: { stroke: "#ff0000" }, ignoreCreeps: true });
         }
         // Check if empty after transfer
         if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
@@ -134,11 +136,13 @@ export class BuilderController extends BaseRoleController<BuilderMemory> {
             filter: isValidEnergySource
           });
 
-      const target = energySources.length > 0 ? (creep.pos.findClosestByPath(energySources) ?? energySources[0]) : null;
+      // Use ignoreCreeps for better routing through narrow passages
+      const target = energySources.length > 0 ? (creep.pos.findClosestByPath(energySources, { ignoreCreeps: true }) ?? energySources[0]) : null;
       if (target) {
         const result = creep.withdraw(target, RESOURCE_ENERGY);
         if (result === ERR_NOT_IN_RANGE) {
-          creep.moveTo(target, { range: 1, reusePath: 30 });
+          // Use ignoreCreeps for better routing through narrow passages
+          creep.moveTo(target, { range: 1, reusePath: 30, ignoreCreeps: true });
         }
         // Check if full after withdrawal
         if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
@@ -152,11 +156,13 @@ export class BuilderController extends BaseRoleController<BuilderMemory> {
 
       // Priority 3: Harvest from sources directly if no other options
       const sources = creep.room.find(FIND_SOURCES_ACTIVE) as Source[];
-      const source = sources.length > 0 ? (creep.pos.findClosestByPath(sources) ?? sources[0]) : null;
+      // Use ignoreCreeps for better routing through narrow passages
+      const source = sources.length > 0 ? (creep.pos.findClosestByPath(sources, { ignoreCreeps: true }) ?? sources[0]) : null;
       if (source) {
         const harvestResult = creep.harvest(source);
         if (harvestResult === ERR_NOT_IN_RANGE) {
-          creep.moveTo(source, { range: 1, reusePath: 30 });
+          // Use ignoreCreeps for better routing through narrow passages
+          creep.moveTo(source, { range: 1, reusePath: 30, ignoreCreeps: true });
         }
         // Check if full after harvest
         if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
@@ -185,7 +191,8 @@ export class BuilderController extends BaseRoleController<BuilderMemory> {
       for (const structureType of constructionPriorities) {
         const prioritySites = sites.filter(s => s.structureType === structureType);
         if (prioritySites.length > 0) {
-          site = creep.pos.findClosestByPath(prioritySites) ?? prioritySites[0];
+          // Use ignoreCreeps for better routing through narrow passages
+          site = creep.pos.findClosestByPath(prioritySites, { ignoreCreeps: true }) ?? prioritySites[0];
           break;
         }
       }
@@ -194,7 +201,8 @@ export class BuilderController extends BaseRoleController<BuilderMemory> {
         machine.send({ type: "START_BUILD", targetId: site.id });
         const result = creep.build(site);
         if (result === ERR_NOT_IN_RANGE) {
-          creep.moveTo(site, { range: 3, reusePath: 30 });
+          // Use ignoreCreeps for better routing through narrow passages
+          creep.moveTo(site, { range: 3, reusePath: 30, ignoreCreeps: true });
         }
         // Check if empty after building
         if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
@@ -227,12 +235,14 @@ export class BuilderController extends BaseRoleController<BuilderMemory> {
         }
       }) as Structure[];
 
-      const target = repairTargets.length > 0 ? (creep.pos.findClosestByPath(repairTargets) ?? repairTargets[0]) : null;
+      // Use ignoreCreeps for better routing through narrow passages
+      const target = repairTargets.length > 0 ? (creep.pos.findClosestByPath(repairTargets, { ignoreCreeps: true }) ?? repairTargets[0]) : null;
       if (target) {
         machine.send({ type: "START_MAINTAIN", targetId: target.id });
         const result = creep.repair(target);
         if (result === ERR_NOT_IN_RANGE) {
-          creep.moveTo(target, { range: 3, reusePath: 30 });
+          // Use ignoreCreeps for better routing through narrow passages
+          creep.moveTo(target, { range: 3, reusePath: 30, ignoreCreeps: true });
         }
         // Check if empty after repair
         if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
@@ -244,7 +254,8 @@ export class BuilderController extends BaseRoleController<BuilderMemory> {
         if (controller) {
           const upgrade = creep.upgradeController(controller);
           if (upgrade === ERR_NOT_IN_RANGE) {
-            creep.moveTo(controller, { range: 3, reusePath: 30 });
+            // Use ignoreCreeps for better routing through narrow passages
+            creep.moveTo(controller, { range: 3, reusePath: 30, ignoreCreeps: true });
           }
           // Check if empty after upgrade
           if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
