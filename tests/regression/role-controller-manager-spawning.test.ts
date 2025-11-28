@@ -330,7 +330,7 @@ describe("Regression: RoleControllerManager Spawning", () => {
 
   /**
    * Regression test for Issue: RoleControllerManager spawn prioritization may starve critical roles during energy scarcity
-   * 
+   *
    * Tests the scenario where:
    * 1. Room has energy (enough for 1 creep)
    * 2. Last harvester dies but other creeps exist
@@ -400,7 +400,7 @@ describe("Regression: RoleControllerManager Spawning", () => {
       expect(summary.spawnedCreeps.length).toBeGreaterThan(0);
       expect(summary.spawnedCreeps[0]).toContain("harvester");
       expect(mockSpawn.spawnCreep).toHaveBeenCalled();
-      
+
       // Verify the spawned creep is a harvester
       const spawnCall = mockSpawn.spawnCreep.mock.calls[0];
       const creepMemory = spawnCall[2]?.memory as CreepMemory | undefined;
@@ -446,7 +446,7 @@ describe("Regression: RoleControllerManager Spawning", () => {
       const memory = { creepCounter: 1 } as Memory;
       const roleCounts: Record<string, number> = {
         harvester: 0, // CRITICAL: No harvesters
-        upgrader: 1  // Upgrader exists but shouldn't spawn more
+        upgrader: 1 // Upgrader exists but shouldn't spawn more
       };
 
       // Execute spawning
@@ -455,7 +455,7 @@ describe("Regression: RoleControllerManager Spawning", () => {
       // Verify ONLY harvester was spawned, no upgraders
       expect(summary.spawnedCreeps.length).toBe(1);
       expect(summary.spawnedCreeps[0]).toContain("harvester");
-      
+
       // Verify spawnCreep was called exactly once (for harvester only)
       expect(lowEnergySpawn.spawnCreep).toHaveBeenCalledTimes(1);
     });
@@ -505,7 +505,7 @@ describe("Regression: RoleControllerManager Spawning", () => {
 
       expect(summary.spawnedCreeps.length).toBe(1);
       expect(summary.spawnedCreeps[0]).toContain("harvester");
-      
+
       // Verify minimal body was used [WORK, CARRY, MOVE] = 200 energy
       const spawnCall = minimalEnergySpawn.spawnCreep.mock.calls[0];
       const body = spawnCall[0] as BodyPartConstant[];
