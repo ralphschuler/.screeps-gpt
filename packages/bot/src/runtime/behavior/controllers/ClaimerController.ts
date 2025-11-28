@@ -33,6 +33,8 @@ export class ClaimerController extends BaseRoleController<ClaimerMemory> {
   public constructor() {
     const config: RoleConfig<ClaimerMemory> = {
       minimum: 0,
+      maximum: 2,
+      scalingFactor: 1,
       body: [CLAIM, MOVE],
       version: 1,
       createMemory: () => ({

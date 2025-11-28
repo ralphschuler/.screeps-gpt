@@ -38,6 +38,8 @@ export class RemoteBuilderController extends BaseRoleController<RemoteBuilderMem
   public constructor() {
     const config: RoleConfig<RemoteBuilderMemory> = {
       minimum: 0,
+      maximum: 8,
+      scalingFactor: 2,
       body: [WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE],
       version: 1,
       createMemory: () => ({

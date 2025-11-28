@@ -34,6 +34,8 @@ export class HaulerController extends BaseRoleController<HaulerMemory> {
   public constructor() {
     const config: RoleConfig<HaulerMemory> = {
       minimum: 0,
+      maximum: 4,
+      scalingFactor: 4,
       body: [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE],
       version: 1,
       createMemory: () => ({

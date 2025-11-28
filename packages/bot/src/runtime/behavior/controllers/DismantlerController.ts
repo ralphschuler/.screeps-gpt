@@ -54,6 +54,8 @@ export class DismantlerController extends BaseRoleController<DismantlerMemory> {
   public constructor() {
     const config: RoleConfig<DismantlerMemory> = {
       minimum: 0,
+      maximum: 4,
+      scalingFactor: 1,
       body: [WORK, WORK, CARRY, MOVE, MOVE, MOVE],
       version: 2, // Version bump for new mode support
       createMemory: () => ({

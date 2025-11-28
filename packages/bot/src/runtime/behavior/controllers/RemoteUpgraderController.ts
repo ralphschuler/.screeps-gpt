@@ -40,6 +40,8 @@ export class RemoteUpgraderController extends BaseRoleController<RemoteUpgraderM
   public constructor() {
     const config: RoleConfig<RemoteUpgraderMemory> = {
       minimum: 0,
+      maximum: 8,
+      scalingFactor: 2,
       body: [WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE],
       version: 1,
       createMemory: () => ({

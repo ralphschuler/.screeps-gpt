@@ -43,6 +43,8 @@ export class HarvesterController extends BaseRoleController<HarvesterMemory> {
   public constructor() {
     const config: RoleConfig<HarvesterMemory> = {
       minimum: 4,
+      maximum: 6,
+      scalingFactor: 4,
       body: [WORK, CARRY, MOVE],
       version: 1,
       createMemory: () => ({

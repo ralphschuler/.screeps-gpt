@@ -38,6 +38,8 @@ export class RepairerController extends BaseRoleController<RepairerMemory> {
   public constructor() {
     const config: RoleConfig<RepairerMemory> = {
       minimum: 0,
+      maximum: 3,
+      scalingFactor: 4,
       body: [WORK, WORK, CARRY, MOVE, MOVE],
       version: 1,
       createMemory: () => ({

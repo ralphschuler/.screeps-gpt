@@ -36,6 +36,8 @@ export class RemoteHaulerController extends BaseRoleController<RemoteHaulerMemor
   public constructor() {
     const config: RoleConfig<RemoteHaulerMemory> = {
       minimum: 0,
+      maximum: 8,
+      scalingFactor: 2,
       body: [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE],
       version: 1,
       createMemory: () => ({

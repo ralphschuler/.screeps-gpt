@@ -32,6 +32,8 @@ export class ScoutController extends BaseRoleController<ScoutMemory> {
   public constructor() {
     const config: RoleConfig<ScoutMemory> = {
       minimum: 0,
+      maximum: 2,
+      scalingFactor: 1,
       body: [MOVE],
       version: 1,
       createMemory: () => ({
