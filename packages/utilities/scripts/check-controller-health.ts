@@ -154,6 +154,13 @@ export function analyzeControllerHealth(snapshot: BotSnapshot): ControllerHealth
   // Analyze each room
   if (snapshot.rooms) {
     for (const [roomName, roomData] of Object.entries(snapshot.rooms)) {
+      // Skip metadata entries like "count" that are not actual room data
+      // Valid Screeps room names follow the pattern: [E|W][0-9]+[N|S][0-9]+
+      // Examples: E54N39, W1N1, E0S0
+      if (!/^[EW]\d+[NS]\d+$/.test(roomName)) {
+        continue;
+      }
+
       const rcl = roomData.rcl;
 
       // Skip RCL 0 or 1 (no downgrade risk at RCL 1)

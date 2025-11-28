@@ -355,5 +355,71 @@ describe("Controller Health Check", () => {
       expect(report.rooms[0].ticksToDowngrade).toBeGreaterThan(0);
       expect(report.rooms[0].ticksToDowngrade).toBeLessThanOrEqual(MAX_DOWNGRADE_TIMER[2]);
     });
+
+    it("should skip metadata entries like 'count' in rooms object (regression test for wrong room bug)", () => {
+      // This test verifies the fix for issue where proactive controller monitoring
+      // was reporting about the wrong room. The bug occurred because the stats data
+      // includes a "count" field as metadata in the rooms object, which was being
+      // processed as if it were an actual room name.
+      const snapshotWithCountMetadata = {
+        timestamp: "2025-11-27T12:00:00.000Z",
+        rooms: {
+          count: {
+            // This is metadata, not an actual room
+            rcl: 0,
+            energy: 0,
+            energyCapacity: 0
+          },
+          E54N39: {
+            // This is an actual room
+            rcl: 2,
+            energy: 300,
+            energyCapacity: 300,
+            ticksToDowngrade: 9000,
+            controllerProgress: 38708,
+            controllerProgressTotal: 45000
+          }
+        }
+      } as unknown as BotSnapshot;
+
+      const report = analyzeControllerHealth(snapshotWithCountMetadata);
+
+      // Should only analyze the actual room E54N39, not the "count" metadata
+      expect(report.totalRooms).toBe(1);
+      expect(report.rooms).toHaveLength(1);
+      expect(report.rooms[0].roomName).toBe("E54N39");
+
+      // The "count" entry should NOT appear in the report
+      const countRoom = report.rooms.find(r => r.roomName === "count");
+      expect(countRoom).toBeUndefined();
+    });
+
+    it("should validate room names follow Screeps naming convention", () => {
+      // Valid Screeps room names: [E|W][0-9]+[N|S][0-9]+
+      const snapshotWithInvalidNames = {
+        timestamp: "2025-11-27T12:00:00.000Z",
+        rooms: {
+          invalid: { rcl: 2, energy: 300, energyCapacity: 300, ticksToDowngrade: 9000 },
+          "not-a-room": { rcl: 3, energy: 300, energyCapacity: 300, ticksToDowngrade: 9000 },
+          count: { rcl: 0, energy: 0, energyCapacity: 0 },
+          W1N1: { rcl: 2, energy: 300, energyCapacity: 300, ticksToDowngrade: 9000 },
+          E54N39: { rcl: 3, energy: 800, energyCapacity: 800, ticksToDowngrade: 50000 },
+          W0S0: { rcl: 2, energy: 300, energyCapacity: 300, ticksToDowngrade: 9000 },
+          E99S99: { rcl: 2, energy: 300, energyCapacity: 300, ticksToDowngrade: 9000 }
+        }
+      } as unknown as BotSnapshot;
+
+      const report = analyzeControllerHealth(snapshotWithInvalidNames);
+
+      // Should only process valid room names
+      expect(report.totalRooms).toBe(4); // W1N1, E54N39, W0S0, E99S99
+      const roomNames = report.rooms.map(r => r.roomName).sort();
+      expect(roomNames).toEqual(["E54N39", "E99S99", "W0S0", "W1N1"]);
+
+      // Invalid names should not appear
+      expect(report.rooms.find(r => r.roomName === "invalid")).toBeUndefined();
+      expect(report.rooms.find(r => r.roomName === "not-a-room")).toBeUndefined();
+      expect(report.rooms.find(r => r.roomName === "count")).toBeUndefined();
+    });
   });
 });
