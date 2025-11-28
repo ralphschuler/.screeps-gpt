@@ -622,9 +622,10 @@ export class RoleControllerManager {
       let targetMinimum = bootstrapMinimums[role] ?? config.minimum;
 
       // Task-based demand calculation: scale workforce based on pending tasks
-      // Get pending task count for this role from task queue
-      const taskQueue = memory.taskQueue as { [role: string]: unknown[] } | undefined;
-      const pendingTasks = taskQueue?.[role]?.length ?? 0;
+      // Get pending task count for this role from task queue with type validation
+      const taskQueue = memory.taskQueue as Record<string, unknown> | undefined;
+      const roleTaskQueue = taskQueue?.[role];
+      const pendingTasks = Array.isArray(roleTaskQueue) ? roleTaskQueue.length : 0;
       if (pendingTasks > 0 && scalingFactor > 0) {
         const demandBasedTarget = Math.ceil(pendingTasks / scalingFactor);
         targetMinimum = Math.max(targetMinimum, Math.min(demandBasedTarget, roleMaximum));
@@ -634,7 +635,8 @@ export class RoleControllerManager {
       if (role === "claimer" && needsClaimers) {
         // Use pre-calculated claimer count to avoid iterating through all creeps again
         // Spawn one claimer per pending expansion (up to current pending count)
-        targetMinimum = Math.max(targetMinimum, pendingExpansions.length - claimersOnExpansionCount);
+        const neededClaimers = pendingExpansions.length - claimersOnExpansionCount;
+        targetMinimum = Math.max(targetMinimum, Math.min(neededClaimers, roleMaximum));
       }
 
       // Dynamically increase remote upgrader minimum when rooms need workforce integration
@@ -645,7 +647,7 @@ export class RoleControllerManager {
           const assigned = assignedRemoteUpgraders.get(integrationRoom.roomName) ?? 0;
           neededUpgraders += Math.max(0, UPGRADERS_PER_INTEGRATION_ROOM - assigned);
         }
-        targetMinimum = Math.max(targetMinimum, neededUpgraders);
+        targetMinimum = Math.max(targetMinimum, Math.min(neededUpgraders, roleMaximum));
       }
 
       // Dynamically increase remote builder minimum when rooms need workforce integration
@@ -656,7 +658,7 @@ export class RoleControllerManager {
           const assigned = assignedRemoteBuilders.get(integrationRoom.roomName) ?? 0;
           neededBuilders += Math.max(0, BUILDERS_PER_INTEGRATION_ROOM - assigned);
         }
-        targetMinimum = Math.max(targetMinimum, neededBuilders);
+        targetMinimum = Math.max(targetMinimum, Math.min(neededBuilders, roleMaximum));
       }
 
       // Dynamically increase attacker minimum when attack flags are pending
@@ -667,7 +669,7 @@ export class RoleControllerManager {
           const assigned = assignedAttackersByTarget.get(attackRequest.targetRoom) ?? 0;
           neededAttackers += Math.max(0, ATTACKERS_PER_ATTACK_FLAG - assigned);
         }
-        targetMinimum = Math.max(targetMinimum, neededAttackers);
+        targetMinimum = Math.max(targetMinimum, Math.min(neededAttackers, roleMaximum));
       }
 
       // Dynamically reduce upgrader minimum during combat to focus on defense
@@ -685,13 +687,16 @@ export class RoleControllerManager {
         }
       }
 
-      // Increase attacker/healer/repairer minimums during combat
+      // Increase attacker/healer/repairer minimums during combat (capped at roleMaximum)
       if ((role === "attacker" || role === "healer") && isUnderCombat) {
-        targetMinimum = Math.max(config.minimum, COMBAT_MIN_ATTACKERS_HEALERS);
+        targetMinimum = Math.min(Math.max(config.minimum, COMBAT_MIN_ATTACKERS_HEALERS), roleMaximum);
       }
       if (role === "repairer" && isUnderCombat) {
-        targetMinimum = Math.max(config.minimum, COMBAT_MIN_REPAIRERS);
+        targetMinimum = Math.min(Math.max(config.minimum, COMBAT_MIN_REPAIRERS), roleMaximum);
       }
+
+      // Final safety check: ensure targetMinimum never exceeds roleMaximum
+      targetMinimum = Math.min(targetMinimum, roleMaximum);
 
       // Enforce maximum constraint: never exceed role maximum
       if (current >= roleMaximum) {
