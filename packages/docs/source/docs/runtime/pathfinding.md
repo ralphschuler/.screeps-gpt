@@ -16,8 +16,8 @@ The pathfinding system enables intelligent traffic coordination:
 
 Movement priorities determine which creeps have precedence in traffic situations:
 
-| Priority | Level | Roles | Description |
-|----------|-------|-------|-------------|
+| Priority | Constant | Roles | Description |
+|----------|----------|-------|-------------|
 | 6 | STATIONARY_HARVESTER | Stationary Harvesters | Highest - fixed source positions |
 | 5 | HARVESTER | Harvesters | Critical for energy collection |
 | 4 | HAULER | Haulers | Logistics backbone |
@@ -169,7 +169,7 @@ priorityMoveTo(creep, target, { priority: MOVEMENT_PRIORITY.HARVESTER });
 
 ## Related Documentation
 
-- [Role Controllers](./architecture/state-machines.md) - State machine behavior for roles
+- [Role Controllers](./architecture/behavior-state-machines.md) - State machine behavior for roles
 - [Defense System](./defense.md) - Combat role priorities
 - [Energy Economy](./energy-economy.md) - Harvester and hauler logistics
 
