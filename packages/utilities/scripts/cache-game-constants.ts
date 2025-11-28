@@ -27,7 +27,6 @@ import { resolve, join } from "node:path";
  * as game balance changes may update these values.
  */
 const SCREEPS_CONSTANTS = {
-  // Last updated: 2025-11-28
   lastUpdated: new Date().toISOString(),
   source: "Screeps Official Documentation / Wiki",
 
@@ -167,6 +166,10 @@ const SCREEPS_CONSTANTS = {
 
   /**
    * Extension capacity by RCL
+   * Note: All extensions at the same RCL have the same capacity.
+   * RCL 1-6: 50 energy
+   * RCL 7: 100 energy
+   * RCL 8: 200 energy
    */
   EXTENSION_ENERGY_CAPACITY: {
     1: 50,
