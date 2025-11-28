@@ -16,7 +16,8 @@ description: |
   - Environment variables in MCP configs (e.g., ${SCREEPS_TOKEN}) are automatically substituted
   - Use @path syntax to reference MCP config files (e.g., '@.github/mcp/all-servers.json')
   - Base GitHub MCP server is included by default
-  - MCP config is passed via both --mcp-config flag and COPILOT_MCP_CONFIG env var
+  - MCP config is passed via --mcp-config flag (takes precedence) and COPILOT_MCP_CONFIG env var
+  - If MCP config file is not found, action continues with base GitHub MCP server (warning logged)
 author: "ralph@nyphon.de"
 inputs:
   prompt-path:
@@ -295,6 +296,7 @@ runs:
               echo "📋 Merging MCP config from $config_file"
               # Substitute environment variables in the config file before merging
               # This allows MCP configs to use ${VAR} or ${VAR:-default} syntax
+              # Note: Only variables explicitly set in the workflow environment are substituted
               envsubst < "$config_file" > "$mcp_config_file.additional"
               # Use jq to merge the configurations
               jq -s '.[0].mcpServers * .[1].mcpServers | {mcpServers: .}' \
@@ -302,7 +304,7 @@ runs:
               mv "$mcp_config_file.tmp" "$mcp_config_file"
               rm -f "$mcp_config_file.additional"
             else
-              echo "⚠️  MCP config file not found: $config_file"
+              echo "::warning::MCP config file not found: $config_file - continuing with base GitHub MCP server only"
             fi
           else
             # It's inline JSON - substitute environment variables
