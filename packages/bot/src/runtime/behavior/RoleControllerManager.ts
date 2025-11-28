@@ -413,6 +413,55 @@ export class RoleControllerManager {
       }
     }
 
+    // CRITICAL: Harvester priority check - prevents energy starvation deadlock
+    // When no harvesters exist but other creeps do, force harvester spawn before any other role
+    // This prevents scenarios where non-harvester spawns drain energy, stopping energy income
+    if (harvesterCount === 0 && totalCreeps > 0) {
+      this.logger.log?.(`[CRITICAL] No harvesters alive - forcing harvester priority spawn`);
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const spawn = this.findAvailableSpawn(game.spawns);
+      if (!spawn) {
+        this.logger.warn?.(`[CRITICAL] No spawn available - harvester priority spawn blocked`);
+        return; // Block all spawns until harvester can be spawned
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      const room = spawn.room as Room;
+      const energyAvailable = room.energyAvailable;
+
+      // Use emergency body to spawn harvester with minimum energy requirement
+      // This ensures we can spawn even with low energy (200 energy minimum)
+      const minimalBody = this.bodyComposer.generateEmergencyBody(energyAvailable);
+
+      if (minimalBody.length === 0) {
+        const minimalCost = 200; // Minimum required for [WORK, CARRY, MOVE]
+        this.logger.warn?.(
+          `[CRITICAL] Insufficient energy (${energyAvailable}) for harvester (need ${minimalCost}) - blocking other spawns`
+        );
+        return; // Block all spawns until we have enough energy for harvester
+      }
+
+      const roleName: RoleName = "harvester";
+      const name = `priority-${roleName}-${game.time}`;
+      const controller = this.getRoleController(roleName);
+      const creepMemory = controller?.createMemory() ?? { role: roleName };
+      const result = this.spawnCreepSafely(spawn, minimalBody, name, creepMemory);
+
+      if (result === OK) {
+        spawned.push(name);
+        roleCounts[roleName] = 1;
+        const spawnCost = this.bodyComposer.calculateBodyCost(minimalBody);
+        this.logger.log?.(
+          `[CRITICAL] Spawned priority ${name} (${minimalBody.length} parts, ${spawnCost} energy) - unblocking normal spawns`
+        );
+        return; // Skip normal spawn logic - priority spawn takes precedence
+      } else {
+        this.logger.warn?.(`[CRITICAL] Priority harvester spawn failed: ${result} - blocking other spawns`);
+        return; // Block all spawns until harvester can be spawned
+      }
+    }
+
     // Pre-calculate room creep counts to avoid repeated filtering
     // Map room name to creep count for efficient lookup during spawning
     const roomCreepCounts = new Map<string, number>();
