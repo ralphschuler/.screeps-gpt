@@ -207,7 +207,7 @@ export class DismantlerController extends BaseRoleController<DismantlerMemory> {
         if (s.structureType === STRUCTURE_WALL) {
           // Only target walls that have hits (player-constructed walls)
           // Novice/respawn zone walls don't have hits and cannot be dismantled
-          return "hits" in s && typeof s.hits === "number";
+          return "hits" in s;
         }
 
         return false;
