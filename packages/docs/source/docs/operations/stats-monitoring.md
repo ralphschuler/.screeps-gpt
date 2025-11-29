@@ -31,6 +31,30 @@ The workflow uses a resilient multi-source telemetry collection strategy:
 | `reports/monitoring/baselines.json` | Performance baselines | ✓ |
 | `reports/monitoring/health.json` | Bot health status | ✓ |
 
+### Report Storage Policy
+
+All reports in `reports/` are tracked in version control to maintain historical analysis data. This includes:
+
+**Tracked directories:**
+
+- `reports/bot-snapshots/` - Daily performance snapshots
+- `reports/monitoring/` - Strategic analysis and health monitoring
+- `reports/copilot/` - Copilot workflow analysis artifacts
+- `reports/performance/` - Performance test results and baselines
+- `reports/deployments/` - Deployment history and rollback data
+- `reports/evaluations/` - System evaluation reports
+- `reports/profiler/` - Profiler data and CPU tracking
+- `reports/ptr-stats/` - PTR telemetry and stats
+- `reports/screeps-stats/` - Screeps game stats
+- `reports/room-analysis/` - Room layout and efficiency analysis
+- `reports/game-constants/` - Cached game constant reference data
+
+**Excluded directories (binary/large files):**
+
+- `reports/video-frames/` - Frame images for video rendering
+- `reports/videos/` - Rendered video files
+- `reports/replay-data/` - Raw replay data files
+
 ### Stats Data Structure
 
 The bot populates `Memory.stats` via `StatsCollector.ts` with the following metrics:
