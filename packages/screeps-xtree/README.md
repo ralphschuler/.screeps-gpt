@@ -248,6 +248,8 @@ treeActions.attackTarget(ctx); // Attack ctx.target
 treeActions.healTarget(ctx); // Heal ctx.target creep
 ```
 
+**Note:** Unlike `@ralphschuler/screeps-xstate` where some actions are factories that return action functions, `@ralphschuler/screeps-xtree` actions are plain functions that take the context directly. This design fits the decision tree paradigm where actions are leaf nodes executed immediately.
+
 ## Usage Examples
 
 ### Example 1: Multi-Role Worker

@@ -60,7 +60,8 @@ export const harvestNearestSource: CreepAction = ctx => {
   if (sources.length === 0) return;
 
   const closest = ctx.creep.pos.findClosestByPath(sources, { ignoreCreeps: true });
-  const source = closest ?? sources[0];
+  // Fall back to first source if no path found - handles temporarily blocked paths
+  const source = closest ?? sources[0] ?? null;
   if (!source) return;
 
   const result = ctx.creep.harvest(source);
@@ -148,7 +149,8 @@ export const pickupNearestEnergy: CreepAction = ctx => {
   if (dropped.length === 0) return;
 
   const closest = ctx.creep.pos.findClosestByPath(dropped, { ignoreCreeps: true });
-  const target = closest ?? dropped[0];
+  // Fall back to first resource if no path found
+  const target = closest ?? dropped[0] ?? null;
   if (!target) return;
 
   const result = ctx.creep.pickup(target);
@@ -182,7 +184,8 @@ export const transferToSpawns: CreepActionFactory<MoveToOptions | undefined, Cre
   if (targets.length === 0) return;
 
   const closest = ctx.creep.pos.findClosestByPath(targets, { ignoreCreeps: true });
-  const target = closest ?? targets[0];
+  // Fall back to first target if no path found
+  const target = closest ?? targets[0] ?? null;
   if (!target) return;
 
   const result = ctx.creep.transfer(target, RESOURCE_ENERGY);
@@ -216,7 +219,8 @@ export const withdrawFromContainers: CreepActionFactory<number | undefined, Cree
     if (containers.length === 0) return;
 
     const closest = ctx.creep.pos.findClosestByPath(containers, { ignoreCreeps: true });
-    const target = closest ?? containers[0];
+    // Fall back to first container if no path found
+    const target = closest ?? containers[0] ?? null;
     if (!target) return;
 
     const result = ctx.creep.withdraw(target, RESOURCE_ENERGY);

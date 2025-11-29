@@ -94,7 +94,7 @@ export function harvestNearestSource(ctx: CreepDecisionContext): void {
 
   const closest = ctx.creep.pos.findClosestByPath(sources, { ignoreCreeps: true });
   // Fall back to first source if no path found - handles temporarily blocked paths
-  const source = closest ?? sources[0];
+  const source = closest ?? sources[0] ?? null;
   if (!source) return;
 
   const result = ctx.creep.harvest(source);
@@ -168,7 +168,8 @@ export function transferToSpawns(ctx: CreepDecisionContext): void {
   if (targets.length === 0) return;
 
   const closest = ctx.creep.pos.findClosestByPath(targets, { ignoreCreeps: true });
-  const target = closest ?? targets[0];
+  // Fall back to first target if no path found
+  const target = closest ?? targets[0] ?? null;
   if (!target) return;
 
   const result = ctx.creep.transfer(target, RESOURCE_ENERGY);
@@ -193,7 +194,8 @@ export function withdrawFromContainers(ctx: CreepDecisionContext, minEnergy = 0)
   if (containers.length === 0) return;
 
   const closest = ctx.creep.pos.findClosestByPath(containers, { ignoreCreeps: true });
-  const target = closest ?? containers[0];
+  // Fall back to first container if no path found
+  const target = closest ?? containers[0] ?? null;
   if (!target) return;
 
   const result = ctx.creep.withdraw(target, RESOURCE_ENERGY);
