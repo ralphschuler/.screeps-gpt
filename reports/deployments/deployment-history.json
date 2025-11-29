@@ -1,8 +1,21 @@
 {
-  "lastValidated": "v0.191.3",
-  "lastValidatedCommit": "1dfaae1f7edde9c15076c704f12fdf39f3ef48e8",
-  "lastUpdated": "2025-11-29T14:20:38.233Z",
+  "lastValidated": "v0.192.0",
+  "lastValidatedCommit": "bbfc16b6ad7fd776f9245f97972f92518a5d51d2",
+  "lastUpdated": "2025-11-29T15:22:28.630Z",
   "history": [
+    {
+      "version": "v0.192.0",
+      "validatedAt": "2025-11-29T15:22:28.630Z",
+      "commitSha": "bbfc16b6ad7fd776f9245f97972f92518a5d51d2",
+      "validation": {
+        "cpuUsed": 0,
+        "cpuBucket": 0,
+        "creepCount": 0,
+        "roomCount": 2,
+        "spawnCount": 1
+      },
+      "workflowRunUrl": "https://github.com/ralphschuler/.screeps-gpt/actions/runs/19785699425"
+    },
     {
       "version": "v0.191.3",
       "validatedAt": "2025-11-29T14:20:38.232Z",
@@ -54,19 +67,6 @@
         "spawnCount": 1
       },
       "workflowRunUrl": "https://github.com/ralphschuler/.screeps-gpt/actions/runs/19783536653"
-    },
-    {
-      "version": "v0.189.9",
-      "validatedAt": "2025-11-29T11:44:59.188Z",
-      "commitSha": "0f5c8bc384eae2596a0ca601cf5b499a67574faf",
-      "validation": {
-        "cpuUsed": 0,
-        "cpuBucket": 0,
-        "creepCount": 0,
-        "roomCount": 2,
-        "spawnCount": 1
-      },
-      "workflowRunUrl": "https://github.com/ralphschuler/.screeps-gpt/actions/runs/19783421596"
     }
   ]
 }
