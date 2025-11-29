@@ -85,13 +85,21 @@ export function findClosestOrFirst<T extends _HasRoomPosition>(
  * Helper function to pick up nearby dropped energy if the creep has capacity.
  * Returns true if the creep picked up or is moving to pick up energy.
  *
- * Uses ignoreCreeps: true when finding paths to handle narrow passages properly.
+ * Uses amount-based prioritization: prioritizes larger energy piles first,
+ * with distance as a tiebreaker for piles of similar size.
  *
  * @param creep - The creep that should pick up energy
  * @param minAmount - Minimum amount of energy to consider picking up (default: 50)
+ * @param priorityAmount - Energy amount threshold above which piles are prioritized (default: 100)
+ * @param amountTiebreakerThreshold - Amount difference threshold for using distance as tiebreaker (default: 50)
  * @returns true if energy pickup is in progress, false otherwise
  */
-export function tryPickupDroppedEnergy(creep: CreepLike, minAmount = 50): boolean {
+export function tryPickupDroppedEnergy(
+  creep: CreepLike,
+  minAmount = 50,
+  priorityAmount = 100,
+  amountTiebreakerThreshold = 50
+): boolean {
   // Only pick up if creep has capacity
   if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
     return false;
@@ -105,9 +113,27 @@ export function tryPickupDroppedEnergy(creep: CreepLike, minAmount = 50): boolea
     return false;
   }
 
-  // Use ignoreCreeps for better routing through narrow passages
-  const closest = creep.pos.findClosestByPath(droppedEnergy, { ignoreCreeps: true });
-  const target = closest ?? droppedEnergy[0];
+  // Sort by energy amount (highest first), with distance as tiebreaker
+  const sorted = droppedEnergy.sort((a, b) => {
+    // Prioritize piles above the priority threshold
+    const aAboveThreshold = a.amount >= priorityAmount;
+    const bAboveThreshold = b.amount >= priorityAmount;
+
+    if (aAboveThreshold && !bAboveThreshold) return -1;
+    if (bAboveThreshold && !aAboveThreshold) return 1;
+
+    // For similar amounts (within threshold), use distance as tiebreaker
+    if (Math.abs(a.amount - b.amount) < amountTiebreakerThreshold) {
+      const distA = creep.pos.getRangeTo(a);
+      const distB = creep.pos.getRangeTo(b);
+      return distA - distB;
+    }
+
+    // Otherwise prefer higher amounts
+    return b.amount - a.amount;
+  });
+
+  const target = sorted[0];
 
   const result = creep.pickup(target);
   if (result === ERR_NOT_IN_RANGE) {

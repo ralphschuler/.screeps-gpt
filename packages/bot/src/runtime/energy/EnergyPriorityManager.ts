@@ -20,6 +20,12 @@ export interface EnergyPriorityConfig {
   spawnContainerReserve: number;
   /** Minimum tower energy capacity percentage to maintain */
   towerMinCapacity: number;
+  /** Minimum amount of dropped energy to consider picking up */
+  haulerPickupMinAmount: number;
+  /** Energy amount threshold above which piles are prioritized */
+  haulerPriorityAmount: number;
+  /** Energy amount difference threshold for using distance as tiebreaker */
+  haulerAmountTiebreakerThreshold: number;
 }
 
 /**
@@ -27,7 +33,10 @@ export interface EnergyPriorityConfig {
  */
 export const DEFAULT_ENERGY_CONFIG: EnergyPriorityConfig = {
   spawnContainerReserve: 300, // Reserve 300 energy for spawn operations
-  towerMinCapacity: 0.5 // Maintain towers at >50% capacity
+  towerMinCapacity: 0.5, // Maintain towers at >50% capacity
+  haulerPickupMinAmount: 10, // Ignore very small drops below 10 energy
+  haulerPriorityAmount: 100, // Prioritize piles above 100 energy
+  haulerAmountTiebreakerThreshold: 50 // Use distance as tiebreaker when amounts differ by less than this
 };
 
 /**

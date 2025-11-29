@@ -22,6 +22,7 @@ export interface PositionLike {
   findClosestByPath<T>(objects: T[], opts?: FindPathOpts & { filter?: (object: unknown) => boolean }): T | null;
   inRangeTo(target: RoomPosition | { pos: RoomPosition }, range: number): boolean;
   findInRange<T>(type: FindConstant, range: number, opts?: { filter?: (object: unknown) => boolean }): T[];
+  getRangeTo(target: RoomPosition | { pos: RoomPosition }): number;
 }
 
 export interface RoomLike {
