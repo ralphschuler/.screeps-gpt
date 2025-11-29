@@ -1,8 +1,21 @@
 {
-  "lastValidated": "v0.189.11",
-  "lastValidatedCommit": "7ea18457ffe45b6b08d4492f808f874ff7881ce7",
-  "lastUpdated": "2025-11-29T11:58:59.900Z",
+  "lastValidated": "v0.189.13",
+  "lastValidatedCommit": "2d8f915fcc0ec8f93dc08cacaba89ed923c70a15",
+  "lastUpdated": "2025-11-29T12:15:37.133Z",
   "history": [
+    {
+      "version": "v0.189.13",
+      "validatedAt": "2025-11-29T12:15:37.132Z",
+      "commitSha": "2d8f915fcc0ec8f93dc08cacaba89ed923c70a15",
+      "validation": {
+        "cpuUsed": 0,
+        "cpuBucket": 0,
+        "creepCount": 0,
+        "roomCount": 2,
+        "spawnCount": 1
+      },
+      "workflowRunUrl": "https://github.com/ralphschuler/.screeps-gpt/actions/runs/19783709292"
+    },
     {
       "version": "v0.189.11",
       "validatedAt": "2025-11-29T11:58:59.900Z",
