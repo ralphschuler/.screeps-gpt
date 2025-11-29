@@ -78,6 +78,66 @@ function hasSubstantiveData(snapshot: BotSnapshot): boolean {
 }
 
 /**
+ * Validate snapshot data quality
+ * Returns validation errors if data appears stale or invalid
+ */
+function validateSnapshotQuality(snapshot: BotSnapshot, previousSnapshot?: BotSnapshot): string[] {
+  const errors: string[] = [];
+  
+  // Check 1: Snapshot must have substantive data
+  if (!hasSubstantiveData(snapshot)) {
+    errors.push("Snapshot contains no substantive data (only timestamp)");
+    return errors; // Fatal error, no point checking further
+  }
+  
+  // Check 2: If rooms are claimed, creep count should be > 0 (after initial spawn period)
+  const roomCount = Object.keys(snapshot.rooms || {}).length;
+  const creepCount = snapshot.creeps?.total || 0;
+  if (roomCount > 0 && creepCount === 0) {
+    errors.push(`CRITICAL: ${roomCount} room(s) claimed but 0 creeps detected - possible spawn failure or data staleness`);
+  }
+  
+  // Check 3: CPU data should be reasonable
+  if (snapshot.cpu) {
+    if (snapshot.cpu.used === 0 && snapshot.cpu.limit === 0 && snapshot.cpu.bucket === 0) {
+      errors.push("CPU metrics are all zero - data may be stale or bot is not running");
+    }
+    if (snapshot.cpu.bucket < 100) {
+      errors.push(`WARNING: CPU bucket critically low (${snapshot.cpu.bucket}) - bot may be in CPU crisis`);
+    }
+  }
+  
+  // Check 4: Compare with previous snapshot for staleness detection
+  if (previousSnapshot && hasSubstantiveData(previousSnapshot)) {
+    // Check if data is identical (indicating no updates)
+    const currentRooms = JSON.stringify(snapshot.rooms);
+    const previousRooms = JSON.stringify(previousSnapshot.rooms);
+    const currentCreeps = JSON.stringify(snapshot.creeps);
+    const previousCreeps = JSON.stringify(previousSnapshot.creeps);
+    
+    if (currentRooms === previousRooms && currentCreeps === previousCreeps) {
+      // Data is identical - check if enough time has passed to warrant concern
+      const timeDiff = new Date(snapshot.timestamp).getTime() - new Date(previousSnapshot.timestamp).getTime();
+      const hoursDiff = timeDiff / (1000 * 60 * 60);
+      
+      if (hoursDiff > 12) {
+        errors.push(`Data appears stale: identical to snapshot from ${hoursDiff.toFixed(1)} hours ago`);
+      }
+    }
+  }
+  
+  // Check 5: Shard discovery should find rooms
+  if (snapshot.shards && snapshot.shards.length > 0) {
+    const discoveredRooms = snapshot.shards.reduce((sum, s) => sum + s.rooms.length, 0);
+    if (discoveredRooms === 0 && roomCount > 0) {
+      errors.push(`WARNING: Shard discovery found 0 rooms but snapshot has ${roomCount} room(s) - discovery may be incomplete`);
+    }
+  }
+  
+  return errors;
+}
+
+/**
  * Collect bot state snapshot from Screeps stats with multi-shard support
  */
 async function collectBotSnapshot(): Promise<void> {
@@ -245,51 +305,139 @@ async function collectBotSnapshot(): Promise<void> {
     }
   }
 
-  // If snapshot is empty (no substantive data), try console API fallback
+  // Phase 2: Collect telemetry from all discovered shards using console API
+  // Stats API only returns data from Memory.stats (single shard), but console API can query any shard
+  console.log("\nPhase 2: Collecting telemetry from all shards...");
+  
+  // Aggregate data from all shards
+  const aggregatedRooms: Record<string, BotSnapshot["rooms"][string]> = {};
+  let totalCreeps = 0;
+  const creepsByRole: Record<string, number> = {};
+  let latestTick: number | undefined;
+  let latestCpu: BotSnapshot["cpu"] | undefined;
+
+  for (const shard of shardDiscovery.shards) {
+    console.log(`\nCollecting from shard: ${shard.name}...`);
+    
+    try {
+      // Use console telemetry for per-shard data collection
+      // Note: fetchConsoleTelemetry uses SCREEPS_SHARD env var, so we temporarily override it
+      const originalShard = process.env.SCREEPS_SHARD;
+      process.env.SCREEPS_SHARD = shard.name;
+      
+      const consoleTelemetry = await fetchConsoleTelemetry();
+      
+      // Restore original shard
+      process.env.SCREEPS_SHARD = originalShard;
+      
+      console.log(`  ✓ Shard ${shard.name}: ${consoleTelemetry.rooms.length} rooms, ${consoleTelemetry.creeps.total} creeps`);
+      
+      // Aggregate CPU data (use latest tick's CPU)
+      if (!latestTick || consoleTelemetry.tick > latestTick) {
+        latestTick = consoleTelemetry.tick;
+        latestCpu = {
+          used: consoleTelemetry.cpu.used,
+          limit: consoleTelemetry.cpu.limit,
+          bucket: consoleTelemetry.cpu.bucket
+        };
+      }
+      
+      // Aggregate rooms
+      for (const room of consoleTelemetry.rooms) {
+        aggregatedRooms[room.name] = {
+          rcl: room.rcl,
+          energy: room.energy,
+          energyCapacity: room.energyCapacity,
+          controllerProgress: room.controllerProgress,
+          controllerProgressTotal: room.controllerProgressTotal,
+          ticksToDowngrade: room.ticksToDowngrade,
+          shard: shard.name
+        };
+      }
+      
+      // Aggregate creeps
+      totalCreeps += consoleTelemetry.creeps.total;
+      for (const [role, count] of Object.entries(consoleTelemetry.creeps.byRole)) {
+        creepsByRole[role] = (creepsByRole[role] || 0) + count;
+      }
+    } catch (shardError) {
+      console.warn(`  ⚠ Failed to collect from shard ${shard.name}:`, shardError);
+      // Continue with other shards even if one fails
+    }
+  }
+  
+  // Update snapshot with aggregated multi-shard data
+  if (latestCpu) {
+    snapshot.cpu = latestCpu;
+  }
+  if (latestTick) {
+    snapshot.tick = latestTick;
+  }
+  if (Object.keys(aggregatedRooms).length > 0) {
+    snapshot.rooms = aggregatedRooms;
+  }
+  snapshot.creeps = {
+    total: totalCreeps,
+    byRole: Object.keys(creepsByRole).length > 0 ? creepsByRole : undefined
+  };
+  
+  console.log(`\n✓ Multi-shard aggregation complete:`);
+  console.log(`  Total rooms: ${Object.keys(aggregatedRooms).length}`);
+  console.log(`  Total creeps: ${totalCreeps}`);
+  console.log(`  Rooms by shard:`, shardDiscovery.shards.map(s => `${s.name}=${s.rooms.length}`).join(", "));
+  
+  // If snapshot is still empty after multi-shard collection, try Stats API fallback
   if (!hasSubstantiveData(snapshot)) {
-    console.log("\n⚠ Stats API returned empty data - attempting console API fallback...");
+    console.log("\n⚠ Multi-shard collection returned empty data - attempting Stats API fallback...");
 
     try {
-      const consoleTelemetry = await fetchConsoleTelemetry();
-      console.log("✓ Console telemetry fetch successful");
-
-      // Populate snapshot from console telemetry
-      snapshot.cpu = {
-        used: consoleTelemetry.cpu.used,
-        limit: consoleTelemetry.cpu.limit,
-        bucket: consoleTelemetry.cpu.bucket
-      };
-
-      // Map rooms from console telemetry
-      if (consoleTelemetry.rooms && consoleTelemetry.rooms.length > 0) {
-        snapshot.rooms = {};
-        for (const room of consoleTelemetry.rooms) {
-          snapshot.rooms[room.name] = {
-            rcl: room.rcl,
-            energy: room.energy,
-            energyCapacity: room.energyCapacity,
-            controllerProgress: room.controllerProgress,
-            controllerProgressTotal: room.controllerProgressTotal,
-            ticksToDowngrade: room.ticksToDowngrade
-          };
-        }
-      }
-
-      // Map creeps from console telemetry
-      snapshot.creeps = {
-        total: consoleTelemetry.creeps.total,
-        byRole: consoleTelemetry.creeps.byRole
-      };
-
-      // Set tick if available from consoleTelemetry, else leave undefined
-      snapshot.tick = typeof consoleTelemetry.tick === "number" ? consoleTelemetry.tick : undefined;
-      console.log(
-        `✓ Enriched snapshot with console data: ${Object.keys(snapshot.rooms || {}).length} rooms, ${snapshot.creeps.total} creeps`
-      );
-    } catch (consoleError) {
-      console.warn("Console API fallback failed:", consoleError);
+      // Stats API fallback uses the data from Memory.stats (already attempted above)
+      // This path should rarely be hit if console telemetry is working
+      console.warn("Stats API fallback: No additional data available");
+      console.warn("Snapshot will contain only timestamp and shard discovery metadata");
+    } catch (fallbackError) {
+      console.warn("Stats API fallback failed:", fallbackError);
       console.warn("Snapshot will contain only timestamp");
     }
+  }
+
+  // Phase 3: Validate snapshot quality
+  console.log("\nPhase 3: Validating snapshot quality...");
+  
+  // Load previous snapshot for comparison
+  let previousSnapshot: BotSnapshot | undefined;
+  try {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const prevFilename = `snapshot-${yesterday.toISOString().split("T")[0]}.json`;
+    const prevPath = resolve(SNAPSHOTS_DIR, prevFilename);
+    const prevContent = readFileSync(prevPath, "utf-8");
+    previousSnapshot = JSON.parse(prevContent);
+  } catch {
+    // Previous snapshot not available (expected for first run)
+    console.log("  No previous snapshot available for comparison");
+  }
+  
+  const validationErrors = validateSnapshotQuality(snapshot, previousSnapshot);
+  
+  if (validationErrors.length > 0) {
+    console.error("\n❌ Snapshot validation failed:");
+    for (const error of validationErrors) {
+      console.error(`  - ${error}`);
+    }
+    
+    // Determine if errors are fatal (should fail workflow)
+    const hasFatalError = validationErrors.some(e => e.includes("CRITICAL") || e.includes("no substantive data"));
+    
+    if (hasFatalError) {
+      console.error("\n❌ Fatal validation errors detected - refusing to commit invalid snapshot");
+      console.error("This prevents false positive alerts from stale/empty data");
+      process.exit(1);
+    } else {
+      console.warn("\n⚠ Non-fatal validation warnings detected - snapshot will be saved with warnings");
+    }
+  } else {
+    console.log("  ✓ Snapshot validation passed");
   }
 
   // Write snapshot with date-based filename using snapshot timestamp
@@ -304,12 +452,21 @@ async function collectBotSnapshot(): Promise<void> {
   const snapshotPath = resolve(SNAPSHOTS_DIR, filename);
 
   writeFileSync(snapshotPath, JSON.stringify(snapshot, null, 2));
-  console.log(`✓ Snapshot saved: ${snapshotPath}`);
+  console.log(`\n✓ Snapshot saved: ${snapshotPath}`);
+  
+  // Log snapshot summary
+  console.log("\nSnapshot Summary:");
+  console.log(`  Timestamp: ${snapshot.timestamp}`);
+  console.log(`  Tick: ${snapshot.tick || "N/A"}`);
+  console.log(`  Shards: ${snapshot.shards?.length || 0}`);
+  console.log(`  Rooms: ${Object.keys(snapshot.rooms || {}).length}`);
+  console.log(`  Creeps: ${snapshot.creeps?.total || 0}`);
+  console.log(`  CPU: ${snapshot.cpu ? `${snapshot.cpu.used.toFixed(2)}/${snapshot.cpu.limit} (bucket: ${snapshot.cpu.bucket})` : "N/A"}`);
 
   // Cleanup old snapshots
   cleanupOldSnapshots();
 
-  console.log(`✓ Keeping ${MAX_SNAPSHOTS} most recent snapshots`);
+  console.log(`\n✓ Keeping ${MAX_SNAPSHOTS} most recent snapshots`);
 }
 
 collectBotSnapshot().catch(error => {
