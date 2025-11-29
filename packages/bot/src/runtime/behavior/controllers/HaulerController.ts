@@ -88,8 +88,14 @@ export class HaulerController extends BaseRoleController<HaulerMemory> {
         machine.send({ type: "ENERGY_FULL" });
       }
 
-      // Priority 1: Pick up dropped energy
-      if (tryPickupDroppedEnergy(creep)) {
+      // Priority 1: Pick up dropped energy (sorted by amount, not distance)
+      if (
+        tryPickupDroppedEnergy(
+          creep,
+          DEFAULT_ENERGY_CONFIG.haulerPickupMinAmount,
+          DEFAULT_ENERGY_CONFIG.haulerPriorityAmount
+        )
+      ) {
         // Save state to memory and return current state
         memory.stateMachine = serialize(machine);
         memory.task = machine.getState();
