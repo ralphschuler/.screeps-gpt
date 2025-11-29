@@ -85,6 +85,14 @@ jobs:
             echo "::warning::Analytics generation failed (no snapshots yet)"
         continue-on-error: true
 
+      - name: Analyze historical trends
+        id: analyze_trends
+        if: success() && steps.collect_snapshot.outcome == 'success'
+        run: |
+          npx tsx packages/utilities/scripts/analyze-historical-trends.ts || \
+            echo "::warning::Historical trend analysis failed (insufficient data)"
+        continue-on-error: true
+
       - name: Check baseline readiness
         id: check_baseline_readiness
         if: success() && steps.collect_snapshot.outcome == 'success'
@@ -206,6 +214,7 @@ jobs:
             reports/monitoring/health.json
             reports/monitoring/health-check-latest.json
             reports/monitoring/baselines.json
+            reports/monitoring/historical-trends.json
             source/docs/analytics/data.json
           retention-days: 30
 
@@ -250,6 +259,11 @@ jobs:
           # Add performance baselines when established
           if [ -f "reports/monitoring/baselines.json" ]; then
             git add reports/monitoring/baselines.json
+          fi
+
+          # Add historical trends when generated
+          if [ -f "reports/monitoring/historical-trends.json" ]; then
+            git add reports/monitoring/historical-trends.json
           fi
 
           # Commit when there are changes

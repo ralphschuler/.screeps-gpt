@@ -69,7 +69,20 @@ async function fetchProfilerFromConsole(api: ScreepsAPI, shard: string): Promise
         throw new Error(response.error || "Console command failed");
       }
 
-      const result = JSON.parse(response.data) as ProfilerMemory | { error: string };
+      // Handle case where console returns "undefined" (literal string)
+      // This happens when Memory.profiler hasn't been initialized yet
+      if (response.data === "undefined" || response.data === "" || !response.data) {
+        console.log(`⚠ Profiler not available: Memory.profiler is undefined`);
+        return null;
+      }
+
+      let result: ProfilerMemory | { error: string };
+      try {
+        result = JSON.parse(response.data) as ProfilerMemory | { error: string };
+      } catch (parseError) {
+        console.log(`⚠ Failed to parse profiler data: ${parseError instanceof Error ? parseError.message : String(parseError)}`);
+        return null;
+      }
 
       if ("error" in result) {
         console.log(`⚠ Profiler not available: ${result.error}`);
