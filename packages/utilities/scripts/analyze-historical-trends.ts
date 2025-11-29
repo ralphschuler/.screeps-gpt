@@ -172,7 +172,9 @@ function createMetricTrend(
 
   const current = calculateMean(currentPeriodValues);
 
-  // If no previous period data, use current as baseline
+  // If no previous period data, use current as baseline to avoid false regression alerts.
+  // This results in change=0, changePercent=0, trend="stable", isRegression=false
+  // which is the correct behavior for the first data point.
   const previous = previousPeriodValues.length > 0 ? calculateMean(previousPeriodValues) : current;
 
   const change = current - previous;
