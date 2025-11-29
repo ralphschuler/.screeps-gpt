@@ -168,17 +168,21 @@ export class RoleTaskQueueManager {
   }
 
   /**
-   * Get the count of tasks for a specific room and role.
+   * Get the count of unassigned, non-expired tasks for a specific room and role.
    * This is used for room-aware spawn scaling to prevent cross-room over-spawning.
+   * Only counts tasks that still need workers (unassigned and not expired).
    *
    * @param memory - Game memory object
    * @param role - Role name to count tasks for
    * @param roomName - Room name to filter by
-   * @returns Number of tasks in the specified room for the role
+   * @param currentTick - Current game tick for expiration checking
+   * @returns Number of unassigned, non-expired tasks in the specified room for the role
    */
-  public getTaskCountForRoom(memory: Memory, role: string, roomName: string): number {
+  public getTaskCountForRoom(memory: Memory, role: string, roomName: string, currentTick: number): number {
     const queue = this.getRoleQueue(memory, role);
-    return queue.filter(task => task.roomName === roomName).length;
+    return queue.filter(
+      task => task.roomName === roomName && !task.assignedCreep && task.expiresAt > currentTick
+    ).length;
   }
 
   /**

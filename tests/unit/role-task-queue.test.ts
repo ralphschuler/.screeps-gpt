@@ -522,9 +522,9 @@ describe("RoleTaskQueue", () => {
       manager.addTask(memory, "builder", task2);
       manager.addTask(memory, "builder", task3);
 
-      const countW1N1 = manager.getTaskCountForRoom(memory, "builder", "W1N1");
-      const countW1N2 = manager.getTaskCountForRoom(memory, "builder", "W1N2");
-      const countW1N3 = manager.getTaskCountForRoom(memory, "builder", "W1N3");
+      const countW1N1 = manager.getTaskCountForRoom(memory, "builder", "W1N1", 100);
+      const countW1N2 = manager.getTaskCountForRoom(memory, "builder", "W1N2", 100);
+      const countW1N3 = manager.getTaskCountForRoom(memory, "builder", "W1N3", 100);
 
       expect(countW1N1).toBe(2);
       expect(countW1N2).toBe(1);
@@ -532,8 +532,61 @@ describe("RoleTaskQueue", () => {
     });
 
     it("should return 0 for empty role queue", () => {
-      const count = manager.getTaskCountForRoom(memory, "builder", "W1N1");
+      const count = manager.getTaskCountForRoom(memory, "builder", "W1N1", 100);
       expect(count).toBe(0);
+    });
+
+    it("should not count expired tasks for a room", () => {
+      const expiredTask: TaskQueueEntry = {
+        taskId: "W1N1-task-1",
+        targetId: "1",
+        roomName: "W1N1",
+        priority: TaskPriority.HIGH,
+        expiresAt: 100
+      };
+
+      const validTask: TaskQueueEntry = {
+        taskId: "W1N1-task-2",
+        targetId: "2",
+        roomName: "W1N1",
+        priority: TaskPriority.HIGH,
+        expiresAt: 1000
+      };
+
+      manager.addTask(memory, "builder", expiredTask);
+      manager.addTask(memory, "builder", validTask);
+
+      // At tick 500, only the validTask (expiresAt: 1000) should be counted
+      const count = manager.getTaskCountForRoom(memory, "builder", "W1N1", 500);
+      expect(count).toBe(1);
+    });
+
+    it("should not count assigned tasks for a room", () => {
+      const task1: TaskQueueEntry = {
+        taskId: "W1N1-task-1",
+        targetId: "1",
+        roomName: "W1N1",
+        priority: TaskPriority.HIGH,
+        expiresAt: 1000
+      };
+
+      const task2: TaskQueueEntry = {
+        taskId: "W1N1-task-2",
+        targetId: "2",
+        roomName: "W1N1",
+        priority: TaskPriority.HIGH,
+        expiresAt: 1000
+      };
+
+      manager.addTask(memory, "builder", task1);
+      manager.addTask(memory, "builder", task2);
+
+      // Assign one task to a creep
+      manager.assignTask(memory, "builder", "builder-1", 100);
+
+      // Only unassigned task should be counted
+      const count = manager.getTaskCountForRoom(memory, "builder", "W1N1", 100);
+      expect(count).toBe(1);
     });
   });
 });
