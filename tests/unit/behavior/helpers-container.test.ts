@@ -1,17 +1,11 @@
-import { describe, expect, it, beforeEach } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
   hasSourceContainer,
   getSourceContainer,
   findSourceAdjacentContainers
 } from "@runtime/behavior/controllers/helpers";
 
-// Minimal Screeps constants for test environment
-beforeEach(() => {
-  (globalThis as typeof globalThis & Record<string, unknown>).FIND_STRUCTURES = 109 as FindConstant;
-  (globalThis as typeof globalThis & Record<string, unknown>).FIND_SOURCES = 105 as FindConstant;
-  (globalThis as typeof globalThis & Record<string, unknown>).STRUCTURE_CONTAINER = "container" as StructureConstant;
-  (globalThis as typeof globalThis & Record<string, unknown>).RESOURCE_ENERGY = "energy" as ResourceConstant;
-});
+// Constants are provided by tests/setup.ts
 
 describe("Source container helpers", () => {
   describe("hasSourceContainer", () => {
