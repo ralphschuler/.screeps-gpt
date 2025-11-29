@@ -452,6 +452,17 @@ export class RoleControllerManager {
       roomCreepCounts.set(roomName, (roomCreepCounts.get(roomName) ?? 0) + 1);
     }
 
+    // Pre-calculate stationary harvester coverage per room
+    // Used to determine if normal harvesters should be spawned
+    // Map room name to count of stationary harvesters with assigned sources
+    const stationaryHarvestersByRoom = new Map<string, number>();
+    for (const creep of Object.values(game.creeps)) {
+      if (creep.memory.role === "stationaryHarvester" && creep.memory.sourceId) {
+        const roomName = creep.room.name;
+        stationaryHarvestersByRoom.set(roomName, (stationaryHarvestersByRoom.get(roomName) ?? 0) + 1);
+      }
+    }
+
     // Check if any room is under defensive posture (alert, defensive, or emergency)
     const defenseMemory = memory.defense;
     const roomsUnderCombat = defenseMemory
@@ -663,6 +674,25 @@ export class RoleControllerManager {
         // Spawn one claimer per pending expansion (up to current pending count)
         const neededClaimers = pendingExpansions.length - claimersOnExpansionCount;
         targetMinimum = Math.max(targetMinimum, Math.min(neededClaimers, roleMaximum));
+      }
+
+      // Dynamically reduce harvester minimum when stationary harvesters are active
+      // Stationary harvesters are more efficient for container-based energy logistics
+      // When they cover ≥50% of sources in any room, stop spawning normal harvesters
+      if (role === "harvester") {
+        for (const room of Object.values(game.rooms)) {
+          if (!room.controller?.my) continue;
+
+          const sources = room.find(FIND_SOURCES);
+          const stationaryCount = stationaryHarvestersByRoom.get(room.name) ?? 0;
+
+          // If stationary harvesters cover at least half the sources, don't spawn normal harvesters
+          // This allows natural attrition of existing harvesters while stationary harvesters take over
+          if (sources.length > 0 && stationaryCount >= Math.ceil(sources.length * 0.5)) {
+            targetMinimum = 0;
+            break;
+          }
+        }
       }
 
       // Dynamically increase remote upgrader minimum when rooms need workforce integration
