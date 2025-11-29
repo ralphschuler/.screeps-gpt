@@ -149,6 +149,7 @@ export class RemoteBuilderController extends BaseRoleController<RemoteBuilderMem
       STRUCTURE_CONTAINER,
       STRUCTURE_TOWER,
       STRUCTURE_STORAGE,
+      STRUCTURE_LINK, // Links for energy distribution (unlocked at RCL 5)
       STRUCTURE_ROAD,
       STRUCTURE_RAMPART,
       STRUCTURE_WALL

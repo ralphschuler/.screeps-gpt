@@ -183,6 +183,7 @@ export class BuilderController extends BaseRoleController<BuilderMemory> {
         STRUCTURE_TOWER,
         STRUCTURE_CONTAINER,
         STRUCTURE_STORAGE,
+        STRUCTURE_LINK, // Links for energy distribution (unlocked at RCL 5)
         STRUCTURE_ROAD, // Roads lower priority but still automated
         STRUCTURE_RAMPART,
         STRUCTURE_WALL
