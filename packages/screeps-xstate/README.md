@@ -318,6 +318,104 @@ Memory.creeps["Harvester1"].machine = serialize(machine);
 const machine = restore(Memory.creeps["Harvester1"].machine, harvesterStates);
 ```
 
+### Modular Guards
+
+The package provides a library of reusable guard functions for common creep behavior patterns:
+
+```typescript
+import { guards } from "@ralphschuler/screeps-xstate";
+
+// Energy guards
+const checkFull = guards.isFull; // ctx.creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0
+const checkEmpty = guards.isEmpty; // ctx.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0
+const hasEnough = guards.hasEnergy(50); // Check if creep has > 50 energy
+const halfFull = guards.hasCapacityPercent(50); // Check if >= 50% capacity
+
+// Position guards
+const nearTarget = guards.isNearTarget(3); // Within 3 tiles of target
+const atTarget = guards.isAtTarget; // At exact target position
+const hasTarget = guards.hasTarget; // Target is defined
+
+// Creep guards
+const canWork = guards.hasWorkParts; // Has WORK body parts
+const canCarry = guards.hasCarryParts; // Has CARRY body parts
+const needsHealing = guards.isDamaged; // hits < hitsMax
+const critical = guards.isHealthBelow(30); // health < 30%
+const isHarvester = guards.hasRoleType("harvester"); // Check role
+```
+
+Use guards in state machine transitions:
+
+```typescript
+const states = {
+  harvesting: {
+    on: {
+      TICK: {
+        target: "delivering",
+        guard: guards.isFull
+      }
+    }
+  },
+  delivering: {
+    on: {
+      TICK: {
+        target: "harvesting",
+        guard: guards.isEmpty
+      }
+    }
+  }
+};
+```
+
+### Modular Actions
+
+The package provides reusable action functions for creep behaviors:
+
+```typescript
+import { creepActions } from "@ralphschuler/screeps-xstate";
+
+// Movement actions
+creepActions.moveToTarget({ range: 1 }); // Move toward ctx.target
+creepActions.findClosestByPath(FIND_SOURCES_ACTIVE); // Find and set target
+creepActions.flee(); // Move away from hostile creeps
+
+// Energy actions
+creepActions.harvestSource; // Harvest from ctx.target or ctx.sourceId
+creepActions.harvestNearestSource; // Find and harvest nearest source
+creepActions.transferEnergy; // Transfer to ctx.target
+creepActions.withdrawEnergy; // Withdraw from ctx.target
+creepActions.transferToSpawns(); // Find spawn/extension and transfer
+
+// Work actions
+creepActions.upgradeController; // Upgrade room controller
+creepActions.buildStructure; // Build ctx.target or nearest site
+creepActions.repairStructure; // Repair ctx.target or most damaged
+creepActions.attackTarget; // Attack ctx.target
+creepActions.healTarget; // Heal ctx.target creep
+```
+
+Use actions in state entry or transitions:
+
+```typescript
+const states = {
+  idle: {
+    onEntry: [creepActions.findClosestByPath(FIND_SOURCES_ACTIVE)],
+    on: {
+      START: { target: "harvesting" }
+    }
+  },
+  harvesting: {
+    onEntry: [creepActions.harvestSource],
+    on: {
+      TICK: {
+        target: "delivering",
+        guard: guards.isFull
+      }
+    }
+  }
+};
+```
+
 ## Usage Examples
 
 ### Example 1: Simple Toggle
