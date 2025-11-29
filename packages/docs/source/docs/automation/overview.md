@@ -226,21 +226,24 @@ The repository includes pre-configured MCP servers in `.github/mcp/`:
 
 #### MCP Server Capabilities
 
-**Screeps MCP Server** (`@ralphschuler/screeps-mcp`):
+**Screeps MCP Server** (`ghcr.io/ralphschuler/screeps-mcp`):
 - Execute console commands
 - Query game memory
 - Fetch performance metrics
 - Access room and structure data
+- Runs via Docker for improved isolation
 
-**Screeps Documentation Server** (`@ralphschuler/screeps-docs-mcp`):
+**Screeps Documentation Server** (`ghcr.io/ralphschuler/screeps-docs-mcp`):
 - Search official Screeps documentation
 - Retrieve API reference for game objects
 - Access game mechanics documentation
+- Runs via Docker for improved isolation
 
-**Screeps Wiki Server** (`@ralphschuler/screeps-wiki-mcp`):
+**Screeps Wiki Server** (`ghcr.io/ralphschuler/screeps-wiki-mcp`):
 - Search community wiki articles
 - Retrieve strategic guides and best practices
 - Access structured data from wiki tables
+- Runs via Docker for improved isolation
 
 **Playwright Server** (`@executeautomation/playwright-mcp-server`):
 - Navigate web pages
@@ -800,7 +803,7 @@ This consolidated architecture using strategy matrices allows multiple checks to
   - **Alert Notifications**: Executes `scripts/check-ptr-alerts.ts` to send push notifications for critical/high severity PTR alerts
 - MCP Integration: Uses three MCP servers for comprehensive analysis:
   - `github` - Repository operations (issues, PRs, code search, workflow logs)
-  - `screeps-mcp` - Bot console access (commands, memory, room data) via `@ralphschuler/screeps-mcp`
+  - `screeps-mcp` - Bot console access (commands, memory, room data) via Docker (`ghcr.io/ralphschuler/screeps-mcp`)
   - `screeps-api` - User stats and shard info via native Screeps API
 - Safety Controls: Read-only analysis mode by default with prohibited destructive actions, rate limiting (every 30 minutes, max 10 issues, max 5 console commands per phase), and graceful error handling
 - Secrets: `SCREEPS_TOKEN` (required), `SCREEPS_STATS_TOKEN`, `SCREEPS_EMAIL`, `SCREEPS_PASSWORD`, `SCREEPS_HOST`, `SCREEPS_PORT`, `SCREEPS_PROTOCOL`, `SCREEPS_SHARD` (optional), `SCREEPS_STATS_HOST`, `SCREEPS_STATS_API` (optional), `COPILOT_TOKEN` (required), `PUSH_TOKEN` (optional for notifications).

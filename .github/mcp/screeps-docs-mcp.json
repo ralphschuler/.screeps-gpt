@@ -1,11 +1,17 @@
 {
   "mcpServers": {
-    "screeps-docs": {
-      "command": "npx",
-      "args": ["-y", "@ralphschuler/screeps-docs-mcp@latest"],
-      "env": {
-        "DOCS_CACHE_TTL": "${DOCS_CACHE_TTL:-3600}"
-      }
+    "screeps-docs-mcp": {
+      "type": "local",
+      "tools": ["*"],
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "-e",
+        "DOCS_CACHE_TTL=${DOCS_CACHE_TTL:-3600}",
+        "ghcr.io/ralphschuler/screeps-docs-mcp:latest"
+      ]
     }
   }
 }
