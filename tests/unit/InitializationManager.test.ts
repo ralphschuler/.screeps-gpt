@@ -271,9 +271,7 @@ describe("InitializationManager", () => {
       const result = manager.tick(game, mockMemory);
 
       expect(result.phasesExecuted).toHaveLength(0);
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.stringContaining("CPU bucket")
-      );
+      expect(mockLogger.warn).toHaveBeenCalledWith(expect.stringContaining("CPU bucket"));
     });
 
     it("should mark complete when all phases executed", () => {
@@ -317,9 +315,7 @@ describe("InitializationManager", () => {
 
       expect(result.complete).toBe(true);
       expect(mockMemory.init?.complete).toBe(true);
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.stringContaining("Max init ticks")
-      );
+      expect(mockLogger.warn).toHaveBeenCalledWith(expect.stringContaining("Max init ticks"));
     });
 
     it("should continue phase execution on next tick", () => {
@@ -393,9 +389,7 @@ describe("InitializationManager", () => {
       const result = manager.tick(game, mockMemory);
 
       // Error phase should be recorded but not stop execution
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.stringContaining("Phase \"error-phase\" failed")
-      );
+      expect(mockLogger.warn).toHaveBeenCalledWith(expect.stringContaining('Phase "error-phase" failed'));
       expect(nextPhase).toHaveBeenCalled();
       expect(result.phasesExecuted).toContain("error-phase");
       expect(result.phasesExecuted).toContain("next-phase");

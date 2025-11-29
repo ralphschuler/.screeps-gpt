@@ -352,9 +352,7 @@ describe("Regression: Initialization Phase Ordering (#1498)", () => {
   });
 
   it("should execute phases in priority order", async () => {
-    const { InitializationManager } = await import(
-      "../../packages/bot/src/runtime/bootstrap/InitializationManager"
-    );
+    const { InitializationManager } = await import("../../packages/bot/src/runtime/bootstrap/InitializationManager");
 
     const executionOrder: string[] = [];
     const manager = new InitializationManager();

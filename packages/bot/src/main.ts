@@ -368,10 +368,9 @@ export const loop = (): void => {
         if (__PROFILER_ENABLED__ === "true") {
           profilerInitialized = true;
         }
-        logger.info(
-          `[Main] Initialization complete, resuming normal operations (tick ${Game.time})`,
-          { component: "Initialization" }
-        );
+        logger.info(`[Main] Initialization complete, resuming normal operations (tick ${Game.time})`, {
+          component: "Initialization"
+        });
       } else {
         // Still initializing - skip kernel execution to preserve CPU budget
         // Defensive Memory.stats init still needed for external probes
