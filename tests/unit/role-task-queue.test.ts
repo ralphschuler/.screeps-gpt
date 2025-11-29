@@ -30,8 +30,9 @@ describe("RoleTaskQueue", () => {
   describe("Task Assignment", () => {
     it("should assign available task to creep", () => {
       const task: TaskQueueEntry = {
-        taskId: "harvest-source-123",
+        taskId: "W1N1-harvest-source-123",
         targetId: "123",
+        roomName: "W1N1",
         priority: TaskPriority.HIGH,
         expiresAt: 1000
       };
@@ -40,7 +41,7 @@ describe("RoleTaskQueue", () => {
       const assigned = manager.assignTask(memory, "harvester", "harvester-1", 100);
 
       expect(assigned).not.toBeNull();
-      expect(assigned?.taskId).toBe("harvest-source-123");
+      expect(assigned?.taskId).toBe("W1N1-harvest-source-123");
       expect(assigned?.assignedCreep).toBe("harvester-1");
     });
 
@@ -51,8 +52,9 @@ describe("RoleTaskQueue", () => {
 
     it("should not assign already assigned task", () => {
       const task: TaskQueueEntry = {
-        taskId: "harvest-source-123",
+        taskId: "W1N1-harvest-source-123",
         targetId: "123",
+        roomName: "W1N1",
         priority: TaskPriority.HIGH,
         expiresAt: 1000
       };
@@ -67,8 +69,9 @@ describe("RoleTaskQueue", () => {
 
     it("should not assign expired task", () => {
       const task: TaskQueueEntry = {
-        taskId: "harvest-source-123",
+        taskId: "W1N1-harvest-source-123",
         targetId: "123",
+        roomName: "W1N1",
         priority: TaskPriority.HIGH,
         expiresAt: 100
       };
@@ -83,15 +86,16 @@ describe("RoleTaskQueue", () => {
   describe("Task Release", () => {
     it("should release completed task", () => {
       const task: TaskQueueEntry = {
-        taskId: "harvest-source-123",
+        taskId: "W1N1-harvest-source-123",
         targetId: "123",
+        roomName: "W1N1",
         priority: TaskPriority.HIGH,
         expiresAt: 1000
       };
 
       manager.addTask(memory, "harvester", task);
       manager.assignTask(memory, "harvester", "harvester-1", 100);
-      manager.releaseTask(memory, "harvest-source-123", "harvester-1");
+      manager.releaseTask(memory, "W1N1-harvest-source-123", "harvester-1");
 
       const available = manager.getAvailableTasks(memory, "harvester", 100);
       expect(available).toHaveLength(0);
@@ -99,27 +103,29 @@ describe("RoleTaskQueue", () => {
 
     it("should not release task assigned to different creep", () => {
       const task: TaskQueueEntry = {
-        taskId: "harvest-source-123",
+        taskId: "W1N1-harvest-source-123",
         targetId: "123",
+        roomName: "W1N1",
         priority: TaskPriority.HIGH,
         expiresAt: 1000
       };
 
       manager.addTask(memory, "harvester", task);
       manager.assignTask(memory, "harvester", "harvester-1", 100);
-      manager.releaseTask(memory, "harvest-source-123", "harvester-2");
+      manager.releaseTask(memory, "W1N1-harvest-source-123", "harvester-2");
 
       const creepTask = manager.getCreepTask(memory, "harvester-1");
       expect(creepTask).not.toBeNull();
-      expect(creepTask?.taskId).toBe("harvest-source-123");
+      expect(creepTask?.taskId).toBe("W1N1-harvest-source-123");
     });
   });
 
   describe("Task Addition", () => {
     it("should add new task to queue", () => {
       const task: TaskQueueEntry = {
-        taskId: "build-site-456",
+        taskId: "W1N1-build-site-456",
         targetId: "456",
+        roomName: "W1N1",
         priority: TaskPriority.NORMAL,
         expiresAt: 1000
       };
@@ -128,13 +134,14 @@ describe("RoleTaskQueue", () => {
       const available = manager.getAvailableTasks(memory, "builder", 100);
 
       expect(available).toHaveLength(1);
-      expect(available[0].taskId).toBe("build-site-456");
+      expect(available[0].taskId).toBe("W1N1-build-site-456");
     });
 
     it("should not add duplicate task", () => {
       const task: TaskQueueEntry = {
-        taskId: "build-site-456",
+        taskId: "W1N1-build-site-456",
         targetId: "456",
+        roomName: "W1N1",
         priority: TaskPriority.NORMAL,
         expiresAt: 1000
       };
@@ -148,15 +155,17 @@ describe("RoleTaskQueue", () => {
 
     it("should update existing unassigned task", () => {
       const task1: TaskQueueEntry = {
-        taskId: "build-site-456",
+        taskId: "W1N1-build-site-456",
         targetId: "456",
+        roomName: "W1N1",
         priority: TaskPriority.NORMAL,
         expiresAt: 1000
       };
 
       const task2: TaskQueueEntry = {
-        taskId: "build-site-456",
+        taskId: "W1N1-build-site-456",
         targetId: "456",
+        roomName: "W1N1",
         priority: TaskPriority.CRITICAL,
         expiresAt: 2000
       };
@@ -172,8 +181,9 @@ describe("RoleTaskQueue", () => {
 
     it("should not update assigned task", () => {
       const task1: TaskQueueEntry = {
-        taskId: "build-site-456",
+        taskId: "W1N1-build-site-456",
         targetId: "456",
+        roomName: "W1N1",
         priority: TaskPriority.NORMAL,
         expiresAt: 1000
       };
@@ -182,8 +192,9 @@ describe("RoleTaskQueue", () => {
       manager.assignTask(memory, "builder", "builder-1", 100);
 
       const task2: TaskQueueEntry = {
-        taskId: "build-site-456",
+        taskId: "W1N1-build-site-456",
         targetId: "456",
+        roomName: "W1N1",
         priority: TaskPriority.CRITICAL,
         expiresAt: 2000
       };
@@ -197,22 +208,25 @@ describe("RoleTaskQueue", () => {
 
     it("should sort tasks by priority", () => {
       const task1: TaskQueueEntry = {
-        taskId: "task-1",
+        taskId: "W1N1-task-1",
         targetId: "1",
+        roomName: "W1N1",
         priority: TaskPriority.LOW,
         expiresAt: 1000
       };
 
       const task2: TaskQueueEntry = {
-        taskId: "task-2",
+        taskId: "W1N1-task-2",
         targetId: "2",
+        roomName: "W1N1",
         priority: TaskPriority.CRITICAL,
         expiresAt: 1000
       };
 
       const task3: TaskQueueEntry = {
-        taskId: "task-3",
+        taskId: "W1N1-task-3",
         targetId: "3",
+        roomName: "W1N1",
         priority: TaskPriority.HIGH,
         expiresAt: 1000
       };
@@ -222,24 +236,26 @@ describe("RoleTaskQueue", () => {
       manager.addTask(memory, "builder", task3);
 
       const available = manager.getAvailableTasks(memory, "builder", 100);
-      expect(available[0].taskId).toBe("task-2"); // CRITICAL first
-      expect(available[1].taskId).toBe("task-3"); // HIGH second
-      expect(available[2].taskId).toBe("task-1"); // LOW last
+      expect(available[0].taskId).toBe("W1N1-task-2"); // CRITICAL first
+      expect(available[1].taskId).toBe("W1N1-task-3"); // HIGH second
+      expect(available[2].taskId).toBe("W1N1-task-1"); // LOW last
     });
   });
 
   describe("Task Expiration", () => {
     it("should cleanup expired tasks", () => {
       const task1: TaskQueueEntry = {
-        taskId: "task-1",
+        taskId: "W1N1-task-1",
         targetId: "1",
+        roomName: "W1N1",
         priority: TaskPriority.NORMAL,
         expiresAt: 100
       };
 
       const task2: TaskQueueEntry = {
-        taskId: "task-2",
+        taskId: "W1N1-task-2",
         targetId: "2",
+        roomName: "W1N1",
         priority: TaskPriority.NORMAL,
         expiresAt: 1000
       };
@@ -251,20 +267,22 @@ describe("RoleTaskQueue", () => {
 
       const available = manager.getAvailableTasks(memory, "builder", 500);
       expect(available).toHaveLength(1);
-      expect(available[0].taskId).toBe("task-2");
+      expect(available[0].taskId).toBe("W1N1-task-2");
     });
 
     it("should cleanup expired tasks during assignment", () => {
       const task1: TaskQueueEntry = {
-        taskId: "task-1",
+        taskId: "W1N1-task-1",
         targetId: "1",
+        roomName: "W1N1",
         priority: TaskPriority.CRITICAL,
         expiresAt: 100
       };
 
       const task2: TaskQueueEntry = {
-        taskId: "task-2",
+        taskId: "W1N1-task-2",
         targetId: "2",
+        roomName: "W1N1",
         priority: TaskPriority.NORMAL,
         expiresAt: 1000
       };
@@ -275,7 +293,7 @@ describe("RoleTaskQueue", () => {
       const assigned = manager.assignTask(memory, "builder", "builder-1", 500);
 
       // Should skip expired task-1 and assign task-2
-      expect(assigned?.taskId).toBe("task-2");
+      expect(assigned?.taskId).toBe("W1N1-task-2");
     });
   });
 
@@ -284,8 +302,9 @@ describe("RoleTaskQueue", () => {
       mockGame.creeps = { "harvester-1": {} };
 
       const task: TaskQueueEntry = {
-        taskId: "harvest-source-123",
+        taskId: "W1N1-harvest-source-123",
         targetId: "123",
+        roomName: "W1N1",
         priority: TaskPriority.HIGH,
         expiresAt: 1000
       };
@@ -306,15 +325,17 @@ describe("RoleTaskQueue", () => {
       mockGame.creeps = { "harvester-1": {}, "harvester-2": {} };
 
       const task1: TaskQueueEntry = {
-        taskId: "harvest-source-123",
+        taskId: "W1N1-harvest-source-123",
         targetId: "123",
+        roomName: "W1N1",
         priority: TaskPriority.HIGH,
         expiresAt: 1000
       };
 
       const task2: TaskQueueEntry = {
-        taskId: "harvest-source-456",
+        taskId: "W1N1-harvest-source-456",
         targetId: "456",
+        roomName: "W1N1",
         priority: TaskPriority.HIGH,
         expiresAt: 1000
       };
@@ -340,15 +361,17 @@ describe("RoleTaskQueue", () => {
   describe("Queue Management", () => {
     it("should get available tasks for role", () => {
       const task1: TaskQueueEntry = {
-        taskId: "task-1",
+        taskId: "W1N1-task-1",
         targetId: "1",
+        roomName: "W1N1",
         priority: TaskPriority.HIGH,
         expiresAt: 1000
       };
 
       const task2: TaskQueueEntry = {
-        taskId: "task-2",
+        taskId: "W1N1-task-2",
         targetId: "2",
+        roomName: "W1N1",
         priority: TaskPriority.HIGH,
         expiresAt: 1000
       };
@@ -359,13 +382,14 @@ describe("RoleTaskQueue", () => {
 
       const available = manager.getAvailableTasks(memory, "builder", 100);
       expect(available).toHaveLength(1);
-      expect(available[0].taskId).toBe("task-2");
+      expect(available[0].taskId).toBe("W1N1-task-2");
     });
 
     it("should clear role queue", () => {
       const task: TaskQueueEntry = {
-        taskId: "task-1",
+        taskId: "W1N1-task-1",
         targetId: "1",
+        roomName: "W1N1",
         priority: TaskPriority.NORMAL,
         expiresAt: 1000
       };
@@ -379,22 +403,25 @@ describe("RoleTaskQueue", () => {
 
     it("should get queue statistics", () => {
       const task1: TaskQueueEntry = {
-        taskId: "task-1",
+        taskId: "W1N1-task-1",
         targetId: "1",
+        roomName: "W1N1",
         priority: TaskPriority.HIGH,
         expiresAt: 1000
       };
 
       const task2: TaskQueueEntry = {
-        taskId: "task-2",
+        taskId: "W1N1-task-2",
         targetId: "2",
+        roomName: "W1N1",
         priority: TaskPriority.HIGH,
         expiresAt: 1000
       };
 
       const task3: TaskQueueEntry = {
-        taskId: "task-3",
+        taskId: "W1N1-task-3",
         targetId: "3",
+        roomName: "W1N1",
         priority: TaskPriority.HIGH,
         expiresAt: 1000
       };
@@ -413,15 +440,17 @@ describe("RoleTaskQueue", () => {
 
     it("should handle multiple roles independently", () => {
       const harvesterTask: TaskQueueEntry = {
-        taskId: "harvest-source-123",
+        taskId: "W1N1-harvest-source-123",
         targetId: "123",
+        roomName: "W1N1",
         priority: TaskPriority.HIGH,
         expiresAt: 1000
       };
 
       const builderTask: TaskQueueEntry = {
-        taskId: "build-site-456",
+        taskId: "W1N1-build-site-456",
         targetId: "456",
+        roomName: "W1N1",
         priority: TaskPriority.NORMAL,
         expiresAt: 1000
       };
@@ -434,16 +463,17 @@ describe("RoleTaskQueue", () => {
 
       expect(harvesterTasks).toHaveLength(1);
       expect(builderTasks).toHaveLength(1);
-      expect(harvesterTasks[0].taskId).toBe("harvest-source-123");
-      expect(builderTasks[0].taskId).toBe("build-site-456");
+      expect(harvesterTasks[0].taskId).toBe("W1N1-harvest-source-123");
+      expect(builderTasks[0].taskId).toBe("W1N1-build-site-456");
     });
   });
 
   describe("Creep Task Lookup", () => {
     it("should find task assigned to creep", () => {
       const task: TaskQueueEntry = {
-        taskId: "harvest-source-123",
+        taskId: "W1N1-harvest-source-123",
         targetId: "123",
+        roomName: "W1N1",
         priority: TaskPriority.HIGH,
         expiresAt: 1000
       };
@@ -453,12 +483,110 @@ describe("RoleTaskQueue", () => {
 
       const creepTask = manager.getCreepTask(memory, "harvester-1");
       expect(creepTask).not.toBeNull();
-      expect(creepTask?.taskId).toBe("harvest-source-123");
+      expect(creepTask?.taskId).toBe("W1N1-harvest-source-123");
     });
 
     it("should return null for creep with no task", () => {
       const creepTask = manager.getCreepTask(memory, "harvester-1");
       expect(creepTask).toBeNull();
+    });
+  });
+
+  describe("Room-aware task counting", () => {
+    it("should count tasks for a specific room only", () => {
+      const task1: TaskQueueEntry = {
+        taskId: "W1N1-task-1",
+        targetId: "1",
+        roomName: "W1N1",
+        priority: TaskPriority.HIGH,
+        expiresAt: 1000
+      };
+
+      const task2: TaskQueueEntry = {
+        taskId: "W1N2-task-2",
+        targetId: "2",
+        roomName: "W1N2",
+        priority: TaskPriority.HIGH,
+        expiresAt: 1000
+      };
+
+      const task3: TaskQueueEntry = {
+        taskId: "W1N1-task-3",
+        targetId: "3",
+        roomName: "W1N1",
+        priority: TaskPriority.NORMAL,
+        expiresAt: 1000
+      };
+
+      manager.addTask(memory, "builder", task1);
+      manager.addTask(memory, "builder", task2);
+      manager.addTask(memory, "builder", task3);
+
+      const countW1N1 = manager.getTaskCountForRoom(memory, "builder", "W1N1", 100);
+      const countW1N2 = manager.getTaskCountForRoom(memory, "builder", "W1N2", 100);
+      const countW1N3 = manager.getTaskCountForRoom(memory, "builder", "W1N3", 100);
+
+      expect(countW1N1).toBe(2);
+      expect(countW1N2).toBe(1);
+      expect(countW1N3).toBe(0);
+    });
+
+    it("should return 0 for empty role queue", () => {
+      const count = manager.getTaskCountForRoom(memory, "builder", "W1N1", 100);
+      expect(count).toBe(0);
+    });
+
+    it("should not count expired tasks for a room", () => {
+      const expiredTask: TaskQueueEntry = {
+        taskId: "W1N1-task-1",
+        targetId: "1",
+        roomName: "W1N1",
+        priority: TaskPriority.HIGH,
+        expiresAt: 100
+      };
+
+      const validTask: TaskQueueEntry = {
+        taskId: "W1N1-task-2",
+        targetId: "2",
+        roomName: "W1N1",
+        priority: TaskPriority.HIGH,
+        expiresAt: 1000
+      };
+
+      manager.addTask(memory, "builder", expiredTask);
+      manager.addTask(memory, "builder", validTask);
+
+      // At tick 500, only the validTask (expiresAt: 1000) should be counted
+      const count = manager.getTaskCountForRoom(memory, "builder", "W1N1", 500);
+      expect(count).toBe(1);
+    });
+
+    it("should not count assigned tasks for a room", () => {
+      const task1: TaskQueueEntry = {
+        taskId: "W1N1-task-1",
+        targetId: "1",
+        roomName: "W1N1",
+        priority: TaskPriority.HIGH,
+        expiresAt: 1000
+      };
+
+      const task2: TaskQueueEntry = {
+        taskId: "W1N1-task-2",
+        targetId: "2",
+        roomName: "W1N1",
+        priority: TaskPriority.HIGH,
+        expiresAt: 1000
+      };
+
+      manager.addTask(memory, "builder", task1);
+      manager.addTask(memory, "builder", task2);
+
+      // Assign one task to a creep
+      manager.assignTask(memory, "builder", "builder-1", 100);
+
+      // Only unassigned task should be counted
+      const count = manager.getTaskCountForRoom(memory, "builder", "W1N1", 100);
+      expect(count).toBe(1);
     });
   });
 });

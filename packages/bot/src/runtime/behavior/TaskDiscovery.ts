@@ -25,14 +25,16 @@ const TASK_EXPIRATION = {
  */
 export function discoverHarvestTasks(room: Room, currentTick: number): TaskQueueEntry[] {
   const tasks: TaskQueueEntry[] = [];
+  const roomName = room.name;
 
   // Find active energy sources
   const sources = room.find(FIND_SOURCES_ACTIVE);
 
   for (const source of sources) {
     tasks.push({
-      taskId: `harvest-source-${source.id}`,
+      taskId: `${roomName}-harvest-source-${source.id}`,
       targetId: source.id,
+      roomName,
       priority: TaskPriority.HIGH,
       expiresAt: currentTick + TASK_EXPIRATION.HARVEST
     });
@@ -46,6 +48,7 @@ export function discoverHarvestTasks(room: Room, currentTick: number): TaskQueue
  */
 export function discoverBuildTasks(room: Room, currentTick: number): TaskQueueEntry[] {
   const tasks: TaskQueueEntry[] = [];
+  const roomName = room.name;
 
   // Find construction sites with priority ordering
   const constructionPriorities = [
@@ -66,8 +69,9 @@ export function discoverBuildTasks(room: Room, currentTick: number): TaskQueueEn
     const priority = priorityConfig?.priority ?? TaskPriority.NORMAL;
 
     tasks.push({
-      taskId: `build-${site.id}`,
+      taskId: `${roomName}-build-${site.id}`,
       targetId: site.id,
+      roomName,
       priority,
       expiresAt: currentTick + TASK_EXPIRATION.BUILD
     });
@@ -81,6 +85,7 @@ export function discoverBuildTasks(room: Room, currentTick: number): TaskQueueEn
  */
 export function discoverRepairTasks(room: Room, currentTick: number, targetHits: number = 0): TaskQueueEntry[] {
   const tasks: TaskQueueEntry[] = [];
+  const roomName = room.name;
 
   // Find structures needing repair (excluding walls/ramparts which have separate logic)
   const structures = room.find(FIND_STRUCTURES, {
@@ -111,8 +116,9 @@ export function discoverRepairTasks(room: Room, currentTick: number, targetHits:
     }
 
     tasks.push({
-      taskId: `repair-${structure.id}`,
+      taskId: `${roomName}-repair-${structure.id}`,
       targetId: structure.id,
+      roomName,
       priority,
       expiresAt: currentTick + TASK_EXPIRATION.REPAIR
     });
@@ -126,6 +132,7 @@ export function discoverRepairTasks(room: Room, currentTick: number, targetHits:
  */
 export function discoverPickupTasks(room: Room, currentTick: number, minAmount: number = 20): TaskQueueEntry[] {
   const tasks: TaskQueueEntry[] = [];
+  const roomName = room.name;
 
   // Find dropped energy
   const droppedEnergy = room.find(FIND_DROPPED_RESOURCES, {
@@ -134,8 +141,9 @@ export function discoverPickupTasks(room: Room, currentTick: number, minAmount: 
 
   for (const resource of droppedEnergy) {
     tasks.push({
-      taskId: `pickup-energy-${resource.id}`,
+      taskId: `${roomName}-pickup-energy-${resource.id}`,
       targetId: resource.id,
+      roomName,
       priority: TaskPriority.HIGH,
       expiresAt: currentTick + TASK_EXPIRATION.PICKUP
     });
@@ -148,8 +156,9 @@ export function discoverPickupTasks(room: Room, currentTick: number, minAmount: 
 
   for (const container of containers) {
     tasks.push({
-      taskId: `pickup-container-${container.id}`,
+      taskId: `${roomName}-pickup-container-${container.id}`,
       targetId: container.id,
+      roomName,
       priority: TaskPriority.NORMAL,
       expiresAt: currentTick + TASK_EXPIRATION.PICKUP
     });
@@ -163,6 +172,7 @@ export function discoverPickupTasks(room: Room, currentTick: number, minAmount: 
  */
 export function discoverDeliveryTasks(room: Room, currentTick: number): TaskQueueEntry[] {
   const tasks: TaskQueueEntry[] = [];
+  const roomName = room.name;
 
   // Critical: spawns and extensions needing energy
   const spawnsExtensions = room.find(FIND_STRUCTURES, {
@@ -173,8 +183,9 @@ export function discoverDeliveryTasks(room: Room, currentTick: number): TaskQueu
 
   for (const structure of spawnsExtensions) {
     tasks.push({
-      taskId: `deliver-${structure.id}`,
+      taskId: `${roomName}-deliver-${structure.id}`,
       targetId: structure.id,
+      roomName,
       priority: TaskPriority.CRITICAL,
       expiresAt: currentTick + TASK_EXPIRATION.DELIVER
     });
@@ -188,8 +199,9 @@ export function discoverDeliveryTasks(room: Room, currentTick: number): TaskQueu
 
   for (const tower of towers) {
     tasks.push({
-      taskId: `deliver-${tower.id}`,
+      taskId: `${roomName}-deliver-${tower.id}`,
       targetId: tower.id,
+      roomName,
       priority: TaskPriority.HIGH,
       expiresAt: currentTick + TASK_EXPIRATION.DELIVER
     });
@@ -204,8 +216,9 @@ export function discoverDeliveryTasks(room: Room, currentTick: number): TaskQueu
     room.storage.store.getFreeCapacity(RESOURCE_ENERGY) > 0
   ) {
     tasks.push({
-      taskId: `deliver-${room.storage.id}`,
+      taskId: `${roomName}-deliver-${room.storage.id}`,
       targetId: room.storage.id,
+      roomName,
       priority: TaskPriority.NORMAL,
       expiresAt: currentTick + TASK_EXPIRATION.DELIVER
     });
@@ -219,14 +232,16 @@ export function discoverDeliveryTasks(room: Room, currentTick: number): TaskQueu
  */
 export function discoverUpgradeTasks(room: Room, currentTick: number): TaskQueueEntry[] {
   const tasks: TaskQueueEntry[] = [];
+  const roomName = room.name;
 
   if (room.controller?.my) {
     // Create a single upgrade task per controller
     // Multiple upgraders can work on the same controller, but we track it to prevent
     // all upgraders from idling if one is assigned
     tasks.push({
-      taskId: `upgrade-${room.controller.id}`,
+      taskId: `${roomName}-upgrade-${room.controller.id}`,
       targetId: room.controller.id,
+      roomName,
       priority: TaskPriority.NORMAL,
       expiresAt: currentTick + TASK_EXPIRATION.UPGRADE
     });
@@ -240,6 +255,7 @@ export function discoverUpgradeTasks(room: Room, currentTick: number): TaskQueue
  */
 export function discoverStationaryHarvestTasks(room: Room, currentTick: number): TaskQueueEntry[] {
   const tasks: TaskQueueEntry[] = [];
+  const roomName = room.name;
 
   // Find all energy sources
   const sources = room.find(FIND_SOURCES);
@@ -258,8 +274,9 @@ export function discoverStationaryHarvestTasks(room: Room, currentTick: number):
     // Only create task if container exists (stationary harvesters need containers)
     if (nearbyStructures.length > 0) {
       tasks.push({
-        taskId: `stationary-harvest-${source.id}`,
+        taskId: `${roomName}-stationary-harvest-${source.id}`,
         targetId: source.id,
+        roomName,
         priority: TaskPriority.HIGH,
         expiresAt: currentTick + TASK_EXPIRATION.HARVEST
       });

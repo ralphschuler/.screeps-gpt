@@ -14,7 +14,7 @@
  */
 
 import type { BehaviorSummary } from "@shared/contracts";
-import type { CreepLike, GameContext } from "@runtime/types/GameContext";
+import type { CreepLike, GameContext, SpawnLike } from "@runtime/types/GameContext";
 import { profile } from "@ralphschuler/screeps-profiler";
 import { CreepCommunicationManager } from "./CreepCommunicationManager";
 import { EnergyPriorityManager } from "@runtime/energy";
@@ -645,14 +645,9 @@ export class RoleControllerManager {
       const scalingFactor = config.scalingFactor ?? 4;
       let targetMinimum = bootstrapMinimums[role] ?? config.minimum;
 
-      // Task-based demand calculation: scale workforce based on pending tasks
-      // Get pending task count for this role from task queue with type validation
-      const taskQueue = memory.taskQueue as Record<string, unknown> | undefined;
-      const roleTaskQueue = taskQueue?.[role];
-      const pendingTasks = Array.isArray(roleTaskQueue) ? roleTaskQueue.length : 0;
-      if (pendingTasks > 0 && scalingFactor > 0) {
-        const demandBasedTarget = Math.ceil(pendingTasks / scalingFactor);
-        targetMinimum = Math.max(targetMinimum, Math.min(demandBasedTarget, roleMaximum));
+      // Enforce maximum constraint: never exceed role maximum
+      if (current >= roleMaximum) {
+        continue; // Already at max capacity for this role
       }
 
       // Dynamically increase claimer minimum when expansion is pending
@@ -733,19 +728,77 @@ export class RoleControllerManager {
       // Final safety check: ensure targetMinimum never exceeds roleMaximum
       targetMinimum = Math.min(targetMinimum, roleMaximum);
 
-      // Enforce maximum constraint: never exceed role maximum
-      if (current >= roleMaximum) {
-        continue; // Already at max capacity for this role
-      }
-
-      if (current >= targetMinimum) {
+      // Early exit if current count meets base minimum (before task-based scaling)
+      // We'll check again after task-based scaling with spawn's room context
+      if (current >= targetMinimum && scalingFactor === 0) {
         continue;
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const spawn = this.findAvailableSpawn(game.spawns);
+      // Find the best spawn for this role:
+      // 1. For task-based roles (scalingFactor > 0), prefer a spawn whose room has pending tasks
+      // 2. For non-task-based roles, use any available spawn
+      // This ensures Room B's spawn handles Room B's tasks, not just Room A's spawn
+      let spawn: SpawnLike | undefined;
+      let spawnRoomName: string | undefined;
+
+      if (scalingFactor > 0) {
+        // Try to find a spawn in a room with pending tasks for this role
+        for (const candidateSpawn of Object.values(game.spawns)) {
+          if (candidateSpawn.spawning) {
+            continue; // Skip spawns that are busy
+          }
+
+          const candidateRoomName = (candidateSpawn.room as Room)?.name;
+          if (candidateRoomName) {
+            const pendingTasksInRoom = this.taskQueueManager.getTaskCountForRoom(
+              memory,
+              role,
+              candidateRoomName,
+              game.time
+            );
+            if (pendingTasksInRoom > 0) {
+              // Found a spawn with pending tasks - use this one
+              spawn = candidateSpawn;
+              spawnRoomName = candidateRoomName;
+              break;
+            }
+          }
+
+          // Track first available spawn as fallback
+          if (!spawn) {
+            spawn = candidateSpawn;
+            spawnRoomName = candidateRoomName;
+          }
+        }
+      } else {
+        // Non-task-based roles: use any available spawn
+        spawn = this.findAvailableSpawn(game.spawns);
+        spawnRoomName = spawn ? (spawn.room as Room)?.name : undefined;
+      }
+
       if (!spawn) {
         continue; // No available spawns
+      }
+
+      // Task-based demand calculation: scale workforce based on pending tasks IN THE SPAWN'S ROOM
+      // This prevents cross-room over-spawning where Room A spawns builders for Room B's tasks
+      // Only count unassigned, non-expired tasks for accurate demand
+      if (scalingFactor > 0 && spawnRoomName) {
+        const pendingTasksInRoom = this.taskQueueManager.getTaskCountForRoom(
+          memory,
+          role,
+          spawnRoomName,
+          game.time
+        );
+        if (pendingTasksInRoom > 0) {
+          const demandBasedTarget = Math.ceil(pendingTasksInRoom / scalingFactor);
+          targetMinimum = Math.max(targetMinimum, Math.min(demandBasedTarget, roleMaximum));
+        }
+      }
+
+      // Check again after task-based scaling
+      if (current >= targetMinimum) {
+        continue;
       }
 
       // Get spawn energy details using helper to avoid type casting issues
@@ -893,10 +946,8 @@ export class RoleControllerManager {
   /**
    * Find an available spawn that is not currently spawning.
    */
-  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   private findAvailableSpawn(spawns: Record<string, SpawnLike>): SpawnLike | undefined {
     for (const spawn of Object.values(spawns)) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (!spawn.spawning) {
         return spawn;
       }
@@ -912,15 +963,11 @@ export class RoleControllerManager {
     spawn: SpawnLike,
     isEmergencyMode: boolean
   ): { energyAvailable: number; energyCapacity: number; energyToUse: number; room: Room | undefined } {
-    // Type guard to safely access room properties
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const room = spawn.room;
 
     // Extract energy values with fallback defaults
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const energyAvailable = (room.energyAvailable as number | undefined) ?? 300;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const energyCapacity = (room.energyCapacityAvailable as number | undefined) ?? 300;
+    const energyAvailable = room.energyAvailable ?? 300;
+    const energyCapacity = room.energyCapacityAvailable ?? 300;
 
     // EMERGENCY MODE: Use actual available energy instead of capacity
     const energyToUse = isEmergencyMode ? energyAvailable : energyCapacity;
@@ -942,7 +989,6 @@ export class RoleControllerManager {
     name: string,
     memory: CreepMemory
   ): ScreepsReturnCode {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     return spawn.spawnCreep(body, name, { memory });
   }
 
@@ -964,13 +1010,11 @@ export class RoleControllerManager {
     logPrefix: string,
     namePrefix: string
   ): { success: boolean; blocked: boolean; error?: string } {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const spawn = this.findAvailableSpawn(game.spawns);
     if (!spawn) {
       return { success: false, blocked: true, error: "No spawn available" };
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const room = spawn.room as Room;
     const energyAvailable = room.energyAvailable;
 

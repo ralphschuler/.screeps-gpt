@@ -288,11 +288,13 @@ describe("Dynamic Workforce Scaling System", () => {
       };
 
       // Add pending tasks for builders (12 tasks / scalingFactor 4 = 3 needed)
+      // Tasks must include roomName to match spawn's room for room-aware scaling
       const mockTasks = Array(12)
         .fill(null)
         .map((_, i) => ({
-          taskId: `build-${i}`,
+          taskId: `E54N39-build-${i}`,
           targetId: `site-${i}`,
+          roomName: "E54N39",
           priority: 2,
           expiresAt: 1000
         }));

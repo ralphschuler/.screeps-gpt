@@ -5,6 +5,15 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Fixed
+
+- **Task System**: Fixed cross-room over-spawning issue where tasks from multiple rooms caused excessive creep spawning
+  - Added `roomName` field to `TaskQueueEntry` to track which room each task belongs to
+  - Updated task discovery functions to include room name in task IDs (e.g., `W1N1-build-site-123`)
+  - Added `getTaskCountForRoom()` method to `RoleTaskQueueManager` for room-specific task counting
+  - Modified spawn scaling logic to only count tasks from the spawn's room when calculating workforce needs
+  - This prevents scenarios where builders are spawned in Room A due to construction sites in Room B
+
 ## [0.187.9] - 2025-11-29
 
 ### Fixed
