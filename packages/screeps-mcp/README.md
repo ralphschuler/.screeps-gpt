@@ -398,7 +398,31 @@ npm run test:coverage
 
 # Watch mode
 npm run test:watch
+
+# Run MCP Inspector tests (protocol compliance)
+npm run test:inspector
 ```
+
+### MCP Inspector Testing
+
+This package includes integration tests that use the MCP SDK client to validate protocol compliance. The tests are inspired by the [MCP Inspector](https://github.com/modelcontextprotocol/inspector) approach.
+
+**Interactive inspection:**
+
+```bash
+# Launch the MCP Inspector UI (requires Node.js 22.7.5+)
+npm run inspect
+
+# CLI mode for quick testing
+npm run inspect:cli
+```
+
+**Automated tests verify:**
+
+- MCP connection establishment
+- Tool registration and listing
+- Resource registration and listing
+- Protocol schema compliance
 
 ### Test Coverage
 

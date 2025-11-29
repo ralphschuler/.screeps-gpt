@@ -207,6 +207,54 @@ The following workflows leverage Screeps MCP servers:
 | `copilot-todo-daily.yml` | All servers | Informed prioritization decisions |
 | `screeps-monitoring.yml` | screeps-mcp | Live game monitoring |
 
+## Testing MCP Servers
+
+### MCP Inspector Integration
+
+Each MCP server package includes automated tests using the official MCP SDK client for protocol compliance testing. This approach implements the testing methodology from [MCP Inspector](https://github.com/modelcontextprotocol/inspector).
+
+**Available test commands:**
+
+```bash
+# Test individual MCP servers
+cd packages/screeps-mcp && npm run test:inspector
+cd packages/screeps-docs-mcp && npm run test:inspector
+cd packages/screeps-wiki-mcp && npm run test:inspector
+
+# Test all MCP servers from root
+yarn test:mcp:inspector
+
+# Interactive inspection (UI mode - requires Node.js 22.7.5+)
+cd packages/screeps-mcp && npm run inspect
+
+# CLI inspection
+cd packages/screeps-mcp && npm run inspect:cli
+```
+
+**What is tested:**
+
+- **Protocol compliance**: Connection establishment and capability negotiation
+- **Tools listing**: All registered tools are properly exposed with descriptions
+- **Resources listing**: All resources are available with correct URI schemes
+- **Schema validation**: Tool input schemas are properly defined
+
+### Manual Testing with MCP Inspector
+
+For interactive debugging and testing, use the MCP Inspector UI:
+
+```bash
+# Start the Inspector with a specific MCP server
+npx @modelcontextprotocol/inspector node packages/screeps-mcp/dist/server.js
+
+# The Inspector UI opens at http://localhost:6274
+```
+
+The Inspector provides:
+- Visual interface for tool and resource exploration
+- Real-time testing of tool calls
+- Request/response logging
+- Protocol compliance verification
+
 ## Troubleshooting
 
 ### Common Issues
