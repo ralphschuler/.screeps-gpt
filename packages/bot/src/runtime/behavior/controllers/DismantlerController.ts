@@ -146,6 +146,22 @@ export class DismantlerController extends BaseRoleController<DismantlerMemory> {
   }
 
   /**
+   * Check if a structure is near a room edge (within 1 tile).
+   * Structures at room edges are often novice/respawn zone walls blocking exits
+   * and should be ignored to prevent wasting time trying to dismantle them.
+   *
+   * Room coordinates range from 0 to 49. Edges are at 0 and 49.
+   * We ignore structures where x <= 1 OR x >= 48 OR y <= 1 OR y >= 48.
+   *
+   * @param structure - The structure to check
+   * @returns true if the structure is within 1 tile of the room edge
+   */
+  private isNearRoomEdge(structure: AnyStructure): boolean {
+    const { x, y } = structure.pos;
+    return x <= 1 || x >= 48 || y <= 1 || y >= 48;
+  }
+
+  /**
    * Find target structures based on dismantler mode.
    *
    * @param creep - The dismantler creep
@@ -155,8 +171,9 @@ export class DismantlerController extends BaseRoleController<DismantlerMemory> {
   private findTargetStructures(creep: CreepLike, mode: DismantlerMode): AnyStructure[] {
     if (mode === "combat") {
       // Combat mode: target hostile structures (enemy-owned)
+      // Ignore structures near room edges to avoid novice/respawn zone walls
       return creep.room.find(FIND_HOSTILE_STRUCTURES, {
-        filter: (s: AnyStructure) => s.structureType !== STRUCTURE_CONTROLLER
+        filter: (s: AnyStructure) => s.structureType !== STRUCTURE_CONTROLLER && !this.isNearRoomEdge(s)
       }) as AnyStructure[];
     }
 
@@ -177,6 +194,13 @@ export class DismantlerController extends BaseRoleController<DismantlerMemory> {
       filter: (s: AnyStructure) => {
         // Never dismantle controllers
         if (s.structureType === STRUCTURE_CONTROLLER) {
+          return false;
+        }
+
+        // Ignore structures near room edges (within 1 tile)
+        // Novice/respawn zone walls are placed along the edges to block exits
+        // These walls cannot be dismantled and should be ignored
+        if (this.isNearRoomEdge(s)) {
           return false;
         }
 

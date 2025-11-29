@@ -90,18 +90,23 @@ describe("DismantlerController", () => {
       const hostileStructure = {
         id: "hostile1" as Id<Structure>,
         structureType: STRUCTURE_SPAWN,
-        my: false
+        my: false,
+        pos: { x: 25, y: 25 } // Interior position
       };
 
       const room = {
         name: "W1N1",
         controller: { my: true },
-        find: vi.fn((type: number, _opts?: { filter?: (s: AnyStructure) => boolean }) => {
+        find: vi.fn((type: number, opts?: { filter?: (s: AnyStructure) => boolean }) => {
           if (type === FIND_HOSTILE_STRUCTURES) {
             return [];
           }
           if (type === FIND_STRUCTURES) {
-            return [hostileStructure];
+            const structures = [hostileStructure];
+            if (opts?.filter) {
+              return structures.filter(s => opts.filter!(s as unknown as AnyStructure));
+            }
+            return structures;
           }
           return [];
         })
@@ -140,15 +145,20 @@ describe("DismantlerController", () => {
       const hostileStructure = {
         id: "hostile1" as Id<Structure>,
         structureType: STRUCTURE_SPAWN,
-        my: false
+        my: false,
+        pos: { x: 25, y: 25 } // Interior position
       };
 
       const room = {
         name: "W1N1",
         controller: { my: false }, // Enemy room
-        find: vi.fn((type: number) => {
+        find: vi.fn((type: number, opts?: { filter?: (s: AnyStructure) => boolean }) => {
           if (type === FIND_HOSTILE_STRUCTURES) {
-            return [hostileStructure];
+            const structures = [hostileStructure];
+            if (opts?.filter) {
+              return structures.filter(s => opts.filter!(s as unknown as AnyStructure));
+            }
+            return structures;
           }
           return [];
         })
@@ -191,7 +201,8 @@ describe("DismantlerController", () => {
       const enemySpawn = {
         id: "enemy-spawn" as Id<Structure>,
         structureType: STRUCTURE_SPAWN,
-        my: false // Not ours
+        my: false, // Not ours
+        pos: { x: 25, y: 25 } // Interior position
       };
 
       const room = {
@@ -244,7 +255,8 @@ describe("DismantlerController", () => {
       const ourSpawn = {
         id: "our-spawn" as Id<Structure>,
         structureType: STRUCTURE_SPAWN,
-        my: true // Ours - should not target
+        my: true, // Ours - should not target
+        pos: { x: 25, y: 25 } // Interior position
       };
 
       const room = {
@@ -288,13 +300,15 @@ describe("DismantlerController", () => {
 
       const road = {
         id: "old-road" as Id<Structure>,
-        structureType: STRUCTURE_ROAD
+        structureType: STRUCTURE_ROAD,
+        pos: { x: 25, y: 25 } // Interior position
         // Roads don't have 'my' property
       };
 
       const container = {
         id: "old-container" as Id<Structure>,
-        structureType: STRUCTURE_CONTAINER
+        structureType: STRUCTURE_CONTAINER,
+        pos: { x: 26, y: 25 } // Interior position
         // Containers don't have 'my' property
       };
 
@@ -342,7 +356,8 @@ describe("DismantlerController", () => {
         structureType: STRUCTURE_WALL,
         // Constructed walls have hits property (unlike novice/respawn zone walls)
         hits: 1000,
-        hitsMax: 300000000
+        hitsMax: 300000000,
+        pos: { x: 25, y: 25 } // Interior position
       };
 
       const room = {
@@ -390,7 +405,8 @@ describe("DismantlerController", () => {
       // - Decay automatically when the zone timer expires
       const noviceZoneWall = {
         id: "zone-wall" as Id<Structure>,
-        structureType: STRUCTURE_WALL
+        structureType: STRUCTURE_WALL,
+        pos: { x: 25, y: 25 } // Interior position but no hits
         // No hits property - this is a novice/respawn zone wall
       };
 
@@ -472,6 +488,185 @@ describe("DismantlerController", () => {
       controller.execute(creep);
 
       // Should NOT have called dismantle since room is not ours
+      expect(creep.dismantle).not.toHaveBeenCalled();
+    });
+
+    it("should NOT target structures near room edges (novice zone walls)", () => {
+      const controller = new DismantlerController();
+
+      // Wall at room edge x=0 (novice zone wall location)
+      const edgeWallLeft = {
+        id: "edge-wall-left" as Id<Structure>,
+        structureType: STRUCTURE_WALL,
+        hits: 1000, // Has hits, but at edge
+        hitsMax: 300000000,
+        pos: { x: 0, y: 25 }
+      };
+
+      // Wall at room edge x=1 (within 1 tile of edge)
+      const nearEdgeWallLeft = {
+        id: "near-edge-wall-left" as Id<Structure>,
+        structureType: STRUCTURE_WALL,
+        hits: 1000,
+        hitsMax: 300000000,
+        pos: { x: 1, y: 25 }
+      };
+
+      // Wall at room edge y=49 (novice zone wall location)
+      const edgeWallBottom = {
+        id: "edge-wall-bottom" as Id<Structure>,
+        structureType: STRUCTURE_WALL,
+        hits: 1000,
+        hitsMax: 300000000,
+        pos: { x: 25, y: 49 }
+      };
+
+      // Wall at room edge y=48 (within 1 tile of edge)
+      const nearEdgeWallBottom = {
+        id: "near-edge-wall-bottom" as Id<Structure>,
+        structureType: STRUCTURE_WALL,
+        hits: 1000,
+        hitsMax: 300000000,
+        pos: { x: 25, y: 48 }
+      };
+
+      const room = {
+        name: "W1N1",
+        controller: { my: true },
+        find: vi.fn((type: number, opts?: { filter?: (s: AnyStructure) => boolean }) => {
+          if (type === FIND_STRUCTURES && opts?.filter) {
+            const structures = [edgeWallLeft, nearEdgeWallLeft, edgeWallBottom, nearEdgeWallBottom];
+            return structures.filter(s => opts.filter!(s as unknown as AnyStructure));
+          }
+          return [];
+        })
+      };
+
+      const creep = {
+        name: "dismantler-edge-test",
+        memory: {
+          role: "dismantler",
+          task: "travel",
+          version: 2,
+          mode: "clearing" as DismantlerMode
+        } as CreepMemory & { mode?: DismantlerMode },
+        room,
+        pos: {
+          findClosestByPath: vi.fn(() => null),
+          x: 25,
+          y: 25
+        },
+        dismantle: vi.fn(() => OK_CODE),
+        moveTo: vi.fn(() => OK_CODE)
+      } as unknown as CreepLike;
+
+      controller.execute(creep);
+
+      // Should NOT have called dismantle since all walls are near edges
+      expect(creep.dismantle).not.toHaveBeenCalled();
+    });
+
+    it("should target walls in room interior but not near edges", () => {
+      const controller = new DismantlerController();
+
+      // Wall in room interior (should be targeted)
+      const interiorWall = {
+        id: "interior-wall" as Id<Structure>,
+        structureType: STRUCTURE_WALL,
+        hits: 1000,
+        hitsMax: 300000000,
+        pos: { x: 25, y: 25 } // Center of room
+      };
+
+      // Wall near edge (should be ignored)
+      const edgeWall = {
+        id: "edge-wall" as Id<Structure>,
+        structureType: STRUCTURE_WALL,
+        hits: 1000,
+        hitsMax: 300000000,
+        pos: { x: 0, y: 25 } // At left edge
+      };
+
+      const room = {
+        name: "W1N1",
+        controller: { my: true },
+        find: vi.fn((type: number, opts?: { filter?: (s: AnyStructure) => boolean }) => {
+          if (type === FIND_STRUCTURES && opts?.filter) {
+            const structures = [interiorWall, edgeWall];
+            return structures.filter(s => opts.filter!(s as unknown as AnyStructure));
+          }
+          return [];
+        })
+      };
+
+      const creep = {
+        name: "dismantler-interior-test",
+        memory: {
+          role: "dismantler",
+          task: "travel",
+          version: 2,
+          mode: "clearing" as DismantlerMode
+        } as CreepMemory & { mode?: DismantlerMode },
+        room,
+        pos: {
+          findClosestByPath: vi.fn(() => interiorWall),
+          x: 25,
+          y: 25
+        },
+        dismantle: vi.fn(() => ERR_NOT_IN_RANGE),
+        moveTo: vi.fn(() => OK_CODE)
+      } as unknown as CreepLike;
+
+      controller.execute(creep);
+
+      // Should have called dismantle for the interior wall
+      expect(creep.dismantle).toHaveBeenCalled();
+    });
+
+    it("should ignore hostile structures near room edges in combat mode", () => {
+      const controller = new DismantlerController();
+
+      // Hostile structure at room edge (should be ignored)
+      const edgeHostileStructure = {
+        id: "edge-hostile" as Id<Structure>,
+        structureType: STRUCTURE_SPAWN,
+        my: false,
+        pos: { x: 49, y: 25 } // At right edge
+      };
+
+      const room = {
+        name: "W1N1",
+        controller: { my: false }, // Enemy room
+        find: vi.fn((type: number, opts?: { filter?: (s: AnyStructure) => boolean }) => {
+          if (type === FIND_HOSTILE_STRUCTURES && opts?.filter) {
+            const structures = [edgeHostileStructure];
+            return structures.filter(s => opts.filter!(s as unknown as AnyStructure));
+          }
+          return [];
+        })
+      };
+
+      const creep = {
+        name: "dismantler-combat-edge",
+        memory: {
+          role: "dismantler",
+          task: "travel",
+          version: 2,
+          mode: "combat" as DismantlerMode
+        } as CreepMemory & { mode?: DismantlerMode },
+        room,
+        pos: {
+          findClosestByPath: vi.fn(() => null),
+          x: 25,
+          y: 25
+        },
+        dismantle: vi.fn(() => OK_CODE),
+        moveTo: vi.fn(() => OK_CODE)
+      } as unknown as CreepLike;
+
+      controller.execute(creep);
+
+      // Should NOT have called dismantle since hostile structure is at edge
       expect(creep.dismantle).not.toHaveBeenCalled();
     });
   });
