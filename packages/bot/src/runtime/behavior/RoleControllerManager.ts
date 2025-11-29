@@ -784,12 +784,7 @@ export class RoleControllerManager {
       // This prevents cross-room over-spawning where Room A spawns builders for Room B's tasks
       // Only count unassigned, non-expired tasks for accurate demand
       if (scalingFactor > 0 && spawnRoomName) {
-        const pendingTasksInRoom = this.taskQueueManager.getTaskCountForRoom(
-          memory,
-          role,
-          spawnRoomName,
-          game.time
-        );
+        const pendingTasksInRoom = this.taskQueueManager.getTaskCountForRoom(memory, role, spawnRoomName, game.time);
         if (pendingTasksInRoom > 0) {
           const demandBasedTarget = Math.ceil(pendingTasksInRoom / scalingFactor);
           targetMinimum = Math.max(targetMinimum, Math.min(demandBasedTarget, roleMaximum));

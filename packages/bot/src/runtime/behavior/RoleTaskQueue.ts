@@ -180,9 +180,8 @@ export class RoleTaskQueueManager {
    */
   public getTaskCountForRoom(memory: Memory, role: string, roomName: string, currentTick: number): number {
     const queue = this.getRoleQueue(memory, role);
-    return queue.filter(
-      task => task.roomName === roomName && !task.assignedCreep && task.expiresAt > currentTick
-    ).length;
+    return queue.filter(task => task.roomName === roomName && !task.assignedCreep && task.expiresAt > currentTick)
+      .length;
   }
 
   /**
