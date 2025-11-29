@@ -82,7 +82,27 @@ async function fetchProfilerFromConsole(): Promise<ProfilerMemory | null> {
       }
 
       console.log(`  Parsing console response data...`);
-      const result = JSON.parse(response.data) as ProfilerMemory | { error: string };
+
+      // Handle case where console returns "undefined" (literal string)
+      // This happens when Memory.profiler hasn't been initialized yet
+      if (response.data === "undefined" || response.data === "" || !response.data) {
+        console.log(`⚠ Profiler not available: Memory.profiler is undefined`);
+        console.log(`  This typically means:`);
+        console.log(`    - Bot code hasn't executed first tick yet`);
+        console.log(`    - Memory has been reset`);
+        console.log(`    - Bot not deployed with profiler enabled`);
+        return null;
+      }
+
+      let result: ProfilerMemory | { error: string };
+      try {
+        result = JSON.parse(response.data) as ProfilerMemory | { error: string };
+      } catch (parseError) {
+        console.log(`⚠ Failed to parse profiler data: ${parseError instanceof Error ? parseError.message : String(parseError)}`);
+        console.log(`  Raw response data: "${response.data}"`);
+        console.log(`  This typically means the profiler memory format has changed or is corrupted`);
+        return null;
+      }
 
       if ("error" in result) {
         console.log(`⚠ Profiler not available: ${result.error}`);
