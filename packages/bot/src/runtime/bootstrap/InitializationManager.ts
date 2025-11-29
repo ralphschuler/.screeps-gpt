@@ -246,6 +246,9 @@ export class InitializationManager {
         this.logger.warn?.(`[InitializationManager] Phase "${phase.name}" failed: ${errorMessage}`);
         memory.init.phase++;
         result.phasesExecuted.push(phase.name);
+        // Track failed phases in completedPhases for consistency with successful phases
+        memory.init.completedPhases ??= [];
+        memory.init.completedPhases.push(phase.name);
       }
     }
 

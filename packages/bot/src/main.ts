@@ -84,6 +84,21 @@ const initManager = new InitializationManager(
 let initPhasesRegistered = false;
 
 /**
+ * Ensures Memory.stats exists with a minimal structure.
+ * This prevents TypeError crashes when external console automation (screeps-mcp probes,
+ * monitoring scripts) attempts to write to Memory.stats between ticks or after memory resets.
+ * Called from multiple locations to ensure defensive initialization.
+ */
+function ensureMemoryStats(): void {
+  Memory.stats ??= {
+    time: Game.time,
+    cpu: { used: 0, limit: 0, bucket: 0 },
+    creeps: { count: 0 },
+    rooms: { count: 0 }
+  };
+}
+
+/**
  * Register initialization phases with the manager.
  * Phases are sorted by priority (lower = earlier execution).
  * CPU estimates are conservative to ensure safe execution within budget.
@@ -101,12 +116,7 @@ function registerInitPhases(): void {
     cpuEstimate: 1,
     execute: () => {
       // Ensure critical Memory structures exist
-      Memory.stats ??= {
-        time: Game.time,
-        cpu: { used: 0, limit: 0, bucket: 0 },
-        creeps: { count: 0 },
-        rooms: { count: 0 }
-      };
+      ensureMemoryStats();
       Memory.profiler ??= { data: {}, total: 0 };
       logger.info("[Init Phase] Memory structures validated", { component: "Initialization" });
     }
@@ -152,7 +162,7 @@ function registerInitPhases(): void {
     priority: 30,
     cpuEstimate: 1,
     execute: () => {
-      // Globals are already exposed at module load time (lines 193-201)
+      // Globals are already exposed at module load time (lines 201-209)
       // This phase just confirms the initialization is complete
       logger.info("[Init Phase] Console diagnostics confirmed", { component: "Initialization" });
     }
@@ -365,12 +375,7 @@ export const loop = (): void => {
       } else {
         // Still initializing - skip kernel execution to preserve CPU budget
         // Defensive Memory.stats init still needed for external probes
-        Memory.stats ??= {
-          time: Game.time,
-          cpu: { used: 0, limit: 0, bucket: 0 },
-          creeps: { count: 0 },
-          rooms: { count: 0 }
-        };
+        ensureMemoryStats();
         return;
       }
     }
@@ -388,13 +393,7 @@ export const loop = (): void => {
     // This prevents TypeError crashes when external console automation (screeps-mcp probes,
     // monitoring scripts) attempts to write to Memory.stats between ticks or after memory resets.
     // StatsCollector will populate this with full telemetry data during MetricsProcess execution.
-    // Note: Using same initialization structure as StatsCollector for consistency (zeros, not actual values).
-    Memory.stats ??= {
-      time: Game.time,
-      cpu: { used: 0, limit: 0, bucket: 0 },
-      creeps: { count: 0 },
-      rooms: { count: 0 }
-    };
+    ensureMemoryStats();
 
     kernel.run(gameContext, Memory);
   } catch (error) {

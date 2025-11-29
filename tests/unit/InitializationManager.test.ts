@@ -399,6 +399,9 @@ describe("InitializationManager", () => {
       expect(nextPhase).toHaveBeenCalled();
       expect(result.phasesExecuted).toContain("error-phase");
       expect(result.phasesExecuted).toContain("next-phase");
+      // Failed phases should also be tracked in Memory.init.completedPhases for consistency
+      expect(mockMemory.init?.completedPhases).toContain("error-phase");
+      expect(mockMemory.init?.completedPhases).toContain("next-phase");
     });
 
     it("should track completed phases in Memory", () => {
