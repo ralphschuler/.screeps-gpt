@@ -36,18 +36,13 @@ screeps.json
 /packages/docs/db.json
 /packages/docs/themes/cactus
 
-# Copilot workflow logs and cache (ephemeral artifacts, except PTR stats)
-/reports/copilot/*
-!/reports/copilot/.gitkeep
-!/reports/copilot/ptr-stats.json
+# reports/copilot/ - Now fully tracked for historical copilot analysis
 /.copilot-cache
 
 # ScreepsServer data from integration tests
 /server
 
-# Performance test artifacts (except baseline)
-/reports/performance/*
-!/reports/performance/baseline.json
+# reports/performance/ - Now fully tracked for performance regression analysis
 performance-test-output.log
 
 # Numerous always-ignore extensions
@@ -131,15 +126,9 @@ IMPLEMENTATION*.md
 validate-*.sh
 packages/docs/public/
 
-# Monitoring reports (except tracked state files)
-/reports/monitoring/*
-!/reports/monitoring/baselines.json
-!/reports/monitoring/health.json
-!/reports/monitoring/strategic-analysis-*.md
-!/reports/monitoring/monitoring-summary-*.json
+# reports/monitoring/ - Now fully tracked for complete monitoring history
 
-# Game constants cache (regenerated on demand)
-/reports/game-constants/
+# reports/game-constants/ - Now tracked for game constant reference
 
 # Video rendering pipeline artifacts
 /reports/replay-data/
@@ -147,9 +136,7 @@ packages/docs/public/
 /reports/videos/
 config/video-pipeline.json
 
-# Deployment reports (except tracked state files)
-/reports/deployments/*
-!/reports/deployments/deployment-history.json
+# reports/deployments/ - Now fully tracked for deployment audit trail
 
 # TypeScript declaration files generated in source directories
 packages/*/vitest.config.d.ts
