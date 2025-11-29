@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { isCreepDying, isCreepSpawning, handleDyingCreepEnergyDrop } from "@runtime/behavior/creepHelpers";
+import type { CreepLike } from "@runtime/types/GameContext";
 
 describe("creepHelpers", () => {
   describe("isCreepSpawning", () => {
     it("should return true when creep is spawning", () => {
       const creep = {
         spawning: true
-      } as Creep;
+      } as CreepLike;
 
       expect(isCreepSpawning(creep)).toBe(true);
     });
@@ -14,13 +15,13 @@ describe("creepHelpers", () => {
     it("should return false when creep is not spawning", () => {
       const creep = {
         spawning: false
-      } as Creep;
+      } as CreepLike;
 
       expect(isCreepSpawning(creep)).toBe(false);
     });
 
     it("should return false when spawning property is undefined", () => {
-      const creep = {} as Creep;
+      const creep = {} as CreepLike;
 
       expect(isCreepSpawning(creep)).toBe(false);
     });

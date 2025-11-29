@@ -340,7 +340,7 @@ export class RoleControllerManager {
 
       // Skip creeps that are still spawning - they cannot perform any actions
       // This prevents errors like "Pathfinder: can't move creep that is spawning"
-      if (isCreepSpawning(creep as Creep)) {
+      if (isCreepSpawning(creep)) {
         processedCreeps++;
         continue;
       }

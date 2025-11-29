@@ -52,7 +52,7 @@ describe("RoleControllerManager spawning creep handling", () => {
     const moveTo = vi.fn(() => OK_CODE);
 
     // Create a spawning creep (spawning: true)
-    const spawningCreep: CreepLike & { spawning: boolean } = {
+    const spawningCreep: CreepLike = {
       name: "claimer-spawning",
       memory: { role: "claimer" } as CreepMemory,
       room,
@@ -126,7 +126,8 @@ describe("RoleControllerManager spawning creep handling", () => {
     const moveTo = vi.fn(() => OK_CODE);
 
     // Create a non-spawning creep (spawning: false)
-    const activeCreep: CreepLike & { spawning: boolean; ticksToLive: number } = {
+    // The ticksToLive property is added via intersection for isCreepDying compatibility
+    const activeCreep: CreepLike & { ticksToLive: number } = {
       name: "harvester-active",
       memory: { role: "harvester" } as CreepMemory,
       room,
