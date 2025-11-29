@@ -260,9 +260,9 @@ export function getSourceContainer(source: Source): StructureContainer | null {
  * @param room - The room to search in
  * @returns Array of containers adjacent to sources with free capacity
  */
-export function findSourceAdjacentContainers(
-  room: { find: (constant: number, opts?: unknown) => unknown[] }
-): StructureContainer[] {
+export function findSourceAdjacentContainers(room: {
+  find: (constant: number, opts?: unknown) => unknown[];
+}): StructureContainer[] {
   const sources = room.find(FIND_SOURCES) as Source[];
   const containerSet = new Set<string>(); // Track unique container IDs
   const containers: StructureContainer[] = [];
@@ -270,8 +270,7 @@ export function findSourceAdjacentContainers(
   for (const source of sources) {
     const nearbyContainers = source.pos.findInRange<FIND_STRUCTURES, StructureContainer>(FIND_STRUCTURES, 1, {
       filter: (s: Structure) =>
-        s.structureType === STRUCTURE_CONTAINER &&
-        (s as StructureContainer).store.getFreeCapacity(RESOURCE_ENERGY) > 0
+        s.structureType === STRUCTURE_CONTAINER && (s as StructureContainer).store.getFreeCapacity(RESOURCE_ENERGY) > 0
     });
 
     for (const container of nearbyContainers) {
