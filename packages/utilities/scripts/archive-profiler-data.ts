@@ -80,7 +80,9 @@ async function fetchProfilerFromConsole(api: ScreepsAPI, shard: string): Promise
       try {
         result = JSON.parse(response.data) as ProfilerMemory | { error: string };
       } catch (parseError) {
-        console.log(`⚠ Failed to parse profiler data: ${parseError instanceof Error ? parseError.message : String(parseError)}`);
+        console.log(
+          `⚠ Failed to parse profiler data: ${parseError instanceof Error ? parseError.message : String(parseError)}`
+        );
         return null;
       }
 

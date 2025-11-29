@@ -226,7 +226,12 @@ function analyzePeriod(snapshots: BotSnapshot[], period: TrendPeriod): PeriodTre
   // CPU analysis
   const cpuUsedCurrent = extractValues(currentHalf, s => s.cpu?.used);
   const cpuUsedPrevious = extractValues(previousHalf, s => s.cpu?.used);
-  const cpuUsedTrend = createMetricTrend(cpuUsedCurrent, cpuUsedPrevious, false, REGRESSION_THRESHOLDS.cpu.usedIncrease);
+  const cpuUsedTrend = createMetricTrend(
+    cpuUsedCurrent,
+    cpuUsedPrevious,
+    false,
+    REGRESSION_THRESHOLDS.cpu.usedIncrease
+  );
 
   const cpuBucketCurrent = extractValues(currentHalf, s => s.cpu?.bucket);
   const cpuBucketPrevious = extractValues(previousHalf, s => s.cpu?.bucket);

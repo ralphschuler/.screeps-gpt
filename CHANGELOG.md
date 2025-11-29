@@ -7,7 +7,6 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [0.189.7] - 2025-11-29
 
-
 ### Fixed
 
 - **Monitoring**: Fixed bot snapshot collection to use multi-shard console telemetry (#1503)
@@ -18,7 +17,6 @@ All notable changes to this project are documented here. This changelog now main
   - Snapshots now include per-room shard metadata for accurate multi-shard tracking
   - Validation fails workflow if critical data quality issues detected (0 creeps with claimed rooms)
   - Prevents false positive alerts from incomplete single-shard data collection
-
 
 ## [0.189.3] - 2025-11-29
 

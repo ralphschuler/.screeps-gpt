@@ -98,7 +98,9 @@ async function fetchProfilerFromConsole(): Promise<ProfilerMemory | null> {
       try {
         result = JSON.parse(response.data) as ProfilerMemory | { error: string };
       } catch (parseError) {
-        console.log(`⚠ Failed to parse profiler data: ${parseError instanceof Error ? parseError.message : String(parseError)}`);
+        console.log(
+          `⚠ Failed to parse profiler data: ${parseError instanceof Error ? parseError.message : String(parseError)}`
+        );
         console.log(`  Raw response data: "${response.data}"`);
         console.log(`  This typically means the profiler memory format has changed or is corrupted`);
         return null;
