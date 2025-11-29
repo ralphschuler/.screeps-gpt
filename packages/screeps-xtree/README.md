@@ -175,6 +175,79 @@ builder.if(CreepConditions.enemiesNearby /* ... */);
 builder.if(CreepConditions.hasEnergySources /* ... */);
 ```
 
+### Modular Conditions
+
+The package provides an extended library of reusable condition functions (parallel to xstate guards):
+
+```typescript
+import { conditions } from "@ralphschuler/screeps-xtree";
+
+// Energy conditions
+conditions.hasEnergy(50); // Check if creep has > 50 energy
+conditions.isFull; // ctx.creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0
+conditions.isEmpty; // ctx.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0
+conditions.hasCapacityPercent(50); // Check if >= 50% capacity
+
+// Position conditions
+conditions.isNearTarget(3); // Within 3 tiles of target
+conditions.isAtTarget; // At exact target position
+conditions.hasTarget; // Target is defined
+conditions.isInRoom("W1N1"); // In specific room
+
+// Creep conditions
+conditions.hasWorkParts; // Has WORK body parts
+conditions.hasCarryParts; // Has CARRY body parts
+conditions.isDamaged; // hits < hitsMax
+conditions.isHealthBelow(30); // health < 30%
+conditions.hasRoleType("harvester"); // Check role
+
+// Room conditions
+conditions.hasConstructionSites; // ctx.constructionSites > 0
+conditions.hasRepairTargets; // ctx.damagedStructures > 0
+conditions.enemiesNearby; // ctx.nearbyEnemies
+conditions.hasEnergySources; // ctx.energyAvailable
+```
+
+Use conditions in decision trees:
+
+```typescript
+const builder = new DecisionTreeBuilder<CreepDecisionContext, CreepAction>();
+
+const tree = builder.build(
+  builder.if(
+    conditions.isFull,
+    builder.leaf({ type: "deliver" }),
+    builder.leaf({ type: "harvest" })
+  )
+);
+```
+
+### Modular Actions
+
+The package provides reusable action functions for executing creep behaviors:
+
+```typescript
+import { treeActions } from "@ralphschuler/screeps-xtree";
+
+// Movement actions
+treeActions.moveToTarget(ctx, { range: 1 }); // Move toward ctx.target
+treeActions.flee(ctx); // Move away from hostile creeps
+
+// Energy actions
+treeActions.harvestSource(ctx); // Harvest from ctx.target or ctx.sourceId
+treeActions.harvestNearestSource(ctx); // Find and harvest nearest source
+treeActions.transferEnergy(ctx); // Transfer to ctx.target
+treeActions.withdrawEnergy(ctx); // Withdraw from ctx.target
+treeActions.transferToSpawns(ctx); // Find spawn/extension and transfer
+
+// Work actions
+treeActions.upgradeController(ctx); // Upgrade room controller
+treeActions.buildStructure(ctx); // Build ctx.target or nearest site
+treeActions.repairStructure(ctx); // Repair ctx.target or most damaged
+treeActions.attackTarget(ctx); // Attack ctx.target
+treeActions.healTarget(ctx); // Heal ctx.target creep
+```
+
 ## Usage Examples
 
 ### Example 1: Multi-Role Worker
