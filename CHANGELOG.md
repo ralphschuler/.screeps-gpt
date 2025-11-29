@@ -5,6 +5,17 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Fixed
+
+- **Monitoring**: Fixed bot snapshot collection to use multi-shard console telemetry (#1503)
+  - Enhanced `collect-bot-snapshot.ts` to collect data from all shards where bot has rooms
+  - Added multi-shard console API queries instead of relying on single-shard Stats API
+  - Implemented snapshot validation to detect stale/empty data before committing
+  - Added comprehensive diagnostic logging for troubleshooting collection failures
+  - Snapshots now include per-room shard metadata for accurate multi-shard tracking
+  - Validation fails workflow if critical data quality issues detected (0 creeps with claimed rooms)
+  - Prevents false positive alerts from incomplete single-shard data collection
+
 ## [0.189.3] - 2025-11-29
 
 ### Fixed
