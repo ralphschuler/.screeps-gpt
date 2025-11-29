@@ -96,7 +96,7 @@ For actual spawn failures:
 
 1. **Critical Errors (Fatal)**:
    - No substantive data (only timestamp)
-   - Claimed rooms but 0 creeps detected (after 12+ hours)
+   - Claimed rooms but 0 creeps detected (sustained across consecutive snapshots)
 
 2. **Warnings (Non-Fatal)**:
    - CPU bucket critically low (< 100)
@@ -162,15 +162,17 @@ If bot is active but data appears stale:
 
 ## Validation Error Reference
 
-### CRITICAL: X room(s) claimed but 0 creeps detected
+### CRITICAL: X room(s) claimed but 0 creeps detected (sustained across consecutive snapshots)
 
-**Meaning**: Bot has claimed rooms but no creeps exist, indicating spawn failure or incomplete data collection.
+**Meaning**: Bot has claimed rooms but no creeps exist for multiple consecutive snapshots, indicating sustained spawn failure or incomplete data collection.
 
 **Actions**:
 1. Verify bot is actually running on all shards
 2. Check spawn system status
 3. Review multi-shard discovery results
 4. Confirm console telemetry collected from all shards
+
+**Note**: This error only triggers when both the current and previous snapshot show 0 creeps with claimed rooms, avoiding false positives during initial bot spawn periods.
 
 **Workflow Behavior**: Fails workflow (no snapshot committed)
 
