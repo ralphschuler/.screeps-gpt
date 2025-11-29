@@ -392,3 +392,236 @@ describe("Traffic management integration", () => {
     expect(moveTo).toHaveBeenCalled();
   });
 });
+
+describe("Stationary harvester spawning coordination", () => {
+  it("should suppress normal harvester spawning when stationary harvesters cover sources", () => {
+    const spawned: string[] = [];
+    const memory = {} as Memory;
+
+    // Declare spawn first to avoid "used before defined" error
+    let spawn: SpawnLike;
+
+    // Create sources array to be returned by find
+    const sources = [{ id: "source1" as Id<Source> }, { id: "source2" as Id<Source> }] as Source[];
+
+    const room: Room = {
+      name: "W1N1",
+      controller: { my: true } as StructureController,
+      energyAvailable: 500,
+      energyCapacityAvailable: 800,
+      find: (type: FindConstant, opts?: { filter?: (obj: unknown) => boolean }) => {
+        if (type === FIND_SOURCES) {
+          return sources;
+        }
+        if (type === FIND_MY_CREEPS) {
+          const creeps = Object.values(Game.creeps).filter(c => (opts?.filter ? opts.filter(c as unknown) : true));
+          return creeps as unknown[];
+        }
+        if (type === FIND_MY_STRUCTURES) {
+          return [spawn as unknown];
+        }
+        return [];
+      },
+      findPath: () => [],
+      createConstructionSite: () => OK_CODE,
+      getTerrain: () => ({ get: () => 0 }) as unknown as RoomTerrain
+    };
+
+    spawn = {
+      name: "Spawn1",
+      room,
+      spawning: null,
+      spawnCreep: vi.fn(() => OK_CODE),
+      store: {
+        getUsedCapacity: () => 0,
+        getFreeCapacity: () => 500
+      }
+    } satisfies SpawnLike;
+
+    // Create stationary harvesters that cover both sources
+    const stationaryHarvester1: CreepLike = {
+      name: "stationaryHarvester-1",
+      memory: { role: "stationaryHarvester", sourceId: "source1" } as CreepMemory,
+      room,
+      pos: { findClosestByPath: () => null, inRangeTo: () => false, findInRange: () => [] } as unknown as PositionLike,
+      store: { getUsedCapacity: () => 0, getFreeCapacity: () => 0 },
+      harvest: () => OK_CODE,
+      transfer: () => OK_CODE,
+      moveTo: () => OK_CODE,
+      upgradeController: () => OK_CODE,
+      withdraw: () => OK_CODE,
+      build: () => OK_CODE,
+      repair: () => OK_CODE,
+      pickup: () => OK_CODE,
+      drop: () => OK_CODE
+    };
+
+    const stationaryHarvester2: CreepLike = {
+      name: "stationaryHarvester-2",
+      memory: { role: "stationaryHarvester", sourceId: "source2" } as CreepMemory,
+      room,
+      pos: { findClosestByPath: () => null, inRangeTo: () => false, findInRange: () => [] } as unknown as PositionLike,
+      store: { getUsedCapacity: () => 0, getFreeCapacity: () => 0 },
+      harvest: () => OK_CODE,
+      transfer: () => OK_CODE,
+      moveTo: () => OK_CODE,
+      upgradeController: () => OK_CODE,
+      withdraw: () => OK_CODE,
+      build: () => OK_CODE,
+      repair: () => OK_CODE,
+      pickup: () => OK_CODE,
+      drop: () => OK_CODE
+    };
+
+    // Also add an existing harvester so CRITICAL priority doesn't kick in
+    const existingHarvester: CreepLike = {
+      name: "harvester-existing",
+      memory: { role: "harvester" } as CreepMemory,
+      room,
+      pos: { findClosestByPath: () => null, inRangeTo: () => false, findInRange: () => [] } as unknown as PositionLike,
+      store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+      harvest: () => OK_CODE,
+      transfer: () => OK_CODE,
+      moveTo: () => OK_CODE,
+      upgradeController: () => OK_CODE,
+      withdraw: () => OK_CODE,
+      build: () => OK_CODE,
+      repair: () => OK_CODE,
+      pickup: () => OK_CODE,
+      drop: () => OK_CODE,
+      spawning: false,
+      ticksToLive: 1000
+    } as CreepLike & { ticksToLive: number; spawning: boolean };
+
+    const game: GameContext = {
+      time: 1,
+      cpu: { limit: 10, bucket: 10000, getUsed: () => 0 },
+      creeps: {
+        "stationaryHarvester-1": stationaryHarvester1,
+        "stationaryHarvester-2": stationaryHarvester2,
+        "harvester-existing": existingHarvester
+      },
+      spawns: { Spawn1: spawn },
+      rooms: { W1N1: room }
+    };
+
+    // Start with 1 harvester (below minimum of 4), 2 stationary harvesters covering both sources
+    // Normally this would trigger spawning more harvesters, but stationary harvesters suppress it
+    const roleCounts: Record<string, number> = { harvester: 1, stationaryHarvester: 2 };
+
+    // BodyComposer uses global Game for sustainable capacity calculations
+    (globalThis as typeof globalThis & Record<string, unknown>).Game = game as unknown as Game;
+
+    const manager = new RoleControllerManager({}, console);
+
+    // Access private helper for targeted regression scenario
+    (manager as unknown as { ensureRoleMinimums: unknown })["ensureRoleMinimums"](
+      game,
+      memory,
+      roleCounts,
+      spawned,
+      {}
+    );
+
+    // Verify that no NEW harvesters were spawned (stationary harvesters cover sources)
+    // The count should still be 1 (existing harvester), not increased
+    const spawnedHarvesters = spawned.filter(name => name.includes("harvester") && !name.includes("stationary"));
+    expect(spawnedHarvesters.length).toBe(0);
+    expect(roleCounts.harvester).toBe(1); // Still 1, no new harvesters spawned
+  });
+
+  it("should allow normal harvester spawning when no stationary harvesters are active", () => {
+    const spawned: string[] = [];
+    const memory = {} as Memory;
+
+    // Declare spawn first to avoid "used before defined" error
+    let spawn: SpawnLike;
+
+    // Create sources array to be returned by find
+    const sources = [{ id: "source1" as Id<Source> }, { id: "source2" as Id<Source> }] as Source[];
+
+    const room: Room = {
+      name: "W1N1",
+      controller: { my: true } as StructureController,
+      energyAvailable: 300,
+      energyCapacityAvailable: 550,
+      find: (type: FindConstant, opts?: { filter?: (obj: unknown) => boolean }) => {
+        if (type === FIND_SOURCES) {
+          return sources;
+        }
+        if (type === FIND_MY_CREEPS) {
+          const creeps = Object.values(Game.creeps).filter(c => (opts?.filter ? opts.filter(c as unknown) : true));
+          return creeps as unknown[];
+        }
+        if (type === FIND_MY_STRUCTURES) {
+          return [spawn as unknown];
+        }
+        return [];
+      },
+      findPath: () => [],
+      createConstructionSite: () => OK_CODE,
+      getTerrain: () => ({ get: () => 0 }) as unknown as RoomTerrain
+    };
+
+    spawn = {
+      name: "Spawn1",
+      room,
+      spawning: null,
+      spawnCreep: vi.fn(() => OK_CODE),
+      store: {
+        getUsedCapacity: () => 0,
+        getFreeCapacity: () => 300
+      }
+    } satisfies SpawnLike;
+
+    // Create a single hauler (no stationary harvesters)
+    const haulerCreep: CreepLike = {
+      name: "hauler-1",
+      memory: { role: "hauler" } as CreepMemory,
+      room,
+      pos: { findClosestByPath: () => null, inRangeTo: () => false, findInRange: () => [] } as unknown as PositionLike,
+      store: { getUsedCapacity: () => 0, getFreeCapacity: () => 50 },
+      harvest: () => OK_CODE,
+      transfer: () => OK_CODE,
+      moveTo: () => OK_CODE,
+      upgradeController: () => OK_CODE,
+      withdraw: () => OK_CODE,
+      build: () => OK_CODE,
+      repair: () => OK_CODE,
+      pickup: () => OK_CODE,
+      drop: () => OK_CODE
+    };
+
+    const game: GameContext = {
+      time: 1,
+      cpu: { limit: 10, bucket: 10000, getUsed: () => 0 },
+      creeps: {
+        "hauler-1": haulerCreep
+      },
+      spawns: { Spawn1: spawn },
+      rooms: { W1N1: room }
+    };
+
+    // Start with 0 harvesters, 1 hauler, 0 stationary harvesters
+    const roleCounts: Record<string, number> = { harvester: 0, hauler: 1, stationaryHarvester: 0 };
+
+    // BodyComposer uses global Game for sustainable capacity calculations
+    (globalThis as typeof globalThis & Record<string, unknown>).Game = game as unknown as Game;
+
+    const manager = new RoleControllerManager({}, console);
+
+    // Access private helper for targeted regression scenario
+    (manager as unknown as { ensureRoleMinimums: unknown })["ensureRoleMinimums"](
+      game,
+      memory,
+      roleCounts,
+      spawned,
+      {}
+    );
+
+    // Verify that harvester spawning was triggered (CRITICAL priority due to 0 harvesters)
+    // The critical spawning mechanism kicks in when harvester count is 0
+    const spawnedHarvesters = spawned.filter(name => name.includes("harvester"));
+    expect(spawnedHarvesters.length).toBeGreaterThan(0);
+  });
+});

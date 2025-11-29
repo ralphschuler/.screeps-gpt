@@ -5,8 +5,12 @@
  * - Harvesting energy from sources until full
  * - Delivering energy to spawns and extensions (priority 1)
  * - Filling towers below threshold capacity (priority 2)
- * - Filling containers when spawns/extensions/towers are full (priority 3)
+ * - Filling source-adjacent containers for container-based logistics (priority 3)
+ * - Filling other containers when source containers are full (priority 4)
  * - Upgrading controller as fallback when no delivery targets
+ *
+ * Note: When stationary harvesters cover ≥50% of sources in a room, normal harvester
+ * spawning is suppressed to allow natural attrition to the container-based system.
  *
  * Note: Harvesters do NOT pick up dropped energy during harvesting to avoid
  * premature state transitions. Dropped energy collection is handled by haulers.
@@ -24,7 +28,7 @@ import {
   type HarvesterContext,
   type HarvesterEvent
 } from "../stateMachines/harvester";
-import { findLowEnergyTowers } from "./helpers";
+import { findLowEnergyTowers, findSourceAdjacentContainers } from "./helpers";
 import { DEFAULT_ENERGY_CONFIG } from "@runtime/energy";
 
 interface HarvesterMemory extends CreepMemory {
@@ -161,16 +165,12 @@ export class HarvesterController extends BaseRoleController<HarvesterMemory> {
             machine.send({ type: "ENERGY_EMPTY" });
           }
         } else {
-          // Priority 3: Fill containers
-          const containers = creep.room.find(FIND_STRUCTURES, {
-            filter: (structure: AnyStructure) =>
-              structure.structureType === STRUCTURE_CONTAINER &&
-              (structure as AnyStoreStructure).store.getFreeCapacity(RESOURCE_ENERGY) > 0
-          }) as AnyStoreStructure[];
+          // Priority 3: Fill source-adjacent containers (for container-based energy logistics)
+          const sourceContainers = findSourceAdjacentContainers(creep.room);
 
-          if (containers.length > 0) {
+          if (sourceContainers.length > 0) {
             // Use ignoreCreeps for better routing through narrow passages
-            const target = creep.pos.findClosestByPath(containers, { ignoreCreeps: true }) ?? containers[0];
+            const target = creep.pos.findClosestByPath(sourceContainers, { ignoreCreeps: true }) ?? sourceContainers[0];
             const result = creep.transfer(target, RESOURCE_ENERGY);
             if (result === ERR_NOT_IN_RANGE) {
               // Use ignoreCreeps for better routing through narrow passages
@@ -181,8 +181,29 @@ export class HarvesterController extends BaseRoleController<HarvesterMemory> {
               machine.send({ type: "ENERGY_EMPTY" });
             }
           } else {
-            // No delivery targets, upgrade controller
-            machine.send({ type: "START_UPGRADE" });
+            // Priority 4: Fill any other containers
+            const containers = creep.room.find(FIND_STRUCTURES, {
+              filter: (structure: AnyStructure) =>
+                structure.structureType === STRUCTURE_CONTAINER &&
+                (structure as AnyStoreStructure).store.getFreeCapacity(RESOURCE_ENERGY) > 0
+            }) as AnyStoreStructure[];
+
+            if (containers.length > 0) {
+              // Use ignoreCreeps for better routing through narrow passages
+              const target = creep.pos.findClosestByPath(containers, { ignoreCreeps: true }) ?? containers[0];
+              const result = creep.transfer(target, RESOURCE_ENERGY);
+              if (result === ERR_NOT_IN_RANGE) {
+                // Use ignoreCreeps for better routing through narrow passages
+                creep.moveTo(target, { range: 1, reusePath: 30, ignoreCreeps: true });
+              }
+
+              if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+                machine.send({ type: "ENERGY_EMPTY" });
+              }
+            } else {
+              // No delivery targets, upgrade controller
+              machine.send({ type: "START_UPGRADE" });
+            }
           }
         }
       }

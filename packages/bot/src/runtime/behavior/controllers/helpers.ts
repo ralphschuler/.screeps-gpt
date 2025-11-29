@@ -225,6 +225,67 @@ export function findLowEnergyTowers(
   return towers;
 }
 
+/**
+ * Check if a source has an adjacent container.
+ * Used to determine if stationary harvester infrastructure is in place.
+ *
+ * @param source - The source to check
+ * @returns true if there is at least one container within range 1 of the source
+ */
+export function hasSourceContainer(source: Source): boolean {
+  const containers = source.pos.findInRange(FIND_STRUCTURES, 1, {
+    filter: (s: Structure) => s.structureType === STRUCTURE_CONTAINER
+  });
+  return containers.length > 0;
+}
+
+/**
+ * Get a container adjacent to a source.
+ * Used to find where stationary harvesters deposit energy.
+ *
+ * @param source - The source to find a container for
+ * @returns The first container within range 1 of the source, or null if none exists
+ */
+export function getSourceContainer(source: Source): StructureContainer | null {
+  const containers = source.pos.findInRange<FIND_STRUCTURES, StructureContainer>(FIND_STRUCTURES, 1, {
+    filter: (s: Structure) => s.structureType === STRUCTURE_CONTAINER
+  });
+  return containers[0] ?? null;
+}
+
+/**
+ * Finds containers adjacent to sources in a room that have free capacity.
+ * Used by harvesters to deposit energy near sources for hauler pickup.
+ *
+ * @param room - The room to search in
+ * @returns Array of containers adjacent to sources with free capacity
+ */
+export function findSourceAdjacentContainers(
+  room: { find: (constant: number, opts?: unknown) => unknown[] }
+): StructureContainer[] {
+  const sources = room.find(FIND_SOURCES) as Source[];
+  const containerSet = new Set<string>(); // Track unique container IDs
+  const containers: StructureContainer[] = [];
+
+  for (const source of sources) {
+    const nearbyContainers = source.pos.findInRange<FIND_STRUCTURES, StructureContainer>(FIND_STRUCTURES, 1, {
+      filter: (s: Structure) =>
+        s.structureType === STRUCTURE_CONTAINER &&
+        (s as StructureContainer).store.getFreeCapacity(RESOURCE_ENERGY) > 0
+    });
+
+    for (const container of nearbyContainers) {
+      // Avoid duplicates if container is adjacent to multiple sources
+      if (!containerSet.has(container.id)) {
+        containerSet.add(container.id);
+        containers.push(container);
+      }
+    }
+  }
+
+  return containers;
+}
+
 /** Threshold for detecting creeps near room exit (tiles from edge) */
 const NEAR_EXIT_THRESHOLD = 2;
 /** Upper bound for near-exit detection (ROOM_MAX - threshold) */
