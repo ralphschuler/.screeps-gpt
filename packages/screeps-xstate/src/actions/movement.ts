@@ -46,6 +46,12 @@ export const moveToTargetDefault: CreepAction = moveToTarget(undefined);
  * @param filter - Optional filter function
  * @returns Action function that finds and assigns closest target
  *
+ * @remarks
+ * If `findClosestByPath` fails to find a path (returns null), the first target
+ * in the array is used as a fallback. This is intentional to handle edge cases
+ * where path calculation fails but targets exist (e.g., blocked paths that may
+ * open up). The caller should handle cases where movement to target fails.
+ *
  * @example
  * ```typescript
  * const findSource = findClosestByPath(FIND_SOURCES_ACTIVE);
@@ -62,6 +68,8 @@ export function findClosestByPath(findType: FindConstant, filter?: (obj: RoomObj
       return;
     }
     const closest = ctx.creep.pos.findClosestByPath(targets, { ignoreCreeps: true });
+    // Fall back to first target if no path found - this handles edge cases
+    // where paths are temporarily blocked
     ctx.target = closest ?? targets[0] ?? null;
   };
 }

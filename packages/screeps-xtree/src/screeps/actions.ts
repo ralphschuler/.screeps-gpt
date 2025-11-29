@@ -82,12 +82,18 @@ export function flee(ctx: CreepDecisionContext): void {
  * Action that harvests from the nearest active source.
  *
  * @param ctx - Creep decision context
+ *
+ * @remarks
+ * If `findClosestByPath` fails to find a path (returns null), the first source
+ * in the array is used as a fallback. This handles edge cases where path
+ * calculation fails but sources exist.
  */
 export function harvestNearestSource(ctx: CreepDecisionContext): void {
   const sources = ctx.creep.room.find(FIND_SOURCES_ACTIVE) as Source[];
   if (sources.length === 0) return;
 
   const closest = ctx.creep.pos.findClosestByPath(sources, { ignoreCreeps: true });
+  // Fall back to first source if no path found - handles temporarily blocked paths
   const source = closest ?? sources[0];
   if (!source) return;
 

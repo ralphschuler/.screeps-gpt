@@ -16,7 +16,7 @@ import type { CreepContext, CreepGuard, CreepGuardFactory } from "./types.js";
  * ```typescript
  * const hasEnergy50 = hasEnergy(50);
  * if (hasEnergy50({ creep })) {
- *   // Creep has at least 50 energy
+ *   // Creep has more than 50 energy
  * }
  * ```
  */
