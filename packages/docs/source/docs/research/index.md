@@ -20,3 +20,4 @@ This section contains research documentation, analysis of other bots, and evalua
 - [Autonomous Development Agent](autonomous-development-agent.md) - Research on autonomous agents
 - [Great Filters Analysis](great-filters-analysis.md) - Analysis of bot progression filters
 - [GitHub Copilot Custom Agents Evaluation](github-copilot-custom-agents-evaluation.md) - Evaluation of Copilot agents
+- [Base Planning Algorithms](base-planning-algorithms.md) - Research on automated base layout algorithms and community patterns

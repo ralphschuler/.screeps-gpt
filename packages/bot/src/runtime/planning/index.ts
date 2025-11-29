@@ -1,4 +1,4 @@
-export { BasePlanner } from "./BasePlanner";
+export { BasePlanner, type BasePlannerConfig, type MisplacedStructure } from "./BasePlanner";
 export {
   ColonyManager,
   type ColonyManagerMemory,
@@ -6,5 +6,5 @@ export {
   type InterShardMessage,
   type ColonyManagerConfig
 } from "./ColonyManager";
-export { ConstructionManager } from "./ConstructionManager";
+export { ConstructionManager, type ConstructionManagerConfig } from "./ConstructionManager";
 export { SpawnManager, type BodyPartConfig, type SpawnRequest, type SpawnManagerConfig } from "./SpawnManager";

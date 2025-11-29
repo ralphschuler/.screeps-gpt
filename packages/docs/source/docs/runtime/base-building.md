@@ -4,7 +4,14 @@ This document describes the automatic base building system that dynamically plac
 
 ## Overview
 
-The automatic base building system uses a **bunker pattern** approach to plan and create construction sites for structures based on the room's Controller Level (RCL). The system integrates with the existing builder creep role to automatically construct the planned structures.
+The automatic base building system uses a **dynamic layout** to plan and create construction sites for structures based on the room's Controller Level (RCL). The system integrates with the existing builder creep role to automatically construct the planned structures.
+
+**Key Features:**
+
+- Dynamic structure placement based on RCL 1-8
+- Automatic detection of misplaced structures
+- Chess/checkerboard pattern for optimal pathing
+- Visualization support for debugging
 
 ## Architecture
 
@@ -12,9 +19,11 @@ The automatic base building system uses a **bunker pattern** approach to plan an
 
 1. **BasePlanner** (`src/runtime/planning/BasePlanner.ts`)
    - Calculates optimal anchor point for the base using spawn position or distance transform
-   - Defines bunker layout with fixed offsets from anchor
-   - Determines which structures to build based on current RCL
+   - Uses dynamic layout with fixed offsets from anchor for RCL 1-8
    - Filters out invalid positions (walls, edges)
+   - Detects misplaced structures that need to be removed
+   - Provides visualization support for debugging
+   - Includes layout statistics for analysis
 
 2. **ConstructionManager** (`src/runtime/planning/ConstructionManager.ts`)
    - Manages construction site creation for all owned rooms
@@ -33,46 +42,65 @@ this.constructionManager.planConstructionSites(game);
 
 This runs once per tick before creep behavior execution, ensuring construction sites are available for builders.
 
-## Chess Pattern Layout
+## Dynamic Layout
 
-The base uses a **chess/checkerboard pattern** layout where structures are placed at fixed offsets from an anchor point (typically the spawn). This pattern ensures that all 8 adjacent tiles to the spawn remain walkable, preventing spawning blockage.
+The dynamic layout uses a **chess/checkerboard pattern** where structures are placed at fixed offsets from an anchor point (typically the spawn). This pattern ensures that all 8 adjacent tiles to the spawn remain walkable, preventing spawning blockage.
 
-### Pattern Rules
+**Characteristics:**
+
+- Compact, high-defense design
+- All structures within rampart protection range
+- Efficient for energy logistics (short creep paths)
+- Requires large open area (approximately 11x11 minimum)
+- Can detect and flag misplaced structures for removal
+
+**Pattern Rules:**
 
 - Structures are placed at positions where the sum of coordinates (dx + dy) is even
 - This creates a checkerboard pattern with alternating walkable and structure tiles
 - All tiles adjacent to the spawn (distance 1) remain walkable at all RCL levels
 - Structures are distributed evenly in all four quadrants
 
-### RCL 2
+## Structure Progression by RCL
 
-- 5 Extensions (placed at distance 2)
-- 1 Container
-- **8/8 walkable tiles adjacent to spawn**
+| RCL | Spawns | Extensions | Towers | Storage | Links | Terminal | Labs | Factory | Observer | Power Spawn | Nuker |
+| --- | ------ | ---------- | ------ | ------- | ----- | -------- | ---- | ------- | -------- | ----------- | ----- |
+| 1   | 1      | 0          | 0      | 0       | 0     | 0        | 0    | 0       | 0        | 0           | 0     |
+| 2   | 1      | 5          | 0      | 0       | 0     | 0        | 0    | 0       | 0        | 0           | 0     |
+| 3   | 1      | 10         | 1      | 0       | 0     | 0        | 0    | 0       | 0        | 0           | 0     |
+| 4   | 1      | 20         | 1      | 1       | 0     | 0        | 0    | 0       | 0        | 0           | 0     |
+| 5   | 1      | 30         | 2      | 1       | 2     | 0        | 0    | 0       | 0        | 0           | 0     |
+| 6   | 1      | 40         | 2      | 1       | 3     | 1        | 3    | 0       | 0        | 0           | 0     |
+| 7   | 2      | 50         | 3      | 1       | 4     | 1        | 6    | 1       | 0        | 0           | 0     |
+| 8   | 3      | 60         | 6      | 1       | 6     | 1        | 10   | 1       | 1        | 1           | 1     |
 
-### RCL 3
+### RCL 6 Structures
 
-- 10 Extensions (5 from RCL 2 + 5 new at distance 2-4)
-- 1 Tower
-- 1 Container (from RCL 2)
-- **8/8 walkable tiles adjacent to spawn**
+- Terminal for inter-room trading
+- 3 Labs for boosting creeps
+- 40 Extensions for larger creep bodies
+- 3 Links for energy distribution
+- Extractor for mineral harvesting (placed at mineral position)
 
-### RCL 4
+### RCL 7 Structures
 
-- 20 Extensions (10 from RCL 3 + 10 new at distance 2-4)
-- 1 Storage
-- 1 Tower (from RCL 3)
-- 1 Container (from RCL 2)
-- **8/8 walkable tiles adjacent to spawn**
+- Second Spawn for faster creep production
+- Factory for resource processing
+- 6 Labs (3 more)
+- 4 Links (1 more)
+- Third Tower
+- 50 Extensions (10 more)
 
-### RCL 5
+### RCL 8 Structures
 
-- 30 Extensions (20 from RCL 4 + 10 new at distance 2-6)
-- 2 Links
-- 2 Towers
-- 1 Storage
-- 1 Container
-- **8/8 walkable tiles adjacent to spawn**
+- Third Spawn
+- 6 Towers (3 more)
+- Observer for remote room scouting
+- Power Spawn for power processing
+- Nuker for room offense
+- 10 Labs (4 more)
+- 6 Links (2 more)
+- 60 Extensions (10 more)
 
 ## Anchor Point Selection
 
@@ -85,6 +113,7 @@ The distance transform algorithm:
 
 - Initializes a 2D array with wall tiles set to 0, open tiles to 255
 - Performs a single-pass approximation to calculate distance from walls
+- Considers source proximity for optimal energy access
 - Selects the position with maximum distance in the center region (10-40 x/y)
 
 ## Position Validation
@@ -104,6 +133,58 @@ The ConstructionManager maintains state for each room:
 - Tracks the last RCL at which planning occurred
 - Only re-plans when RCL changes (avoids redundant work)
 
+## Configuration
+
+### ConstructionManager Configuration
+
+```typescript
+const manager = new ConstructionManager({
+  logger: console, // Logger instance
+  maxSitesPerTick: 5, // Maximum construction sites per tick
+  maxSitesPerRoom: 1, // Maximum sites per room per tick
+  enableVisualization: false // Enable visual debugging
+});
+```
+
+### Handling Misplaced Structures
+
+The system can detect and optionally remove structures that are not in planned positions:
+
+```typescript
+// Get misplaced structures without destroying
+const misplaced = manager.getMisplacedStructures(room);
+
+// Get and destroy misplaced structures
+const result = manager.handleMisplacedStructures(room, true);
+console.log(`Destroyed ${result.destroyed} misplaced structures`);
+```
+
+## Visualization
+
+The BasePlanner supports Room.visual debugging to visualize planned layouts:
+
+```typescript
+const planner = new BasePlanner("W1N1", {
+  enableVisualization: true
+});
+
+// In game loop, visualize layout
+planner.visualize(room, 8, true); // Show RCL 8 layout with labels
+```
+
+### Layout Statistics
+
+```typescript
+const stats = planner.getLayoutStats(8);
+console.log(stats);
+// {
+//   totalStructures: 92,
+//   byType: { spawn: 3, extension: 60, tower: 6, ... },
+//   byRCL: { 1: 1, 2: 6, 3: 6, ... },
+//   boundingBox: { minX: -10, maxX: 10, minY: -8, maxY: 10 }
+// }
+```
+
 ## CPU Efficiency
 
 To prevent CPU spikes, the system:
@@ -112,35 +193,29 @@ To prevent CPU spikes, the system:
 - Only runs planning when RCL changes
 - Caches anchor point after first calculation
 - Stops processing early if site limit is reached
-
-## Future Enhancements
-
-Potential improvements for the base building system:
-
-1. **Extended RCL Support**: Add layouts for RCL 5-8
-2. **Road Planning**: Automatically plan roads from sources to spawn/controller
-3. **Dynamic Layouts**: Adapt layout based on room terrain and source positions
-4. **Multi-Room Support**: Coordinate building across multiple rooms
-5. **Rampart Planning**: Add defensive rampart positions
-6. **Lab Layouts**: Optimize lab positioning for reactions
+- Layout plans are pre-computed and static (no per-tick calculations)
 
 ## Testing
 
 The system includes comprehensive unit tests:
 
-- `tests/unit/basePlanner.test.ts` (13 tests)
-- `tests/unit/constructionManager.test.ts` (11 tests)
+- `tests/unit/base-planner-rcl-6-8.test.ts` - RCL 6-8 layout tests
+- `tests/unit/basePlanner.test.ts` - Core planner tests
+- `tests/unit/constructionManager.test.ts` - Construction manager tests
 
 Tests cover:
 
 - Anchor point calculation
-- Structure planning by RCL
+- Structure planning by RCL (1-8)
 - Position validation
 - Construction site creation
 - State management
-- Error handling
+- Layout statistics
+- Visualization
+- CONTROLLER_STRUCTURES compliance
 
 ## References
 
 - [Screeps Wiki: Automatic Base Building](https://wiki.screepspl.us/Automatic_base_building/)
 - [Automating Base Planning in Screeps](https://sy-harabi.github.io/Automating-base-planning-in-screeps/)
+- [Base Planning Algorithms Research](../research/base-planning-algorithms.md)
