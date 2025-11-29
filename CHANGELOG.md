@@ -5,6 +5,23 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+## [0.189.9] - 2025-11-29
+
+### Added
+
+- **PTR Stats Collection Enhancement**: Restored and enhanced PTR stats collection for performance validation and strategic analysis (#1549)
+  - Added historical trend analysis script (`analyze-historical-trends.ts`) for tracking 7-day and 30-day performance trends
+  - Implemented regression detection with configurable thresholds for CPU usage, bucket health, and resource metrics
+  - Created comprehensive PTR stats schema documentation (`packages/docs/source/docs/analytics/ptr-stats-schema.md`) for strategic planning agents
+  - Enhanced profiler data collection with improved error handling for "undefined" console responses
+  - Added `reports/monitoring/historical-trends.json` to track performance trends across multiple time periods
+  - Integrated trend analysis into monitoring workflow with automatic artifact generation
+  - Added 20 unit tests for historical trend analysis functionality
+  - Enables data-driven optimization and autonomous performance monitoring
+  - Unblocks strategic planning agent performance analysis capabilities
+  - Supports multi-shard telemetry collection (MMO + PTR)
+  - Provides baseline metrics for optimization validation and risk mitigation
+
 ## [0.189.7] - 2025-11-29
 
 ### Fixed
