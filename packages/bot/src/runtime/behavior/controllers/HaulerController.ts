@@ -83,13 +83,13 @@ export class HaulerController extends BaseRoleController<HaulerMemory> {
 
     if (currentState === "pickup") {
       comm?.say(creep, "pickup");
+      // Check if full before pickup
+      if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+        machine.send({ type: "ENERGY_FULL" });
+      }
 
       // Priority 1: Pick up dropped energy
       if (tryPickupDroppedEnergy(creep)) {
-        // Check if full after pickup
-        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
-          machine.send({ type: "ENERGY_FULL" });
-        }
         // Save state to memory and return current state
         memory.stateMachine = serialize(machine);
         memory.task = machine.getState();
@@ -112,10 +112,6 @@ export class HaulerController extends BaseRoleController<HaulerMemory> {
         if (result === ERR_NOT_IN_RANGE) {
           // Use ignoreCreeps for better routing through narrow passages
           creep.moveTo(target, { range: 1, reusePath: 30, ignoreCreeps: true });
-        }
-        // Check if full after withdrawal
-        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
-          machine.send({ type: "ENERGY_FULL" });
         }
       }
     } else if (currentState === "deliver") {
@@ -202,7 +198,17 @@ export class HaulerController extends BaseRoleController<HaulerMemory> {
         }
       }
 
-      // Priority 4-7: Other delivery targets
+      // Priority 4-9: Other delivery targets
+      // Find storage using FIND_STRUCTURES as fallback when room.storage is undefined
+      const storageStructures: StructureStorage[] = creep.room.storage
+        ? creep.room.storage.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+          ? [creep.room.storage]
+          : []
+        : creep.room.find(FIND_STRUCTURES, {
+            filter: (s: AnyStructure): s is StructureStorage =>
+              s.structureType === STRUCTURE_STORAGE && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+          });
+
       const targets = [
         // Priority 4: Top off spawns and extensions to full capacity
         creep.room.find(FIND_STRUCTURES, {
@@ -218,7 +224,12 @@ export class HaulerController extends BaseRoleController<HaulerMemory> {
         // Priority 6: Fill spawn-adjacent containers to full capacity
         energyMgr ? findSpawnAdjacentContainers(creep.room) : [],
         // Priority 7: Storage (surplus)
-        creep.room.storage && creep.room.storage.store.getFreeCapacity(RESOURCE_ENERGY) > 0 ? [creep.room.storage] : []
+        storageStructures,
+        // Priority 8: Any container with free capacity (general energy distribution)
+        creep.room.find(FIND_STRUCTURES, {
+          filter: (structure: AnyStructure): structure is StructureContainer =>
+            structure.structureType === STRUCTURE_CONTAINER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+        })
       ];
 
       for (const targetList of targets) {
