@@ -27,10 +27,7 @@ const serverPath = resolve(packageRoot, "dist/server.js");
  * Creates a new MCP client connected to the server via stdio.
  * The server is started as a child process.
  */
-async function createMCPClient(): Promise<{
-  client: Client;
-  transport: StdioClientTransport;
-}> {
+async function createMCPClient(): Promise<{ client: Client }> {
   const transport = new StdioClientTransport({
     command: "node",
     args: [serverPath],
@@ -53,14 +50,11 @@ async function createMCPClient(): Promise<{
 
   await client.connect(transport);
 
-  return { client, transport };
+  return { client };
 }
 
 describe("MCP SDK Client Integration - screeps-wiki-mcp", () => {
   let client: Client | null = null;
-  // transport is tracked for potential future cleanup needs
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  let transport: StdioClientTransport | null = null;
 
   beforeAll(async () => {
     // Ensure the server is built
@@ -78,7 +72,6 @@ describe("MCP SDK Client Integration - screeps-wiki-mcp", () => {
         // Ignore close errors
       }
       client = null;
-      transport = null;
     }
   });
 
@@ -86,7 +79,6 @@ describe("MCP SDK Client Integration - screeps-wiki-mcp", () => {
     it("should list all available tools via MCP SDK", async () => {
       const connection = await createMCPClient();
       client = connection.client;
-      transport = connection.transport;
 
       const result = await client.request({ method: "tools/list" }, ListToolsResultSchema);
 
@@ -112,7 +104,6 @@ describe("MCP SDK Client Integration - screeps-wiki-mcp", () => {
     it("should list all available resources via MCP SDK", async () => {
       const connection = await createMCPClient();
       client = connection.client;
-      transport = connection.transport;
 
       const result = await client.request({ method: "resources/list" }, ListResourcesResultSchema);
 
@@ -135,7 +126,6 @@ describe("MCP SDK Client Integration - screeps-wiki-mcp", () => {
     it("should successfully establish MCP connection", async () => {
       const connection = await createMCPClient();
       client = connection.client;
-      transport = connection.transport;
 
       // If we got here without errors, the connection was established
       expect(client).toBeDefined();
@@ -144,7 +134,6 @@ describe("MCP SDK Client Integration - screeps-wiki-mcp", () => {
     it("should have proper tool schemas", async () => {
       const connection = await createMCPClient();
       client = connection.client;
-      transport = connection.transport;
 
       const result = await client.request({ method: "tools/list" }, ListToolsResultSchema);
 
@@ -152,10 +141,12 @@ describe("MCP SDK Client Integration - screeps-wiki-mcp", () => {
       const searchTool = result.tools.find(t => t.name === "screeps_wiki_search");
       expect(searchTool).toBeDefined();
       expect(searchTool?.description).toBeTruthy();
+      expect(searchTool?.inputSchema).toBeDefined();
 
       const getArticleTool = result.tools.find(t => t.name === "screeps_wiki_get_article");
       expect(getArticleTool).toBeDefined();
       expect(getArticleTool?.description).toBeTruthy();
+      expect(getArticleTool?.inputSchema).toBeDefined();
     });
   });
 });
