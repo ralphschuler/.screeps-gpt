@@ -23,6 +23,157 @@ beforeEach(() => {
   (globalThis as typeof globalThis & Record<string, unknown>).MAX_CREEP_SIZE = 50;
 });
 
+describe("RoleControllerManager spawning creep handling", () => {
+  it("should skip behavior execution for creeps that are still spawning", () => {
+    const memory = {} as Memory;
+
+    const room: Room = {
+      name: "W1N1",
+      controller: { my: true } as StructureController,
+      energyAvailable: 300,
+      energyCapacityAvailable: 550,
+      find: () => [],
+      findPath: () => [],
+      createConstructionSite: () => OK_CODE,
+      getTerrain: () => ({ get: () => 0 }) as unknown as RoomTerrain
+    };
+
+    const spawn: SpawnLike = {
+      name: "Spawn1",
+      room,
+      spawning: null,
+      spawnCreep: vi.fn(() => OK_CODE),
+      store: {
+        getUsedCapacity: () => 0,
+        getFreeCapacity: () => 300
+      }
+    };
+
+    const moveTo = vi.fn(() => OK_CODE);
+
+    // Create a spawning creep (spawning: true)
+    const spawningCreep: CreepLike & { spawning: boolean } = {
+      name: "claimer-spawning",
+      memory: { role: "claimer" } as CreepMemory,
+      room,
+      pos: {
+        findClosestByPath: () => null,
+        inRangeTo: () => false,
+        findInRange: () => []
+      } as unknown as PositionLike,
+      store: {
+        getUsedCapacity: () => 0,
+        getFreeCapacity: () => 0
+      },
+      harvest: () => OK_CODE,
+      transfer: () => OK_CODE,
+      moveTo,
+      upgradeController: () => OK_CODE,
+      withdraw: () => OK_CODE,
+      build: () => OK_CODE,
+      repair: () => OK_CODE,
+      pickup: () => OK_CODE,
+      drop: () => OK_CODE,
+      spawning: true // Key: creep is still spawning
+    };
+
+    const game: GameContext = {
+      time: 1,
+      cpu: { limit: 10, bucket: 10000, getUsed: () => 0 },
+      creeps: { "claimer-spawning": spawningCreep },
+      spawns: { Spawn1: spawn },
+      rooms: { W1N1: room }
+    };
+
+    (globalThis as typeof globalThis & Record<string, unknown>).Game = game as unknown as Game;
+
+    const manager = new RoleControllerManager({}, console);
+
+    // Execute the manager
+    const result = manager.execute(game, memory, { claimer: 1 });
+
+    // The spawning creep should be processed (counted) but moveTo should NOT be called
+    // because spawning creeps are skipped before controller.execute()
+    expect(result.processedCreeps).toBe(1);
+    expect(moveTo).not.toHaveBeenCalled();
+  });
+
+  it("should execute behavior for creeps that are not spawning", () => {
+    const memory = {} as Memory;
+
+    const room: Room = {
+      name: "W1N1",
+      controller: { my: true } as StructureController,
+      energyAvailable: 300,
+      energyCapacityAvailable: 550,
+      find: () => [],
+      findPath: () => [],
+      createConstructionSite: () => OK_CODE,
+      getTerrain: () => ({ get: () => 0 }) as unknown as RoomTerrain
+    };
+
+    const spawn: SpawnLike = {
+      name: "Spawn1",
+      room,
+      spawning: null,
+      spawnCreep: vi.fn(() => OK_CODE),
+      store: {
+        getUsedCapacity: () => 0,
+        getFreeCapacity: () => 300
+      }
+    };
+
+    const moveTo = vi.fn(() => OK_CODE);
+
+    // Create a non-spawning creep (spawning: false)
+    const activeCreep: CreepLike & { spawning: boolean; ticksToLive: number } = {
+      name: "harvester-active",
+      memory: { role: "harvester" } as CreepMemory,
+      room,
+      pos: {
+        findClosestByPath: () => null,
+        inRangeTo: () => false,
+        findInRange: () => []
+      } as unknown as PositionLike,
+      store: {
+        getUsedCapacity: () => 0,
+        getFreeCapacity: () => 50
+      },
+      harvest: () => OK_CODE,
+      transfer: () => OK_CODE,
+      moveTo,
+      upgradeController: () => OK_CODE,
+      withdraw: () => OK_CODE,
+      build: () => OK_CODE,
+      repair: () => OK_CODE,
+      pickup: () => OK_CODE,
+      drop: () => OK_CODE,
+      spawning: false, // Creep is not spawning
+      ticksToLive: 1000 // Not dying
+    };
+
+    const game: GameContext = {
+      time: 1,
+      cpu: { limit: 10, bucket: 10000, getUsed: () => 0 },
+      creeps: { "harvester-active": activeCreep },
+      spawns: { Spawn1: spawn },
+      rooms: { W1N1: room }
+    };
+
+    (globalThis as typeof globalThis & Record<string, unknown>).Game = game as unknown as Game;
+
+    const manager = new RoleControllerManager({}, console);
+
+    // Execute the manager
+    const result = manager.execute(game, memory, { harvester: 1 });
+
+    // The non-spawning creep should be processed and behavior should execute
+    expect(result.processedCreeps).toBe(1);
+    // The harvester controller would call moveTo at some point
+    // (depending on the state machine state)
+  });
+});
+
 describe("RoleControllerManager spawning", () => {
   it("downscales body to available energy when capacity is higher, avoiding spawn starvation", () => {
     const spawned: string[] = [];

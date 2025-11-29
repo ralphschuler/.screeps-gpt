@@ -3,6 +3,18 @@
  */
 
 /**
+ * Determines if a creep is still spawning and cannot perform actions.
+ * Spawning creeps should be skipped during behavior execution to avoid
+ * errors like "Pathfinder: can't move creep that is spawning".
+ *
+ * @param creep - The creep to check
+ * @returns true if the creep is still spawning
+ */
+export function isCreepSpawning(creep: Creep): boolean {
+  return creep.spawning === true;
+}
+
+/**
  * Determines if a creep is dying (low TTL) and should drop its carried resources.
  *
  * @param creep - The creep to check

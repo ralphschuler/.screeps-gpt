@@ -20,7 +20,7 @@ import { CreepCommunicationManager } from "./CreepCommunicationManager";
 import { EnergyPriorityManager } from "@runtime/energy";
 import { BodyComposer } from "./BodyComposer";
 import { WallUpgradeManager } from "@runtime/defense/WallUpgradeManager";
-import { isCreepDying, handleDyingCreepEnergyDrop } from "./creepHelpers";
+import { isCreepDying, isCreepSpawning, handleDyingCreepEnergyDrop } from "./creepHelpers";
 import { ScoutManager } from "@runtime/scouting/ScoutManager";
 import { RoleTaskQueueManager } from "./RoleTaskQueue";
 import * as TaskDiscovery from "./TaskDiscovery";
@@ -337,6 +337,13 @@ export class RoleControllerManager {
       }
 
       const cpuBefore = game.cpu.getUsed();
+
+      // Skip creeps that are still spawning - they cannot perform any actions
+      // This prevents errors like "Pathfinder: can't move creep that is spawning"
+      if (isCreepSpawning(creep as Creep)) {
+        processedCreeps++;
+        continue;
+      }
 
       // Check if creep is dying and should drop energy
       const dyingConfig = memory.dyingCreepBehavior ?? { enabled: true, ttlThreshold: 50 };
