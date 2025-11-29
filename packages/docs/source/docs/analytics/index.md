@@ -24,6 +24,15 @@ The analytics system provides detailed insights into bot performance, resource u
   - Infrastructure development (extensions, towers, containers)
   - Memory utilization
 
+### Schema Reference
+
+- [**PTR Stats Schema Reference**](./ptr-stats-schema.html) - Complete schema documentation for PTR stats files, enabling strategic planning agents and automation systems to consume telemetry data for performance validation and analysis. Includes:
+  - PTR stats JSON schema
+  - Historical trends schema
+  - Profiler data schema
+  - Regression detection thresholds
+  - Strategic planning agent integration examples
+
 ### Data Collection
 
 The analytics system collects daily snapshots of game state from the Public Test Realm (PTR) deployment. These snapshots are stored in `reports/bot-snapshots/` and capture:
