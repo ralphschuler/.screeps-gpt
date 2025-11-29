@@ -4,7 +4,8 @@ import {
   ticksToHours,
   determineAlertLevel,
   ALERT_THRESHOLDS,
-  MAX_DOWNGRADE_TIMER
+  MAX_DOWNGRADE_TIMER,
+  MOCK_ROOM_NAME
 } from "../../packages/utilities/scripts/check-controller-health";
 import type { BotSnapshot } from "../../packages/utilities/scripts/types/bot-snapshot";
 
@@ -370,7 +371,7 @@ describe("Controller Health Check", () => {
             energy: 0,
             energyCapacity: 0
           },
-          E54N39: {
+          W1N1: {
             // This is an actual room
             rcl: 2,
             energy: 300,
@@ -384,10 +385,10 @@ describe("Controller Health Check", () => {
 
       const report = analyzeControllerHealth(snapshotWithCountMetadata);
 
-      // Should only analyze the actual room E54N39, not the "count" metadata
+      // Should only analyze the actual room W1N1, not the "count" metadata
       expect(report.totalRooms).toBe(1);
       expect(report.rooms).toHaveLength(1);
-      expect(report.rooms[0].roomName).toBe("E54N39");
+      expect(report.rooms[0].roomName).toBe("W1N1");
 
       // The "count" entry should NOT appear in the report
       const countRoom = report.rooms.find(r => r.roomName === "count");
@@ -403,7 +404,7 @@ describe("Controller Health Check", () => {
           "not-a-room": { rcl: 3, energy: 300, energyCapacity: 300, ticksToDowngrade: 9000 },
           count: { rcl: 0, energy: 0, energyCapacity: 0 },
           W1N1: { rcl: 2, energy: 300, energyCapacity: 300, ticksToDowngrade: 9000 },
-          E54N39: { rcl: 3, energy: 800, energyCapacity: 800, ticksToDowngrade: 50000 },
+          E55N39: { rcl: 3, energy: 800, energyCapacity: 800, ticksToDowngrade: 50000 },
           W0S0: { rcl: 2, energy: 300, energyCapacity: 300, ticksToDowngrade: 9000 },
           E99S99: { rcl: 2, energy: 300, energyCapacity: 300, ticksToDowngrade: 9000 }
         }
@@ -411,15 +412,58 @@ describe("Controller Health Check", () => {
 
       const report = analyzeControllerHealth(snapshotWithInvalidNames);
 
-      // Should only process valid room names
-      expect(report.totalRooms).toBe(4); // W1N1, E54N39, W0S0, E99S99
+      // Should only process valid room names (excluding mock room E54N39)
+      expect(report.totalRooms).toBe(4); // W1N1, E55N39, W0S0, E99S99
       const roomNames = report.rooms.map(r => r.roomName).sort();
-      expect(roomNames).toEqual(["E54N39", "E99S99", "W0S0", "W1N1"]);
+      expect(roomNames).toEqual(["E55N39", "E99S99", "W0S0", "W1N1"]);
 
       // Invalid names should not appear
       expect(report.rooms.find(r => r.roomName === "invalid")).toBeUndefined();
       expect(report.rooms.find(r => r.roomName === "not-a-room")).toBeUndefined();
       expect(report.rooms.find(r => r.roomName === "count")).toBeUndefined();
+    });
+
+    it("should exclude mock room E54N39 from monitoring to prevent test data in notifications", () => {
+      // This test verifies that the mock room used in screeps-server-mockup and test snapshots
+      // is filtered out from the controller health monitoring to prevent false alerts.
+      expect(MOCK_ROOM_NAME).toBe("E54N39");
+
+      const snapshotWithMockRoom = {
+        timestamp: "2025-11-29T12:00:00.000Z",
+        rooms: {
+          [MOCK_ROOM_NAME]: {
+            // This is the mock room - should be filtered out
+            rcl: 4,
+            energy: 1200,
+            energyCapacity: 1300,
+            ticksToDowngrade: 5000, // Would be critical if not filtered
+            controllerProgress: 100000,
+            controllerProgressTotal: 405000
+          },
+          W1N1: {
+            // This is a real room - should be included
+            rcl: 3,
+            energy: 800,
+            energyCapacity: 800,
+            ticksToDowngrade: 50000
+          }
+        }
+      } as unknown as BotSnapshot;
+
+      const report = analyzeControllerHealth(snapshotWithMockRoom);
+
+      // Mock room E54N39 should be filtered out
+      expect(report.totalRooms).toBe(1);
+      expect(report.rooms).toHaveLength(1);
+      expect(report.rooms[0].roomName).toBe("W1N1");
+
+      // The mock room should NOT appear in the report
+      const mockRoom = report.rooms.find(r => r.roomName === MOCK_ROOM_NAME);
+      expect(mockRoom).toBeUndefined();
+
+      // Verify it won't generate alerts for mock room data
+      expect(report.alertCounts.critical).toBe(0);
+      expect(report.alertCounts.warning).toBe(1); // Only W1N1 with ~18.5h to downgrade
     });
   });
 });

@@ -95,6 +95,12 @@ const ALERT_THRESHOLDS = {
 const TICKS_PER_HOUR = 2700;
 
 /**
+ * Mock room name used in test snapshots and screeps-server-mockup.
+ * This room should be excluded from production monitoring notifications.
+ */
+const MOCK_ROOM_NAME = "E54N39";
+
+/**
  * Convert ticks to hours (assuming 1 tick = ~1.33 seconds on average)
  * @param ticks Number of ticks
  * @returns Hours
@@ -158,6 +164,12 @@ export function analyzeControllerHealth(snapshot: BotSnapshot): ControllerHealth
       // Valid Screeps room names follow the pattern: [E|W][0-9]+[N|S][0-9]+
       // Examples: E54N39, W1N1, E0S0
       if (!/^[EW]\d+[NS]\d+$/.test(roomName)) {
+        continue;
+      }
+
+      // Skip mock room used in test snapshots (screeps-server-mockup)
+      // This prevents test data from appearing in production notifications
+      if (roomName === MOCK_ROOM_NAME) {
         continue;
       }
 
@@ -337,6 +349,7 @@ export {
   PROGRESS_THRESHOLDS,
   TIMER_MULTIPLIERS,
   ROLE_UPGRADER,
+  MOCK_ROOM_NAME,
   ticksToHours,
   determineAlertLevel
 };
