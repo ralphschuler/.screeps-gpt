@@ -1,0 +1,257 @@
+{
+  "generatedAt": "2025-11-29T15:52:23.501Z",
+  "snapshotsAnalyzed": 20,
+  "periods": {
+    "sevenDay": {
+      "period": "7-day",
+      "days": 7,
+      "dataPointCount": 8,
+      "dateRange": {
+        "start": "2025-11-22T23:51:16.712Z",
+        "end": "2025-11-29T15:52:21.431Z"
+      },
+      "cpu": {
+        "used": {
+          "current": 0,
+          "previous": 0,
+          "change": 0,
+          "changePercent": 0,
+          "trend": "stable",
+          "isRegression": false
+        },
+        "bucket": {
+          "current": 0,
+          "previous": 0,
+          "change": 0,
+          "changePercent": 0,
+          "trend": "stable",
+          "isRegression": false
+        },
+        "bucketHealth": "critical"
+      },
+      "creeps": {
+        "total": {
+          "current": 0,
+          "previous": 0,
+          "change": 0,
+          "changePercent": 0,
+          "trend": "stable",
+          "isRegression": false
+        }
+      },
+      "rooms": {
+        "count": {
+          "current": 1,
+          "previous": 1,
+          "change": 0,
+          "changePercent": 0,
+          "trend": "stable",
+          "isRegression": false
+        },
+        "averageRcl": {
+          "current": 2,
+          "previous": 2,
+          "change": 0,
+          "changePercent": 0,
+          "trend": "stable",
+          "isRegression": false
+        },
+        "totalProgress": {
+          "current": 38708,
+          "previous": 38708,
+          "change": 0,
+          "changePercent": 0,
+          "trend": "stable",
+          "isRegression": false
+        }
+      },
+      "energy": {
+        "total": {
+          "current": 0,
+          "previous": 0,
+          "change": 0,
+          "changePercent": 0,
+          "trend": "stable",
+          "isRegression": false
+        },
+        "perRoom": {
+          "current": 0,
+          "previous": 0,
+          "change": 0,
+          "changePercent": 0,
+          "trend": "stable",
+          "isRegression": false
+        }
+      },
+      "memory": {
+        "used": {
+          "current": 2537,
+          "previous": 2537,
+          "change": 0,
+          "changePercent": 0,
+          "trend": "stable",
+          "isRegression": false
+        },
+        "usedPercent": {
+          "current": 0.12,
+          "previous": 0.12,
+          "change": 0,
+          "changePercent": 0,
+          "trend": "stable",
+          "isRegression": false
+        }
+      },
+      "spawns": {
+        "utilization": {
+          "current": 0,
+          "previous": 0,
+          "change": 0,
+          "changePercent": 0,
+          "trend": "stable",
+          "isRegression": false
+        }
+      },
+      "regressions": [],
+      "improvements": []
+    },
+    "thirtyDay": {
+      "period": "30-day",
+      "days": 30,
+      "dataPointCount": 20,
+      "dateRange": {
+        "start": "2025-11-07T23:44:43.054Z",
+        "end": "2025-11-29T15:52:21.431Z"
+      },
+      "cpu": {
+        "used": {
+          "current": 0,
+          "previous": 0,
+          "change": 0,
+          "changePercent": 0,
+          "trend": "stable",
+          "isRegression": false
+        },
+        "bucket": {
+          "current": 0,
+          "previous": 0,
+          "change": 0,
+          "changePercent": 0,
+          "trend": "stable",
+          "isRegression": false
+        },
+        "bucketHealth": "critical"
+      },
+      "creeps": {
+        "total": {
+          "current": 1.1,
+          "previous": 0,
+          "change": 1.1,
+          "changePercent": 0,
+          "trend": "stable",
+          "isRegression": false
+        }
+      },
+      "rooms": {
+        "count": {
+          "current": 1,
+          "previous": 1,
+          "change": 0,
+          "changePercent": 0,
+          "trend": "stable",
+          "isRegression": false
+        },
+        "averageRcl": {
+          "current": 2.2,
+          "previous": 3,
+          "change": -0.7999999999999998,
+          "changePercent": -26.66666666666666,
+          "trend": "decreasing",
+          "isRegression": true
+        },
+        "totalProgress": {
+          "current": 44915.5,
+          "previous": 113532,
+          "change": -68616.5,
+          "changePercent": -60.43802628333862,
+          "trend": "decreasing",
+          "isRegression": true
+        }
+      },
+      "energy": {
+        "total": {
+          "current": 130,
+          "previous": 450,
+          "change": -320,
+          "changePercent": -71.11111111111111,
+          "trend": "decreasing",
+          "isRegression": true
+        },
+        "perRoom": {
+          "current": 130,
+          "previous": 450,
+          "change": -320,
+          "changePercent": -71.11111111111111,
+          "trend": "decreasing",
+          "isRegression": true
+        }
+      },
+      "memory": {
+        "used": {
+          "current": 2588.9,
+          "previous": 2588.9,
+          "change": 0,
+          "changePercent": 0,
+          "trend": "stable",
+          "isRegression": false
+        },
+        "usedPercent": {
+          "current": 0.123,
+          "previous": 0.123,
+          "change": 0,
+          "changePercent": 0,
+          "trend": "stable",
+          "isRegression": false
+        }
+      },
+      "spawns": {
+        "utilization": {
+          "current": 0,
+          "previous": 0,
+          "change": 0,
+          "changePercent": 0,
+          "trend": "stable",
+          "isRegression": false
+        }
+      },
+      "regressions": [
+        "Energy reserves decreased by 71.1%"
+      ],
+      "improvements": []
+    }
+  },
+  "overallHealth": "critical",
+  "recommendations": [
+    "Review CPU-intensive operations and consider optimization",
+    "Check profiler data for hotspots using reports/profiler/latest.json"
+  ],
+  "alerts": [
+    {
+      "type": "cpu_bucket_critical",
+      "severity": "critical",
+      "message": "CPU bucket at 0 - critical level",
+      "metric": "cpu.bucket"
+    },
+    {
+      "type": "cpu_bucket_critical",
+      "severity": "critical",
+      "message": "CPU bucket at 0 - critical level",
+      "metric": "cpu.bucket"
+    },
+    {
+      "type": "energy_regression",
+      "severity": "medium",
+      "message": "Energy reserves decreased by 71.1%",
+      "metric": "energy.total"
+    }
+  ]
+}
