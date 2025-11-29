@@ -72,9 +72,16 @@ function extractNumericField(
 
 /**
  * Check if snapshot has meaningful data (more than just timestamp)
+ * Validates that data structures contain actual values, not just empty objects
  */
 function hasSubstantiveData(snapshot: BotSnapshot): boolean {
-  return !!(snapshot.cpu || snapshot.rooms || snapshot.creeps || snapshot.spawns || snapshot.tick);
+  return !!(
+    snapshot.cpu ||
+    (snapshot.rooms && Object.keys(snapshot.rooms).length > 0) ||
+    (snapshot.creeps && typeof snapshot.creeps.total === "number" && snapshot.creeps.total > 0) ||
+    (snapshot.spawns && typeof snapshot.spawns.total === "number" && snapshot.spawns.total > 0) ||
+    snapshot.tick
+  );
 }
 
 /**
@@ -91,11 +98,19 @@ function validateSnapshotQuality(snapshot: BotSnapshot, previousSnapshot?: BotSn
   }
 
   // Check 2: If rooms are claimed, creep count should be > 0 (after initial spawn period)
+  // Only trigger CRITICAL error if previous snapshot also had claimed rooms and zero creeps (sustained failure)
   const roomCount = Object.keys(snapshot.rooms || {}).length;
   const creepCount = snapshot.creeps?.total || 0;
-  if (roomCount > 0 && creepCount === 0) {
+  if (
+    roomCount > 0 &&
+    creepCount === 0 &&
+    previousSnapshot &&
+    hasSubstantiveData(previousSnapshot) &&
+    Object.keys(previousSnapshot.rooms || {}).length > 0 &&
+    (previousSnapshot.creeps?.total || 0) === 0
+  ) {
     errors.push(
-      `CRITICAL: ${roomCount} room(s) claimed but 0 creeps detected - possible spawn failure or data staleness`
+      `CRITICAL: ${roomCount} room(s) claimed but 0 creeps detected (sustained across consecutive snapshots) - possible spawn failure or data staleness`
     );
   }
 
@@ -319,27 +334,28 @@ async function collectBotSnapshot(): Promise<void> {
   const creepsByRole: Record<string, number> = {};
   let latestTick: number | undefined;
   let latestCpu: BotSnapshot["cpu"] | undefined;
+  let latestCollectionTime: number | undefined;
 
   for (const shard of shardDiscovery.shards) {
     console.log(`\nCollecting from shard: ${shard.name}...`);
 
+    // Use console telemetry for per-shard data collection
+    // Note: fetchConsoleTelemetry uses SCREEPS_SHARD env var, so we temporarily override it
+    const originalShard = process.env.SCREEPS_SHARD;
     try {
-      // Use console telemetry for per-shard data collection
-      // Note: fetchConsoleTelemetry uses SCREEPS_SHARD env var, so we temporarily override it
-      const originalShard = process.env.SCREEPS_SHARD;
       process.env.SCREEPS_SHARD = shard.name;
+      const collectionTime = Date.now();
 
       const consoleTelemetry = await fetchConsoleTelemetry();
-
-      // Restore original shard
-      process.env.SCREEPS_SHARD = originalShard;
 
       console.log(
         `  ✓ Shard ${shard.name}: ${consoleTelemetry.rooms.length} rooms, ${consoleTelemetry.creeps.total} creeps`
       );
 
-      // Aggregate CPU data (use latest tick's CPU)
-      if (!latestTick || consoleTelemetry.tick > latestTick) {
+      // Aggregate CPU data - use most recently collected shard's data (by collection timestamp)
+      // Different shards have independent tick counters, so we compare collection time instead
+      if (!latestCollectionTime || collectionTime > latestCollectionTime) {
+        latestCollectionTime = collectionTime;
         latestTick = consoleTelemetry.tick;
         latestCpu = {
           used: consoleTelemetry.cpu.used,
@@ -369,6 +385,9 @@ async function collectBotSnapshot(): Promise<void> {
     } catch (shardError) {
       console.warn(`  ⚠ Failed to collect from shard ${shard.name}:`, shardError);
       // Continue with other shards even if one fails
+    } finally {
+      // Always restore original shard env var
+      process.env.SCREEPS_SHARD = originalShard;
     }
   }
 
@@ -392,33 +411,44 @@ async function collectBotSnapshot(): Promise<void> {
   console.log(`  Total creeps: ${totalCreeps}`);
   console.log(`  Rooms by shard:`, shardDiscovery.shards.map(s => `${s.name}=${s.rooms.length}`).join(", "));
 
-  // If snapshot is still empty after multi-shard collection, try Stats API fallback
+  // If snapshot is still empty after multi-shard collection, note that no additional fallback is possible.
   if (!hasSubstantiveData(snapshot)) {
-    console.log("\n⚠ Multi-shard collection returned empty data - attempting Stats API fallback...");
-
-    try {
-      // Stats API fallback uses the data from Memory.stats (already attempted above)
-      // This path should rarely be hit if console telemetry is working
-      console.warn("Stats API fallback: No additional data available");
-      console.warn("Snapshot will contain only timestamp and shard discovery metadata");
-    } catch (fallbackError) {
-      console.warn("Stats API fallback failed:", fallbackError);
-      console.warn("Snapshot will contain only timestamp");
-    }
+    console.log("\n⚠ Multi-shard collection returned empty data.");
+    // Stats API fallback is not possible: Memory.stats was already attempted in Phase 1.
+    // Snapshot will contain only timestamp and shard discovery metadata.
+    console.warn("No additional fallback available - Stats API was already attempted in Phase 1");
   }
 
   // Phase 3: Validate snapshot quality
   console.log("\nPhase 3: Validating snapshot quality...");
 
-  // Load previous snapshot for comparison
+  // Load previous snapshot for comparison (most recent, excluding current run's date)
   let previousSnapshot: BotSnapshot | undefined;
   try {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const prevFilename = `snapshot-${yesterday.toISOString().split("T")[0]}.json`;
-    const prevPath = resolve(SNAPSHOTS_DIR, prevFilename);
-    const prevContent = readFileSync(prevPath, "utf-8");
-    previousSnapshot = JSON.parse(prevContent);
+    const files = readdirSync(SNAPSHOTS_DIR).filter(f => /^snapshot-\d{4}-\d{2}-\d{2}\.json$/.test(f));
+    // Get current run's date string
+    let currentDate: string;
+    try {
+      currentDate = new Date(snapshot.timestamp).toISOString().split("T")[0];
+    } catch {
+      currentDate = new Date().toISOString().split("T")[0];
+    }
+    // Sort files by mtime descending
+    const sortedFiles = files
+      .map(f => {
+        const fullPath = resolve(SNAPSHOTS_DIR, f);
+        return { file: f, mtime: statSync(fullPath).mtime.getTime() };
+      })
+      .sort((a, b) => b.mtime - a.mtime);
+    // Find most recent file not for current run's date
+    const prevEntry = sortedFiles.find(entry => !entry.file.includes(currentDate));
+    if (prevEntry) {
+      const prevPath = resolve(SNAPSHOTS_DIR, prevEntry.file);
+      const prevContent = readFileSync(prevPath, "utf-8");
+      previousSnapshot = JSON.parse(prevContent);
+    } else {
+      console.log("  No previous snapshot available for comparison");
+    }
   } catch {
     // Previous snapshot not available (expected for first run)
     console.log("  No previous snapshot available for comparison");
