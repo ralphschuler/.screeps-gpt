@@ -57,6 +57,7 @@ export function discoverBuildTasks(room: Room, currentTick: number): TaskQueueEn
     { type: STRUCTURE_TOWER, priority: TaskPriority.HIGH },
     { type: STRUCTURE_CONTAINER, priority: TaskPriority.HIGH },
     { type: STRUCTURE_STORAGE, priority: TaskPriority.HIGH },
+    { type: STRUCTURE_LINK, priority: TaskPriority.HIGH }, // Links for energy distribution (unlocked at RCL 5)
     { type: STRUCTURE_ROAD, priority: TaskPriority.NORMAL },
     { type: STRUCTURE_RAMPART, priority: TaskPriority.NORMAL },
     { type: STRUCTURE_WALL, priority: TaskPriority.LOW }
