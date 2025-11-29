@@ -5,6 +5,13 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Fixed
+
+- **Dismantler**: Fixed dismantler attempting to dismantle novice zone walls near room edges
+  - Added `isNearRoomEdge()` helper to detect structures within 1 tile of room boundaries (x ≤ 1, x ≥ 48, y ≤ 1, y ≥ 48)
+  - Structures at room edges are now filtered out in both combat and clearing modes
+  - This prevents wasted time targeting indestructible novice/respawn zone walls that block exits
+
 ## [0.183.5] - 2025-11-28
 
 ### Changed
