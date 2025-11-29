@@ -309,7 +309,7 @@ export class ConstructionManager {
         continue;
       }
 
-      const targetRCL = rcl ?? (room.controller?.level ?? 8);
+      const targetRCL = rcl ?? room.controller?.level ?? 8;
       totalVisualized += state.planner.visualize(room, targetRCL, showLabels);
     }
 
