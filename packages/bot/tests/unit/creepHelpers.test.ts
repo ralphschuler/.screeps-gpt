@@ -1,7 +1,32 @@
 import { describe, expect, it } from "vitest";
-import { isCreepDying, handleDyingCreepEnergyDrop } from "@runtime/behavior/creepHelpers";
+import { isCreepDying, isCreepSpawning, handleDyingCreepEnergyDrop } from "@runtime/behavior/creepHelpers";
+import type { CreepLike } from "@runtime/types/GameContext";
 
 describe("creepHelpers", () => {
+  describe("isCreepSpawning", () => {
+    it("should return true when creep is spawning", () => {
+      const creep = {
+        spawning: true
+      } as CreepLike;
+
+      expect(isCreepSpawning(creep)).toBe(true);
+    });
+
+    it("should return false when creep is not spawning", () => {
+      const creep = {
+        spawning: false
+      } as CreepLike;
+
+      expect(isCreepSpawning(creep)).toBe(false);
+    });
+
+    it("should return false when spawning property is undefined", () => {
+      const creep = {} as CreepLike;
+
+      expect(isCreepSpawning(creep)).toBe(false);
+    });
+  });
+
   describe("isCreepDying", () => {
     it("should return true when TTL is below default threshold (50)", () => {
       const creep = {

@@ -42,6 +42,8 @@ export interface CreepLike {
   store: StoreLike;
   pos: PositionLike;
   room: RoomLike;
+  /** True if the creep is still spawning and cannot perform actions */
+  spawning?: boolean;
   harvest(target: Source): ScreepsReturnCode;
   transfer(target: AnyStoreStructure, resource: ResourceConstant): ScreepsReturnCode;
   moveTo(target: RoomPosition | { pos: RoomPosition }, opts?: MoveToOpts): ScreepsReturnCode;
