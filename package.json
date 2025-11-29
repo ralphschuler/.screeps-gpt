@@ -60,6 +60,8 @@
     "test:logger": "cd packages/screeps-logger && npm run test",
     "test:metrics": "cd packages/screeps-metrics && npm run test",
     "test:all-packages": "npm run test:bot && npm run test:utilities && npm run test:docs && npm run test:logger && npm run test:metrics",
+    "test:mcp": "cd packages/screeps-mcp && npm run test && cd ../screeps-docs-mcp && npm run test && cd ../screeps-wiki-mcp && npm run test",
+    "test:mcp:inspector": "cd packages/screeps-mcp && npm run test:inspector && cd ../screeps-docs-mcp && npm run test:inspector && cd ../screeps-wiki-mcp && npm run test:inspector",
     "validate:docs-links": "tsx packages/utilities/scripts/validate-docs-links.ts",
     "docs:generate-blog-posts": "tsx packages/utilities/scripts/generate-missing-blog-posts.ts",
     "deploy": "tsx packages/utilities/scripts/deploy.ts",

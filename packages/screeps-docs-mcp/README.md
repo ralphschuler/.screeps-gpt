@@ -210,7 +210,26 @@ yarn test
 
 # Run tests with coverage
 yarn test:coverage
+
+# Run MCP Inspector tests (protocol compliance)
+npm run test:inspector
 ```
+
+### MCP Inspector Testing
+
+This package includes integration tests that use the MCP SDK client to validate protocol compliance. The tests are inspired by the [MCP Inspector](https://github.com/modelcontextprotocol/inspector) approach.
+
+**Interactive inspection:**
+
+```bash
+# Launch the MCP Inspector UI (requires Node.js 22.7.5+)
+npm run inspect
+
+# CLI mode for quick testing
+npm run inspect:cli
+```
+
+**Note:** The `inspect` command requires Node.js 22.7.5 or higher. The automated tests (`test:inspector`) work with Node.js 18+.
 
 ## License
 
