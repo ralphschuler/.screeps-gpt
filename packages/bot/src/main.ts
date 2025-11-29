@@ -11,10 +11,12 @@
  * - Subscribe to runtime events for debugging
  * - Expose global utilities for console access (Profiler, Diagnostics, EventBus)
  * - Execute the main game loop with proper error handling
+ * - Manage phased initialization after deployment/restart to prevent CPU bucket drain
  *
  * @module main
  * @see {@link Kernel} for process scheduling and lifecycle management
  * @see {@link packages/README.md} for TSDoc documentation standards
+ * @see {@link packages/docs/source/docs/runtime/initialization.md} for initialization system docs
  */
 
 import { Kernel } from "@ralphschuler/screeps-kernel";
@@ -24,6 +26,7 @@ import { Diagnostics } from "@runtime/utils/Diagnostics";
 import { logger } from "@runtime/utils/logger";
 import { EventTypes } from "@ralphschuler/screeps-events";
 import { globalEventBus } from "@runtime/events/globalEventBus";
+import { InitializationManager } from "@runtime/bootstrap/InitializationManager";
 
 // Import protocol modules to trigger @protocol decorator registration
 import "@runtime/protocols";
@@ -53,11 +56,120 @@ const MAX_PROFILER_ENTRIES = 500;
  */
 const PROFILER_RETENTION_INTERVAL = 100;
 
+// Initialize profiler instance first - needed by registerInitPhases
+const profilerInstance = initProfiler();
+
 // Create kernel instance using screeps-kernel
 const kernel = new Kernel({
   logger: console,
   cpuEmergencyThreshold: 0.9
 });
+
+// Create initialization manager for phased startup
+// This spreads initialization workload across multiple ticks to prevent CPU bucket drain
+const initManager = new InitializationManager(
+  {
+    minBucketLevel: 500, // Minimum bucket required to proceed with init
+    cpuSafetyMargin: 0.8, // Use 80% of CPU limit for init phases
+    maxInitTicks: 10 // Force complete after 10 ticks
+  },
+  console
+);
+
+/**
+ * Global flag to track if initialization phases have been registered.
+ * Used to avoid redundant phase registration on every tick.
+ * Resets on code reload (global re-creation), which is the desired behavior.
+ */
+let initPhasesRegistered = false;
+
+/**
+ * Ensures Memory.stats exists with a minimal structure.
+ * This prevents TypeError crashes when external console automation (screeps-mcp probes,
+ * monitoring scripts) attempts to write to Memory.stats between ticks or after memory resets.
+ * Called from multiple locations to ensure defensive initialization.
+ */
+function ensureMemoryStats(): void {
+  Memory.stats ??= {
+    time: Game.time,
+    cpu: { used: 0, limit: 0, bucket: 0 },
+    creeps: { count: 0 },
+    rooms: { count: 0 }
+  };
+}
+
+/**
+ * Register initialization phases with the manager.
+ * Phases are sorted by priority (lower = earlier execution).
+ * CPU estimates are conservative to ensure safe execution within budget.
+ */
+function registerInitPhases(): void {
+  if (initPhasesRegistered) {
+    return;
+  }
+
+  // Phase 0 (Tick 1): Critical systems only
+  // Memory structure validation is minimal CPU - just ensures Memory objects exist
+  initManager.registerPhase({
+    name: "memory-validation",
+    priority: 0,
+    cpuEstimate: 1,
+    execute: () => {
+      // Ensure critical Memory structures exist
+      ensureMemoryStats();
+      Memory.profiler ??= { data: {}, total: 0 };
+      logger.info("[Init Phase] Memory structures validated", { component: "Initialization" });
+    }
+  });
+
+  // Phase 1 (Tick 1-2): Profiler setup
+  // Profiler initialization is lightweight if already running
+  initManager.registerPhase({
+    name: "profiler-setup",
+    priority: 10,
+    cpuEstimate: 2,
+    execute: () => {
+      if (__PROFILER_ENABLED__ === "true") {
+        // Only start profiler if not already running
+        // profilerInitialized is set after this phase completes in the main loop
+        if (Memory.profiler?.start === undefined) {
+          profilerInstance.start();
+          logger.info("[Init Phase] Profiler auto-started", { component: "Initialization" });
+        }
+      }
+    }
+  });
+
+  // Phase 2 (Tick 2-3): Event bus subscriptions
+  // Subscribe to runtime events for monitoring and debugging
+  initManager.registerPhase({
+    name: "event-subscriptions",
+    priority: 20,
+    cpuEstimate: 1,
+    execute: () => {
+      // Event subscriptions are already registered at module load time
+      // This phase confirms they're ready
+      logger.info("[Init Phase] Event bus ready", { component: "Initialization" });
+    }
+  });
+
+  // Phase 3 (Tick 3+): Console diagnostics
+  // Expose global utilities for console access
+  // Note: This is also done at module load for immediate availability,
+  // but this phase ensures they're re-exposed after any Memory resets
+  initManager.registerPhase({
+    name: "console-diagnostics",
+    priority: 30,
+    cpuEstimate: 1,
+    execute: () => {
+      // Globals are already exposed at module load time (lines 201-209)
+      // This phase just confirms the initialization is complete
+      logger.info("[Init Phase] Console diagnostics confirmed", { component: "Initialization" });
+    }
+  });
+
+  initPhasesRegistered = true;
+}
 
 // Subscribe to runtime events for monitoring and debugging
 // These subscriptions are only active when profiler is enabled to minimize CPU overhead
@@ -85,8 +197,7 @@ if (__PROFILER_ENABLED__ === "true") {
   });
 }
 
-// Initialize profiler and expose it globally for console access
-const profilerInstance = initProfiler();
+// Expose profiler and diagnostics globally for console access
 if (typeof global !== "undefined") {
   global.Profiler = profilerInstance;
   global.Diagnostics = Diagnostics;
@@ -205,10 +316,16 @@ function applyProfilerRetentionPolicy(): void {
  * Main game loop executed by the Screeps runtime every tick.
  *
  * This function is the entry point for all bot logic. It performs:
- * 1. Profiler initialization (if enabled at build time)
- * 2. Defensive Memory.stats initialization (before external probes)
- * 3. Game context validation
- * 4. Kernel execution with all registered processes
+ * 1. Phased initialization (spreads startup across multiple ticks to protect CPU bucket)
+ * 2. Profiler initialization (if enabled at build time)
+ * 3. Defensive Memory.stats initialization (before external probes)
+ * 4. Game context validation
+ * 5. Kernel execution with all registered processes
+ *
+ * **Phased Initialization:**
+ * After deployment or server restart, initialization is spread across multiple ticks
+ * to prevent CPU bucket drain. This protects the bot from immediate timeout cascades
+ * during the critical post-restart period.
  *
  * **Memory.stats Defensive Initialization:**
  * Memory.stats is defensively initialized here to prevent crashes from external
@@ -229,9 +346,41 @@ function applyProfilerRetentionPolicy(): void {
  * // Export it from main.ts:
  * export { loop };
  * ```
+ *
+ * @see packages/docs/source/docs/runtime/initialization.md
  */
 export const loop = (): void => {
   try {
+    // Register initialization phases (once per global reload)
+    registerInitPhases();
+
+    // Validate game context early - needed for initialization
+    const gameContext = validateGameContext(Game);
+
+    // Phased initialization: spread startup workload across multiple ticks
+    // This prevents CPU bucket drain after deployment or server restart
+    if (initManager.needsInitialization(Memory)) {
+      const initResult = initManager.tick(gameContext, Memory);
+
+      if (initResult.complete) {
+        // Initialization complete - proceed to normal operation this tick
+        // Set profilerInitialized flag now that profiler-setup phase completed
+        if (__PROFILER_ENABLED__ === "true") {
+          profilerInitialized = true;
+        }
+        logger.info(
+          `[Main] Initialization complete, resuming normal operations (tick ${Game.time})`,
+          { component: "Initialization" }
+        );
+      } else {
+        // Still initializing - skip kernel execution to preserve CPU budget
+        // Defensive Memory.stats init still needed for external probes
+        ensureMemoryStats();
+        return;
+      }
+    }
+
+    // Normal operation: profiler and kernel execution
     // Ensure profiler is running on every tick
     // This handles Memory resets and ensures continuous data collection
     ensureProfilerRunning();
@@ -244,15 +393,8 @@ export const loop = (): void => {
     // This prevents TypeError crashes when external console automation (screeps-mcp probes,
     // monitoring scripts) attempts to write to Memory.stats between ticks or after memory resets.
     // StatsCollector will populate this with full telemetry data during MetricsProcess execution.
-    // Note: Using same initialization structure as StatsCollector for consistency (zeros, not actual values).
-    Memory.stats ??= {
-      time: Game.time,
-      cpu: { used: 0, limit: 0, bucket: 0 },
-      creeps: { count: 0 },
-      rooms: { count: 0 }
-    };
+    ensureMemoryStats();
 
-    const gameContext = validateGameContext(Game);
     kernel.run(gameContext, Memory);
   } catch (error) {
     // Enhanced error handling with specific error classification

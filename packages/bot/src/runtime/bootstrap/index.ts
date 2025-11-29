@@ -5,3 +5,5 @@
  */
 export { BootstrapPhaseManager } from "./BootstrapPhaseManager";
 export type { BootstrapConfig, BootstrapStatus } from "./BootstrapPhaseManager";
+export { InitializationManager } from "./InitializationManager";
+export type { InitPhase, InitializationConfig, InitMemory, InitTickResult } from "./InitializationManager";
