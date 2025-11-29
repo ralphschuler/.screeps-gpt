@@ -278,9 +278,13 @@ export class InitializationManager {
    * Get current initialization status for debugging.
    *
    * @param memory - Global memory object
+   * @param currentTick - Current game tick (optional, for calculating ticksElapsed)
    * @returns Status object with initialization details
    */
-  public getStatus(memory: Memory): {
+  public getStatus(
+    memory: Memory,
+    currentTick?: number
+  ): {
     totalPhases: number;
     completedPhases: number;
     currentPhase: string | null;
@@ -288,11 +292,12 @@ export class InitializationManager {
     isComplete: boolean;
   } {
     const initMem = memory.init;
+    const tick = currentTick ?? 0;
     return {
       totalPhases: this.phases.length,
       completedPhases: initMem?.phase ?? 0,
       currentPhase: initMem && initMem.phase < this.phases.length ? this.phases[initMem.phase].name : null,
-      ticksElapsed: initMem ? (typeof Game !== "undefined" ? Game.time : 0) - initMem.startTick : 0,
+      ticksElapsed: initMem ? tick - initMem.startTick : 0,
       isComplete: initMem?.complete ?? false
     };
   }
