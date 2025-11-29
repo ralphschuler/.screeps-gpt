@@ -91,9 +91,15 @@ export function findClosestOrFirst<T extends _HasRoomPosition>(
  * @param creep - The creep that should pick up energy
  * @param minAmount - Minimum amount of energy to consider picking up (default: 50)
  * @param priorityAmount - Energy amount threshold above which piles are prioritized (default: 100)
+ * @param amountTiebreakerThreshold - Amount difference threshold for using distance as tiebreaker (default: 50)
  * @returns true if energy pickup is in progress, false otherwise
  */
-export function tryPickupDroppedEnergy(creep: CreepLike, minAmount = 50, priorityAmount = 100): boolean {
+export function tryPickupDroppedEnergy(
+  creep: CreepLike,
+  minAmount = 50,
+  priorityAmount = 100,
+  amountTiebreakerThreshold = 50
+): boolean {
   // Only pick up if creep has capacity
   if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
     return false;
@@ -116,8 +122,8 @@ export function tryPickupDroppedEnergy(creep: CreepLike, minAmount = 50, priorit
     if (aAboveThreshold && !bAboveThreshold) return -1;
     if (bAboveThreshold && !aAboveThreshold) return 1;
 
-    // For similar amounts (within 50 energy), use distance as tiebreaker
-    if (Math.abs(a.amount - b.amount) < 50) {
+    // For similar amounts (within threshold), use distance as tiebreaker
+    if (Math.abs(a.amount - b.amount) < amountTiebreakerThreshold) {
       const distA = creep.pos.getRangeTo(a);
       const distB = creep.pos.getRangeTo(b);
       return distA - distB;

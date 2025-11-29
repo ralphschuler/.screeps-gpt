@@ -93,7 +93,8 @@ export class HaulerController extends BaseRoleController<HaulerMemory> {
         tryPickupDroppedEnergy(
           creep,
           DEFAULT_ENERGY_CONFIG.haulerPickupMinAmount,
-          DEFAULT_ENERGY_CONFIG.haulerPriorityAmount
+          DEFAULT_ENERGY_CONFIG.haulerPriorityAmount,
+          DEFAULT_ENERGY_CONFIG.haulerAmountTiebreakerThreshold
         )
       ) {
         // Save state to memory and return current state
