@@ -16,7 +16,7 @@ description: |
   - Environment variables in MCP configs (e.g., ${SCREEPS_TOKEN}) are automatically substituted
   - Use @path syntax to reference MCP config files (e.g., '@.github/mcp/all-servers.json')
   - Base GitHub MCP server is included by default
-  - MCP config is passed via --mcp-config flag (takes precedence) and COPILOT_MCP_CONFIG env var
+  - MCP config is written to ~/.config/github-copilot/servers.json (the standard Copilot CLI config path)
   - If MCP config file is not found, action continues with base GitHub MCP server (warning logged)
 author: "ralph@nyphon.de"
 inputs:
@@ -269,7 +269,10 @@ runs:
         VERBOSE: ${{ inputs.verbose }}
       run: |
         set -euo pipefail
-        mcp_config_file="$HOME/.copilot-mcp-config.json"
+        # Use the standard Copilot CLI MCP config path
+        mcp_config_dir="$HOME/.config/github-copilot"
+        mcp_config_file="$mcp_config_dir/servers.json"
+        mkdir -p "$mcp_config_dir"
 
         if [ "$VERBOSE" = "true" ]; then
           echo "🔧 Setting up MCP configuration"
@@ -336,10 +339,8 @@ runs:
         RAW_OUTPUT_PATH: ${{ inputs.output-path }}
         EXTRA_ARGS: ${{ inputs.extra-args }}
         RESOLVED_MODEL: ${{ steps.resolve-model.outputs.model }}
-        MCP_CONFIG_FILE: ${{ steps.mcp-config.outputs.mcp-config-file }}
         COPILOT_ALLOW_ALL: "1"
         COPILOT_TELEMETRY_OPTOUT: "1"
-        COPILOT_MCP_CONFIG: ${{ steps.mcp-config.outputs.mcp-config-file }}
         VERBOSE: ${{ inputs.verbose }}
         TIMEOUT_MINUTES: ${{ inputs.timeout }}
         GH_TOKEN: ${{ inputs.copilot-token }}
@@ -353,13 +354,9 @@ runs:
         mkdir -p "$WORKDIR" "$(dirname "$out")"
         prompt="$(cat "$PROMPT_FILE")"
 
-        # Build the command with MCP config support
+        # Build the command - MCP config is read from ~/.config/github-copilot/servers.json automatically
         cmd=(copilot -p "$prompt" --allow-all-tools --no-color --add-dir "$WORKDIR")
         [ -n "$RESOLVED_MODEL" ] && cmd+=(--model "$RESOLVED_MODEL")
-        # Add MCP config via command line flag for explicit configuration
-        if [ -n "$MCP_CONFIG_FILE" ] && [ -f "$MCP_CONFIG_FILE" ]; then
-          cmd+=(--mcp-config "$MCP_CONFIG_FILE")
-        fi
         if [ -n "$EXTRA_ARGS" ]; then read -r -a extra <<< "$EXTRA_ARGS"; cmd+=("${extra[@]}"); fi
 
         if [ "$VERBOSE" = "true" ]; then
@@ -368,7 +365,7 @@ runs:
           echo "   Working directory: $WORKDIR"
           echo "   Output path: $out"
           echo "   Model: ${RESOLVED_MODEL:-<default>}"
-          echo "   MCP Config: ${MCP_CONFIG_FILE:-<none>}"
+          echo "   MCP Config: ~/.config/github-copilot/servers.json"
         else
           echo "🚀 ${cmd[*]}" >&2
         fi
