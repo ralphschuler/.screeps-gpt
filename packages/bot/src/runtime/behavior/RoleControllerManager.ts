@@ -645,14 +645,30 @@ export class RoleControllerManager {
       const scalingFactor = config.scalingFactor ?? 4;
       let targetMinimum = bootstrapMinimums[role] ?? config.minimum;
 
-      // Task-based demand calculation: scale workforce based on pending tasks
-      // Get pending task count for this role from task queue with type validation
-      const taskQueue = memory.taskQueue as Record<string, unknown> | undefined;
-      const roleTaskQueue = taskQueue?.[role];
-      const pendingTasks = Array.isArray(roleTaskQueue) ? roleTaskQueue.length : 0;
-      if (pendingTasks > 0 && scalingFactor > 0) {
-        const demandBasedTarget = Math.ceil(pendingTasks / scalingFactor);
-        targetMinimum = Math.max(targetMinimum, Math.min(demandBasedTarget, roleMaximum));
+      // Enforce maximum constraint: never exceed role maximum
+      if (current >= roleMaximum) {
+        continue; // Already at max capacity for this role
+      }
+
+      // Find an available spawn first - we need the spawn's room for room-aware task scaling
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const spawn = this.findAvailableSpawn(game.spawns);
+      if (!spawn) {
+        continue; // No available spawns
+      }
+
+      // Get spawn's room name for room-aware task scaling
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      const spawnRoomName = (spawn.room as Room)?.name;
+
+      // Task-based demand calculation: scale workforce based on pending tasks IN THE SPAWN'S ROOM
+      // This prevents cross-room over-spawning where Room A spawns builders for Room B's tasks
+      if (scalingFactor > 0 && spawnRoomName) {
+        const pendingTasksInRoom = this.taskQueueManager.getTaskCountForRoom(memory, role, spawnRoomName);
+        if (pendingTasksInRoom > 0) {
+          const demandBasedTarget = Math.ceil(pendingTasksInRoom / scalingFactor);
+          targetMinimum = Math.max(targetMinimum, Math.min(demandBasedTarget, roleMaximum));
+        }
       }
 
       // Dynamically increase claimer minimum when expansion is pending
@@ -733,19 +749,8 @@ export class RoleControllerManager {
       // Final safety check: ensure targetMinimum never exceeds roleMaximum
       targetMinimum = Math.min(targetMinimum, roleMaximum);
 
-      // Enforce maximum constraint: never exceed role maximum
-      if (current >= roleMaximum) {
-        continue; // Already at max capacity for this role
-      }
-
       if (current >= targetMinimum) {
         continue;
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const spawn = this.findAvailableSpawn(game.spawns);
-      if (!spawn) {
-        continue; // No available spawns
       }
 
       // Get spawn energy details using helper to avoid type casting issues

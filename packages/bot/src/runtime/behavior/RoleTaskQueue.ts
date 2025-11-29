@@ -28,10 +28,12 @@ export enum TaskPriority {
  * Represents a task in the queue
  */
 export interface TaskQueueEntry {
-  /** Unique stable identifier for the task (e.g., "harvest-source-5bbcae9f9099fc012e63b52e") */
+  /** Unique stable identifier for the task (e.g., "W1N1-harvest-source-5bbcae9f9099fc012e63b52e") */
   taskId: string;
   /** ID of the target object for this task */
   targetId: string;
+  /** Name of the room where this task is located */
+  roomName: string;
   /** Name of the creep currently assigned to this task (undefined if unassigned) */
   assignedCreep?: string;
   /** Priority level for task ordering */
@@ -163,6 +165,20 @@ export class RoleTaskQueueManager {
   public getAvailableTasks(memory: Memory, role: string, currentTick: number): TaskQueueEntry[] {
     const queue = this.getRoleQueue(memory, role);
     return queue.filter(task => !task.assignedCreep && task.expiresAt > currentTick);
+  }
+
+  /**
+   * Get the count of tasks for a specific room and role.
+   * This is used for room-aware spawn scaling to prevent cross-room over-spawning.
+   *
+   * @param memory - Game memory object
+   * @param role - Role name to count tasks for
+   * @param roomName - Room name to filter by
+   * @returns Number of tasks in the specified room for the role
+   */
+  public getTaskCountForRoom(memory: Memory, role: string, roomName: string): number {
+    const queue = this.getRoleQueue(memory, role);
+    return queue.filter(task => task.roomName === roomName).length;
   }
 
   /**
