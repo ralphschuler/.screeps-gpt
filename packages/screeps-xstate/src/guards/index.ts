@@ -32,23 +32,10 @@
 export type { CreepContext, CreepGuard, CreepGuardFactory } from "./types.js";
 
 // Energy guards
-export {
-  hasEnergy,
-  isFull,
-  isEmpty,
-  hasFreeCapacity,
-  hasCapacityPercent
-} from "./energy.js";
+export { hasEnergy, isFull, isEmpty, hasFreeCapacity, hasCapacityPercent } from "./energy.js";
 
 // Position guards
-export {
-  isNearTarget,
-  isAtTarget,
-  hasTarget,
-  isInRoom,
-  isNearExit,
-  isAtExit
-} from "./position.js";
+export { isNearTarget, isAtTarget, hasTarget, isInRoom, isNearExit, isAtExit } from "./position.js";
 
 // Creep guards
 export {
@@ -70,22 +57,9 @@ export {
 } from "./creep.js";
 
 // Import all for registry
-import {
-  hasEnergy,
-  isFull,
-  isEmpty,
-  hasFreeCapacity,
-  hasCapacityPercent
-} from "./energy.js";
+import { hasEnergy, isFull, isEmpty, hasFreeCapacity, hasCapacityPercent } from "./energy.js";
 
-import {
-  isNearTarget,
-  isAtTarget,
-  hasTarget,
-  isInRoom,
-  isNearExit,
-  isAtExit
-} from "./position.js";
+import { isNearTarget, isAtTarget, hasTarget, isInRoom, isNearExit, isAtExit } from "./position.js";
 
 import {
   hasBodyPart,

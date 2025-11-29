@@ -1,11 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import {
-  hasEnergy,
-  isFull,
-  isEmpty,
-  hasFreeCapacity,
-  hasCapacityPercent
-} from "../../../src/guards/energy.js";
+import { hasEnergy, isFull, isEmpty, hasFreeCapacity, hasCapacityPercent } from "../../../src/guards/energy.js";
 import type { CreepContext } from "../../../src/guards/types.js";
 
 describe("Energy Guards", () => {

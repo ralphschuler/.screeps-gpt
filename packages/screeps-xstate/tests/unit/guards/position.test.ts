@@ -1,12 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import {
-  isNearTarget,
-  isAtTarget,
-  hasTarget,
-  isInRoom,
-  isNearExit,
-  isAtExit
-} from "../../../src/guards/position.js";
+import { isNearTarget, isAtTarget, hasTarget, isInRoom, isNearExit, isAtExit } from "../../../src/guards/position.js";
 import type { CreepContext } from "../../../src/guards/types.js";
 
 describe("Position Guards", () => {

@@ -30,14 +30,7 @@
 export type { CreepActionContext, CreepAction, CreepActionFactory, MoveToOptions } from "./types.js";
 
 // Movement actions
-export {
-  moveToTarget,
-  moveToTargetDefault,
-  findClosestByPath,
-  findInRange,
-  moveToRoom,
-  flee
-} from "./movement.js";
+export { moveToTarget, moveToTargetDefault, findClosestByPath, findInRange, moveToRoom, flee } from "./movement.js";
 
 // Energy actions
 export {
@@ -67,14 +60,7 @@ export {
 } from "./work.js";
 
 // Import all for registry
-import {
-  moveToTarget,
-  moveToTargetDefault,
-  findClosestByPath,
-  findInRange,
-  moveToRoom,
-  flee
-} from "./movement.js";
+import { moveToTarget, moveToTargetDefault, findClosestByPath, findInRange, moveToRoom, flee } from "./movement.js";
 
 import {
   harvestSource,

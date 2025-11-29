@@ -27,14 +27,12 @@ export const hasEnergy: ConditionFactory<number | undefined, CreepDecisionContex
 /**
  * Condition that checks if the creep's energy store is full.
  */
-export const isFull: Condition<CreepDecisionContext> = ctx =>
-  ctx.creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0;
+export const isFull: Condition<CreepDecisionContext> = ctx => ctx.creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0;
 
 /**
  * Condition that checks if the creep's energy store is empty.
  */
-export const isEmpty: Condition<CreepDecisionContext> = ctx =>
-  ctx.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0;
+export const isEmpty: Condition<CreepDecisionContext> = ctx => ctx.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0;
 
 /**
  * Condition that checks if the creep has free capacity for energy.

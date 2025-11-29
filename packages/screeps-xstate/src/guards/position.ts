@@ -76,8 +76,7 @@ export const hasTarget: CreepGuard = ctx => ctx.target != null;
  * }
  * ```
  */
-export const isInRoom: CreepGuardFactory<string, CreepContext> = roomName => ctx =>
-  ctx.creep.room.name === roomName;
+export const isInRoom: CreepGuardFactory<string, CreepContext> = roomName => ctx => ctx.creep.room.name === roomName;
 
 /**
  * Guard that checks if the creep is near a room exit (within 2 tiles of edge).

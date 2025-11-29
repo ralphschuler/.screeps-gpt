@@ -214,11 +214,7 @@ Use conditions in decision trees:
 const builder = new DecisionTreeBuilder<CreepDecisionContext, CreepAction>();
 
 const tree = builder.build(
-  builder.if(
-    conditions.isFull,
-    builder.leaf({ type: "deliver" }),
-    builder.leaf({ type: "harvest" })
-  )
+  builder.if(conditions.isFull, builder.leaf({ type: "deliver" }), builder.leaf({ type: "harvest" }))
 );
 ```
 
