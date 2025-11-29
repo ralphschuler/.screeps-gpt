@@ -3,6 +3,8 @@ name: Screeps Monitoring
 
 on:
   schedule:
+    # Run every 30 minutes for comprehensive bot telemetry
+    # Note: screeps-spawn-monitor.yml runs same interval for spawn checks
     - cron: "*/30 * * * *"
   workflow_run:
     workflows:

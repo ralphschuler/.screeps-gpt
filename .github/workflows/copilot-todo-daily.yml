@@ -3,7 +3,8 @@ name: Copilot Daily Todo Prioritization
 
 on:
   schedule:
-    - cron: "0 9 * * *"
+    # Run at 9:30 AM UTC daily (staggered from copilot-review.yml at 9:00 AM)
+    - cron: "30 9 * * *"
   workflow_dispatch:
 
 permissions:
