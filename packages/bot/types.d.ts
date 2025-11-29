@@ -234,6 +234,22 @@ declare global {
      * @see src/runtime/defense/TowerManager.ts
      */
     towerState?: Record<string, { depleted: boolean }>;
+    /**
+     * Phased initialization state tracking.
+     * Used by InitializationManager to spread init workload across multiple ticks
+     * after deployment or server restart to prevent CPU bucket drain.
+     * @see src/runtime/bootstrap/InitializationManager.ts
+     */
+    init?: {
+      /** Current initialization phase index */
+      phase: number;
+      /** Tick when initialization began */
+      startTick: number;
+      /** Whether initialization is complete */
+      complete: boolean;
+      /** Phase names that have completed */
+      completedPhases?: string[];
+    };
   }
 
   interface CreepMemory {
