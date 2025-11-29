@@ -7,7 +7,6 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [0.189.3] - 2025-11-29
 
-
 ### Fixed
 
 - **Task System**: Fixed cross-room over-spawning issue where tasks from multiple rooms caused excessive creep spawning
@@ -16,7 +15,6 @@ All notable changes to this project are documented here. This changelog now main
   - Added `getTaskCountForRoom()` method to `RoleTaskQueueManager` for room-specific task counting
   - Modified spawn scaling logic to only count tasks from the spawn's room when calculating workforce needs
   - This prevents scenarios where builders are spawned in Room A due to construction sites in Room B
-
 
 ## [0.187.9] - 2025-11-29
 
