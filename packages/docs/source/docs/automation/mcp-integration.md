@@ -12,11 +12,13 @@ This guide documents how to effectively use Model Context Protocol (MCP) servers
 
 The repository integrates three Screeps-specific MCP servers that extend Copilot's capabilities with real-time access to game information:
 
-| MCP Server | Package | Purpose |
-|------------|---------|---------|
-| **screeps-docs-mcp** | `@ralphschuler/screeps-docs-mcp` | Official Screeps API documentation |
-| **screeps-wiki-mcp** | `@ralphschuler/screeps-wiki-mcp` | Community wiki knowledge and strategies |
-| **screeps-mcp** | `@ralphschuler/screeps-mcp` | Live game API access (console, memory, stats) |
+| MCP Server | Docker Image | Purpose |
+|------------|--------------|---------|
+| **screeps-docs-mcp** | `ghcr.io/ralphschuler/screeps-docs-mcp` | Official Screeps API documentation |
+| **screeps-wiki-mcp** | `ghcr.io/ralphschuler/screeps-wiki-mcp` | Community wiki knowledge and strategies |
+| **screeps-mcp** | `ghcr.io/ralphschuler/screeps-mcp` | Live game API access (console, memory, stats) |
+
+All Screeps MCP servers are run using Docker containers for improved isolation and reproducibility.
 
 ## Configuration Files
 
@@ -28,6 +30,7 @@ MCP server configurations are stored in `.github/mcp/`:
 ├── screeps-mcp.json       # Live game API server
 ├── screeps-docs-mcp.json  # Official documentation server
 ├── screeps-wiki-mcp.json  # Community wiki server
+├── screeps-api.json       # Full API configuration
 └── playwright.json        # Browser automation (optional)
 ```
 

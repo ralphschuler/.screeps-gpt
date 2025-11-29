@@ -268,20 +268,22 @@ Agents have access to Model Context Protocol (MCP) servers that extend their cap
    - Configuration: `.github/mcp/playwright.json`
    - Use cases: Web UI testing, visual regression checks, automated form filling
 
-3. **Screeps MCP Server** (`@ralphschuler/screeps-mcp`)
+3. **Screeps MCP Server** (`ghcr.io/ralphschuler/screeps-mcp`)
    - Console command execution for bot interaction
    - Memory access for reading/writing bot state
    - Room data retrieval for strategic analysis
    - Configuration: `.github/mcp/screeps-mcp.json`
    - Use cases: Bot monitoring, performance analysis, strategic decision making
    - Required environment: `SCREEPS_TOKEN`, `SCREEPS_SHARD`
+   - Runs via Docker for improved isolation and reproducibility
 
-4. **Screeps Docs MCP Server** (`@ralphschuler/screeps-docs-mcp`)
+4. **Screeps Docs MCP Server** (`ghcr.io/ralphschuler/screeps-docs-mcp`)
    - Official Screeps API documentation lookup
    - Game mechanics documentation search
    - API object reference retrieval
    - Configuration: `.github/mcp/screeps-docs-mcp.json`
    - Use cases: Understanding game APIs, verifying method signatures, learning game mechanics
+   - Runs via Docker for improved isolation and reproducibility
    - **Tools available:**
      - `screeps_docs_search` - Search Screeps documentation
      - `screeps_docs_get_api` - Get API object documentation
@@ -289,12 +291,13 @@ Agents have access to Model Context Protocol (MCP) servers that extend their cap
      - `screeps_docs_list_apis` - List available Screeps API objects
      - `screeps_docs_list_mechanics` - List game mechanics topics
 
-5. **Screeps Wiki MCP Server** (`@ralphschuler/screeps-wiki-mcp`)
+5. **Screeps Wiki MCP Server** (`ghcr.io/ralphschuler/screeps-wiki-mcp`)
    - Community wiki article search and retrieval
    - Strategy guides and best practices
    - Community-contributed documentation
    - Configuration: `.github/mcp/screeps-wiki-mcp.json`
    - Use cases: Learning community strategies, finding optimization techniques, understanding advanced patterns
+   - Runs via Docker for improved isolation and reproducibility
    - **Tools available:**
      - `screeps_wiki_search` - Search the Screeps community wiki
      - `screeps_wiki_get_article` - Fetch a wiki article by title

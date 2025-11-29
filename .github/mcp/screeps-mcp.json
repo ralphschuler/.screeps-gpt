@@ -1,13 +1,21 @@
 {
   "mcpServers": {
     "screeps-mcp": {
-      "command": "npx",
-      "args": ["-y", "@ralphschuler/screeps-mcp@latest"],
-      "env": {
-        "SCREEPS_TOKEN": "${SCREEPS_TOKEN}",
-        "SCREEPS_HOST": "${SCREEPS_HOST:-screeps.com}",
-        "SCREEPS_SHARD": "${SCREEPS_SHARD:-shard3}"
-      }
+      "type": "local",
+      "tools": ["*"],
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "-e",
+        "SCREEPS_TOKEN=${SCREEPS_TOKEN}",
+        "-e",
+        "SCREEPS_HOST=${SCREEPS_HOST:-screeps.com}",
+        "-e",
+        "SCREEPS_SHARD=${SCREEPS_SHARD:-shard3}",
+        "ghcr.io/ralphschuler/screeps-mcp:latest"
+      ]
     }
   }
 }
