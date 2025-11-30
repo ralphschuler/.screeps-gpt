@@ -6,11 +6,11 @@ export function writeShardSnapshot(meta: SwarmShardMeta): void {
     shards: meta.shards,
     strategicTargets: meta.globalTargets,
   };
-  InterShardMemory.set(JSON.stringify(snapshot));
+  InterShardMemory.setLocal(JSON.stringify(snapshot));
 }
 
 export function readShardSnapshot(): SwarmShardMeta | undefined {
-  const raw = InterShardMemory.get();
+  const raw = InterShardMemory.getLocal();
   if (!raw) return undefined;
   const parsed = JSON.parse(raw) as InterShardSnapshot;
   return { shards: parsed.shards, globalTargets: parsed.strategicTargets };

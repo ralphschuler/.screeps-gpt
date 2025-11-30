@@ -18,7 +18,7 @@ export class SwarmLogisticsProcess {
     }
 
     for (const roomMemory of Object.values(swarm.rooms)) {
-      roomMemory.logisticsNeed = undefined;
+      delete roomMemory.logisticsNeed;
     }
 
     const surplus = rooms

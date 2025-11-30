@@ -33,10 +33,10 @@ export class SwarmSpawnProcess {
   private countCreeps(creeps: Record<string, Creep>): Record<string, Partial<Record<SwarmRole, number>>> {
     const tally: Record<string, Partial<Record<SwarmRole, number>>> = {};
     for (const creep of Object.values(creeps)) {
-      const memory = creep.memory as { role?: SwarmRole; home?: string };
-      if (!memory.role || !memory.home) continue;
-      tally[memory.home] ??= {};
-      tally[memory.home]![memory.role] = (tally[memory.home]![memory.role] ?? 0) + 1;
+      const memory = creep.memory as { role?: SwarmRole; homeRoom?: string };
+      if (!memory.role || !memory.homeRoom) continue;
+      tally[memory.homeRoom] ??= {};
+      tally[memory.homeRoom]![memory.role] = (tally[memory.homeRoom]![memory.role] ?? 0) + 1;
     }
     return tally;
   }
@@ -59,31 +59,36 @@ export class SwarmSpawnProcess {
   private buildMemory(
     role: SwarmRole,
     swarm: ReturnType<SwarmMemoryManager["getOrInit"]>,
-    home: string,
+    homeRoom: string,
     ctx: SwarmProcessContext
-  ): { role: SwarmRole; home: string; targetRoom?: string } {
-    const memory: { role: SwarmRole; home: string; targetRoom?: string } = { role, home };
-    const roomMemory = swarm.rooms[home];
+  ): { role: SwarmRole; homeRoom: string; targetRoom?: string } {
+    const memory: { role: SwarmRole; homeRoom: string; targetRoom?: string } = { role, homeRoom };
+    const roomMemory = swarm.rooms[homeRoom];
     if (role === "claimAnt") {
-      memory.targetRoom = swarm.overmind.claimQueue.find(room => room !== home) ?? undefined;
+      const claimTarget = swarm.overmind.claimQueue.find(room => room !== homeRoom);
+      if (claimTarget) memory.targetRoom = claimTarget;
     }
     if (role === "scoutAnt") {
-      memory.targetRoom = this.pickExplorationTarget(home, swarm, ctx);
+      const scoutTarget = this.pickExplorationTarget(homeRoom, swarm, ctx);
+      if (scoutTarget) memory.targetRoom = scoutTarget;
     }
     if (role === "foragerAnt") {
-      memory.targetRoom = this.pickHarvestTarget(home, swarm);
+      const harvestTarget = this.pickHarvestTarget(homeRoom, swarm);
+      if (harvestTarget) memory.targetRoom = harvestTarget;
     }
     if (role === "queenCarrier") {
-      memory.targetRoom = this.pickLogisticsTarget(home, swarm);
+      const logisticsTarget = this.pickLogisticsTarget(homeRoom, swarm);
+      if (logisticsTarget) memory.targetRoom = logisticsTarget;
     }
     if (role === "depositHarvester") {
-      memory.targetRoom = this.pickDepositTarget(swarm, home);
+      const depositTarget = this.pickDepositTarget(swarm, homeRoom);
+      if (depositTarget) memory.targetRoom = depositTarget;
     }
     if (role === "mineralHarvester") {
-      memory.targetRoom = home;
+      memory.targetRoom = homeRoom;
     }
     if (role === "terminalManager") {
-      memory.targetRoom = home;
+      memory.targetRoom = homeRoom;
     }
     if ((role === "guardAnt" || role === "healerAnt" || role === "soldierAnt") && roomMemory?.rallyTarget) {
       memory.targetRoom = roomMemory.rallyTarget;
@@ -192,14 +197,14 @@ export class SwarmSpawnProcess {
     swarm: ReturnType<SwarmMemoryManager["getOrInit"]>,
     ctx: SwarmProcessContext
   ): string | undefined {
-    const exits = ctx.game.map.describeExits(home);
+    const exits = Game.map.describeExits(home);
     if (!exits) return undefined;
     const unseen = Object.values(exits).filter(neighbor => {
       if (!neighbor) return false;
       const lastSeen = swarm.overmind.roomsSeen[neighbor];
       return !lastSeen || lastSeen < ctx.game.time - 200;
-    });
-    return unseen[0] ?? Object.values(exits)[0];
+    }) as string[];
+    return unseen[0] ?? (Object.values(exits)[0] as string | undefined);
   }
 
   private pickHarvestTarget(

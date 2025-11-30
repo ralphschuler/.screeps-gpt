@@ -1,9 +1,9 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "target": "es5",
-    "module": "commonjs",
-    "lib": ["es2015"],
+    "target": "es2018",
+    "module": "esnext",
+    "lib": ["es2019"],
     "types": ["screeps"],
     "noLib": false,
     "outDir": "dist",

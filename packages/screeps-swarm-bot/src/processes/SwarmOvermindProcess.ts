@@ -24,7 +24,7 @@ export class SwarmOvermindProcess {
     }
 
     this.captureRoomsSeen(ctx);
-    this.rebuildQueues(swarmMemory.rooms);
+    this.rebuildQueues(ctx, swarmMemory.rooms);
     updateOvermind(swarmMemory, []);
     overmind.lastRun = ctx.game.time + OVERMIND_INTERVAL;
   }
@@ -36,7 +36,7 @@ export class SwarmOvermindProcess {
     }
   }
 
-  private rebuildQueues(rooms: Record<string, SwarmRoomMemory>): void {
+  private rebuildQueues(ctx: SwarmProcessContext, rooms: Record<string, SwarmRoomMemory>): void {
     const claimQueue: Array<{ room: string; score: number }> = [];
     const warTargets: Array<{ room: string; score: number }> = [];
     const nukeCandidates: Array<{ room: string; score: number }> = [];

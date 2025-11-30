@@ -18,16 +18,16 @@ export class SwarmExpansionProcess {
     }
   }
 
-  private enqueueNeighbors(roomName: string, roomMemory: SwarmRoomMemory, swarm: ReturnType<SwarmMemoryManager["getOrInit"]>, ctx: SwarmProcessContext): void {
-    const exits = ctx.game.map.describeExits(roomName);
+  private enqueueNeighbors(roomName: string, roomMemory: SwarmRoomMemory, swarm: ReturnType<SwarmMemoryManager["getOrInit"]>, _ctx: SwarmProcessContext): void {
+    const exits = Game.map.describeExits(roomName);
     if (!exits) return;
     const queue = new Set(swarm.overmind.claimQueue);
-    for (const neighborName of Object.values(exits)) {
+    for (const neighborName of Object.values(exits) as (string | undefined)[]) {
       if (!neighborName) continue;
       if (!queue.has(neighborName)) {
         queue.add(neighborName);
         swarm.rooms[neighborName] = this.memoryManager.getOrInitRoom(swarm, neighborName);
-        swarm.rooms[neighborName].pheromones.expand += Math.max(2, roomMemory.pheromones.expand * 0.25);
+        swarm.rooms[neighborName]!.pheromones.expand += Math.max(2, roomMemory.pheromones.expand * 0.25);
       }
     }
     swarm.overmind.claimQueue = Array.from(queue);

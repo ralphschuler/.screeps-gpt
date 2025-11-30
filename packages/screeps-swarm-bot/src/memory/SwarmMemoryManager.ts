@@ -50,7 +50,7 @@ export class SwarmMemoryManager {
       this.logger.info("Initialized swarm memory root");
     }
 
-    return memory.swarm;
+    return memory.swarm as SwarmMemory;
   }
 
   /**
@@ -75,16 +75,19 @@ export class SwarmMemoryManager {
       this.logger.debug?.("Initialized room swarm memory", { roomName });
     }
 
-    return memory.rooms[roomName];
+    return memory.rooms[roomName]!;
   }
 
   /**
    * Apply decay to all pheromone signals.
    */
   public decay(signals: PheromoneSignals): PheromoneSignals {
-    return Object.fromEntries(
-      Object.entries(signals).map(([key, value]) => [key, Math.max(0, value * PHEROMONE_DECAY)])
-    ) as PheromoneSignals;
+    const entries = Object.entries(signals) as Array<[keyof PheromoneSignals, number]>;
+    const result: PheromoneSignals = { ...signals };
+    for (const [key, value] of entries) {
+      result[key] = Math.max(0, value * PHEROMONE_DECAY);
+    }
+    return result;
   }
 
   /**

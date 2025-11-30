@@ -14,7 +14,7 @@ export class SwarmMetaProcess {
     const swarm = this.memoryManager.getOrInit(ctx.memory);
     const meta = this.readMeta();
 
-    const shardName = ctx.game.shard?.name ?? "shard0";
+    const shardName = (ctx.game as { shard?: { name?: string } }).shard?.name ?? "shard0";
     const economyIndex = this.computeEconomyIndex(ctx);
     const warIndex = this.computeWarIndex(swarm);
 

@@ -75,27 +75,29 @@ function scanMarket(ctx: SwarmProcessContext, memory: SwarmMemory): void {
   }
 
   for (const resource of resources) {
-    const buyOrders = ctx.game.market.getAllOrders({ type: ORDER_BUY, resourceType: resource });
-    const sellOrders = ctx.game.market.getAllOrders({ type: ORDER_SELL, resourceType: resource });
+    const buyOrders = Game.market.getAllOrders({ type: ORDER_BUY, resourceType: resource });
+    const sellOrders = Game.market.getAllOrders({ type: ORDER_SELL, resourceType: resource });
     const bestBuy = buyOrders.sort((a, b) => b.price - a.price)[0];
     const bestSell = sellOrders.sort((a, b) => a.price - b.price)[0];
 
     if (bestBuy) {
-      marketMem.bestBuy[resource] = {
+      const buyEntry: import("../types.js").MarketBestPrice = {
         orderId: bestBuy.id,
         price: bestBuy.price,
-        amount: bestBuy.remainingAmount,
-        roomName: bestBuy.roomName
-      } satisfies MarketBestPrice;
+        amount: bestBuy.remainingAmount
+      };
+      if (bestBuy.roomName) buyEntry.roomName = bestBuy.roomName;
+      marketMem.bestBuy[resource] = buyEntry;
     }
 
     if (bestSell) {
-      marketMem.bestSell[resource] = {
+      const sellEntry: import("../types.js").MarketBestPrice = {
         orderId: bestSell.id,
         price: bestSell.price,
-        amount: bestSell.remainingAmount,
-        roomName: bestSell.roomName
-      } satisfies MarketBestPrice;
+        amount: bestSell.remainingAmount
+      };
+      if (bestSell.roomName) sellEntry.roomName = bestSell.roomName;
+      marketMem.bestSell[resource] = sellEntry;
     }
   }
 }
@@ -118,7 +120,7 @@ function evaluateTrades(ctx: SwarmProcessContext, memory: SwarmMemory): void {
     const clusterTerminals = terminals.filter(t => cluster.rooms.includes(t.room.name));
     if (!clusterTerminals.length) continue;
 
-    const tradePrefs = cluster.tradePrefs ?? { targets: {} };
+    const tradePrefs = cluster.tradePrefs ?? { targets: {} } as import("../types.js").ClusterTradePreferences;
     for (const [resourceType, range] of Object.entries(tradePrefs.targets) as Array<[
       ResourceConstant,
       { min: number; max: number; emergencyMin?: number }
@@ -134,16 +136,18 @@ function evaluateTrades(ctx: SwarmProcessContext, memory: SwarmMemory): void {
         canTradeResource(resourceType, marketMem.cooldowns)
       ) {
         const desired = range.min - stock;
-        const pref = marketMem.buyOrders.find(p => p.resourceType === resourceType) ?? DEFAULT_ORDER_PREFS[0];
+        const pref = marketMem.buyOrders.find(p => p.resourceType === resourceType);
+        const fallbackPref = DEFAULT_ORDER_PREFS[0]!;
+        const maxPriceValue = (pref?.maxPrice ?? fallbackPref.maxPrice);
         const emergencyMin = range.emergencyMin ?? range.min * 0.5;
         const emergency = stock < emergencyMin;
-        const maxPrice = pref.maxPrice * (emergency ? MARKET_EMERGENCY_FACTOR : priceFlex);
+        const maxPrice = maxPriceValue * (emergency ? MARKET_EMERGENCY_FACTOR : priceFlex);
         if (bestSell.price <= maxPrice) {
           const terminal = pickTerminal(clusterTerminals, desired, resourceType);
           if (!terminal) continue;
           const amount = Math.min(desired, bestSell.amount, terminal.store.getFreeCapacity());
-          const cost = ctx.game.market.calcTransactionCost(amount, terminal.room.name, bestSell.roomName ?? terminal.room.name);
-          if (terminal.store[RESOURCE_ENERGY] >= cost + MARKET_TERMINAL_ENERGY_RESERVE && ctx.game.market.credits >= MARKET_CREDIT_FLOOR) {
+          const cost = Game.market.calcTransactionCost(amount, terminal.room.name, bestSell.roomName ?? terminal.room.name);
+          if (terminal.store[RESOURCE_ENERGY] >= cost + MARKET_TERMINAL_ENERGY_RESERVE && Game.market.credits >= MARKET_CREDIT_FLOOR) {
             candidates.push({ resourceType, amount, orderId: bestSell.orderId, price: bestSell.price, terminal, direction: "buy" });
           }
         }
@@ -156,13 +160,14 @@ function evaluateTrades(ctx: SwarmProcessContext, memory: SwarmMemory): void {
         canTradeResource(resourceType, marketMem.cooldowns)
       ) {
         const surplus = stock - range.max;
-        const pref = marketMem.sellOrders.find(p => p.resourceType === resourceType) ?? DEFAULT_ORDER_PREFS[0];
-        const minPrice = pref.minPrice / priceFlex;
+        const sellPref = marketMem.sellOrders.find(p => p.resourceType === resourceType);
+        const fallbackSellPref = DEFAULT_ORDER_PREFS[0]!;
+        const minPrice = (sellPref?.minPrice ?? fallbackSellPref.minPrice) / priceFlex;
         if (bestBuy.price >= minPrice) {
           const terminal = pickTerminal(clusterTerminals, surplus, resourceType, true);
           if (!terminal) continue;
           const amount = Math.min(surplus, bestBuy.amount, terminal.store[resourceType]);
-          const cost = ctx.game.market.calcTransactionCost(amount, terminal.room.name, bestBuy.roomName ?? terminal.room.name);
+          const cost = Game.market.calcTransactionCost(amount, terminal.room.name, bestBuy.roomName ?? terminal.room.name);
           if (terminal.store[RESOURCE_ENERGY] >= cost + MARKET_TERMINAL_ENERGY_RESERVE) {
             candidates.push({ resourceType, amount, orderId: bestBuy.orderId, price: bestBuy.price, terminal, direction: "sell" });
           }
@@ -182,12 +187,12 @@ function evaluateTrades(ctx: SwarmProcessContext, memory: SwarmMemory): void {
 
 function executeTrade(ctx: SwarmProcessContext, candidate: TradeCandidate, amount: number): boolean {
   const costRoom = candidate.terminal.room.name;
-  const cost = ctx.game.market.calcTransactionCost(amount, costRoom, candidate.terminal.room.name);
+  const cost = Game.market.calcTransactionCost(amount, costRoom, candidate.terminal.room.name);
   if (candidate.terminal.store[RESOURCE_ENERGY] < cost + MARKET_TERMINAL_ENERGY_RESERVE) {
     return false;
   }
 
-  const dealResult = ctx.game.market.deal(candidate.orderId, amount, costRoom);
+  const dealResult = Game.market.deal(candidate.orderId, amount, costRoom);
   if (dealResult === OK) {
     logger.info("Executed market trade", {
       direction: candidate.direction,

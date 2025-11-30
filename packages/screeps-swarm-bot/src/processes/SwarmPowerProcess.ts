@@ -12,13 +12,14 @@ export class SwarmPowerProcess {
     if (!shouldRunPowerLoop(ctx.game.time, this.nextRun)) return;
     this.nextRun = scheduleNextPowerLoop(ctx.game.time);
     this.logger.debug?.("Executing power loop", { tick: ctx.game.time });
-    const powerCreeps = ctx.game.powerCreeps ?? {};
+    const powerCreeps = (ctx.game as { powerCreeps?: Record<string, PowerCreep> }).powerCreeps ?? {};
     for (const powerCreep of Object.values(powerCreeps)) {
       if (!powerCreep.ticksToLive || powerCreep.ticksToLive <= 0) continue;
-      if (powerCreep.className === "Operator") {
+      const className = powerCreep.className.toLowerCase();
+      if (className === "operator") {
         runPowerCreepEconomy(powerCreep);
       }
-      if (powerCreep.className === "Executor" || powerCreep.className === "Commander") {
+      if (className === "executor" || className === "commander") {
         runPowerCreepCombat(powerCreep);
       }
     }

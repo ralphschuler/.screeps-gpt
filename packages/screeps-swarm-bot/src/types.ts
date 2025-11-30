@@ -172,6 +172,7 @@ export interface SwarmMemory {
   rallies: Record<string, string>;
   squads?: Record<string, SwarmSquadMemory>;
   metrics?: SwarmMetrics;
+  powerQueue?: string[];
 }
 
 /**
@@ -222,8 +223,8 @@ export interface SwarmMarketMemory {
   buyOrders: MarketOrderPreference[];
   sellOrders: MarketOrderPreference[];
   cooldowns: Record<string, number>;
-  bestBuy: Record<ResourceConstant, MarketBestPrice>;
-  bestSell: Record<ResourceConstant, MarketBestPrice>;
+  bestBuy: Partial<Record<ResourceConstant, MarketBestPrice>>;
+  bestSell: Partial<Record<ResourceConstant, MarketBestPrice>>;
 }
 
 export interface MarketOrderPreference {
@@ -241,10 +242,10 @@ export interface MarketBestPrice {
 }
 
 export interface ClusterTradePreferences {
-  targets: Record<ResourceConstant, { min: number; max: number; emergencyMin?: number }>;
-  importDemand?: Record<ResourceConstant, boolean>;
-  exportSurplus?: Record<ResourceConstant, boolean>;
-  minAmounts?: Record<ResourceConstant, number>;
+  targets: Partial<Record<ResourceConstant, { min: number; max: number; emergencyMin?: number }>>;
+  importDemand?: Partial<Record<ResourceConstant, boolean>>;
+  exportSurplus?: Partial<Record<ResourceConstant, boolean>>;
+  minAmounts?: Partial<Record<ResourceConstant, number>>;
 }
 
 /**

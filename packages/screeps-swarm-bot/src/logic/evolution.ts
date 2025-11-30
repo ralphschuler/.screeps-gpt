@@ -48,17 +48,17 @@ export function roleWeightsFromPosture(intent: SwarmIntent, pheromones: Pheromon
   };
 
   if (intent === "war" || intent === "siege") {
-    base.guardAnt *= 1.5;
-    base.soldierAnt *= 1.5;
-    base.healerAnt *= 1.3;
+    base["guardAnt"] = (base["guardAnt"] ?? 0) * 1.5;
+    base["soldierAnt"] = (base["soldierAnt"] ?? 0) * 1.5;
+    base["healerAnt"] = (base["healerAnt"] ?? 0) * 1.3;
   }
   if (intent === "expand") {
-    base.claimAnt *= 1.2;
-    base.remoteWorker *= 1.4;
+    base["claimAnt"] = (base["claimAnt"] ?? 0) * 1.2;
+    base["remoteWorker"] = (base["remoteWorker"] ?? 0) * 1.4;
   }
   if (intent === "evacuate") {
-    base.builderAnt = 0;
-    base.soldierAnt = 0;
+    base["builderAnt"] = 0;
+    base["soldierAnt"] = 0;
   }
 
   return base;
