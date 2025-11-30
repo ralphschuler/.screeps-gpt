@@ -9,6 +9,7 @@
 
 import { BaseRoleController, type RoleConfig } from "./RoleController";
 import type { CreepLike } from "@runtime/types/GameContext";
+import { findContainers } from "@runtime/types/typeGuards";
 import { serviceRegistry } from "./ServiceLocator";
 import { tryPickupDroppedEnergy, ROOM_CENTER_X, ROOM_CENTER_Y } from "./helpers";
 
@@ -99,11 +100,7 @@ export class RemoteHaulerController extends BaseRoleController<RemoteHaulerMemor
       }
 
       // Pick up from containers
-      const containers = creep.room.find(FIND_STRUCTURES, {
-        filter: s =>
-          s.structureType === STRUCTURE_CONTAINER &&
-          (s as StructureContainer).store.getUsedCapacity(RESOURCE_ENERGY) > 0
-      }) as StructureContainer[];
+      const containers = findContainers(creep.room, c => c.store.getUsedCapacity(RESOURCE_ENERGY) > 0);
 
       if (containers.length > 0) {
         const closest = creep.pos.findClosestByPath(containers);

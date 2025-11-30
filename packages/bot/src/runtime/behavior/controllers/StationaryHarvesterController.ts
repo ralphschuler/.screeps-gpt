@@ -19,6 +19,7 @@
 
 import { BaseRoleController, type RoleConfig } from "./RoleController";
 import type { CreepLike } from "@runtime/types/GameContext";
+import { asCreep, findAllSources } from "@runtime/types/typeGuards";
 import { serviceRegistry } from "./ServiceLocator";
 import { StateMachine, serialize, restore } from "@ralphschuler/screeps-xstate";
 import {
@@ -76,6 +77,8 @@ export class StationaryHarvesterController extends BaseRoleController<Stationary
     }
 
     // Get or create state machine for this creep
+    // asCreep validates the CreepLike has full Creep interface required by state machine
+    const validatedCreep = asCreep(creep, "StationaryHarvesterController");
     let machine = this.machines.get(creep.name);
     if (!machine) {
       if (memory.stateMachine) {
@@ -87,14 +90,14 @@ export class StationaryHarvesterController extends BaseRoleController<Stationary
         machine = new StateMachine<StationaryHarvesterContext, StationaryHarvesterEvent>(
           STATIONARY_HARVESTER_INITIAL_STATE,
           stationaryHarvesterStates,
-          { creep: creep as Creep, sourceId: memory.sourceId, containerId: memory.containerId }
+          { creep: validatedCreep, sourceId: memory.sourceId, containerId: memory.containerId }
         );
       }
       this.machines.set(creep.name, machine);
     }
 
     // Update creep reference in context every tick
-    machine.getContext().creep = creep as Creep;
+    machine.getContext().creep = validatedCreep;
     const ctx = machine.getContext();
     const currentState = machine.getState();
 
@@ -105,7 +108,7 @@ export class StationaryHarvesterController extends BaseRoleController<Stationary
     }
 
     if (!source) {
-      const sources = creep.room.find(FIND_SOURCES) as Source[];
+      const sources = findAllSources(creep.room);
       source = creep.pos.findClosestByPath(sources) ?? sources[0] ?? null;
       if (source) {
         machine.send({ type: "ASSIGN_SOURCE", sourceId: source.id });

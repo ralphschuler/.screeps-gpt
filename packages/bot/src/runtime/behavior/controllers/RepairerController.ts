@@ -12,6 +12,7 @@
 
 import { BaseRoleController, type RoleConfig } from "./RoleController";
 import type { CreepLike } from "@runtime/types/GameContext";
+import { asCreep, findActiveSources, findAllSources } from "@runtime/types/typeGuards";
 import { serviceRegistry } from "./ServiceLocator";
 import { tryPickupDroppedEnergy, findClosestOrFirst, isValidEnergySource } from "./helpers";
 import { StateMachine, serialize, restore } from "@ralphschuler/screeps-xstate";
@@ -70,6 +71,8 @@ export class RepairerController extends BaseRoleController<RepairerMemory> {
     }
 
     // Get or create state machine for this creep
+    // asCreep validates the CreepLike has full Creep interface required by state machine
+    const validatedCreep = asCreep(creep, "RepairerController");
     let machine = this.machines.get(creep.name);
     if (!machine) {
       if (memory.stateMachine) {
@@ -78,14 +81,14 @@ export class RepairerController extends BaseRoleController<RepairerMemory> {
         // Use memory.task as initial state if available (for backwards compatibility)
         const initialState = memory.task === "repair" ? "repair" : REPAIRER_INITIAL_STATE;
         machine = new StateMachine<RepairerContext, RepairerEvent>(initialState, repairerStates, {
-          creep: creep as Creep
+          creep: validatedCreep
         });
       }
       this.machines.set(creep.name, machine);
     }
 
     // Update creep reference in context every tick
-    machine.getContext().creep = creep as Creep;
+    machine.getContext().creep = validatedCreep;
 
     const currentState = machine.getState();
 
@@ -129,7 +132,7 @@ export class RepairerController extends BaseRoleController<RepairerMemory> {
       }
 
       // Priority 3: Harvest from sources directly if no other options
-      const sources = creep.room.find(FIND_SOURCES_ACTIVE) as Source[];
+      const sources = findActiveSources(creep.room);
       const source = findClosestOrFirst(creep, sources);
       if (source) {
         const harvestResult = creep.harvest(source);
@@ -167,7 +170,7 @@ export class RepairerController extends BaseRoleController<RepairerMemory> {
       }) as Structure[];
 
       // Sort infrastructure targets to prioritize source containers
-      const sources = creep.room.find(FIND_SOURCES) as Source[];
+      const sources = findAllSources(creep.room);
       if (infrastructureTargets.length > 1) {
         infrastructureTargets.sort((a, b) => {
           const isAContainer = a.structureType === STRUCTURE_CONTAINER;

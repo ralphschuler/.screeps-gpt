@@ -10,6 +10,7 @@
 
 import { BaseRoleController, type RoleConfig } from "./RoleController";
 import type { CreepLike } from "@runtime/types/GameContext";
+import { findActiveSources, findContainers } from "@runtime/types/typeGuards";
 import { serviceRegistry } from "./ServiceLocator";
 import { tryPickupDroppedEnergy, ROOM_CENTER_X, ROOM_CENTER_Y } from "./helpers";
 
@@ -108,10 +109,7 @@ export class RemoteBuilderController extends BaseRoleController<RemoteBuilderMem
       }
 
       // Priority 2: Withdraw from containers
-      const containers = creep.room.find(FIND_STRUCTURES, {
-        filter: (structure: AnyStructure) =>
-          structure.structureType === STRUCTURE_CONTAINER && structure.store.getUsedCapacity(RESOURCE_ENERGY) > 50
-      }) as StructureContainer[];
+      const containers = findContainers(creep.room, c => c.store.getUsedCapacity(RESOURCE_ENERGY) > 50);
 
       if (containers.length > 0) {
         const container = creep.pos.findClosestByPath(containers) ?? containers[0];
@@ -209,7 +207,7 @@ export class RemoteBuilderController extends BaseRoleController<RemoteBuilderMem
   }
 
   private resolveRemoteSource(creep: CreepLike, memory: RemoteBuilderMemory): Source | null {
-    const sources = creep.room.find(FIND_SOURCES_ACTIVE) as Source[];
+    const sources = findActiveSources(creep.room);
     if (sources.length === 0) {
       return null;
     }

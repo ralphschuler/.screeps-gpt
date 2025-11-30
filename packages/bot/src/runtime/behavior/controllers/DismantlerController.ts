@@ -15,6 +15,7 @@
 
 import { BaseRoleController, type RoleConfig } from "./RoleController";
 import type { CreepLike } from "@runtime/types/GameContext";
+import { asCreep } from "@runtime/types/typeGuards";
 import { serviceRegistry } from "./ServiceLocator";
 import { moveToTargetRoom } from "./helpers";
 import { StateMachine, serialize, restore } from "@ralphschuler/screeps-xstate";
@@ -88,13 +89,15 @@ export class DismantlerController extends BaseRoleController<DismantlerMemory> {
     memory.mode ??= "clearing";
 
     // Get or create state machine for this creep
+    // asCreep validates the CreepLike has full Creep interface required by state machine
+    const validatedCreep = asCreep(creep, "DismantlerController");
     let machine = this.machines.get(creep.name);
     if (!machine) {
       if (memory.stateMachine) {
         machine = restore<DismantlerContext, DismantlerEvent>(memory.stateMachine, dismantlerStates);
       } else {
         machine = new StateMachine<DismantlerContext, DismantlerEvent>(DISMANTLER_INITIAL_STATE, dismantlerStates, {
-          creep: creep as Creep,
+          creep: validatedCreep,
           targetRoom: memory.targetRoom
         });
       }
@@ -102,7 +105,7 @@ export class DismantlerController extends BaseRoleController<DismantlerMemory> {
     }
 
     // Update creep reference in context every tick
-    machine.getContext().creep = creep as Creep;
+    machine.getContext().creep = validatedCreep;
 
     const currentState = machine.getState();
 

@@ -20,6 +20,7 @@
 
 import { BaseRoleController, type RoleConfig } from "./RoleController";
 import type { CreepLike } from "@runtime/types/GameContext";
+import { asCreep, findActiveSources } from "@runtime/types/typeGuards";
 import { serviceRegistry } from "./ServiceLocator";
 import { StateMachine, serialize, restore } from "@ralphschuler/screeps-xstate";
 import {
@@ -72,20 +73,22 @@ export class HarvesterController extends BaseRoleController<HarvesterMemory> {
     this.cleanupDeadCreepMachines();
 
     // Get or create state machine for this creep
+    // asCreep validates the CreepLike has full Creep interface required by state machine
+    const validatedCreep = asCreep(creep, "HarvesterController");
     let machine = this.machines.get(creep.name);
     if (!machine) {
       if (memory.stateMachine) {
         machine = restore<HarvesterContext, HarvesterEvent>(memory.stateMachine, harvesterStates);
       } else {
         machine = new StateMachine<HarvesterContext, HarvesterEvent>(HARVESTER_INITIAL_STATE, harvesterStates, {
-          creep: creep as Creep
+          creep: validatedCreep
         });
       }
       this.machines.set(creep.name, machine);
     }
 
     // Update creep reference in context every tick to ensure guards evaluate current state
-    machine.getContext().creep = creep as Creep;
+    machine.getContext().creep = validatedCreep;
 
     const ctx = machine.getContext();
     const currentState = machine.getState();
@@ -94,7 +97,7 @@ export class HarvesterController extends BaseRoleController<HarvesterMemory> {
     if (currentState === "idle") {
       comm?.say(creep, "💤");
       // Find nearest source and start harvesting
-      const sources = creep.room.find(FIND_SOURCES_ACTIVE) as Source[];
+      const sources = findActiveSources(creep.room);
       if (sources.length > 0) {
         // Use ignoreCreeps for better routing through narrow passages
         const source = creep.pos.findClosestByPath(sources, { ignoreCreeps: true }) ?? sources[0];

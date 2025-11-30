@@ -16,6 +16,7 @@
 
 import { BaseRoleController, type RoleConfig } from "./RoleController";
 import type { CreepLike } from "@runtime/types/GameContext";
+import { asCreep, findActiveSources } from "@runtime/types/typeGuards";
 import { serviceRegistry } from "./ServiceLocator";
 import { isValidEnergySource } from "./helpers";
 import { StateMachine, serialize, restore } from "@ralphschuler/screeps-xstate";
@@ -69,20 +70,22 @@ export class BuilderController extends BaseRoleController<BuilderMemory> {
     }
 
     // Get or create state machine for this creep
+    // asCreep validates the CreepLike has full Creep interface required by state machine
+    const validatedCreep = asCreep(creep, "BuilderController");
     let machine = this.machines.get(creep.name);
     if (!machine) {
       if (memory.stateMachine) {
         machine = restore<BuilderContext, BuilderEvent>(memory.stateMachine, builderStates);
       } else {
         machine = new StateMachine<BuilderContext, BuilderEvent>(BUILDER_INITIAL_STATE, builderStates, {
-          creep: creep as Creep
+          creep: validatedCreep
         });
       }
       this.machines.set(creep.name, machine);
     }
 
     // Update creep reference in context every tick
-    machine.getContext().creep = creep as Creep;
+    machine.getContext().creep = validatedCreep;
 
     const currentState = machine.getState();
 
@@ -157,7 +160,7 @@ export class BuilderController extends BaseRoleController<BuilderMemory> {
         }
       } else {
         // Priority 2: Harvest from sources directly if no containers/storage available
-        const sources = creep.room.find(FIND_SOURCES_ACTIVE) as Source[];
+        const sources = findActiveSources(creep.room);
         // Use ignoreCreeps for better routing through narrow passages
         const source =
           sources.length > 0 ? (creep.pos.findClosestByPath(sources, { ignoreCreeps: true }) ?? sources[0]) : null;

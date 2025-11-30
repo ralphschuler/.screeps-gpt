@@ -3,6 +3,13 @@
  */
 
 import type { CreepLike } from "@runtime/types/GameContext";
+import {
+  asCreep,
+  findMySpawns,
+  findAllSources,
+  findTowers,
+  findDroppedResources
+} from "@runtime/types/typeGuards";
 import { serviceRegistry } from "./ServiceLocator";
 
 /**
@@ -105,9 +112,10 @@ export function tryPickupDroppedEnergy(
     return false;
   }
 
-  const droppedEnergy = creep.room.find(FIND_DROPPED_RESOURCES, {
-    filter: r => r.resourceType === RESOURCE_ENERGY && r.amount >= minAmount
-  }) as Resource[];
+  const droppedEnergy = findDroppedResources(
+    creep.room,
+    r => r.resourceType === RESOURCE_ENERGY && r.amount >= minAmount
+  );
 
   if (droppedEnergy.length === 0) {
     return false;
@@ -177,7 +185,7 @@ export function findSpawnAdjacentContainers(
   room: { find: (constant: number, opts?: unknown) => unknown[] },
   minEnergy?: number
 ): StructureContainer[] {
-  const spawns = room.find(FIND_MY_SPAWNS) as StructureSpawn[];
+  const spawns = findMySpawns(room as Parameters<typeof findMySpawns>[0]);
   const containers: StructureContainer[] = [];
 
   for (const spawn of spawns) {
@@ -213,16 +221,14 @@ export function findLowEnergyTowers(
   room: { find: (constant: number, opts?: unknown) => unknown[] },
   minCapacityRatio: number = 0.5
 ): StructureTower[] {
-  const towers = room.find(FIND_STRUCTURES, {
-    filter: (structure: AnyStructure) => {
-      if (structure.structureType !== STRUCTURE_TOWER) return false;
-      const capacity = structure.store.getCapacity(RESOURCE_ENERGY);
-      const used = structure.store.getUsedCapacity(RESOURCE_ENERGY);
+  return findTowers(
+    room as Parameters<typeof findTowers>[0],
+    tower => {
+      const capacity = tower.store.getCapacity(RESOURCE_ENERGY);
+      const used = tower.store.getUsedCapacity(RESOURCE_ENERGY);
       return used < capacity * minCapacityRatio;
     }
-  }) as StructureTower[];
-
-  return towers;
+  );
 }
 
 /**
@@ -263,7 +269,7 @@ export function getSourceContainer(source: Source): StructureContainer | null {
 export function findSourceAdjacentContainers(room: {
   find: (constant: number, opts?: unknown) => unknown[];
 }): StructureContainer[] {
-  const sources = room.find(FIND_SOURCES) as Source[];
+  const sources = findAllSources(room as Parameters<typeof findAllSources>[0]);
   const containerSet = new Set<string>(); // Track unique container IDs
   const containers: StructureContainer[] = [];
 
@@ -419,7 +425,7 @@ export function priorityMoveTo(
 
   // Use PathfindingManager for traffic-managed movement when available
   if (pathfindingManager?.isAvailable()) {
-    return pathfindingManager.moveTo(creep as Creep, target, opts);
+    return pathfindingManager.moveTo(asCreep(creep, "priorityMoveTo"), target, opts);
   }
 
   // Fallback to native moveTo when PathfindingManager is not available

@@ -12,6 +12,7 @@
 
 import { BaseRoleController, type RoleConfig } from "./RoleController";
 import type { CreepLike } from "@runtime/types/GameContext";
+import { asCreep, findContainers } from "@runtime/types/typeGuards";
 import { serviceRegistry } from "./ServiceLocator";
 import { tryPickupDroppedEnergy, findSpawnAdjacentContainers, findLowEnergyTowers } from "./helpers";
 import { DEFAULT_ENERGY_CONFIG } from "@runtime/energy";
@@ -64,20 +65,22 @@ export class HaulerController extends BaseRoleController<HaulerMemory> {
     }
 
     // Get or create state machine for this creep
+    // asCreep validates the CreepLike has full Creep interface required by state machine
+    const validatedCreep = asCreep(creep, "HaulerController");
     let machine = this.machines.get(creep.name);
     if (!machine) {
       if (memory.stateMachine) {
         machine = restore<HaulerContext, HaulerEvent>(memory.stateMachine, haulerStates);
       } else {
         machine = new StateMachine<HaulerContext, HaulerEvent>(HAULER_INITIAL_STATE, haulerStates, {
-          creep: creep as Creep
+          creep: validatedCreep
         });
       }
       this.machines.set(creep.name, machine);
     }
 
     // Update creep reference in context every tick
-    machine.getContext().creep = creep as Creep;
+    machine.getContext().creep = validatedCreep;
 
     const currentState = machine.getState();
 
@@ -104,11 +107,7 @@ export class HaulerController extends BaseRoleController<HaulerMemory> {
       }
 
       // Priority 2: Pick up from containers near sources
-      const containers = creep.room.find(FIND_STRUCTURES, {
-        filter: s =>
-          s.structureType === STRUCTURE_CONTAINER &&
-          (s as StructureContainer).store.getUsedCapacity(RESOURCE_ENERGY) > 0
-      }) as StructureContainer[];
+      const containers = findContainers(creep.room, c => c.store.getUsedCapacity(RESOURCE_ENERGY) > 0);
 
       if (containers.length > 0) {
         // Use ignoreCreeps for better routing through narrow passages

@@ -10,6 +10,7 @@
 
 import { BaseRoleController, type RoleConfig } from "./RoleController";
 import type { CreepLike } from "@runtime/types/GameContext";
+import { asCreep } from "@runtime/types/typeGuards";
 import { serviceRegistry } from "./ServiceLocator";
 import { moveToTargetRoom } from "./helpers";
 import { StateMachine, serialize, restore } from "@ralphschuler/screeps-xstate";
@@ -63,13 +64,15 @@ export class ClaimerController extends BaseRoleController<ClaimerMemory> {
     }
 
     // Get or create state machine for this creep
+    // asCreep validates the CreepLike has full Creep interface required by state machine
+    const validatedCreep = asCreep(creep, "ClaimerController");
     let machine = this.machines.get(creep.name);
     if (!machine) {
       if (memory.stateMachine) {
         machine = restore<ClaimerContext, ClaimerEvent>(memory.stateMachine, claimerStates);
       } else {
         machine = new StateMachine<ClaimerContext, ClaimerEvent>(CLAIMER_INITIAL_STATE, claimerStates, {
-          creep: creep as Creep,
+          creep: validatedCreep,
           targetRoom: memory.targetRoom ?? "",
           homeRoom: creep.room.name
         });
@@ -78,7 +81,7 @@ export class ClaimerController extends BaseRoleController<ClaimerMemory> {
     }
 
     // Update creep reference in context every tick
-    machine.getContext().creep = creep as Creep;
+    machine.getContext().creep = validatedCreep;
 
     const currentState = machine.getState();
 

@@ -10,6 +10,7 @@
 
 import { BaseRoleController, type RoleConfig } from "./RoleController";
 import type { CreepLike } from "@runtime/types/GameContext";
+import { asCreep } from "@runtime/types/typeGuards";
 import { serviceRegistry } from "./ServiceLocator";
 import { moveToTargetRoom } from "./helpers";
 import { StateMachine, serialize, restore } from "@ralphschuler/screeps-xstate";
@@ -57,13 +58,15 @@ export class ScoutController extends BaseRoleController<ScoutMemory> {
     this.cleanupDeadCreepMachines();
 
     // Get or create state machine for this creep
+    // asCreep validates the CreepLike has full Creep interface required by state machine
+    const validatedCreep = asCreep(creep, "ScoutController");
     let machine = this.machines.get(creep.name);
     if (!machine) {
       if (memory.stateMachine) {
         machine = restore<ScoutContext, ScoutEvent>(memory.stateMachine, scoutStates);
       } else {
         machine = new StateMachine<ScoutContext, ScoutEvent>(SCOUT_INITIAL_STATE, scoutStates, {
-          creep: creep as Creep,
+          creep: validatedCreep,
           targetRoom: memory.targetRoom
         });
       }
@@ -71,7 +74,7 @@ export class ScoutController extends BaseRoleController<ScoutMemory> {
     }
 
     // Update creep reference in context every tick to ensure guards evaluate current state
-    machine.getContext().creep = creep as Creep;
+    machine.getContext().creep = validatedCreep;
 
     const ctx = machine.getContext();
     const currentState = machine.getState();
