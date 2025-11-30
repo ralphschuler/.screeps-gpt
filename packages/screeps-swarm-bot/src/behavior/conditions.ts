@@ -179,9 +179,9 @@ export const factoryNeedsEnergy = (ctx: SwarmCreepContext): boolean => {
 
 // Controller conditions
 
-/** Checks if controller needs upgrading */
+/** Checks if controller needs upgrading (is owned by us) */
 export const controllerNeedsUpgrade = (ctx: SwarmCreepContext): boolean =>
-  !!ctx.room.controller && !ctx.room.controller.my === false;
+  !!ctx.room.controller?.my;
 
 /** Checks if controller is downgrading soon */
 export const controllerDowngradingSoon = (threshold = 3000) => (ctx: SwarmCreepContext): boolean =>

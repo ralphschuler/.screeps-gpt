@@ -108,6 +108,8 @@ export function createSwarmContext(creep: Creep): SwarmCreepContext {
   const hostiles = room.find(FIND_HOSTILE_CREEPS);
   const sources = room.find(FIND_SOURCES_ACTIVE);
   const sites = room.find(FIND_CONSTRUCTION_SITES);
+  // Count structures below 80% health for damagedStructures metric (liberal threshold)
+  // Note: Repair action uses 50% threshold for prioritization (critical damage)
   const damaged = room.find(FIND_STRUCTURES, {
     filter: s => s.hits < s.hitsMax * 0.8 && s.structureType !== STRUCTURE_WALL
   });

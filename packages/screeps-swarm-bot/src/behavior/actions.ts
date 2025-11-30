@@ -231,9 +231,13 @@ function upgradeController(creep: Creep): void {
   }
 }
 
+// Repair threshold for prioritizing repair action (critical damage)
+const REPAIR_CRITICAL_THRESHOLD = 0.5;
+
 function repairStructure(creep: Creep): void {
+  // Target structures below critical threshold for repair priority
   const target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
-    filter: s => s.hits < s.hitsMax * 0.5 && s.structureType !== STRUCTURE_WALL
+    filter: s => s.hits < s.hitsMax * REPAIR_CRITICAL_THRESHOLD && s.structureType !== STRUCTURE_WALL
   });
   if (!target) return;
   if (creep.repair(target) === ERR_NOT_IN_RANGE) {
@@ -274,7 +278,19 @@ function healAlly(creep: Creep): void {
 function claimController(creep: Creep): void {
   const controller = creep.room.controller;
   if (!controller) return;
-  const result = controller.my ? creep.reserveController(controller) : creep.claimController(controller);
+  // If already owned, nothing to do (upgrade instead)
+  // If reserved by us, try to claim; otherwise claim if unowned or reserve if owned by others
+  let result: ScreepsReturnCode;
+  if (controller.my) {
+    // Already owned, upgrade it instead
+    result = creep.upgradeController(controller);
+  } else if (!controller.owner) {
+    // Unowned, try to claim
+    result = creep.claimController(controller);
+  } else {
+    // Owned by someone else, just move to it
+    result = ERR_NOT_IN_RANGE;
+  }
   if (result === ERR_NOT_IN_RANGE) {
     creep.moveTo(controller, { reusePath: 5 });
   }
