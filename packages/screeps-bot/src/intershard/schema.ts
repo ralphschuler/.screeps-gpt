@@ -286,8 +286,6 @@ export function deserializeInterShardMemory(data: string): InterShardMemorySchem
     }>;
 
     for (const s of shardsData) {
-      // Portal positions parsed from compact format - used in future portal graph
-      void (s.p[0]?.sp ?? "0,0").split(",");
       shards[s.n] = {
         name: s.n,
         role: roleMap[s.r] ?? "core",

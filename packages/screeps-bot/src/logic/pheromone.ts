@@ -408,25 +408,56 @@ export class PheromoneManager {
 
     const neighbors: string[] = [];
 
-    // Cardinal directions only - don't cross world center (0,0)
-    // The Screeps world doesn't wrap at boundaries, rooms at X0/Y0 have no neighbors across
-    // North (y decreases in the same hemisphere)
-    if (y > 0) {
-      neighbors.push(`${wx}${x}${wy}${y - 1}`);
+    // Cardinal directions - handle hemisphere boundaries correctly
+    // In Screeps: W1 is adjacent to E0, and N1 is adjacent to S0
+    
+    // North (y increases towards N, decreases towards S)
+    if (wy === "N") {
+      neighbors.push(`${wx}${x}N${y + 1}`);
+    } else {
+      if (y > 0) {
+        neighbors.push(`${wx}${x}S${y - 1}`);
+      } else {
+        // S0 is adjacent to N0
+        neighbors.push(`${wx}${x}N0`);
+      }
     }
-    // Note: y=0 rooms don't have neighbors across to the other hemisphere in practice
 
-    // South (y increases)
-    neighbors.push(`${wx}${x}${wy}${y + 1}`);
-
-    // East (x increases in the same hemisphere)
-    neighbors.push(`${wx}${x + 1}${wy}${y}`);
-
-    // West (x decreases)
-    if (x > 0) {
-      neighbors.push(`${wx}${x - 1}${wy}${y}`);
+    // South
+    if (wy === "S") {
+      neighbors.push(`${wx}${x}S${y + 1}`);
+    } else {
+      if (y > 0) {
+        neighbors.push(`${wx}${x}N${y - 1}`);
+      } else {
+        // N0 is adjacent to S0
+        neighbors.push(`${wx}${x}S0`);
+      }
     }
-    // Note: x=0 rooms don't have neighbors across to the other hemisphere in practice
+
+    // East
+    if (wx === "E") {
+      neighbors.push(`E${x + 1}${wy}${y}`);
+    } else {
+      if (x > 0) {
+        neighbors.push(`W${x - 1}${wy}${y}`);
+      } else {
+        // W0 is adjacent to E0
+        neighbors.push(`E0${wy}${y}`);
+      }
+    }
+
+    // West
+    if (wx === "W") {
+      neighbors.push(`W${x + 1}${wy}${y}`);
+    } else {
+      if (x > 0) {
+        neighbors.push(`E${x - 1}${wy}${y}`);
+      } else {
+        // E0 is adjacent to W0
+        neighbors.push(`W0${wy}${y}`);
+      }
+    }
 
     return neighbors;
   }

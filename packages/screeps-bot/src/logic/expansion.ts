@@ -344,9 +344,32 @@ export function getLabNetworkState(room: Room): {
     return { inputLabs: [], outputLabs: [], reactions: [] };
   }
 
-  // First 2 labs are input, rest are output
-  const inputLabs = labs.slice(0, 2);
-  const outputLabs = labs.slice(2);
+  // Dynamically assign input/output labs based on proximity to storage/terminal
+  // Input labs should be close to storage for easy refilling
+  // Output labs should be within range 2 of input labs for reactions
+  const storage = room.storage ?? room.terminal;
+  
+  let inputLabs: StructureLab[] = [];
+  let outputLabs: StructureLab[] = [];
+
+  if (storage) {
+    // Sort labs by distance to storage - closest ones are inputs
+    const sortedByStorage = [...labs].sort((a, b) => 
+      a.pos.getRangeTo(storage) - b.pos.getRangeTo(storage)
+    );
+    
+    // First 2 closest to storage are input labs
+    inputLabs = sortedByStorage.slice(0, 2);
+    
+    // Output labs must be within range 2 of BOTH input labs
+    outputLabs = sortedByStorage.slice(2).filter(lab => 
+      inputLabs.every(input => lab.pos.getRangeTo(input) <= 2)
+    );
+  } else {
+    // Fallback: first 2 labs are input, rest are output
+    inputLabs = labs.slice(0, 2);
+    outputLabs = labs.slice(2);
+  }
 
   // Determine active reactions based on input lab contents
   const reactions: Array<{ input1: MineralConstant; input2: MineralConstant; output: MineralCompoundConstant }> = [];

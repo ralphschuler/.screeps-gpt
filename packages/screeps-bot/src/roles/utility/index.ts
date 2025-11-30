@@ -121,7 +121,9 @@ function recordRoomIntel(room: Room, overmind: Record<string, unknown>): void {
   const terrainType = swampCount > plainCount * 2 ? "swamp" : plainCount > swampCount * 2 ? "plains" : "mixed";
 
   // Check for highway/SK
-  const isHighway = room.name.includes("0") && (room.name.includes("N0") || room.name.includes("S0") || room.name.includes("E0") || room.name.includes("W0"));
+  // Highway rooms have coordinates divisible by 10 (e.g., W10N5, W5N10, E20N30)
+  const coordMatch = room.name.match(/^[WE](\d+)[NS](\d+)$/);
+  const isHighway = coordMatch ? (parseInt(coordMatch[1]!, 10) % 10 === 0 || parseInt(coordMatch[2]!, 10) % 10 === 0) : false;
   const isSK = room.find(FIND_STRUCTURES, { filter: s => s.structureType === STRUCTURE_KEEPER_LAIR }).length > 0;
 
   const intel: RoomIntel = {
