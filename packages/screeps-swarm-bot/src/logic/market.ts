@@ -9,9 +9,7 @@ import {
 } from "../constants.js";
 import { SwarmMemoryManager } from "../memory/SwarmMemoryManager.js";
 import type {
-  MarketBestPrice,
   MarketOrderPreference,
-  SwarmClusterMemory,
   SwarmMemory,
   SwarmProcessContext
 } from "../types.js";
