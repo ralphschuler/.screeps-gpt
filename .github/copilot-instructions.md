@@ -20,6 +20,7 @@ This repository hosts an autonomous Screeps AI with comprehensive automation. Wh
 - **Documentation-first**: Update docs when behavior changes
 - **Quality gates**: Always run lint, format, and relevant test suites before committing
 - **No backwards compatibility**: Obsolete or deprecated code is removed immediately; code only needs to work with itself, not previous versions
+- **Fix all issues**: When working on a task, fix all related issues encountered regardless of who introduced them. CI failures and technical debt discovered during implementation should be addressed. The only exception is the performance benchmark workflow.
 
 ## Suitable Tasks for Copilot
 

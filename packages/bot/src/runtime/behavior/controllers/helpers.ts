@@ -2,7 +2,15 @@
  * Shared helper utilities for role controllers
  */
 
-import type { CreepLike } from "@runtime/types/GameContext";
+import type { CreepLike, RoomLike } from "@runtime/types/GameContext";
+import {
+  asCreep,
+  findMySpawns,
+  findAllSources,
+  findTowers,
+  findDroppedResources,
+  isContainer
+} from "@runtime/types/typeGuards";
 import { serviceRegistry } from "./ServiceLocator";
 
 /**
@@ -105,9 +113,10 @@ export function tryPickupDroppedEnergy(
     return false;
   }
 
-  const droppedEnergy = creep.room.find(FIND_DROPPED_RESOURCES, {
-    filter: r => r.resourceType === RESOURCE_ENERGY && r.amount >= minAmount
-  }) as Resource[];
+  const droppedEnergy = findDroppedResources(
+    creep.room,
+    r => r.resourceType === RESOURCE_ENERGY && r.amount >= minAmount
+  );
 
   if (droppedEnergy.length === 0) {
     return false;
@@ -177,7 +186,8 @@ export function findSpawnAdjacentContainers(
   room: { find: (constant: number, opts?: unknown) => unknown[] },
   minEnergy?: number
 ): StructureContainer[] {
-  const spawns = room.find(FIND_MY_SPAWNS) as StructureSpawn[];
+  // Cast to RoomLike for type compatibility with findMySpawns helper
+  const spawns = findMySpawns(room as RoomLike);
   const containers: StructureContainer[] = [];
 
   for (const spawn of spawns) {
@@ -186,14 +196,14 @@ export function findSpawnAdjacentContainers(
     });
 
     for (const structure of nearbyStructures) {
-      const container = structure as StructureContainer;
+      if (!isContainer(structure)) continue;
       if (minEnergy !== undefined) {
-        const currentEnergy = container.store.getUsedCapacity(RESOURCE_ENERGY);
-        if (currentEnergy < minEnergy && container.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
-          containers.push(container);
+        const currentEnergy = structure.store.getUsedCapacity(RESOURCE_ENERGY);
+        if (currentEnergy < minEnergy && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+          containers.push(structure);
         }
-      } else if (container.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
-        containers.push(container);
+      } else if (structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+        containers.push(structure);
       }
     }
   }
@@ -213,16 +223,12 @@ export function findLowEnergyTowers(
   room: { find: (constant: number, opts?: unknown) => unknown[] },
   minCapacityRatio: number = 0.5
 ): StructureTower[] {
-  const towers = room.find(FIND_STRUCTURES, {
-    filter: (structure: AnyStructure) => {
-      if (structure.structureType !== STRUCTURE_TOWER) return false;
-      const capacity = structure.store.getCapacity(RESOURCE_ENERGY);
-      const used = structure.store.getUsedCapacity(RESOURCE_ENERGY);
-      return used < capacity * minCapacityRatio;
-    }
-  }) as StructureTower[];
-
-  return towers;
+  // Cast to RoomLike for type compatibility with findTowers helper
+  return findTowers(room as RoomLike, tower => {
+    const capacity = tower.store.getCapacity(RESOURCE_ENERGY);
+    const used = tower.store.getUsedCapacity(RESOURCE_ENERGY);
+    return used < capacity * minCapacityRatio;
+  });
 }
 
 /**
@@ -263,14 +269,14 @@ export function getSourceContainer(source: Source): StructureContainer | null {
 export function findSourceAdjacentContainers(room: {
   find: (constant: number, opts?: unknown) => unknown[];
 }): StructureContainer[] {
-  const sources = room.find(FIND_SOURCES) as Source[];
+  // Cast to RoomLike for type compatibility with findAllSources helper
+  const sources = findAllSources(room as RoomLike);
   const containerSet = new Set<string>(); // Track unique container IDs
   const containers: StructureContainer[] = [];
 
   for (const source of sources) {
     const nearbyContainers = source.pos.findInRange<FIND_STRUCTURES, StructureContainer>(FIND_STRUCTURES, 1, {
-      filter: (s: Structure) =>
-        s.structureType === STRUCTURE_CONTAINER && (s as StructureContainer).store.getFreeCapacity(RESOURCE_ENERGY) > 0
+      filter: (s: Structure) => isContainer(s) && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
     });
 
     for (const container of nearbyContainers) {
@@ -419,7 +425,7 @@ export function priorityMoveTo(
 
   // Use PathfindingManager for traffic-managed movement when available
   if (pathfindingManager?.isAvailable()) {
-    return pathfindingManager.moveTo(creep as Creep, target, opts);
+    return pathfindingManager.moveTo(asCreep(creep, "priorityMoveTo"), target, opts);
   }
 
   // Fallback to native moveTo when PathfindingManager is not available

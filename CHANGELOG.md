@@ -5,6 +5,22 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Added
+
+- **Type Guards Module**: Added `packages/bot/src/runtime/types/typeGuards.ts` with type guard utilities (#1565)
+  - `isCreep()`, `isSource()`, `isStructure()`, `isSpawn()`, `isContainer()`, `isTower()`, etc. type guards for runtime validation
+  - `asCreep()` validation helper that throws TypeError instead of silently passing invalid objects
+  - Type-safe `room.find()` wrappers: `findActiveSources()`, `findAllSources()`, `findMySpawns()`, `findHostileCreeps()`, `findMyCreeps()`, `findDroppedResources()`, `findContainers()`, `findTowers()`, etc.
+  - Added 24 unit tests for type guards functionality
+
+### Changed
+
+- **Behavior Controllers**: Reduced unsafe type assertions from 50+ to ~10 instances (#1565)
+  - Replaced `creep as Creep` assertions with validated `asCreep()` helper in 14 role controllers
+  - Replaced scattered `as Source[]`, `as StructureSpawn[]`, etc. with centralized type-safe helpers
+  - Updated `helpers.ts` to use type guard utilities instead of inline assertions
+  - Improved code maintainability by centralizing type assertions in one location
+
 ## [0.189.9] - 2025-11-29
 
 ### Added
