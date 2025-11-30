@@ -40,8 +40,9 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: >-
-            issue-triage-logs-${{ github.event.issue.number }}-${{ github.run_id }}
-          path: |
+            issue-triage-logs-${{ github.event.issue.number
+            }}-${{ github.run_id }}
+          path: >-
             reports/copilot/issue-triage-${{ github.event.issue.number }}.log
           retention-days: 30
       - name: Update project status after triage

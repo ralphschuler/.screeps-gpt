@@ -129,6 +129,7 @@ jobs:
         with:
           name: >-
             changelog-to-blog-logs-${{ steps.version.outputs.version }}
-          path: |
-            reports/copilot/changelog-to-blog-${{ steps.version.outputs.version }}.log
+          path: >-
+            reports/copilot/changelog-to-blog-${{ steps.version.outputs.version
+            }}.log
           retention-days: 30

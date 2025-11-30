@@ -334,11 +334,16 @@ jobs:
 
             ### Related Documentation
 
-            - [Troubleshooting](packages/docs/source/docs/operations/deployment-troubleshooting.md)
-            - [Rollback Runbook](packages/docs/source/docs/operations/deployment-rollback.md)
+            - [Troubleshooting][1]
+            - [Rollback Runbook][2]
 
             ---
-            _This issue was automatically created by the deployment workflow._
+            _This issue was auto-created by the deployment workflow._
+
+            [1]: packages/docs/source/docs/operations/
+            deployment-troubleshooting.md
+            [2]: packages/docs/source/docs/operations/
+            deployment-rollback.md
             `
             });
 

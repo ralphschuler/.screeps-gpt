@@ -33,34 +33,46 @@ const TEST_REALM = process.env.SCREEPS_TEST_REALM ?? "PTR";
 describe(`Kernel (${TEST_REALM})`, () => {
   it("spawns missing creeps and stores evaluation", () => {
     const source = { id: "source" } as Source;
-    const controller = { id: "controller" } as StructureController;
+    const controller = { id: "controller", my: true, level: 2 } as unknown as StructureController;
 
     const spawnStore = {
-      getFreeCapacity: vi.fn(() => 300),
-      getUsedCapacity: vi.fn(() => 0)
+      getFreeCapacity: vi.fn(() => 0),
+      getUsedCapacity: vi.fn(() => 300),
+      getCapacity: vi.fn(() => 300)
     };
 
     const spawnCreepMock = vi.fn(() => OK);
-    const spawn = {
-      name: "Spawn1",
-      spawning: null,
-      spawnCreep: spawnCreepMock,
-      store: spawnStore,
-      room: { controller, find: () => [] } as RoomLike
-    } as unknown as StructureSpawn;
 
+    // Declare spawn as let so it can be referenced in the room's find function
+    let spawn: unknown;
+
+    // Create room first - uses spawn in find() for FIND_STRUCTURES
     const room: RoomLike = {
+      name: "W1N1",
       controller,
+      energyAvailable: 300,
+      energyCapacityAvailable: 300,
       find: (type: FindConstant) => {
-        if (type === FIND_SOURCES_ACTIVE) {
+        if (type === FIND_SOURCES_ACTIVE || type === FIND_SOURCES) {
           return [source];
         }
         if (type === FIND_STRUCTURES) {
-          return [spawn as unknown as AnyStructure];
+          return spawn ? [spawn as AnyStructure] : [];
         }
         return [];
       }
     };
+
+    // Now create spawn with room reference
+    spawn = {
+      id: "spawn1" as Id<StructureSpawn>,
+      name: "Spawn1",
+      spawning: null,
+      spawnCreep: spawnCreepMock,
+      store: spawnStore,
+      room: room,
+      pos: { x: 25, y: 25, roomName: "W1N1" }
+    } as unknown as StructureSpawn;
 
     const harvester = createCreep("harvester", room, { free: 50, used: 0 });
     const upgrader = createCreep("upgrader", room, { free: 0, used: 50 });

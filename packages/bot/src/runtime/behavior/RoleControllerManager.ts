@@ -466,8 +466,8 @@ export class RoleControllerManager {
       roomCreepCounts.set(roomName, (roomCreepCounts.get(roomName) ?? 0) + 1);
     }
 
-    // Pre-calculate per-room role counts for BASIC roles (harvester, upgrader, builder, hauler, repairer)
-    // Basic roles stay in the room they were spawned in - they don't have targetRoom/homeRoom
+    // Pre-calculate per-room role counts for room-local roles (harvester, upgrader, builder, hauler, repairer, stationaryHarvester)
+    // Room-local roles stay in the room they were spawned in - they don't have targetRoom/homeRoom
     // This enables per-room minimum enforcement instead of global counts
     // Map structure: { roomName: { role: count } }
     const roomRoleCounts = new Map<string, Map<string, number>>();
