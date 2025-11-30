@@ -338,6 +338,7 @@ describe("Container Harvesting Workflow", () => {
           y: 10,
           roomName: "W1N1",
           inRangeTo: vi.fn().mockReturnValue(true),
+          isNearTo: vi.fn().mockReturnValue(true),
           findClosestByPath: vi.fn((targets: unknown[]) => {
             return Array.isArray(targets) && targets.length > 0 ? targets[0] : null;
           }),

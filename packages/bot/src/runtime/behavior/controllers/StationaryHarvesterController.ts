@@ -7,6 +7,14 @@
  * - Dropping energy or filling adjacent containers
  *
  * Uses state machine from screeps-xstate for declarative behavior management.
+ *
+ * State machine transitions:
+ * - harvesting -> depositing: When creep store is full
+ * - depositing -> harvesting: When creep store is empty or container is full
+ *
+ * Note: Unlike mobile harvesters, stationary harvesters stay in place and harvest/deposit
+ * from the same position (adjacent to both source and container). This makes them more
+ * efficient for container-based energy logistics.
  */
 
 import { BaseRoleController, type RoleConfig } from "./RoleController";
@@ -88,8 +96,7 @@ export class StationaryHarvesterController extends BaseRoleController<Stationary
     // Update creep reference in context every tick
     machine.getContext().creep = creep as Creep;
     const ctx = machine.getContext();
-
-    comm?.say(creep, "⛏️");
+    const currentState = machine.getState();
 
     // Find or remember assigned source
     let source: Source | null = null;
@@ -107,43 +114,89 @@ export class StationaryHarvesterController extends BaseRoleController<Stationary
     }
 
     if (!source) {
+      comm?.say(creep, "❓");
       memory.stateMachine = serialize(machine);
       memory.task = machine.getState();
       return memory.task;
     }
 
-    // Harvest from source
-    const harvestResult = creep.harvest(source);
-    if (harvestResult === ERR_NOT_IN_RANGE) {
-      creep.moveTo(source, { range: 1, reusePath: 50 });
-      memory.stateMachine = serialize(machine);
-      memory.task = machine.getState();
-      return memory.task;
+    // Find or remember adjacent container (used for depositing)
+    let container: StructureContainer | null = null;
+    if (ctx.containerId) {
+      container = Game.getObjectById(ctx.containerId);
     }
 
-    // If adjacent to source and have energy, try to fill adjacent container
-    if (creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
-      let container: StructureContainer | null = null;
+    if (!container) {
+      // Look for containers adjacent to the source position (not just adjacent to creep)
+      // This helps find the container before we're in position
+      const sourcePos = source.pos;
+      const nearbyContainers = sourcePos.findInRange(FIND_STRUCTURES, 1, {
+        filter: s => s.structureType === STRUCTURE_CONTAINER
+      });
 
-      // Find or remember adjacent container
-      if (ctx.containerId) {
-        container = Game.getObjectById(ctx.containerId);
+      if (nearbyContainers.length > 0) {
+        container = nearbyContainers[0] as StructureContainer;
+        machine.send({ type: "ASSIGN_CONTAINER", containerId: container.id });
+        memory.containerId = container.id;
+      }
+    }
+
+    // Execute behavior based on current state
+    if (currentState === "harvesting") {
+      comm?.say(creep, "⛏️");
+
+      // Move to source if not in range
+      const harvestResult = creep.harvest(source);
+      if (harvestResult === ERR_NOT_IN_RANGE) {
+        creep.moveTo(source, { range: 1, reusePath: 50 });
       }
 
-      if (!container) {
-        const nearbyContainers = creep.pos.findInRange(FIND_STRUCTURES, 1, {
-          filter: s => s.structureType === STRUCTURE_CONTAINER
-        });
+      // Check if full and should transition to depositing
+      if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+        machine.send({ type: "ENERGY_FULL" });
+      }
 
-        if (nearbyContainers.length > 0) {
-          container = nearbyContainers[0] as StructureContainer;
-          machine.send({ type: "ASSIGN_CONTAINER", containerId: container.id });
-          memory.containerId = container.id;
+      // While harvesting, if we have any energy and container is adjacent, deposit opportunistically
+      // This enables continuous harvest -> deposit cycle without waiting to be full
+      if (container && creep.pos.isNearTo(container)) {
+        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
+          if (container.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+            creep.transfer(container, RESOURCE_ENERGY);
+          }
         }
       }
+    } else if (currentState === "depositing") {
+      comm?.say(creep, "📦");
 
-      if (container && container.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
-        creep.transfer(container, RESOURCE_ENERGY);
+      // If we have a container, try to transfer energy
+      if (container) {
+        if (creep.pos.isNearTo(container)) {
+          if (container.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+            creep.transfer(container, RESOURCE_ENERGY);
+          } else {
+            // Container is full - drop energy or transition back to harvesting
+            machine.send({ type: "CONTAINER_FULL" });
+          }
+        } else {
+          // Move to container (shouldn't happen for properly placed stationary harvesters)
+          creep.moveTo(container, { range: 1, reusePath: 50 });
+        }
+      } else {
+        // No container - just drop energy near source
+        creep.drop(RESOURCE_ENERGY);
+      }
+
+      // Check if empty and should transition back to harvesting
+      if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+        machine.send({ type: "ENERGY_EMPTY" });
+      }
+
+      // While depositing, continue harvesting if adjacent to source and not full
+      // This enables efficient parallel harvesting/depositing
+      if (source && creep.pos.isNearTo(source)) {
+        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+          creep.harvest(source);
+        }
       }
     }
 
