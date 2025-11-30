@@ -15,6 +15,7 @@ Operational guides for running, deploying, and troubleshooting the Screeps AI bo
 - [**Stats Monitoring**](stats-monitoring.html) - PTR monitoring pipeline and telemetry analysis
 - [**Profiler Usage**](profiler-usage.html) - CPU profiler configuration, retention policy, and external archival
 - [**Respawn Handling**](respawn-handling.html) - Automatic respawn detection and recovery
+- [**Death Spiral Prevention**](death-spiral-prevention.html) - Understanding and preventing workforce collapse
 
 ### Deployment & Infrastructure
 
