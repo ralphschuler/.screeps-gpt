@@ -2,7 +2,7 @@
  * Shared helper utilities for role controllers
  */
 
-import type { CreepLike } from "@runtime/types/GameContext";
+import type { CreepLike, RoomLike } from "@runtime/types/GameContext";
 import {
   asCreep,
   findMySpawns,
@@ -185,7 +185,8 @@ export function findSpawnAdjacentContainers(
   room: { find: (constant: number, opts?: unknown) => unknown[] },
   minEnergy?: number
 ): StructureContainer[] {
-  const spawns = findMySpawns(room as Parameters<typeof findMySpawns>[0]);
+  // Cast to RoomLike for type compatibility with findMySpawns helper
+  const spawns = findMySpawns(room as RoomLike);
   const containers: StructureContainer[] = [];
 
   for (const spawn of spawns) {
@@ -221,14 +222,12 @@ export function findLowEnergyTowers(
   room: { find: (constant: number, opts?: unknown) => unknown[] },
   minCapacityRatio: number = 0.5
 ): StructureTower[] {
-  return findTowers(
-    room as Parameters<typeof findTowers>[0],
-    tower => {
-      const capacity = tower.store.getCapacity(RESOURCE_ENERGY);
-      const used = tower.store.getUsedCapacity(RESOURCE_ENERGY);
-      return used < capacity * minCapacityRatio;
-    }
-  );
+  // Cast to RoomLike for type compatibility with findTowers helper
+  return findTowers(room as RoomLike, tower => {
+    const capacity = tower.store.getCapacity(RESOURCE_ENERGY);
+    const used = tower.store.getUsedCapacity(RESOURCE_ENERGY);
+    return used < capacity * minCapacityRatio;
+  });
 }
 
 /**
@@ -269,7 +268,8 @@ export function getSourceContainer(source: Source): StructureContainer | null {
 export function findSourceAdjacentContainers(room: {
   find: (constant: number, opts?: unknown) => unknown[];
 }): StructureContainer[] {
-  const sources = findAllSources(room as Parameters<typeof findAllSources>[0]);
+  // Cast to RoomLike for type compatibility with findAllSources helper
+  const sources = findAllSources(room as RoomLike);
   const containerSet = new Set<string>(); // Track unique container IDs
   const containers: StructureContainer[] = [];
 

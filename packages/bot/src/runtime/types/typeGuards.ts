@@ -43,12 +43,16 @@ export function isCreep(obj: unknown): obj is Creep {
  * Type guard to check if a CreepLike is actually a full Creep.
  * Useful when you have a CreepLike but need to ensure it has full Creep API.
  *
+ * Checks for multiple Creep-specific methods that aren't in CreepLike to reduce
+ * false positives.
+ *
  * @param creep - CreepLike object to validate
  * @returns true if the object is a full Creep
  */
 export function isFullCreep(creep: CreepLike): creep is Creep {
-  // Check for Creep-specific methods not in CreepLike
-  return "attack" in creep || "rangedAttack" in creep || "heal" in creep || "claimController" in creep;
+  // Check for multiple Creep-specific methods not in CreepLike
+  // All of these methods exist on Creep but not on CreepLike
+  return "attack" in creep && "rangedAttack" in creep && "heal" in creep && "claimController" in creep;
 }
 
 /**
@@ -181,10 +185,27 @@ export function hasStore(structure: Structure): structure is AnyStoreStructure {
 // =============================================================================
 // Room.find() Type-Safe Helpers
 // =============================================================================
+//
+// NOTE: These wrappers still use type assertions (`as`) internally because
+// the Screeps `room.find()` API returns `unknown[]` but the return types are
+// guaranteed by the Screeps engine based on the find constant used.
+//
+// These wrappers centralize type assertions in one place rather than scattering
+// `as Source[]`, `as Creep[]` throughout controller code, making it easier to:
+// - Update if the Screeps API changes
+// - Add runtime validation if needed in the future
+// - Search for and audit all type assertions
+//
+// The assertions are considered safe because:
+// 1. Screeps API guarantees specific return types for each FIND_* constant
+// 2. The find constants are compile-time constants that match the type
+// =============================================================================
 
 /**
  * Type-safe wrapper for room.find(FIND_SOURCES_ACTIVE).
  * Returns a typed array of active Source objects.
+ *
+ * Note: Uses type assertion internally as Screeps guarantees return type for FIND_SOURCES_ACTIVE.
  *
  * @param room - Room to search
  * @returns Array of active sources in the room
@@ -197,6 +218,8 @@ export function findActiveSources(room: RoomLike): Source[] {
  * Type-safe wrapper for room.find(FIND_SOURCES).
  * Returns a typed array of all Source objects.
  *
+ * Note: Uses type assertion internally as Screeps guarantees return type for FIND_SOURCES.
+ *
  * @param room - Room to search
  * @returns Array of all sources in the room
  */
@@ -207,6 +230,8 @@ export function findAllSources(room: RoomLike): Source[] {
 /**
  * Type-safe wrapper for room.find(FIND_MY_SPAWNS).
  * Returns a typed array of owned spawn structures.
+ *
+ * Note: Uses type assertion internally as Screeps guarantees return type for FIND_MY_SPAWNS.
  *
  * @param room - Room to search
  * @returns Array of owned spawns in the room
