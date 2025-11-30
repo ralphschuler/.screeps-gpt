@@ -95,6 +95,20 @@ const ATTACKERS_PER_ATTACK_FLAG = 2; // Attackers spawned per attack flag comman
 const DEFAULT_ROLE_MAXIMUM = 10;
 
 /**
+ * Roles that stay in their home room and should be spawned on a per-room basis.
+ * These roles use per-room counts instead of global counts to ensure each owned room
+ * has adequate workforce coverage.
+ */
+const ROOM_LOCAL_ROLES = new Set<string>([
+  "harvester",
+  "upgrader",
+  "builder",
+  "hauler",
+  "repairer",
+  "stationaryHarvester"
+]);
+
+/**
  * Coordinates spawning and per-tick behavior execution using individual role controllers.
  */
 @profile
@@ -452,6 +466,23 @@ export class RoleControllerManager {
       roomCreepCounts.set(roomName, (roomCreepCounts.get(roomName) ?? 0) + 1);
     }
 
+    // Pre-calculate per-room role counts for room-local roles (harvester, upgrader, builder, hauler, repairer, stationaryHarvester)
+    // Room-local roles stay in the room they were spawned in - they don't have targetRoom/homeRoom
+    // This enables per-room minimum enforcement instead of global counts
+    // Map structure: { roomName: { role: count } }
+    const roomRoleCounts = new Map<string, Map<string, number>>();
+    for (const creep of Object.values(game.creeps)) {
+      const roomName = creep.room.name;
+      const role = creep.memory.role;
+      if (!role) continue;
+
+      if (!roomRoleCounts.has(roomName)) {
+        roomRoleCounts.set(roomName, new Map<string, number>());
+      }
+      const roomRoles = roomRoleCounts.get(roomName)!;
+      roomRoles.set(role, (roomRoles.get(role) ?? 0) + 1);
+    }
+
     // Pre-calculate stationary harvester coverage per room
     // Used to determine if normal harvesters should be spawned
     // Map room name to count of stationary harvesters with assigned sources
@@ -657,14 +688,14 @@ export class RoleControllerManager {
         continue;
       }
 
-      const current = roleCounts[role] ?? 0;
+      const globalCurrent = roleCounts[role] ?? 0;
       const config = controller.getConfig();
       const roleMaximum = config.maximum ?? DEFAULT_ROLE_MAXIMUM;
       const scalingFactor = config.scalingFactor ?? 4;
-      let targetMinimum = bootstrapMinimums[role] ?? config.minimum;
+      let baseTargetMinimum = bootstrapMinimums[role] ?? config.minimum;
 
-      // Enforce maximum constraint: never exceed role maximum
-      if (current >= roleMaximum) {
+      // Enforce maximum constraint: never exceed role maximum (global cap)
+      if (globalCurrent >= roleMaximum) {
         continue; // Already at max capacity for this role
       }
 
@@ -673,26 +704,7 @@ export class RoleControllerManager {
         // Use pre-calculated claimer count to avoid iterating through all creeps again
         // Spawn one claimer per pending expansion (up to current pending count)
         const neededClaimers = pendingExpansions.length - claimersOnExpansionCount;
-        targetMinimum = Math.max(targetMinimum, Math.min(neededClaimers, roleMaximum));
-      }
-
-      // Dynamically reduce harvester minimum when stationary harvesters are active
-      // Stationary harvesters are more efficient for container-based energy logistics
-      // When they cover ≥50% of sources in any room, stop spawning normal harvesters
-      if (role === "harvester") {
-        for (const room of Object.values(game.rooms)) {
-          if (!room.controller?.my) continue;
-
-          const sources = room.find(FIND_SOURCES);
-          const stationaryCount = stationaryHarvestersByRoom.get(room.name) ?? 0;
-
-          // If stationary harvesters cover at least half the sources, don't spawn normal harvesters
-          // This allows natural attrition of existing harvesters while stationary harvesters take over
-          if (sources.length > 0 && stationaryCount >= Math.ceil(sources.length * 0.5)) {
-            targetMinimum = 0;
-            break;
-          }
-        }
+        baseTargetMinimum = Math.max(baseTargetMinimum, Math.min(neededClaimers, roleMaximum));
       }
 
       // Dynamically increase remote upgrader minimum when rooms need workforce integration
@@ -703,7 +715,7 @@ export class RoleControllerManager {
           const assigned = assignedRemoteUpgraders.get(integrationRoom.roomName) ?? 0;
           neededUpgraders += Math.max(0, UPGRADERS_PER_INTEGRATION_ROOM - assigned);
         }
-        targetMinimum = Math.max(targetMinimum, Math.min(neededUpgraders, roleMaximum));
+        baseTargetMinimum = Math.max(baseTargetMinimum, Math.min(neededUpgraders, roleMaximum));
       }
 
       // Dynamically increase remote builder minimum when rooms need workforce integration
@@ -714,7 +726,7 @@ export class RoleControllerManager {
           const assigned = assignedRemoteBuilders.get(integrationRoom.roomName) ?? 0;
           neededBuilders += Math.max(0, BUILDERS_PER_INTEGRATION_ROOM - assigned);
         }
-        targetMinimum = Math.max(targetMinimum, Math.min(neededBuilders, roleMaximum));
+        baseTargetMinimum = Math.max(baseTargetMinimum, Math.min(neededBuilders, roleMaximum));
       }
 
       // Dynamically increase dismantler minimum when integration rooms need structure clearing
@@ -725,7 +737,7 @@ export class RoleControllerManager {
           const assigned = assignedDismantlers.get(roomName) ?? 0;
           neededDismantlers += Math.max(0, DISMANTLERS_PER_INTEGRATION_ROOM - assigned);
         }
-        targetMinimum = Math.max(targetMinimum, neededDismantlers);
+        baseTargetMinimum = Math.max(baseTargetMinimum, neededDismantlers);
       }
 
       // Dynamically increase attacker minimum when attack flags are pending
@@ -736,38 +748,140 @@ export class RoleControllerManager {
           const assigned = assignedAttackersByTarget.get(attackRequest.targetRoom) ?? 0;
           neededAttackers += Math.max(0, ATTACKERS_PER_ATTACK_FLAG - assigned);
         }
-        targetMinimum = Math.max(targetMinimum, Math.min(neededAttackers, roleMaximum));
+        baseTargetMinimum = Math.max(baseTargetMinimum, Math.min(neededAttackers, roleMaximum));
       }
 
       // Dynamically reduce upgrader minimum during combat to focus on defense
       if (role === "upgrader" && isUnderCombat) {
         if (hasEmergencyPosture) {
           // Emergency: Stop spawning upgraders entirely
-          targetMinimum = 0;
+          baseTargetMinimum = 0;
         } else {
           // Alert/Defensive: Reduce upgrader minimum to 30%
-          targetMinimum = Math.max(0, Math.floor(targetMinimum * COMBAT_UPGRADER_REDUCTION_FACTOR));
+          baseTargetMinimum = Math.max(0, Math.floor(baseTargetMinimum * COMBAT_UPGRADER_REDUCTION_FACTOR));
         }
 
-        if (targetMinimum === 0 && current === 0) {
+        if (baseTargetMinimum === 0 && globalCurrent === 0) {
           continue; // Skip spawning upgraders entirely
         }
       }
 
       // Increase attacker/healer/repairer minimums during combat (capped at roleMaximum)
       if ((role === "attacker" || role === "healer") && isUnderCombat) {
-        targetMinimum = Math.min(Math.max(config.minimum, COMBAT_MIN_ATTACKERS_HEALERS), roleMaximum);
+        baseTargetMinimum = Math.min(Math.max(config.minimum, COMBAT_MIN_ATTACKERS_HEALERS), roleMaximum);
       }
       if (role === "repairer" && isUnderCombat) {
-        targetMinimum = Math.min(Math.max(config.minimum, COMBAT_MIN_REPAIRERS), roleMaximum);
+        baseTargetMinimum = Math.min(Math.max(config.minimum, COMBAT_MIN_REPAIRERS), roleMaximum);
       }
 
       // Final safety check: ensure targetMinimum never exceeds roleMaximum
-      targetMinimum = Math.min(targetMinimum, roleMaximum);
+      baseTargetMinimum = Math.min(baseTargetMinimum, roleMaximum);
 
+      // CRITICAL FIX: For room-local roles, iterate through each spawn and check per-room needs
+      // This ensures each owned room gets adequate workforce, not just the first room checked
+      if (ROOM_LOCAL_ROLES.has(role)) {
+        // Iterate through all spawns, checking each room's needs
+        for (const candidateSpawn of Object.values(game.spawns)) {
+          if (candidateSpawn.spawning) {
+            continue; // Skip spawns that are busy
+          }
+
+          const spawnRoomName = (candidateSpawn.room as Room)?.name;
+          if (!spawnRoomName) {
+            continue;
+          }
+
+          // Get per-room role count for this specific room
+          const roomRoles = roomRoleCounts.get(spawnRoomName);
+          const roomCurrent = roomRoles?.get(role) ?? 0;
+
+          // Calculate per-room target minimum
+          let targetMinimum = baseTargetMinimum;
+
+          // Room-specific adjustments for harvester (stationary harvester coverage)
+          if (role === "harvester") {
+            const room = game.rooms[spawnRoomName];
+            if (room?.controller?.my) {
+              const sources = room.find(FIND_SOURCES);
+              const stationaryCount = stationaryHarvestersByRoom.get(spawnRoomName) ?? 0;
+
+              // If stationary harvesters cover at least half the sources, don't spawn normal harvesters
+              if (sources.length > 0 && stationaryCount >= Math.ceil(sources.length * 0.5)) {
+                targetMinimum = 0;
+              }
+            }
+          }
+
+          // Task-based demand calculation for room-local roles
+          if (scalingFactor > 0) {
+            const pendingTasksInRoom = this.taskQueueManager.getTaskCountForRoom(
+              memory,
+              role,
+              spawnRoomName,
+              game.time
+            );
+            if (pendingTasksInRoom > 0) {
+              const demandBasedTarget = Math.ceil(pendingTasksInRoom / scalingFactor);
+              targetMinimum = Math.max(targetMinimum, Math.min(demandBasedTarget, roleMaximum));
+            }
+          }
+
+          // Check if this room needs more of this role
+          if (roomCurrent >= targetMinimum) {
+            continue; // This room has enough of this role
+          }
+
+          // Check global maximum before spawning
+          if ((roleCounts[role] ?? 0) >= roleMaximum) {
+            break; // Global maximum reached, stop spawning this role
+          }
+
+          // Get spawn energy details
+          const spawnEnergy = this.getSpawnEnergyDetails(candidateSpawn, isEmergency || harvesterCount === 0);
+          const energyBudget = Math.min(spawnEnergy.energyToUse, spawnEnergy.energyAvailable);
+          const roomCreepCount = roomCreepCounts.get(spawnRoomName) ?? 0;
+
+          // Generate body based on energy
+          const body = this.bodyComposer.generateBody(role, energyBudget, spawnEnergy.room, roomCreepCount);
+
+          if (body.length === 0) {
+            continue; // Not enough energy for minimum body
+          }
+
+          // Validate sufficient energy before spawning
+          const spawnCost = this.bodyComposer.calculateBodyCost(body);
+          if (spawnEnergy.energyAvailable < spawnCost) {
+            continue; // Not enough energy yet
+          }
+
+          const name = `${role}-${game.time}-${memory.creepCounter}`;
+          memory.creepCounter += 1;
+
+          const creepMemory = controller.createMemory();
+          const result = this.spawnCreepSafely(candidateSpawn, body, name, creepMemory);
+
+          if (result === OK) {
+            spawned.push(name);
+            // Update role counts to reflect the newly spawned creep
+            roleCounts[role] = (roleCounts[role] ?? 0) + 1;
+            // Update per-room counts
+            if (!roomRoleCounts.has(spawnRoomName)) {
+              roomRoleCounts.set(spawnRoomName, new Map<string, number>());
+            }
+            const updatedRoomRoles = roomRoleCounts.get(spawnRoomName)!;
+            updatedRoomRoles.set(role, (updatedRoomRoles.get(role) ?? 0) + 1);
+
+            this.logger.log?.(
+              `[RoleControllerManager] Spawned ${name} in ${spawnRoomName} (${body.length} parts, ${spawnCost} energy) - room had ${roomCurrent}/${targetMinimum} ${role}s`
+            );
+          }
+        }
+        continue; // Done with room-local role, move to next role
+      }
+
+      // For non-room-local (global) roles, use original logic
       // Early exit if current count meets base minimum (before task-based scaling)
-      // We'll check again after task-based scaling with spawn's room context
-      if (current >= targetMinimum && scalingFactor === 0) {
+      if (globalCurrent >= baseTargetMinimum && scalingFactor === 0) {
         continue;
       }
 
@@ -820,6 +934,7 @@ export class RoleControllerManager {
       // Task-based demand calculation: scale workforce based on pending tasks IN THE SPAWN'S ROOM
       // This prevents cross-room over-spawning where Room A spawns builders for Room B's tasks
       // Only count unassigned, non-expired tasks for accurate demand
+      let targetMinimum = baseTargetMinimum;
       if (scalingFactor > 0 && spawnRoomName) {
         const pendingTasksInRoom = this.taskQueueManager.getTaskCountForRoom(memory, role, spawnRoomName, game.time);
         if (pendingTasksInRoom > 0) {
@@ -829,7 +944,7 @@ export class RoleControllerManager {
       }
 
       // Check again after task-based scaling
-      if (current >= targetMinimum) {
+      if (globalCurrent >= targetMinimum) {
         continue;
       }
 

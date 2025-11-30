@@ -91,8 +91,8 @@ jobs:
         id: analyze_trends
         if: success() && steps.collect_snapshot.outcome == 'success'
         run: |
-          npx tsx packages/utilities/scripts/analyze-historical-trends.ts || \
-            echo "::warning::Historical trend analysis failed (insufficient data)"
+          npx tsx packages/utilities/scripts/analyze-historical-trends.ts \
+            || echo "::warning::Historical trend analysis failed"
         continue-on-error: true
 
       - name: Check baseline readiness

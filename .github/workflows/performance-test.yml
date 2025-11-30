@@ -180,8 +180,8 @@ jobs:
             reportContent +=
               '_See [Docker Development Guide]' +
               '(https://github.com/${{ github.repository }}/blob/' +
-              '${{ github.sha }}/packages/docs/source/docs/operations/docker-guide.md) ' +
-              'for details._';
+              '${{ github.sha }}/packages/docs/source/docs/' +
+              'operations/docker-guide.md) for details._';
 
             // Find existing comment
             const { data: comments } =
