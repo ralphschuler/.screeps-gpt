@@ -53,9 +53,17 @@ export function getLoggerConfig(): LoggerConfig {
 }
 
 /**
+ * Log context type
+ */
+export interface LogContext {
+  room?: string | undefined;
+  subsystem?: string;
+}
+
+/**
  * Format log message with optional context
  */
-function formatMessage(level: string, message: string, context?: { room?: string | undefined; subsystem?: string }): string {
+function formatMessage(level: string, message: string, context?: LogContext): string {
   const parts: string[] = [];
 
   if (globalConfig.showTimestamp) {
@@ -80,7 +88,7 @@ function formatMessage(level: string, message: string, context?: { room?: string
 /**
  * Log a debug message
  */
-export function debug(message: string, context?: { room?: string | undefined; subsystem?: string }): void {
+export function debug(message: string, context?: LogContext): void {
   if (globalConfig.level <= LogLevel.DEBUG) {
     console.log(formatMessage("DEBUG", message, context));
   }
@@ -89,7 +97,7 @@ export function debug(message: string, context?: { room?: string | undefined; su
 /**
  * Log an info message
  */
-export function info(message: string, context?: { room?: string | undefined; subsystem?: string }): void {
+export function info(message: string, context?: LogContext): void {
   if (globalConfig.level <= LogLevel.INFO) {
     console.log(formatMessage("INFO", message, context));
   }
@@ -98,7 +106,7 @@ export function info(message: string, context?: { room?: string | undefined; sub
 /**
  * Log a warning message
  */
-export function warn(message: string, context?: { room?: string | undefined; subsystem?: string }): void {
+export function warn(message: string, context?: LogContext): void {
   if (globalConfig.level <= LogLevel.WARN) {
     console.log(formatMessage("WARN", message, context));
   }
@@ -107,7 +115,7 @@ export function warn(message: string, context?: { room?: string | undefined; sub
 /**
  * Log an error message
  */
-export function error(message: string, context?: { room?: string | undefined; subsystem?: string }): void {
+export function error(message: string, context?: LogContext): void {
   if (globalConfig.level <= LogLevel.ERROR) {
     console.log(formatMessage("ERROR", message, context));
   }
@@ -125,7 +133,7 @@ export interface CpuMeasurement {
 /**
  * Measure CPU usage of a function
  */
-export function measureCpu<T>(name: string, fn: () => T, context?: { room?: string | undefined; subsystem?: string }): T {
+export function measureCpu<T>(name: string, fn: () => T, context?: LogContext): T {
   if (!globalConfig.cpuLogging) {
     return fn();
   }

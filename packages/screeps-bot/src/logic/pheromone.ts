@@ -408,22 +408,32 @@ export class PheromoneManager {
 
     const neighbors: string[] = [];
 
-    // Cardinal directions
-    neighbors.push(this.formatRoomName(wx, x, wy, y - 1)); // North
-    neighbors.push(this.formatRoomName(wx, x, wy, y + 1)); // South
-    neighbors.push(this.formatRoomName(wx, x + 1, wy, y)); // East
-    neighbors.push(this.formatRoomName(wx, x - 1, wy, y)); // West
+    // Cardinal directions - handle sector transitions
+    // North (y decreases)
+    if (y > 0) {
+      neighbors.push(`${wx}${x}${wy}${y - 1}`);
+    } else {
+      // Switch from N to S at y=0, or from S to N
+      const newWy = wy === "N" ? "S" : "N";
+      neighbors.push(`${wx}${x}${newWy}0`);
+    }
 
-    return neighbors.filter(n => n !== "");
-  }
+    // South (y increases)
+    neighbors.push(`${wx}${x}${wy}${y + 1}`);
 
-  /**
-   * Format room name from coordinates
-   */
-  private formatRoomName(wx: string, x: number, wy: string, y: number): string {
-    // Handle coordinate wrapping
-    if (x < 0 || y < 0) return "";
-    return `${wx}${x}${wy}${y}`;
+    // East (x increases)
+    neighbors.push(`${wx}${x + 1}${wy}${y}`);
+
+    // West (x decreases)
+    if (x > 0) {
+      neighbors.push(`${wx}${x - 1}${wy}${y}`);
+    } else {
+      // Switch from W to E at x=0, or from E to W
+      const newWx = wx === "W" ? "E" : "W";
+      neighbors.push(`${newWx}0${wy}${y}`);
+    }
+
+    return neighbors;
   }
 
   /**

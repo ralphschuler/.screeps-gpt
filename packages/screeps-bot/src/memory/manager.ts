@@ -17,6 +17,8 @@ import {
 
 const OVERMIND_KEY = "overmind";
 const CLUSTERS_KEY = "clusters";
+/** Screeps memory limit in bytes */
+const MEMORY_LIMIT_BYTES = 2097152; // 2MB
 
 /**
  * Memory Manager class
@@ -188,8 +190,7 @@ export class MemoryManager {
    */
   public isMemoryNearLimit(): boolean {
     const size = this.getMemorySize();
-    const limit = 2097152; // 2MB limit
-    return size > limit * 0.9;
+    return size > MEMORY_LIMIT_BYTES * 0.9;
   }
 }
 
