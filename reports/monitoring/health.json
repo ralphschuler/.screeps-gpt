@@ -1,41 +1,11 @@
 {
-  "last_successful_ping": "2025-11-30T19:03:14.907Z",
+  "last_successful_ping": "2025-11-30T22:03:08.207Z",
   "last_failed_ping": null,
   "consecutive_failures": 0,
   "health_status": "operational",
   "last_known_tick": null,
   "last_bot_status": null,
   "detection_history": [
-    {
-      "timestamp": "2025-11-29T01:28:51.084Z",
-      "status": "success",
-      "aliveness": "active"
-    },
-    {
-      "timestamp": "2025-11-29T01:30:29.244Z",
-      "status": "success",
-      "aliveness": "active"
-    },
-    {
-      "timestamp": "2025-11-29T02:14:19.569Z",
-      "status": "success",
-      "aliveness": "active"
-    },
-    {
-      "timestamp": "2025-11-29T02:59:10.997Z",
-      "status": "success",
-      "aliveness": "active"
-    },
-    {
-      "timestamp": "2025-11-29T03:28:50.338Z",
-      "status": "success",
-      "aliveness": "active"
-    },
-    {
-      "timestamp": "2025-11-29T03:48:19.233Z",
-      "status": "success",
-      "aliveness": "active"
-    },
     {
       "timestamp": "2025-11-29T04:03:33.592Z",
       "status": "success",
@@ -503,6 +473,36 @@
     },
     {
       "timestamp": "2025-11-30T19:03:14.907Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-30T19:32:24.556Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-30T20:03:07.618Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-30T20:35:45.320Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-30T21:03:03.406Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-30T21:32:53.762Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-30T22:03:08.207Z",
       "status": "success",
       "aliveness": "active"
     }
