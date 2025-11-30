@@ -352,3 +352,180 @@ function getStructureLimits(rcl: number): Record<BuildableStructureConstant, num
 
   return (limits[rcl] ?? limits[1]) as Record<BuildableStructureConstant, number>;
 }
+
+/**
+ * Get blueprint for a specific RCL (alias for getBlueprintForRCL)
+ */
+export function getBlueprint(rcl: number): Blueprint {
+  return getBlueprintForRCL(rcl);
+}
+
+/**
+ * Place construction sites from a blueprint
+ * @param room The room to place sites in
+ * @param anchor The anchor position (spawn location)
+ * @param blueprint The blueprint to use
+ * @returns Number of sites placed
+ */
+export function placeConstructionSites(room: Room, anchor: RoomPosition, blueprint: Blueprint): number {
+  const rcl = room.controller?.level ?? 1;
+  const structures = getStructuresForRCL(blueprint, rcl);
+  const terrain = room.getTerrain();
+
+  let placed = 0;
+  const existingSites = room.find(FIND_MY_CONSTRUCTION_SITES);
+  const existingStructures = room.find(FIND_STRUCTURES);
+
+  // Check current site count
+  if (existingSites.length >= 10) return 0;
+
+  // Get existing structure counts
+  const structureCounts: Record<string, number> = {};
+  for (const structure of existingStructures) {
+    const type = structure.structureType;
+    structureCounts[type] = (structureCounts[type] ?? 0) + 1;
+  }
+
+  // Add existing construction sites to counts
+  for (const site of existingSites) {
+    const type = site.structureType;
+    structureCounts[type] = (structureCounts[type] ?? 0) + 1;
+  }
+
+  const limits = getStructureLimits(rcl);
+
+  for (const s of structures) {
+    // Check if we've reached limit for this structure type
+    const currentCount = structureCounts[s.structureType] ?? 0;
+    const limit = limits[s.structureType] ?? 0;
+    if (currentCount >= limit) continue;
+
+    const x = anchor.x + s.x;
+    const y = anchor.y + s.y;
+
+    // Check bounds
+    if (x < 1 || x > 48 || y < 1 || y > 48) continue;
+
+    // Check terrain
+    if (terrain.get(x, y) === TERRAIN_MASK_WALL) continue;
+
+    // Check for existing structure/site at position
+    const existingAtPos = existingStructures.some(
+      str => str.pos.x === x && str.pos.y === y && str.structureType === s.structureType
+    );
+    if (existingAtPos) continue;
+
+    const existingSiteAtPos = existingSites.some(
+      site => site.pos.x === x && site.pos.y === y && site.structureType === s.structureType
+    );
+    if (existingSiteAtPos) continue;
+
+    // Place construction site
+    const result = room.createConstructionSite(x, y, s.structureType);
+    if (result === OK) {
+      placed++;
+      structureCounts[s.structureType] = currentCount + 1;
+
+      // Limit sites per tick to avoid CPU spikes
+      if (placed >= 3 || existingSites.length + placed >= 10) break;
+    }
+  }
+
+  // Place roads
+  if (placed < 3 && existingSites.length + placed < 10) {
+    for (const r of blueprint.roads) {
+      const x = anchor.x + r.x;
+      const y = anchor.y + r.y;
+
+      if (x < 1 || x > 48 || y < 1 || y > 48) continue;
+      if (terrain.get(x, y) === TERRAIN_MASK_WALL) continue;
+
+      const existingRoad = existingStructures.some(
+        str => str.pos.x === x && str.pos.y === y && str.structureType === STRUCTURE_ROAD
+      );
+      if (existingRoad) continue;
+
+      const existingRoadSite = existingSites.some(
+        site => site.pos.x === x && site.pos.y === y && site.structureType === STRUCTURE_ROAD
+      );
+      if (existingRoadSite) continue;
+
+      const result = room.createConstructionSite(x, y, STRUCTURE_ROAD);
+      if (result === OK) {
+        placed++;
+        if (placed >= 3 || existingSites.length + placed >= 10) break;
+      }
+    }
+  }
+
+  return placed;
+}
+
+/**
+ * Check if a position is suitable for a spawn
+ */
+export function isValidSpawnPosition(room: Room, x: number, y: number): boolean {
+  const terrain = room.getTerrain();
+
+  // Check 3x3 area around spawn position
+  for (let dx = -1; dx <= 1; dx++) {
+    for (let dy = -1; dy <= 1; dy++) {
+      const px = x + dx;
+      const py = y + dy;
+
+      if (px < 1 || px > 48 || py < 1 || py > 48) return false;
+      if (terrain.get(px, py) === TERRAIN_MASK_WALL) return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Find best spawn position for a new colony
+ */
+export function findBestSpawnPosition(room: Room): RoomPosition | null {
+  const controller = room.controller;
+  if (!controller) return null;
+
+  const sources = room.find(FIND_SOURCES);
+  const terrain = room.getTerrain();
+
+  // Calculate centroid of sources and controller
+  let sumX = controller.pos.x;
+  let sumY = controller.pos.y;
+  for (const source of sources) {
+    sumX += source.pos.x;
+    sumY += source.pos.y;
+  }
+
+  const centerX = Math.round(sumX / (sources.length + 1));
+  const centerY = Math.round(sumY / (sources.length + 1));
+
+  // Search outward from center for valid position
+  for (let radius = 0; radius < 15; radius++) {
+    for (let dx = -radius; dx <= radius; dx++) {
+      for (let dy = -radius; dy <= radius; dy++) {
+        if (Math.abs(dx) !== radius && Math.abs(dy) !== radius) continue;
+
+        const x = centerX + dx;
+        const y = centerY + dy;
+
+        if (x < 3 || x > 46 || y < 3 || y > 46) continue;
+
+        if (isValidSpawnPosition(room, x, y)) {
+          // Check distance to controller and sources is reasonable
+          const distToController = Math.max(Math.abs(x - controller.pos.x), Math.abs(y - controller.pos.y));
+          if (distToController > 20) continue;
+
+          // Check not too close to room edges
+          if (terrain.get(x, y) === TERRAIN_MASK_WALL) continue;
+
+          return new RoomPosition(x, y, room.name);
+        }
+      }
+    }
+  }
+
+  return null;
+}

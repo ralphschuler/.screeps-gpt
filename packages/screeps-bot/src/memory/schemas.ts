@@ -268,6 +268,7 @@ export interface SwarmState {
     controllerProgress: number;
     hostileCount: number;
     damageReceived: number;
+    constructionSites: number;
   };
   /** Last full update tick */
   lastUpdate: number;
@@ -308,14 +309,19 @@ export type MilitaryRole = "guard" | "healer" | "soldier" | "siegeUnit" | "haras
 export type UtilityRole = "scout" | "claimer" | "engineer" | "remoteWorker" | "linkManager" | "terminalManager";
 
 /**
- * Power creep roles
+ * Power creep roles (for PowerCreeps)
  */
 export type PowerRole = "powerQueen" | "powerWarrior";
 
 /**
+ * Power bank harvester roles (for regular creeps)
+ */
+export type PowerBankRole = "powerHarvester" | "powerCarrier";
+
+/**
  * All roles
  */
-export type CreepRole = EconomyRole | MilitaryRole | UtilityRole | PowerRole;
+export type CreepRole = EconomyRole | MilitaryRole | UtilityRole | PowerRole | PowerBankRole;
 
 /**
  * Swarm creep memory
@@ -393,7 +399,7 @@ export function createDefaultPheromones(): PheromoneState {
 /**
  * Create default swarm state
  */
-export function createDefaultSwarmState(_roomName: string): SwarmState {
+export function createDefaultSwarmState(): SwarmState {
   return {
     colonyLevel: "seedColony",
     posture: "eco",
@@ -422,7 +428,8 @@ export function createDefaultSwarmState(_roomName: string): SwarmState {
       energyTower: 0,
       controllerProgress: 0,
       hostileCount: 0,
-      damageReceived: 0
+      damageReceived: 0,
+      constructionSites: 0
     },
     lastUpdate: 0
   };

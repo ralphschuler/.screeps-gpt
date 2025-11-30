@@ -9,6 +9,8 @@
  * - Squad target prioritization
  */
 
+import { random } from "./random";
+
 /**
  * Weighted entry type
  */
@@ -18,7 +20,7 @@ export interface WeightedEntry<T> {
 }
 
 /**
- * Perform weighted random selection
+ * Perform weighted random selection (deterministic)
  * @param entries Array of {key, weight} objects
  * @returns Selected key or undefined if no valid entries
  */
@@ -37,17 +39,17 @@ export function weightedSelection<T>(entries: WeightedEntry<T>[]): T | undefined
     return undefined;
   }
 
-  // Random selection
-  let random = Math.random() * totalWeight;
+  // Deterministic random selection using seeded RNG
+  let threshold = random() * totalWeight;
 
   for (const entry of validEntries) {
-    random -= entry.weight;
-    if (random <= 0) {
+    threshold -= entry.weight;
+    if (threshold <= 0) {
       return entry.key;
     }
   }
 
-  // Fallback to last entry (shouldn't happen with proper math)
+  // Fallback to last entry (mathematical edge case with floating point)
   return validEntries[validEntries.length - 1]?.key;
 }
 

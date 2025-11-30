@@ -408,30 +408,25 @@ export class PheromoneManager {
 
     const neighbors: string[] = [];
 
-    // Cardinal directions - handle sector transitions
-    // North (y decreases)
+    // Cardinal directions only - don't cross world center (0,0)
+    // The Screeps world doesn't wrap at boundaries, rooms at X0/Y0 have no neighbors across
+    // North (y decreases in the same hemisphere)
     if (y > 0) {
       neighbors.push(`${wx}${x}${wy}${y - 1}`);
-    } else {
-      // Switch from N to S at y=0, or from S to N
-      const newWy = wy === "N" ? "S" : "N";
-      neighbors.push(`${wx}${x}${newWy}0`);
     }
+    // Note: y=0 rooms don't have neighbors across to the other hemisphere in practice
 
     // South (y increases)
     neighbors.push(`${wx}${x}${wy}${y + 1}`);
 
-    // East (x increases)
+    // East (x increases in the same hemisphere)
     neighbors.push(`${wx}${x + 1}${wy}${y}`);
 
     // West (x decreases)
     if (x > 0) {
       neighbors.push(`${wx}${x - 1}${wy}${y}`);
-    } else {
-      // Switch from W to E at x=0, or from E to W
-      const newWx = wx === "W" ? "E" : "W";
-      neighbors.push(`${newWx}0${wy}${y}`);
     }
+    // Note: x=0 rooms don't have neighbors across to the other hemisphere in practice
 
     return neighbors;
   }

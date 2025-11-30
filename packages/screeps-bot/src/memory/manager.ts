@@ -110,7 +110,7 @@ export class MemoryManager {
 
     const roomMem = Memory.rooms[roomName] as unknown as { swarm?: SwarmState };
     if (!roomMem.swarm) {
-      roomMem.swarm = createDefaultSwarmState(roomName);
+      roomMem.swarm = createDefaultSwarmState();
     }
 
     return roomMem.swarm;

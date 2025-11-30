@@ -15,6 +15,7 @@ This bot implements emergent swarm behavior inspired by ant colonies. Instead of
 3. **Cluster Layer** - Groups of rooms that coordinate resources and defense
 4. **Strategic Layer** - Empire-wide decisions for expansion and war
 5. **Agent Layer** - Individual creeps using simple heuristics for task selection
+6. **Multi-Shard Layer** - Cross-shard coordination via InterShardMemory
 
 ### Pheromone System
 
@@ -27,6 +28,7 @@ Pheromone types:
 - `war` - Combat escalation
 - `siege` - High-intensity combat
 - `logistics` - Resource distribution needs
+- `nukeTarget` - Nuke targeting priority
 
 Pheromones:
 - Decay over time (0.9-0.99 factor per update)
@@ -36,11 +38,11 @@ Pheromones:
 ### Room Lifecycle
 
 **Evolution Stages** (based on RCL):
-- `seed` - RCL 1-2: Basic survival
-- `growing` - RCL 3-4: Establishing economy
-- `developed` - RCL 5-6: Full economy
-- `fortified` - RCL 7: Defense capabilities
-- `fullyOperational` - RCL 8: Maximum potential
+- `seedColony` - RCL 1-2: Basic survival
+- `earlyExpansion` - RCL 3-4: Establishing economy
+- `economicMaturity` - RCL 5-6: Full economy
+- `fortification` - RCL 7: Defense capabilities
+- `endGame` - RCL 8: Maximum potential
 
 **Postures** (based on threat and pheromones):
 - `eco` - Economic focus
@@ -49,29 +51,42 @@ Pheromones:
 - `war` - Active combat
 - `siege` - Heavy combat
 - `evacuate` - Retreat mode
+- `nukePrep` - Preparing for nuclear strike
 
 ### Role Families
 
 **Economy:**
-- `swarmHarvester` - Energy collection
-- `swarmHauler` - Energy transport
-- `swarmBuilder` - Construction
-- `swarmUpgrader` - Controller upgrade
+- `larvaWorker` - Unified starter role (harvest/carry/build/upgrade)
+- `harvester` - Stationary miner with container/link
+- `hauler` - Transport energy/resources
+- `builder` - Construction and repair
+- `upgrader` - Controller upgrade
+- `queenCarrier` - Energy distribution (spawns, extensions, towers)
+- `mineralHarvester` - Mineral extraction
+- `depositHarvester` - Highway deposit harvesting
+- `labTech` - Lab operation and boosting
+- `factoryWorker` - Factory operation
 
 **Military:**
-- `swarmDefender` - Room defense
-- `swarmAttacker` - Offensive operations
-- `swarmHealer` - Combat support
-- `swarmRanger` - Ranged combat
+- `guard` - Melee/ranged defender
+- `healer` - Combat healer
+- `soldier` - Offensive melee/ranged
+- `siegeUnit` - Dismantler/tank
+- `harasser` - Early aggression
+- `squadMember` - Coordinated squad combat
 
 **Utility:**
-- `swarmScout` - Room exploration
-- `swarmClaimer` - Room claiming
-- `swarmRepairer` - Structure repair
+- `scout` - Room exploration and intel
+- `claimer` - Room claiming/reserving
+- `engineer` - Repairs and rampart maintenance
+- `remoteWorker` - Remote mining operations
+- `terminalManager` - Market transfers
 
 **Power:**
-- `swarmPowerHarvester` - Power bank harvesting
-- `swarmPowerCarrier` - Power transport
+- `powerHarvester` - Power bank harvesting
+- `powerCarrier` - Power transport
+- `powerQueen` - Economy-focused PowerCreep
+- `powerWarrior` - Combat-support PowerCreep
 
 ## Usage
 
@@ -79,11 +94,11 @@ Pheromones:
 import { SwarmBot } from "@ralphschuler/screeps-bot";
 
 const bot = new SwarmBot({
-  pheromoneDecayRate: 0.95,
-  pheromoneDiffusionRate: 0.3,
-  updateInterval: 5,
-  threatEscalationThreshold: 2,
-  cpuBudget: 0.8
+  enableProfiling: true,
+  enableDebugLogging: false,
+  pheromoneUpdateInterval: 5,
+  strategicUpdateInterval: 20,
+  enableVisualizations: true
 });
 
 export const loop = () => {
@@ -95,11 +110,11 @@ export const loop = () => {
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `pheromoneDecayRate` | 0.95 | Base decay rate for pheromones (0-1) |
-| `pheromoneDiffusionRate` | 0.3 | Rate at which pheromones spread to neighbors (0-1) |
-| `updateInterval` | 5 | Ticks between pheromone updates |
-| `threatEscalationThreshold` | 2 | Threat level that triggers war posture |
-| `cpuBudget` | 0.8 | Maximum CPU usage target (0-1) |
+| `enableProfiling` | `true` | Enable CPU profiling per room/subsystem |
+| `enableDebugLogging` | `false` | Enable verbose debug logging |
+| `pheromoneUpdateInterval` | `5` | Ticks between pheromone updates |
+| `strategicUpdateInterval` | `20` | Ticks between strategic layer updates |
+| `enableVisualizations` | `true` | Enable in-game visual debugging |
 
 ## API
 
@@ -116,16 +131,9 @@ bot.run();
 
 // Get statistics
 const stats = bot.getStats();
+// Returns: { rooms, creeps, gcl, gpl, bucket, avgCpu, strategic, market, multiShard }
 
-// Get room states
-const rooms = bot.getRoomStates();
-
-// Access managers for debugging
-const pheromones = bot.getPheromoneManager();
-const clusters = bot.getClusterManager();
-const strategy = bot.getStrategyManager();
-
-// Reset all state
+// Reset bot state
 bot.reset();
 ```
 
@@ -134,32 +142,59 @@ bot.reset();
 Manages pheromone signals across rooms.
 
 ```typescript
-// Emit event-triggered pheromone
-pheromoneManager.emitEventPheromone(roomState, "defense", 20);
+import { pheromoneManager } from "@ralphschuler/screeps-bot";
 
-// Get dominant pheromone type
-const dominant = pheromoneManager.getDominantPheromone(roomState.pheromones);
+// Update metrics for a room
+pheromoneManager.updateMetrics(room, swarmState);
 
-// Handle events
-pheromoneManager.onHostileDetected(roomState, hostileCount, threatLevel);
-pheromoneManager.onStructureDestroyed(roomState, STRUCTURE_SPAWN);
-pheromoneManager.onNukeDetected(roomState);
+// Update pheromones based on metrics
+pheromoneManager.updatePheromones(swarmState, room);
+
+// Apply diffusion across rooms
+pheromoneManager.applyDiffusion(roomsMap);
+
+// Event handlers
+pheromoneManager.onHostileDetected(swarmState, hostileCount, threatLevel);
+pheromoneManager.onStructureDestroyed(swarmState, STRUCTURE_SPAWN);
+pheromoneManager.onNukeDetected(swarmState);
 ```
 
-### RoomStateManager
+### MemoryManager
 
-Manages room lifecycle and posture transitions.
+Manages all memory structures.
 
 ```typescript
-// Initialize new room
-const state = roomStateManager.initializeRoom(roomName, gameRoom);
+import { memoryManager } from "@ralphschuler/screeps-bot";
 
-// Set posture manually
-roomStateManager.setPosture(roomState, "war", "Strategic command");
+// Initialize memory
+memoryManager.initialize();
 
-// Check posture
-roomStateManager.isInCombat(roomState);
-roomStateManager.isEconomyFocused(roomState);
+// Get/create swarm state for a room
+const swarm = memoryManager.getOrInitSwarmState(roomName);
+
+// Get overmind (empire-level) state
+const overmind = memoryManager.getOvermind();
+
+// Clean dead creep memory
+const cleaned = memoryManager.cleanDeadCreeps();
+```
+
+### EvolutionManager & PostureManager
+
+Manage room lifecycle and posture.
+
+```typescript
+import { evolutionManager, postureManager } from "@ralphschuler/screeps-bot";
+
+// Update evolution stage
+evolutionManager.updateEvolutionStage(swarm, room, totalOwnedRooms);
+
+// Update posture based on pheromones and danger
+postureManager.updatePosture(swarm);
+
+// Check posture properties
+postureManager.isCombatPosture(swarm.posture);
+postureManager.allowsBuilding(swarm.posture);
 ```
 
 ### ClusterManager
@@ -167,46 +202,89 @@ roomStateManager.isEconomyFocused(roomState);
 Manages room clusters for coordination.
 
 ```typescript
-// Create cluster
-const cluster = clusterManager.createCluster(coreRoom);
+import { runClusterManager } from "@ralphschuler/screeps-bot";
 
-// Add remote/forward base
-clusterManager.addRemoteRoom(clusterId, roomName);
-clusterManager.addForwardBase(clusterId, roomName);
-
-// Set specialization
-clusterManager.setSpecialization(clusterId, "mineral");
-
-// Calculate transfer needs
-const transfers = clusterManager.calculateTransferNeeds(clusterId);
+// Run cluster operations
+runClusterManager(ownedRooms, swarmsMap);
 ```
 
-### StrategyManager
+### MarketManager
 
-Handles empire-wide strategic decisions.
+Handles market trading operations.
 
 ```typescript
-// Add expansion target
-strategyManager.addExpansionTarget(roomName, sources, distance, hasEnemy, terrain);
+import { runMarketManager, getMarketSummary } from "@ralphschuler/screeps-bot";
 
-// Add war target
-strategyManager.addWarTarget(playerName, rooms, priority);
+// Run market operations
+runMarketManager(ownedRooms, swarmsMap);
 
-// Escalate/de-escalate war
-strategyManager.escalateWar(playerName);
-strategyManager.deescalateWar(playerName);
+// Get market summary
+const summary = getMarketSummary();
+// Returns: { credits, lastTrades, pendingBuys, pendingSells }
+```
 
-// Get top expansion targets
-const targets = strategyManager.getTopExpansionTargets(5);
+### StrategicLayer (Overmind)
+
+Empire-wide strategic decisions.
+
+```typescript
+import { runStrategicLayer, getStrategicStatus } from "@ralphschuler/screeps-bot";
+
+// Run strategic evaluation
+runStrategicLayer(ownedRooms, swarmsMap);
+
+// Get strategic status
+const status = getStrategicStatus();
+// Returns: { warTargets, claimQueue, nukeCandidates, overallPosture }
+```
+
+### Multi-Shard (MetaLayer)
+
+Cross-shard coordination.
+
+```typescript
+import { runMetaLayer, getMultiShardStatus } from "@ralphschuler/screeps-bot";
+
+// Run multi-shard operations
+runMetaLayer(ownedRooms, swarmsMap);
+
+// Get multi-shard status
+const status = getMultiShardStatus();
+// Returns: { currentShard, shardRole, knownShards, portalCount }
 ```
 
 ## Multi-Shard Support
 
-The architecture is designed to support multi-shard operation with:
+The architecture supports multi-shard operation with:
 - Shard roles (core, frontier, resource, backup)
 - Inter-shard memory for coordination
 - Portal-based colonization
 - Cross-shard resource balancing
+- Automatic shard health monitoring
+
+## Implementation Phases
+
+This bot is implemented in phases:
+
+- **Phase 0**: Project skeleton & infrastructure ✓
+- **Phase 1**: Memory schemas ✓
+- **Phase 2**: Pheromone system ✓
+- **Phase 3**: Evolution & posture ✓
+- **Phase 4-5**: Utilities & blueprints ✓
+- **Phase 6**: Core loop & scheduling ✓
+- **Phase 7**: Creep role families ✓
+- **Phase 8**: Spawn logic ✓
+- **Phase 9**: Expansion & remote mining ✓
+- **Phase 10**: Defense & war ✓
+- **Phase 11**: Nuke system ✓
+- **Phase 12**: Power creep integration ✓
+- **Phase 13**: Cluster logic ✓
+- **Phase 14**: Strategic layer ✓
+- **Phase 15**: Multi-shard meta layer ✓
+- **Phase 16**: Resilience & respawn ✓
+- **Phase 17**: Configuration & tuning ✓
+- **Phase 18**: Testing & visualization ✓
+- **Phase 19**: Market integration ✓
 
 ## License
 

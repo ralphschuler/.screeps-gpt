@@ -28,7 +28,7 @@ describe("Memory Schemas", () => {
 
   describe("createDefaultSwarmState", () => {
     it("should create swarm state with proper defaults", () => {
-      const state = createDefaultSwarmState("W1N1");
+      const state = createDefaultSwarmState();
       expect(state.colonyLevel).toBe("seedColony");
       expect(state.posture).toBe("eco");
       expect(state.danger).toBe(0);
@@ -37,7 +37,7 @@ describe("Memory Schemas", () => {
     });
 
     it("should create swarm state with missing structures flags", () => {
-      const state = createDefaultSwarmState("W1N1");
+      const state = createDefaultSwarmState();
       expect(state.missingStructures.spawn).toBe(true);
       expect(state.missingStructures.storage).toBe(true);
       expect(state.missingStructures.terminal).toBe(true);
@@ -45,7 +45,7 @@ describe("Memory Schemas", () => {
     });
 
     it("should create swarm state with empty metrics", () => {
-      const state = createDefaultSwarmState("W1N1");
+      const state = createDefaultSwarmState();
       expect(state.metrics.energyHarvested).toBe(0);
       expect(state.metrics.controllerProgress).toBe(0);
       expect(state.metrics.hostileCount).toBe(0);

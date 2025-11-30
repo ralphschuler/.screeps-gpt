@@ -16,6 +16,7 @@ import { memoryManager } from "../memory/manager";
 import { pheromoneManager } from "../logic/pheromone";
 import { evolutionManager, postureManager, calculateDangerLevel } from "../logic/evolution";
 import { profiler } from "./profiler";
+import { getBlueprint, placeConstructionSites } from "../layouts/blueprints";
 
 /**
  * Room node configuration
@@ -31,6 +32,8 @@ export interface RoomNodeConfig {
   enableConstruction: boolean;
   /** Enable tower control */
   enableTowers: boolean;
+  /** Enable resource processing */
+  enableProcessing: boolean;
 }
 
 const DEFAULT_CONFIG: RoomNodeConfig = {
@@ -38,7 +41,8 @@ const DEFAULT_CONFIG: RoomNodeConfig = {
   enableEvolution: true,
   enableSpawning: true,
   enableConstruction: true,
-  enableTowers: true
+  enableTowers: true,
+  enableProcessing: true
 };
 
 /**
@@ -90,19 +94,19 @@ export class RoomNode {
       pheromoneManager.updatePheromones(swarm, room);
     }
 
-    // Run spawn logic
-    if (this.config.enableSpawning) {
-      this.runSpawnLogic(room, swarm);
-    }
-
     // Run tower control
     if (this.config.enableTowers) {
       this.runTowerControl(room, swarm);
     }
 
-    // Run construction
-    if (this.config.enableConstruction && postureManager.allowsBuilding(swarm.posture)) {
+    // Run construction (every 10 ticks)
+    if (this.config.enableConstruction && Game.time % 10 === 0 && postureManager.allowsBuilding(swarm.posture)) {
       this.runConstruction(room, swarm);
+    }
+
+    // Run resource processing (every 5 ticks)
+    if (this.config.enableProcessing && Game.time % 5 === 0) {
+      this.runResourceProcessing(room, swarm);
     }
 
     profiler.endRoom(this.roomName, cpuStart);
@@ -134,14 +138,6 @@ export class RoomNode {
     }
 
     swarm.danger = newDanger;
-  }
-
-  /**
-   * Run spawn logic
-   */
-  private runSpawnLogic(_room: Room, _swarm: SwarmState): void {
-    // Spawn logic will be implemented in roles module
-    // For now, just a placeholder
   }
 
   /**
@@ -247,11 +243,182 @@ export class RoomNode {
   }
 
   /**
-   * Run construction logic
+   * Run construction logic using blueprints
    */
-  private runConstruction(_room: Room, _swarm: SwarmState): void {
-    // Construction logic will be implemented with blueprints
-    // For now, just a placeholder
+  private runConstruction(room: Room, swarm: SwarmState): void {
+    // Check global construction site limit
+    const existingSites = room.find(FIND_MY_CONSTRUCTION_SITES);
+    if (existingSites.length >= 10) return;
+
+    // Get blueprint for current RCL
+    const rcl = room.controller?.level ?? 1;
+    const blueprint = getBlueprint(rcl);
+    if (!blueprint) return;
+
+    // Find spawn to use as anchor
+    const spawn = room.find(FIND_MY_SPAWNS)[0];
+    if (!spawn) {
+      // No spawn, place one if we're a new colony
+      if (rcl === 1 && existingSites.length === 0) {
+        // Find a suitable position for first spawn
+        const controller = room.controller;
+        if (controller) {
+          const sources = room.find(FIND_SOURCES);
+          // Find position between controller and sources
+          const avgX = Math.round(
+            (controller.pos.x + sources.reduce((sum, s) => sum + s.pos.x, 0)) / (sources.length + 1)
+          );
+          const avgY = Math.round(
+            (controller.pos.y + sources.reduce((sum, s) => sum + s.pos.y, 0)) / (sources.length + 1)
+          );
+
+          // Check if position is buildable
+          const terrain = room.getTerrain();
+          if (terrain.get(avgX, avgY) !== TERRAIN_MASK_WALL) {
+            room.createConstructionSite(avgX, avgY, STRUCTURE_SPAWN);
+          }
+        }
+      }
+      return;
+    }
+
+    // Place construction sites using blueprint
+    const placed = placeConstructionSites(room, spawn.pos, blueprint);
+
+    // Update metrics
+    swarm.metrics.constructionSites = existingSites.length + placed;
+  }
+
+  /**
+   * Run resource processing (labs, factory, power spawn)
+   */
+  private runResourceProcessing(room: Room, _swarm: SwarmState): void {
+    const rcl = room.controller?.level ?? 0;
+
+    // Run labs (RCL 6+)
+    if (rcl >= 6) {
+      this.runLabs(room);
+    }
+
+    // Run factory (RCL 7+)
+    if (rcl >= 7) {
+      this.runFactory(room);
+    }
+
+    // Run power spawn (RCL 8)
+    if (rcl >= 8) {
+      this.runPowerSpawn(room);
+    }
+
+    // Run links
+    this.runLinks(room);
+  }
+
+  /**
+   * Run lab reactions
+   */
+  private runLabs(room: Room): void {
+    const labs = room.find(FIND_MY_STRUCTURES, {
+      filter: s => s.structureType === STRUCTURE_LAB
+    }) as StructureLab[];
+
+    if (labs.length < 3) return;
+
+    // Use first 2 labs as input, rest as output
+    const inputLabs = labs.slice(0, 2);
+    const outputLabs = labs.slice(2);
+
+    const lab1 = inputLabs[0];
+    const lab2 = inputLabs[1];
+
+    if (!lab1 || !lab2) return;
+
+    // Run reactions in output labs
+    for (const lab of outputLabs) {
+      if (lab.cooldown === 0) {
+        lab.runReaction(lab1, lab2);
+      }
+    }
+  }
+
+  /**
+   * Run factory production
+   */
+  private runFactory(room: Room): void {
+    const factory = room.find(FIND_MY_STRUCTURES, {
+      filter: s => s.structureType === STRUCTURE_FACTORY
+    })[0] as StructureFactory | undefined;
+
+    if (!factory || factory.cooldown > 0) return;
+
+    // Simple commodity production - compress minerals
+    const minerals: MineralConstant[] = [
+      RESOURCE_UTRIUM,
+      RESOURCE_LEMERGIUM,
+      RESOURCE_KEANIUM,
+      RESOURCE_ZYNTHIUM,
+      RESOURCE_HYDROGEN,
+      RESOURCE_OXYGEN
+    ];
+
+    for (const mineral of minerals) {
+      if (factory.store.getUsedCapacity(mineral) >= 500 && factory.store.getUsedCapacity(RESOURCE_ENERGY) >= 200) {
+        // Try to produce compressed bar
+        const result = factory.produce(RESOURCE_UTRIUM_BAR); // Note: This is simplified
+        if (result === OK) break;
+      }
+    }
+  }
+
+  /**
+   * Run power spawn
+   */
+  private runPowerSpawn(room: Room): void {
+    const powerSpawn = room.find(FIND_MY_STRUCTURES, {
+      filter: s => s.structureType === STRUCTURE_POWER_SPAWN
+    })[0] as StructurePowerSpawn | undefined;
+
+    if (!powerSpawn) return;
+
+    // Process power if we have resources
+    if (
+      powerSpawn.store.getUsedCapacity(RESOURCE_POWER) >= 1 &&
+      powerSpawn.store.getUsedCapacity(RESOURCE_ENERGY) >= 50
+    ) {
+      powerSpawn.processPower();
+    }
+  }
+
+  /**
+   * Run link transfers
+   */
+  private runLinks(room: Room): void {
+    const links = room.find(FIND_MY_STRUCTURES, {
+      filter: s => s.structureType === STRUCTURE_LINK
+    }) as StructureLink[];
+
+    if (links.length < 2) return;
+
+    const storage = room.storage;
+    if (!storage) return;
+
+    // Find storage link (within 2 of storage)
+    const storageLink = links.find(l => l.pos.getRangeTo(storage) <= 2);
+    if (!storageLink) return;
+
+    // Find source links (links near sources)
+    const sources = room.find(FIND_SOURCES);
+    const sourceLinks = links.filter(l => sources.some(s => l.pos.getRangeTo(s) <= 2));
+
+    // Transfer from source links to storage link
+    for (const sourceLink of sourceLinks) {
+      if (sourceLink.store.getUsedCapacity(RESOURCE_ENERGY) >= 400 && sourceLink.cooldown === 0) {
+        if (storageLink.store.getFreeCapacity(RESOURCE_ENERGY) >= 400) {
+          sourceLink.transferEnergy(storageLink);
+          break;
+        }
+      }
+    }
   }
 }
 
