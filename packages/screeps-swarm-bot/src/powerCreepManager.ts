@@ -25,7 +25,9 @@ export function runPowerCreepCombat(powerCreep: PowerCreep): void {
   const hostiles = powerCreep.room.find(FIND_HOSTILE_CREEPS);
   if (hostiles.length === 0) return;
   if (powerCreep.powers[PWR_OPERATE_TOWER]) {
-    const tower = powerCreep.room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER } })[0] as StructureTower | undefined;
+    const tower = powerCreep.room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER } })[0] as
+      | StructureTower
+      | undefined;
     if (tower) {
       powerCreep.usePower(PWR_OPERATE_TOWER, tower);
     }

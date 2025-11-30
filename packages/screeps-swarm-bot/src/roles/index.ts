@@ -153,7 +153,7 @@ function deliverResources(creep: Creep): void {
   const terminal = creep.room.terminal;
   const storage = creep.room.storage;
   const preferTerminal = resourceType !== RESOURCE_ENERGY && terminal;
-  const target = preferTerminal ? terminal : storage ?? terminal;
+  const target = preferTerminal ? terminal : (storage ?? terminal);
   if (!target) return;
   if (creep.transfer(target, resourceType) === ERR_NOT_IN_RANGE) {
     creep.moveTo(target, { reusePath: 4 });
@@ -226,7 +226,8 @@ function runQueenCarrier(creep: Creep): void {
       return;
     }
     const source = creep.pos.findClosestByRange(FIND_STRUCTURES, {
-      filter: s => (s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_STORAGE) &&
+      filter: s =>
+        (s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_STORAGE) &&
         (s as StructureContainer | StructureStorage).store.getUsedCapacity(RESOURCE_ENERGY) > 200
     }) as StructureContainer | StructureStorage | null;
     if (source) {
@@ -308,7 +309,10 @@ function runTerminalManager(creep: Creep): void {
   }
 
   if (creep.store.getUsedCapacity() === 0) {
-    if (terminal.store.getUsedCapacity(RESOURCE_ENERGY) < 15000 && storage.store.getUsedCapacity(RESOURCE_ENERGY) > 20000) {
+    if (
+      terminal.store.getUsedCapacity(RESOURCE_ENERGY) < 15000 &&
+      storage.store.getUsedCapacity(RESOURCE_ENERGY) > 20000
+    ) {
       if (withdrawEnergy(creep, storage) === ERR_NOT_IN_RANGE) creep.moveTo(storage, { reusePath: 5 });
       return;
     }
@@ -328,7 +332,8 @@ function runTerminalManager(creep: Creep): void {
     | undefined;
   if (!resourceType) return;
 
-  const target = resourceType === RESOURCE_ENERGY && terminal.store.getUsedCapacity(RESOURCE_ENERGY) > 60000 ? storage : terminal;
+  const target =
+    resourceType === RESOURCE_ENERGY && terminal.store.getUsedCapacity(RESOURCE_ENERGY) > 60000 ? storage : terminal;
   if (creep.transfer(target, resourceType) === ERR_NOT_IN_RANGE) {
     creep.moveTo(target, { reusePath: 4 });
   }

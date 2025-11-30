@@ -31,8 +31,9 @@ export class SwarmMetaProcess {
   }
 
   private computeEconomyIndex(ctx: SwarmProcessContext): number {
-    const storages = Object.values(ctx.game.rooms)
-      .map(room => room.storage?.store.getUsedCapacity(RESOURCE_ENERGY) ?? 0);
+    const storages = Object.values(ctx.game.rooms).map(
+      room => room.storage?.store.getUsedCapacity(RESOURCE_ENERGY) ?? 0
+    );
     if (storages.length === 0) return 0;
     return Math.round(storages.reduce((sum, value) => sum + value, 0) / storages.length);
   }

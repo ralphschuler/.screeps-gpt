@@ -1,6 +1,11 @@
 import { process } from "@ralphschuler/screeps-kernel";
 import { Logger } from "@ralphschuler/screeps-logger";
-import { scheduleNextPowerLoop, shouldRunPowerLoop, runPowerCreepCombat, runPowerCreepEconomy } from "../powerCreepManager.js";
+import {
+  scheduleNextPowerLoop,
+  shouldRunPowerLoop,
+  runPowerCreepCombat,
+  runPowerCreepEconomy
+} from "../powerCreepManager.js";
 import type { SwarmProcessContext } from "../types.js";
 
 @process({ name: "SwarmPowerProcess", priority: 70, singleton: true })

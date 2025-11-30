@@ -16,9 +16,12 @@ export class SwarmRallyProcess {
 
     for (const [roomName, roomMemory] of Object.entries(swarm.rooms)) {
       const isFrontline =
-        roomMemory.danger >= DANGER_THRESHOLDS.underAttack ||
-        roomMemory.pheromones.war >= RALLY_WAR_THRESHOLD;
-      const rallyTarget = isFrontline ? roomName : primaryTarget && primaryTarget !== roomName ? primaryTarget : undefined;
+        roomMemory.danger >= DANGER_THRESHOLDS.underAttack || roomMemory.pheromones.war >= RALLY_WAR_THRESHOLD;
+      const rallyTarget = isFrontline
+        ? roomName
+        : primaryTarget && primaryTarget !== roomName
+          ? primaryTarget
+          : undefined;
       if (rallyTarget) {
         roomMemory.rallyTarget = rallyTarget;
         rallies[roomName] = rallyTarget;

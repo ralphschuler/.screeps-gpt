@@ -58,7 +58,7 @@ export class SwarmRoomProcess {
     const roomMem = room.memory as { energyIncome?: number; energySpend?: number };
     const metricsUpdate: Partial<SwarmRoomMetrics> = {
       hostilesEma: room.find(FIND_HOSTILE_CREEPS).length,
-      controllerProgressEma: room.controller?.progress ?? 0,
+      controllerProgressEma: room.controller?.progress ?? 0
     };
     if (roomMem.energyIncome !== undefined) metricsUpdate.harvestedEma = roomMem.energyIncome;
     if (roomMem.energySpend !== undefined) metricsUpdate.spendEma = roomMem.energySpend;
@@ -98,14 +98,14 @@ export class SwarmRoomProcess {
   ): void {
     const mineral = room.find(FIND_MINERALS)[0];
     const deposits = room.find(FIND_DEPOSITS);
-    
+
     let controllerInfo: { level: number; owner?: string; reserver?: string } | undefined;
     if (room.controller) {
       controllerInfo = { level: room.controller.level };
       if (room.controller.owner?.username) controllerInfo.owner = room.controller.owner.username;
       if (room.controller.reservation?.username) controllerInfo.reserver = room.controller.reservation.username;
     }
-    
+
     const intel: import("../types.js").SwarmIntelRoom = {
       sources: room.find(FIND_SOURCES).length,
       deposits: deposits.map(dep => ({ type: dep.depositType, cooldown: dep.lastCooldown, decay: dep.ticksToDecay })),
@@ -126,7 +126,7 @@ export class SwarmRoomProcess {
       factory: room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_FACTORY } }).length === 0,
       extractor: room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_EXTRACTOR } }).length === 0,
       powerSpawn: room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_POWER_SPAWN } }).length === 0,
-      observer: room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_OBSERVER } }).length === 0,
+      observer: room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_OBSERVER } }).length === 0
     };
   }
 
@@ -180,7 +180,9 @@ export class SwarmRoomProcess {
     const weights = {
       ...postureWeights,
       claimAnt:
-        roomMemory.pheromones.expand >= MIN_EXPAND_SIGNAL ? postureWeights["claimAnt"] ?? roomMemory.pheromones.expand : 0,
+        roomMemory.pheromones.expand >= MIN_EXPAND_SIGNAL
+          ? (postureWeights["claimAnt"] ?? roomMemory.pheromones.expand)
+          : 0
     } as Record<SwarmRole, number>;
 
     const entries = Object.entries(weights)
@@ -193,7 +195,10 @@ export class SwarmRoomProcess {
     this.memoryManager.stampSpawnProfile(roomMemory, ctx.game.time);
   }
 
-  private diffuseNeighborSignals(swarmMemory: ReturnType<SwarmMemoryManager["getOrInit"]>, ctx: SwarmProcessContext): void {
+  private diffuseNeighborSignals(
+    swarmMemory: ReturnType<SwarmMemoryManager["getOrInit"]>,
+    ctx: SwarmProcessContext
+  ): void {
     for (const roomName of Object.keys(ctx.game.rooms)) {
       const exits = Game.map.describeExits(roomName);
       if (!exits) continue;

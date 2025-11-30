@@ -1,7 +1,7 @@
 /**
  * Decision trees for all swarm creep roles.
  * Uses the xtree library for composable behavior trees.
- * 
+ *
  * @packageDocumentation
  */
 
@@ -16,8 +16,7 @@ const shouldMoveToTarget = (ctx: SwarmCreepContext): boolean =>
   ctx.targetRoom !== undefined && ctx.creep.room.name !== ctx.targetRoom;
 
 // Helper to check if creep should move to home room
-const shouldMoveToHome = (ctx: SwarmCreepContext): boolean =>
-  ctx.creep.room.name !== ctx.homeRoom;
+const shouldMoveToHome = (ctx: SwarmCreepContext): boolean => ctx.creep.room.name !== ctx.homeRoom;
 
 // ============ Economy Role Trees ============
 
@@ -26,14 +25,17 @@ const shouldMoveToHome = (ctx: SwarmCreepContext): boolean =>
  * harvest → build → upgrade
  */
 export const larvaWorkerTree = builder.build(
-  builder.switch([
-    { condition: cond.hasEnemies, node: builder.leaf({ type: "flee" }) },
-    { 
-      condition: ctx => cond.hasFreeCapacity(ctx) && cond.hasEnergySources(ctx),
-      node: builder.leaf({ type: "harvest" })
-    },
-    { condition: cond.hasConstructionSites, node: builder.leaf({ type: "build" }) }
-  ], builder.leaf({ type: "upgrade" }))
+  builder.switch(
+    [
+      { condition: cond.hasEnemies, node: builder.leaf({ type: "flee" }) },
+      {
+        condition: ctx => cond.hasFreeCapacity(ctx) && cond.hasEnergySources(ctx),
+        node: builder.leaf({ type: "harvest" })
+      },
+      { condition: cond.hasConstructionSites, node: builder.leaf({ type: "build" }) }
+    ],
+    builder.leaf({ type: "upgrade" })
+  )
 );
 
 /**
@@ -42,13 +44,16 @@ export const larvaWorkerTree = builder.build(
  */
 builder.reset();
 export const harvesterTree = builder.build(
-  builder.switch([
-    {
-      condition: ctx => !cond.isInTargetRoom(ctx),
-      node: builder.leaf({ type: "moveTo", target: "targetRoom" })
-    },
-    { condition: cond.hasFreeCapacity, node: builder.leaf({ type: "harvest" }) }
-  ], builder.leaf({ type: "drop" }))
+  builder.switch(
+    [
+      {
+        condition: ctx => !cond.isInTargetRoom(ctx),
+        node: builder.leaf({ type: "moveTo", target: "targetRoom" })
+      },
+      { condition: cond.hasFreeCapacity, node: builder.leaf({ type: "harvest" }) }
+    ],
+    builder.leaf({ type: "drop" })
+  )
 );
 
 /**
@@ -56,13 +61,16 @@ export const harvesterTree = builder.build(
  */
 builder.reset();
 export const haulerTree = builder.build(
-  builder.switch([
-    {
-      condition: ctx => cond.isEmpty(ctx) && (cond.containersHaveEnergy(ctx) || cond.storageHasEnergy()(ctx)),
-      node: builder.leaf({ type: "withdraw" })
-    },
-    { condition: ctx => cond.hasEnergy(ctx), node: builder.leaf({ type: "transfer" }) }
-  ], builder.leaf({ type: "idle" }))
+  builder.switch(
+    [
+      {
+        condition: ctx => cond.isEmpty(ctx) && (cond.containersHaveEnergy(ctx) || cond.storageHasEnergy()(ctx)),
+        node: builder.leaf({ type: "withdraw" })
+      },
+      { condition: ctx => cond.hasEnergy(ctx), node: builder.leaf({ type: "transfer" }) }
+    ],
+    builder.leaf({ type: "idle" })
+  )
 );
 
 /**
@@ -70,16 +78,15 @@ export const haulerTree = builder.build(
  */
 builder.reset();
 export const upgraderTree = builder.build(
-  builder.switch([
-    {
-      condition: ctx => cond.isEmpty(ctx) && (cond.storageHasEnergy()(ctx) || cond.hasEnergySources(ctx)),
-      node: builder.if(
-        cond.storageHasEnergy(),
-        builder.leaf({ type: "withdraw" }),
-        builder.leaf({ type: "harvest" })
-      )
-    }
-  ], builder.leaf({ type: "upgrade" }))
+  builder.switch(
+    [
+      {
+        condition: ctx => cond.isEmpty(ctx) && (cond.storageHasEnergy()(ctx) || cond.hasEnergySources(ctx)),
+        node: builder.if(cond.storageHasEnergy(), builder.leaf({ type: "withdraw" }), builder.leaf({ type: "harvest" }))
+      }
+    ],
+    builder.leaf({ type: "upgrade" })
+  )
 );
 
 /**
@@ -87,13 +94,16 @@ export const upgraderTree = builder.build(
  */
 builder.reset();
 export const foragerAntTree = builder.build(
-  builder.switch([
-    {
-      condition: ctx => shouldMoveToTarget(ctx) && cond.hasFreeCapacity(ctx),
-      node: builder.leaf({ type: "moveTo", target: "targetRoom" })
-    },
-    { condition: cond.hasFreeCapacity, node: builder.leaf({ type: "harvest" }) }
-  ], builder.leaf({ type: "transfer" }))
+  builder.switch(
+    [
+      {
+        condition: ctx => shouldMoveToTarget(ctx) && cond.hasFreeCapacity(ctx),
+        node: builder.leaf({ type: "moveTo", target: "targetRoom" })
+      },
+      { condition: cond.hasFreeCapacity, node: builder.leaf({ type: "harvest" }) }
+    ],
+    builder.leaf({ type: "transfer" })
+  )
 );
 
 /**
@@ -101,17 +111,16 @@ export const foragerAntTree = builder.build(
  */
 builder.reset();
 export const builderAntTree = builder.build(
-  builder.switch([
-    {
-      condition: ctx => cond.isEmpty(ctx),
-      node: builder.if(
-        cond.storageHasEnergy(),
-        builder.leaf({ type: "withdraw" }),
-        builder.leaf({ type: "harvest" })
-      )
-    },
-    { condition: cond.hasConstructionSites, node: builder.leaf({ type: "build" }) }
-  ], builder.leaf({ type: "upgrade" }))
+  builder.switch(
+    [
+      {
+        condition: ctx => cond.isEmpty(ctx),
+        node: builder.if(cond.storageHasEnergy(), builder.leaf({ type: "withdraw" }), builder.leaf({ type: "harvest" }))
+      },
+      { condition: cond.hasConstructionSites, node: builder.leaf({ type: "build" }) }
+    ],
+    builder.leaf({ type: "upgrade" })
+  )
 );
 
 /**
@@ -119,24 +128,27 @@ export const builderAntTree = builder.build(
  */
 builder.reset();
 export const queenCarrierTree = builder.build(
-  builder.switch([
-    {
-      condition: ctx => !cond.hasEnergy(ctx) && shouldMoveToHome(ctx),
-      node: builder.leaf({ type: "moveTo", target: "homeRoom" })
-    },
-    {
-      condition: ctx => !cond.hasEnergy(ctx),
-      node: builder.if(
-        cond.containersHaveEnergy,
-        builder.leaf({ type: "withdraw" }),
-        builder.leaf({ type: "harvest" })
-      )
-    },
-    {
-      condition: ctx => cond.hasEnergy(ctx) && shouldMoveToTarget(ctx),
-      node: builder.leaf({ type: "moveTo", target: "targetRoom" })
-    }
-  ], builder.leaf({ type: "transfer" }))
+  builder.switch(
+    [
+      {
+        condition: ctx => !cond.hasEnergy(ctx) && shouldMoveToHome(ctx),
+        node: builder.leaf({ type: "moveTo", target: "homeRoom" })
+      },
+      {
+        condition: ctx => !cond.hasEnergy(ctx),
+        node: builder.if(
+          cond.containersHaveEnergy,
+          builder.leaf({ type: "withdraw" }),
+          builder.leaf({ type: "harvest" })
+        )
+      },
+      {
+        condition: ctx => cond.hasEnergy(ctx) && shouldMoveToTarget(ctx),
+        node: builder.leaf({ type: "moveTo", target: "targetRoom" })
+      }
+    ],
+    builder.leaf({ type: "transfer" })
+  )
 );
 
 /**
@@ -144,17 +156,23 @@ export const queenCarrierTree = builder.build(
  */
 builder.reset();
 export const mineralHarvesterTree = builder.build(
-  builder.switch([
-    {
-      condition: ctx => !cond.isInTargetRoom(ctx),
-      node: builder.leaf({ type: "moveTo", target: "targetRoom" })
-    },
-    {
-      condition: ctx => cond.isFull(ctx) || !cond.hasMinerals(ctx),
-      node: builder.leaf({ type: "transfer" })
-    },
-    { condition: ctx => cond.hasExtractor(ctx) && cond.hasMinerals(ctx), node: builder.leaf({ type: "harvestMineral" }) }
-  ], builder.leaf({ type: "transfer" }))
+  builder.switch(
+    [
+      {
+        condition: ctx => !cond.isInTargetRoom(ctx),
+        node: builder.leaf({ type: "moveTo", target: "targetRoom" })
+      },
+      {
+        condition: ctx => cond.isFull(ctx) || !cond.hasMinerals(ctx),
+        node: builder.leaf({ type: "transfer" })
+      },
+      {
+        condition: ctx => cond.hasExtractor(ctx) && cond.hasMinerals(ctx),
+        node: builder.leaf({ type: "harvestMineral" })
+      }
+    ],
+    builder.leaf({ type: "transfer" })
+  )
 );
 
 /**
@@ -162,17 +180,20 @@ export const mineralHarvesterTree = builder.build(
  */
 builder.reset();
 export const depositHarvesterTree = builder.build(
-  builder.switch([
-    {
-      condition: shouldMoveToTarget,
-      node: builder.leaf({ type: "moveTo", target: "targetRoom" })
-    },
-    {
-      condition: ctx => cond.isFull(ctx) || !cond.hasDeposits(ctx) || !cond.depositCooldownOk()(ctx),
-      node: builder.leaf({ type: "transfer" })
-    },
-    { condition: cond.hasDeposits, node: builder.leaf({ type: "harvestDeposit" }) }
-  ], builder.leaf({ type: "transfer" }))
+  builder.switch(
+    [
+      {
+        condition: shouldMoveToTarget,
+        node: builder.leaf({ type: "moveTo", target: "targetRoom" })
+      },
+      {
+        condition: ctx => cond.isFull(ctx) || !cond.hasDeposits(ctx) || !cond.depositCooldownOk()(ctx),
+        node: builder.leaf({ type: "transfer" })
+      },
+      { condition: cond.hasDeposits, node: builder.leaf({ type: "harvestDeposit" }) }
+    ],
+    builder.leaf({ type: "transfer" })
+  )
 );
 
 /**
@@ -180,9 +201,10 @@ export const depositHarvesterTree = builder.build(
  */
 builder.reset();
 export const terminalManagerTree = builder.build(
-  builder.switch([
-    { condition: ctx => !cond.hasTerminal(ctx), node: builder.leaf({ type: "idle" }) }
-  ], builder.leaf({ type: "manageTerminal" }))
+  builder.switch(
+    [{ condition: ctx => !cond.hasTerminal(ctx), node: builder.leaf({ type: "idle" }) }],
+    builder.leaf({ type: "manageTerminal" })
+  )
 );
 
 /**
@@ -190,10 +212,13 @@ export const terminalManagerTree = builder.build(
  */
 builder.reset();
 export const linkManagerTree = builder.build(
-  builder.switch([
-    { condition: ctx => cond.isEmpty(ctx), node: builder.leaf({ type: "withdraw" }) },
-    { condition: cond.linksNeedEnergy, node: builder.leaf({ type: "manageLink" }) }
-  ], builder.leaf({ type: "transfer" }))
+  builder.switch(
+    [
+      { condition: ctx => cond.isEmpty(ctx), node: builder.leaf({ type: "withdraw" }) },
+      { condition: cond.linksNeedEnergy, node: builder.leaf({ type: "manageLink" }) }
+    ],
+    builder.leaf({ type: "transfer" })
+  )
 );
 
 /**
@@ -201,10 +226,13 @@ export const linkManagerTree = builder.build(
  */
 builder.reset();
 export const factoryWorkerTree = builder.build(
-  builder.switch([
-    { condition: ctx => cond.isEmpty(ctx), node: builder.leaf({ type: "withdraw" }) },
-    { condition: cond.factoryNeedsEnergy, node: builder.leaf({ type: "manageFactory" }) }
-  ], builder.leaf({ type: "idle" }))
+  builder.switch(
+    [
+      { condition: ctx => cond.isEmpty(ctx), node: builder.leaf({ type: "withdraw" }) },
+      { condition: cond.factoryNeedsEnergy, node: builder.leaf({ type: "manageFactory" }) }
+    ],
+    builder.leaf({ type: "idle" })
+  )
 );
 
 /**
@@ -212,10 +240,13 @@ export const factoryWorkerTree = builder.build(
  */
 builder.reset();
 export const labTechTree = builder.build(
-  builder.switch([
-    { condition: ctx => cond.isEmpty(ctx), node: builder.leaf({ type: "withdraw" }) },
-    { condition: cond.labsNeedEnergy, node: builder.leaf({ type: "manageLab" }) }
-  ], builder.leaf({ type: "idle" }))
+  builder.switch(
+    [
+      { condition: ctx => cond.isEmpty(ctx), node: builder.leaf({ type: "withdraw" }) },
+      { condition: cond.labsNeedEnergy, node: builder.leaf({ type: "manageLab" }) }
+    ],
+    builder.leaf({ type: "idle" })
+  )
 );
 
 // ============ Scouting & Claiming Role Trees ============
@@ -225,12 +256,15 @@ export const labTechTree = builder.build(
  */
 builder.reset();
 export const scoutAntTree = builder.build(
-  builder.switch([
-    {
-      condition: shouldMoveToTarget,
-      node: builder.leaf({ type: "moveTo", target: "targetRoom" })
-    }
-  ], builder.leaf({ type: "patrol" }))
+  builder.switch(
+    [
+      {
+        condition: shouldMoveToTarget,
+        node: builder.leaf({ type: "moveTo", target: "targetRoom" })
+      }
+    ],
+    builder.leaf({ type: "patrol" })
+  )
 );
 
 /**
@@ -238,12 +272,15 @@ export const scoutAntTree = builder.build(
  */
 builder.reset();
 export const claimAntTree = builder.build(
-  builder.switch([
-    {
-      condition: shouldMoveToTarget,
-      node: builder.leaf({ type: "moveTo", target: "targetRoom" })
-    }
-  ], builder.leaf({ type: "claim" }))
+  builder.switch(
+    [
+      {
+        condition: shouldMoveToTarget,
+        node: builder.leaf({ type: "moveTo", target: "targetRoom" })
+      }
+    ],
+    builder.leaf({ type: "claim" })
+  )
 );
 
 // ============ Defense & Military Role Trees ============
@@ -253,13 +290,16 @@ export const claimAntTree = builder.build(
  */
 builder.reset();
 export const guardAntTree = builder.build(
-  builder.switch([
-    {
-      condition: shouldMoveToTarget,
-      node: builder.leaf({ type: "moveTo", target: "targetRoom" })
-    },
-    { condition: cond.hasEnemies, node: builder.leaf({ type: "attack" }) }
-  ], builder.leaf({ type: "patrol" }))
+  builder.switch(
+    [
+      {
+        condition: shouldMoveToTarget,
+        node: builder.leaf({ type: "moveTo", target: "targetRoom" })
+      },
+      { condition: cond.hasEnemies, node: builder.leaf({ type: "attack" }) }
+    ],
+    builder.leaf({ type: "patrol" })
+  )
 );
 
 /**
@@ -267,21 +307,24 @@ export const guardAntTree = builder.build(
  */
 builder.reset();
 export const healerAntTree = builder.build(
-  builder.switch([
-    {
-      condition: shouldMoveToTarget,
-      node: builder.leaf({ type: "moveTo", target: "targetRoom" })
-    },
-    {
-      condition: ctx => {
-        const wounded = ctx.creep.pos.findClosestByRange(FIND_MY_CREEPS, {
-          filter: c => c.hits < c.hitsMax
-        });
-        return !!wounded;
+  builder.switch(
+    [
+      {
+        condition: shouldMoveToTarget,
+        node: builder.leaf({ type: "moveTo", target: "targetRoom" })
       },
-      node: builder.leaf({ type: "heal" })
-    }
-  ], builder.leaf({ type: "patrol" }))
+      {
+        condition: ctx => {
+          const wounded = ctx.creep.pos.findClosestByRange(FIND_MY_CREEPS, {
+            filter: c => c.hits < c.hitsMax
+          });
+          return !!wounded;
+        },
+        node: builder.leaf({ type: "heal" })
+      }
+    ],
+    builder.leaf({ type: "patrol" })
+  )
 );
 
 /**
@@ -289,13 +332,16 @@ export const healerAntTree = builder.build(
  */
 builder.reset();
 export const soldierAntTree = builder.build(
-  builder.switch([
-    {
-      condition: shouldMoveToTarget,
-      node: builder.leaf({ type: "moveTo", target: "targetRoom" })
-    },
-    { condition: cond.hasEnemies, node: builder.leaf({ type: "rangedAttack" }) }
-  ], builder.leaf({ type: "patrol" }))
+  builder.switch(
+    [
+      {
+        condition: shouldMoveToTarget,
+        node: builder.leaf({ type: "moveTo", target: "targetRoom" })
+      },
+      { condition: cond.hasEnemies, node: builder.leaf({ type: "rangedAttack" }) }
+    ],
+    builder.leaf({ type: "patrol" })
+  )
 );
 
 /**
@@ -303,21 +349,24 @@ export const soldierAntTree = builder.build(
  */
 builder.reset();
 export const siegeUnitTree = builder.build(
-  builder.switch([
-    {
-      condition: shouldMoveToTarget,
-      node: builder.leaf({ type: "moveTo", target: "targetRoom" })
-    },
-    {
-      condition: ctx => {
-        const hostileStructure = ctx.creep.pos.findClosestByRange(FIND_HOSTILE_STRUCTURES, {
-          filter: s => s.structureType !== STRUCTURE_CONTROLLER
-        });
-        return !!hostileStructure;
+  builder.switch(
+    [
+      {
+        condition: shouldMoveToTarget,
+        node: builder.leaf({ type: "moveTo", target: "targetRoom" })
       },
-      node: builder.leaf({ type: "dismantle" })
-    }
-  ], builder.leaf({ type: "patrol" }))
+      {
+        condition: ctx => {
+          const hostileStructure = ctx.creep.pos.findClosestByRange(FIND_HOSTILE_STRUCTURES, {
+            filter: s => s.structureType !== STRUCTURE_CONTROLLER
+          });
+          return !!hostileStructure;
+        },
+        node: builder.leaf({ type: "dismantle" })
+      }
+    ],
+    builder.leaf({ type: "patrol" })
+  )
 );
 
 // ============ Utility & Support Role Trees ============
@@ -327,17 +376,16 @@ export const siegeUnitTree = builder.build(
  */
 builder.reset();
 export const engineerTree = builder.build(
-  builder.switch([
-    {
-      condition: ctx => cond.isEmpty(ctx),
-      node: builder.if(
-        cond.storageHasEnergy(),
-        builder.leaf({ type: "withdraw" }),
-        builder.leaf({ type: "harvest" })
-      )
-    },
-    { condition: cond.hasDamagedStructures, node: builder.leaf({ type: "repair" }) }
-  ], builder.leaf({ type: "build" }))
+  builder.switch(
+    [
+      {
+        condition: ctx => cond.isEmpty(ctx),
+        node: builder.if(cond.storageHasEnergy(), builder.leaf({ type: "withdraw" }), builder.leaf({ type: "harvest" }))
+      },
+      { condition: cond.hasDamagedStructures, node: builder.leaf({ type: "repair" }) }
+    ],
+    builder.leaf({ type: "build" })
+  )
 );
 
 /**
@@ -345,15 +393,18 @@ export const engineerTree = builder.build(
  */
 builder.reset();
 export const remoteWorkerTree = builder.build(
-  builder.switch([
-    {
-      condition: shouldMoveToTarget,
-      node: builder.leaf({ type: "moveTo", target: "targetRoom" })
-    },
-    { condition: cond.hasFreeCapacity, node: builder.leaf({ type: "harvest" }) },
-    { condition: cond.hasConstructionSites, node: builder.leaf({ type: "build" }) },
-    { condition: cond.hasDamagedStructures, node: builder.leaf({ type: "repair" }) }
-  ], builder.leaf({ type: "upgrade" }))
+  builder.switch(
+    [
+      {
+        condition: shouldMoveToTarget,
+        node: builder.leaf({ type: "moveTo", target: "targetRoom" })
+      },
+      { condition: cond.hasFreeCapacity, node: builder.leaf({ type: "harvest" }) },
+      { condition: cond.hasConstructionSites, node: builder.leaf({ type: "build" }) },
+      { condition: cond.hasDamagedStructures, node: builder.leaf({ type: "repair" }) }
+    ],
+    builder.leaf({ type: "upgrade" })
+  )
 );
 
 // ============ Power Creep Role Trees ============
@@ -363,19 +414,22 @@ export const remoteWorkerTree = builder.build(
  */
 builder.reset();
 export const powerQueenTree = builder.build(
-  builder.switch([
-    {
-      condition: shouldMoveToTarget,
-      node: builder.leaf({ type: "moveTo", target: "targetRoom" })
-    },
-    { condition: cond.hasDroppedPower, node: builder.leaf({ type: "pickup" }) },
-    {
-      condition: ctx => ctx.creep.store.getUsedCapacity(RESOURCE_POWER) > 0,
-      node: builder.leaf({ type: "managePower" })
-    },
-    { condition: cond.powerSpawnNeedsPower, node: builder.leaf({ type: "managePower" }) },
-    { condition: cond.powerSpawnNeedsEnergy, node: builder.leaf({ type: "managePower" }) }
-  ], builder.leaf({ type: "transfer" }))
+  builder.switch(
+    [
+      {
+        condition: shouldMoveToTarget,
+        node: builder.leaf({ type: "moveTo", target: "targetRoom" })
+      },
+      { condition: cond.hasDroppedPower, node: builder.leaf({ type: "pickup" }) },
+      {
+        condition: ctx => ctx.creep.store.getUsedCapacity(RESOURCE_POWER) > 0,
+        node: builder.leaf({ type: "managePower" })
+      },
+      { condition: cond.powerSpawnNeedsPower, node: builder.leaf({ type: "managePower" }) },
+      { condition: cond.powerSpawnNeedsEnergy, node: builder.leaf({ type: "managePower" }) }
+    ],
+    builder.leaf({ type: "transfer" })
+  )
 );
 
 /**
@@ -383,22 +437,25 @@ export const powerQueenTree = builder.build(
  */
 builder.reset();
 export const powerWarriorTree = builder.build(
-  builder.switch([
-    {
-      condition: shouldMoveToTarget,
-      node: builder.leaf({ type: "moveTo", target: "targetRoom" })
-    },
-    { condition: cond.hasEnemies, node: builder.leaf({ type: "attack" }) },
-    {
-      condition: ctx => {
-        const powerBank = ctx.creep.room.find(FIND_STRUCTURES, {
-          filter: s => s.structureType === STRUCTURE_POWER_BANK
-        })[0];
-        return !!powerBank;
+  builder.switch(
+    [
+      {
+        condition: shouldMoveToTarget,
+        node: builder.leaf({ type: "moveTo", target: "targetRoom" })
       },
-      node: builder.leaf({ type: "attack" })
-    }
-  ], builder.leaf({ type: "patrol" }))
+      { condition: cond.hasEnemies, node: builder.leaf({ type: "attack" }) },
+      {
+        condition: ctx => {
+          const powerBank = ctx.creep.room.find(FIND_STRUCTURES, {
+            filter: s => s.structureType === STRUCTURE_POWER_BANK
+          })[0];
+          return !!powerBank;
+        },
+        node: builder.leaf({ type: "attack" })
+      }
+    ],
+    builder.leaf({ type: "patrol" })
+  )
 );
 
 // ============ Role Tree Registry ============

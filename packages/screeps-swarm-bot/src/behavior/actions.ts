@@ -1,7 +1,7 @@
 /**
  * Swarm-specific actions for decision tree execution.
  * These actions are executed after the decision tree evaluates to a result.
- * 
+ *
  * @packageDocumentation
  */
 
@@ -13,104 +13,104 @@ import { selectExitTowards } from "../roles/navigation.js";
  */
 export function executeAction(ctx: SwarmCreepContext, action: SwarmAction): void {
   const { creep } = ctx;
-  
+
   switch (action.type) {
     case "harvest":
       harvestEnergy(creep);
       break;
-      
+
     case "harvestMineral":
       harvestMineral(creep);
       break;
-      
+
     case "harvestDeposit":
       harvestDeposit(creep);
       break;
-      
+
     case "transfer":
       transferToTarget(creep);
       break;
-      
+
     case "withdraw":
       withdrawFromTarget(creep);
       break;
-      
+
     case "build":
       buildSite(creep);
       break;
-      
+
     case "upgrade":
       upgradeController(creep);
       break;
-      
+
     case "repair":
       repairStructure(creep);
       break;
-      
+
     case "attack":
       attackHostile(creep);
       break;
-      
+
     case "rangedAttack":
       rangedAttackHostile(creep);
       break;
-      
+
     case "heal":
       healAlly(creep);
       break;
-      
+
     case "claim":
       claimController(creep);
       break;
-      
+
     case "reserve":
       reserveController(creep);
       break;
-      
+
     case "flee":
       fleeFromHostiles(creep);
       break;
-      
+
     case "moveTo":
       moveToRoom(creep, action.target);
       break;
-      
+
     case "patrol":
       patrol(creep);
       break;
-      
+
     case "manageTerminal":
       manageTerminal(creep);
       break;
-      
+
     case "manageLink":
       manageLink(creep);
       break;
-      
+
     case "manageLab":
       manageLab(creep);
       break;
-      
+
     case "manageFactory":
       manageFactory(creep);
       break;
-      
+
     case "managePower":
       managePowerSpawn(creep);
       break;
-      
+
     case "dismantle":
       dismantleStructure(creep);
       break;
-      
+
     case "pickup":
       pickupResource(creep);
       break;
-      
+
     case "drop":
       dropEnergy(creep);
       break;
-      
+
     case "idle":
     default:
       // Do nothing
@@ -153,27 +153,26 @@ function transferToTarget(creep: Creep): void {
       (s.structureType === STRUCTURE_SPAWN || s.structureType === STRUCTURE_EXTENSION) &&
       (s as StructureSpawn | StructureExtension).store.getFreeCapacity(RESOURCE_ENERGY) > 0
   });
-  
+
   if (spawn) {
     if (creep.transfer(spawn, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
       creep.moveTo(spawn, { reusePath: 3 });
     }
     return;
   }
-  
+
   const tower = creep.pos.findClosestByRange(FIND_MY_STRUCTURES, {
     filter: s =>
-      s.structureType === STRUCTURE_TOWER &&
-      (s as StructureTower).store.getFreeCapacity(RESOURCE_ENERGY) > 100
+      s.structureType === STRUCTURE_TOWER && (s as StructureTower).store.getFreeCapacity(RESOURCE_ENERGY) > 100
   });
-  
+
   if (tower) {
     if (creep.transfer(tower, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
       creep.moveTo(tower, { reusePath: 3 });
     }
     return;
   }
-  
+
   const storage = creep.room.storage;
   if (storage && storage.store.getFreeCapacity() > 0) {
     if (creep.transfer(storage, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
@@ -181,7 +180,7 @@ function transferToTarget(creep: Creep): void {
     }
     return;
   }
-  
+
   const terminal = creep.room.terminal;
   if (terminal && terminal.store.getFreeCapacity() > 0) {
     if (creep.transfer(terminal, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
@@ -199,13 +198,12 @@ function withdrawFromTarget(creep: Creep): void {
     }
     return;
   }
-  
+
   const container = creep.pos.findClosestByRange(FIND_STRUCTURES, {
     filter: s =>
-      s.structureType === STRUCTURE_CONTAINER &&
-      (s as StructureContainer).store.getUsedCapacity(RESOURCE_ENERGY) > 100
+      s.structureType === STRUCTURE_CONTAINER && (s as StructureContainer).store.getUsedCapacity(RESOURCE_ENERGY) > 100
   }) as StructureContainer | null;
-  
+
   if (container) {
     if (creep.withdraw(container, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
       creep.moveTo(container, { reusePath: 5 });
@@ -309,21 +307,22 @@ function reserveController(creep: Creep): void {
 function fleeFromHostiles(creep: Creep): void {
   const hostiles = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 5);
   if (hostiles.length === 0) return;
-  
-  let avgX = 0, avgY = 0;
+
+  let avgX = 0,
+    avgY = 0;
   for (const hostile of hostiles) {
     avgX += hostile.pos.x;
     avgY += hostile.pos.y;
   }
   avgX = Math.floor(avgX / hostiles.length);
   avgY = Math.floor(avgY / hostiles.length);
-  
+
   const dx = creep.pos.x - avgX;
   const dy = creep.pos.y - avgY;
   const magnitude = Math.sqrt(dx * dx + dy * dy) || 1;
   const targetX = Math.max(1, Math.min(48, creep.pos.x + Math.round((dx / magnitude) * 5)));
   const targetY = Math.max(1, Math.min(48, creep.pos.y + Math.round((dy / magnitude) * 5)));
-  
+
   creep.moveTo(new RoomPosition(targetX, targetY, creep.room.name), {
     reusePath: 0,
     ignoreCreeps: true
@@ -350,11 +349,13 @@ function manageTerminal(creep: Creep): void {
   const terminal = creep.room.terminal;
   const storage = creep.room.storage;
   if (!terminal || !storage) return;
-  
+
   if (creep.store.getUsedCapacity() === 0) {
     // Withdraw from storage to fill terminal if needed
-    if (terminal.store.getUsedCapacity(RESOURCE_ENERGY) < 15000 && 
-        storage.store.getUsedCapacity(RESOURCE_ENERGY) > 20000) {
+    if (
+      terminal.store.getUsedCapacity(RESOURCE_ENERGY) < 15000 &&
+      storage.store.getUsedCapacity(RESOURCE_ENERGY) > 20000
+    ) {
       if (creep.withdraw(storage, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
         creep.moveTo(storage, { reusePath: 5 });
       }
@@ -371,15 +372,15 @@ function manageTerminal(creep: Creep): void {
       return;
     }
   }
-  
+
   // Transfer to terminal
-  const resourceType = Object.keys(creep.store).find(
-    key => creep.store[key as ResourceConstant] > 0
-  ) as ResourceConstant | undefined;
+  const resourceType = Object.keys(creep.store).find(key => creep.store[key as ResourceConstant] > 0) as
+    | ResourceConstant
+    | undefined;
   if (!resourceType) return;
-  
-  const target = resourceType === RESOURCE_ENERGY && 
-                 terminal.store.getUsedCapacity(RESOURCE_ENERGY) > 60000 ? storage : terminal;
+
+  const target =
+    resourceType === RESOURCE_ENERGY && terminal.store.getUsedCapacity(RESOURCE_ENERGY) > 60000 ? storage : terminal;
   if (creep.transfer(target, resourceType) === ERR_NOT_IN_RANGE) {
     creep.moveTo(target, { reusePath: 4 });
   }
@@ -393,12 +394,11 @@ function manageLink(creep: Creep): void {
     }
     return;
   }
-  
+
   const link = creep.room.find(FIND_MY_STRUCTURES, {
-    filter: s => s.structureType === STRUCTURE_LINK && 
-                 (s as StructureLink).store.getFreeCapacity(RESOURCE_ENERGY) > 0
+    filter: s => s.structureType === STRUCTURE_LINK && (s as StructureLink).store.getFreeCapacity(RESOURCE_ENERGY) > 0
   })[0] as StructureLink | undefined;
-  
+
   if (link) {
     if (creep.transfer(link, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
       creep.moveTo(link, { reusePath: 4 });
@@ -414,11 +414,13 @@ function manageLab(creep: Creep): void {
     }
     return;
   }
-  
-  const lab = creep.room.find(FIND_MY_STRUCTURES, {
-    filter: { structureType: STRUCTURE_LAB }
-  }).find(l => (l as StructureLab).store.getFreeCapacity(RESOURCE_ENERGY) > 0) as StructureLab | undefined;
-  
+
+  const lab = creep.room
+    .find(FIND_MY_STRUCTURES, {
+      filter: { structureType: STRUCTURE_LAB }
+    })
+    .find(l => (l as StructureLab).store.getFreeCapacity(RESOURCE_ENERGY) > 0) as StructureLab | undefined;
+
   if (lab) {
     if (creep.transfer(lab, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
       creep.moveTo(lab, { reusePath: 4 });
@@ -431,7 +433,7 @@ function manageFactory(creep: Creep): void {
     filter: { structureType: STRUCTURE_FACTORY }
   })[0] as StructureFactory | undefined;
   if (!factory) return;
-  
+
   if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
     const storage = creep.room.storage;
     if (storage && creep.withdraw(storage, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
@@ -439,7 +441,7 @@ function manageFactory(creep: Creep): void {
     }
     return;
   }
-  
+
   if (factory.store.getFreeCapacity() > 0) {
     if (creep.transfer(factory, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
       creep.moveTo(factory, { reusePath: 5 });
@@ -452,7 +454,7 @@ function managePowerSpawn(creep: Creep): void {
     filter: { structureType: STRUCTURE_POWER_SPAWN }
   })[0] as StructurePowerSpawn | undefined;
   if (!powerSpawn) return;
-  
+
   // Check for dropped power
   const droppedPower = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES, {
     filter: r => r.resourceType === RESOURCE_POWER
@@ -463,7 +465,7 @@ function managePowerSpawn(creep: Creep): void {
     }
     return;
   }
-  
+
   // Transfer power if we have it
   if (creep.store.getUsedCapacity(RESOURCE_POWER) > 0) {
     if (creep.transfer(powerSpawn, RESOURCE_POWER) === ERR_NOT_IN_RANGE) {
@@ -471,7 +473,7 @@ function managePowerSpawn(creep: Creep): void {
     }
     return;
   }
-  
+
   // Get power from storage if power spawn needs it
   const storage = creep.room.storage ?? creep.room.terminal;
   if (powerSpawn.store.getUsedCapacity(RESOURCE_POWER) < 50 && storage?.store.getUsedCapacity(RESOURCE_POWER)) {
@@ -480,7 +482,7 @@ function managePowerSpawn(creep: Creep): void {
     }
     return;
   }
-  
+
   // Fill power spawn with energy if needed
   if (powerSpawn.store.getFreeCapacity(RESOURCE_ENERGY) > 200) {
     if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0 && storage) {
@@ -515,7 +517,7 @@ function dropEnergy(creep: Creep): void {
   const container = creep.pos.findInRange(FIND_STRUCTURES, 1, {
     filter: s => s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_LINK
   })[0];
-  
+
   if (container && "store" in container) {
     creep.transfer(container, RESOURCE_ENERGY);
   } else {

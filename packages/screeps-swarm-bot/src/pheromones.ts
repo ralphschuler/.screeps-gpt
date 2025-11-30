@@ -22,7 +22,16 @@ export function decaySignals(signals: PheromoneSignals): PheromoneSignals {
 }
 
 export function updateSignals(signals: PheromoneSignals, options: PheromoneUpdateOptions): void {
-  const { constructionSites, hostiles, controllerLevel, downgradeTicks, energyStored, remoteHarvestPressure, hasObserver, incomingNukes } = options;
+  const {
+    constructionSites,
+    hostiles,
+    controllerLevel,
+    downgradeTicks,
+    energyStored,
+    remoteHarvestPressure,
+    hasObserver,
+    incomingNukes
+  } = options;
   signals.build += constructionSites > 0 ? Math.min(5, constructionSites) : 0;
   signals.harvest += remoteHarvestPressure;
   signals.harvest += energyStored < 20000 ? 1.5 : 0;

@@ -44,7 +44,7 @@ export function roleWeightsFromPosture(intent: SwarmIntent, pheromones: Pheromon
     factoryWorker: pheromones.logistics * 0.3,
     labTech: pheromones.logistics * 0.3,
     powerQueen: pheromones.upgrade,
-    powerWarrior: pheromones.war,
+    powerWarrior: pheromones.war
   };
 
   if (intent === "war" || intent === "siege") {
