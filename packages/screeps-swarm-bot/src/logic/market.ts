@@ -9,6 +9,8 @@ import {
 } from "../constants.js";
 import { SwarmMemoryManager } from "../memory/SwarmMemoryManager.js";
 import type {
+  ClusterTradePreferences,
+  MarketBestPrice,
   MarketOrderPreference,
   SwarmMemory,
   SwarmProcessContext
@@ -79,7 +81,7 @@ function scanMarket(ctx: SwarmProcessContext, memory: SwarmMemory): void {
     const bestSell = sellOrders.sort((a, b) => a.price - b.price)[0];
 
     if (bestBuy) {
-      const buyEntry: import("../types.js").MarketBestPrice = {
+      const buyEntry: MarketBestPrice = {
         orderId: bestBuy.id,
         price: bestBuy.price,
         amount: bestBuy.remainingAmount
@@ -89,7 +91,7 @@ function scanMarket(ctx: SwarmProcessContext, memory: SwarmMemory): void {
     }
 
     if (bestSell) {
-      const sellEntry: import("../types.js").MarketBestPrice = {
+      const sellEntry: MarketBestPrice = {
         orderId: bestSell.id,
         price: bestSell.price,
         amount: bestSell.remainingAmount
@@ -118,7 +120,7 @@ function evaluateTrades(ctx: SwarmProcessContext, memory: SwarmMemory): void {
     const clusterTerminals = terminals.filter(t => cluster.rooms.includes(t.room.name));
     if (!clusterTerminals.length) continue;
 
-    const tradePrefs = cluster.tradePrefs ?? { targets: {} } as import("../types.js").ClusterTradePreferences;
+    const tradePrefs = cluster.tradePrefs ?? { targets: {} } as ClusterTradePreferences;
     for (const [resourceType, range] of Object.entries(tradePrefs.targets) as Array<[
       ResourceConstant,
       { min: number; max: number; emergencyMin?: number }
