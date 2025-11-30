@@ -10,7 +10,7 @@
  * Fix: Check if creep is full at the START of the tick, before any actions,
  * following the same pattern used by HaulerController (which works correctly).
  *
- * Pattern (from HaulerController lines 89-92):
+ * Pattern (used in HaulerController):
  * ```typescript
  * if (currentState === "pickup") {
  *   // Check if full before pickup
