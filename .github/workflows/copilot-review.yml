@@ -3,6 +3,8 @@ name: Copilot Repository Audit
 
 on:
   schedule:
+    # Run at 9:00 AM UTC daily
+    # Note: copilot-todo-daily.yml runs at 9:30 AM to avoid overlap
     - cron: "0 9 * * *"
   workflow_dispatch:
 

@@ -4,6 +4,7 @@ name: Screeps Spawn Monitor
 on:
   schedule:
     # Run every 30 minutes to check spawn status
+    # Note: screeps-monitoring.yml runs same interval for telemetry
     - cron: "*/30 * * * *"
   workflow_dispatch: # Allow manual trigger for testing
 
@@ -13,7 +14,7 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   check-spawn:
