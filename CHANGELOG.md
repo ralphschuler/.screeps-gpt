@@ -7,7 +7,6 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [0.197.11] - 2025-11-30
 
-
 ### Added
 
 - **Type Guards Module**: Added `packages/bot/src/runtime/types/typeGuards.ts` with type guard utilities (#1565)
@@ -23,7 +22,6 @@ All notable changes to this project are documented here. This changelog now main
   - Replaced scattered `as Source[]`, `as StructureSpawn[]`, etc. with centralized type-safe helpers
   - Updated `helpers.ts` to use type guard utilities instead of inline assertions
   - Improved code maintainability by centralizing type assertions in one location
-
 
 ## [0.189.9] - 2025-11-29
 
