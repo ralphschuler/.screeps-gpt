@@ -18,7 +18,12 @@ export class SwarmExpansionProcess {
     }
   }
 
-  private enqueueNeighbors(roomName: string, roomMemory: SwarmRoomMemory, swarm: ReturnType<SwarmMemoryManager["getOrInit"]>, _ctx: SwarmProcessContext): void {
+  private enqueueNeighbors(
+    roomName: string,
+    roomMemory: SwarmRoomMemory,
+    swarm: ReturnType<SwarmMemoryManager["getOrInit"]>,
+    _ctx: SwarmProcessContext
+  ): void {
     const exits = Game.map.describeExits(roomName);
     if (!exits) return;
     const queue = new Set(swarm.overmind.claimQueue);

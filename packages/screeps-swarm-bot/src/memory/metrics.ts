@@ -6,12 +6,16 @@ function ema(previous: number | undefined, sample: number): number {
   return previous === undefined ? sample : previous * (1 - ALPHA) + sample * ALPHA;
 }
 
-export function updateRoomMetrics(metrics: SwarmRoomMetrics | undefined, sample: Partial<SwarmRoomMetrics>): SwarmRoomMetrics {
+export function updateRoomMetrics(
+  metrics: SwarmRoomMetrics | undefined,
+  sample: Partial<SwarmRoomMetrics>
+): SwarmRoomMetrics {
   const next: SwarmRoomMetrics = metrics ? { ...metrics } : {};
   if (sample.harvestedEma !== undefined) next.harvestedEma = ema(metrics?.harvestedEma, sample.harvestedEma);
   if (sample.spendEma !== undefined) next.spendEma = ema(metrics?.spendEma, sample.spendEma);
   if (sample.spawnEnergyEma !== undefined) next.spawnEnergyEma = ema(metrics?.spawnEnergyEma, sample.spawnEnergyEma);
-  if (sample.constructionEma !== undefined) next.constructionEma = ema(metrics?.constructionEma, sample.constructionEma);
+  if (sample.constructionEma !== undefined)
+    next.constructionEma = ema(metrics?.constructionEma, sample.constructionEma);
   if (sample.repairEma !== undefined) next.repairEma = ema(metrics?.repairEma, sample.repairEma);
   if (sample.towerEma !== undefined) next.towerEma = ema(metrics?.towerEma, sample.towerEma);
   if (sample.controllerProgressEma !== undefined)

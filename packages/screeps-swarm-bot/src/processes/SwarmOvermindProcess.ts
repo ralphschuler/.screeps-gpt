@@ -70,8 +70,6 @@ export class SwarmOvermindProcess {
   }
 
   private orderByScore(entries: Array<{ room: string; score: number }>): string[] {
-    return entries
-      .sort((a, b) => b.score - a.score)
-      .map(entry => entry.room);
+    return entries.sort((a, b) => b.score - a.score).map(entry => entry.room);
   }
 }

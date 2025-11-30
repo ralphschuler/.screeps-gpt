@@ -4,7 +4,7 @@ import type { InterShardSnapshot } from "./schema.js";
 export function writeShardSnapshot(meta: SwarmShardMeta): void {
   const snapshot: InterShardSnapshot = {
     shards: meta.shards,
-    strategicTargets: meta.globalTargets,
+    strategicTargets: meta.globalTargets
   };
   InterShardMemory.setLocal(JSON.stringify(snapshot));
 }

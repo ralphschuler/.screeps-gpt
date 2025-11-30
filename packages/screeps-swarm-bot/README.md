@@ -62,23 +62,23 @@ imported.
 ## Todo coverage vs. design plan
 
 - [x] Project skeleton with `src/core`, `src/logic`, `src/memory`, `src/layouts`,
-  `src/intershard`, and typed Screeps TS config.
+      `src/intershard`, and typed Screeps TS config.
 - [x] Pheromone memory schema with decay/diffusion, intent derivation, and
-  spawn roulette weights.
+      spawn roulette weights.
 - [x] Global overmind queues (claim/war/nuke) plus inter-shard health snapshot
-  updates and cluster grouping.
+      updates and cluster grouping.
 - [x] Creep archetype behaviors for economy, scouting/claiming, defense, and
-  offense.
+      offense.
 - [x] Blueprint tracking with deficit-driven build pheromones.
 - [x] Automated blueprint placement (construction site creation respecting
-  controller limits).
+      controller limits).
 - [x] Tower control refinements for nuke-first, healer/ranged priority and
-  rampart hardening.
+      rampart hardening.
 - [x] Expansion tasking for claim/scout/forager ants tied to the claim queue.
 - [x] Remote logistics routes for energy shuffling plus rally logic for
-  war/raiding squads.
+      war/raiding squads.
 - [x] CPU profiling hooks and per-room metric EMA helpers for performance
-  tuning.
+      tuning.
 
 ## Extending
 

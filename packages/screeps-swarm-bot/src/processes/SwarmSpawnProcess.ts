@@ -207,30 +207,24 @@ export class SwarmSpawnProcess {
     return unseen[0] ?? (Object.values(exits)[0] as string | undefined);
   }
 
-  private pickHarvestTarget(
-    home: string,
-    swarm: ReturnType<SwarmMemoryManager["getOrInit"]>
-  ): string | undefined {
+  private pickHarvestTarget(home: string, swarm: ReturnType<SwarmMemoryManager["getOrInit"]>): string | undefined {
     const candidates = Object.entries(swarm.rooms)
       .filter(([roomName, memory]) => roomName !== home && memory.pheromones.harvest > 0)
       .sort(([, a], [, b]) => b.pheromones.harvest - a.pheromones.harvest);
     return candidates[0]?.[0];
   }
 
-  private pickLogisticsTarget(
-    home: string,
-    swarm: ReturnType<SwarmMemoryManager["getOrInit"]>
-  ): string | undefined {
+  private pickLogisticsTarget(home: string, swarm: ReturnType<SwarmMemoryManager["getOrInit"]>): string | undefined {
     const route = swarm.logisticsRoutes.find(candidate => candidate.from === home);
     return route?.to;
   }
 
-  private pickDepositTarget(
-    swarm: ReturnType<SwarmMemoryManager["getOrInit"]>,
-    home: string
-  ): string | undefined {
+  private pickDepositTarget(swarm: ReturnType<SwarmMemoryManager["getOrInit"]>, home: string): string | undefined {
     const entries = Object.entries(swarm.global.intel)
-      .filter(([roomName, intel]) => (intel.deposits?.length ?? 0) > 0 && intel.lastSeen > Game.time - 500 && roomName !== home)
+      .filter(
+        ([roomName, intel]) =>
+          (intel.deposits?.length ?? 0) > 0 && intel.lastSeen > Game.time - 500 && roomName !== home
+      )
       .map(([roomName, intel]) => ({ roomName, cooldown: intel.deposits?.[0]?.cooldown ?? 100 }));
     const best = entries.sort((a, b) => a.cooldown - b.cooldown)[0];
     return best?.roomName;

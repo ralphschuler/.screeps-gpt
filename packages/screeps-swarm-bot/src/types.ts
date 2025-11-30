@@ -3,14 +3,7 @@ import type { ProcessContext } from "@ralphschuler/screeps-kernel";
 /**
  * Intent posture for a room-level swarm node.
  */
-export type SwarmIntent =
-  | "eco"
-  | "expand"
-  | "defense"
-  | "war"
-  | "nukePrep"
-  | "siege"
-  | "evacuate";
+export type SwarmIntent = "eco" | "expand" | "defense" | "war" | "nukePrep" | "siege" | "evacuate";
 
 /** Supported swarm creep archetypes. */
 export type SwarmRole =

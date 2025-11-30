@@ -1,7 +1,7 @@
 /**
  * Swarm-specific conditions for decision trees.
  * These are used to build composable behavior trees for creep roles.
- * 
+ *
  * @packageDocumentation
  */
 
@@ -10,24 +10,22 @@ import type { SwarmCreepContext } from "./types.js";
 // Energy conditions
 
 /** Checks if creep has energy capacity */
-export const hasEnergy = (ctx: SwarmCreepContext): boolean =>
-  ctx.creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
+export const hasEnergy = (ctx: SwarmCreepContext): boolean => ctx.creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
 
 /** Checks if creep is full */
-export const isFull = (ctx: SwarmCreepContext): boolean =>
-  ctx.creep.store.getFreeCapacity() === 0;
+export const isFull = (ctx: SwarmCreepContext): boolean => ctx.creep.store.getFreeCapacity() === 0;
 
 /** Checks if creep is empty */
-export const isEmpty = (ctx: SwarmCreepContext): boolean =>
-  ctx.creep.store.getUsedCapacity() === 0;
+export const isEmpty = (ctx: SwarmCreepContext): boolean => ctx.creep.store.getUsedCapacity() === 0;
 
 /** Checks if creep has free capacity */
-export const hasFreeCapacity = (ctx: SwarmCreepContext): boolean =>
-  ctx.creep.store.getFreeCapacity() > 0;
+export const hasFreeCapacity = (ctx: SwarmCreepContext): boolean => ctx.creep.store.getFreeCapacity() > 0;
 
 /** Checks if storage has sufficient energy */
-export const storageHasEnergy = (threshold = 200) => (ctx: SwarmCreepContext): boolean =>
-  ctx.storageEnergy > threshold;
+export const storageHasEnergy =
+  (threshold = 200) =>
+  (ctx: SwarmCreepContext): boolean =>
+    ctx.storageEnergy > threshold;
 
 // Room conditions
 
@@ -36,38 +34,30 @@ export const isInTargetRoom = (ctx: SwarmCreepContext): boolean =>
   !ctx.targetRoom || ctx.creep.room.name === ctx.targetRoom;
 
 /** Checks if creep is in home room */
-export const isInHomeRoom = (ctx: SwarmCreepContext): boolean =>
-  ctx.creep.room.name === ctx.homeRoom;
+export const isInHomeRoom = (ctx: SwarmCreepContext): boolean => ctx.creep.room.name === ctx.homeRoom;
 
 /** Checks if construction sites exist */
-export const hasConstructionSites = (ctx: SwarmCreepContext): boolean =>
-  ctx.constructionSites > 0;
+export const hasConstructionSites = (ctx: SwarmCreepContext): boolean => ctx.constructionSites > 0;
 
 /** Checks if damaged structures exist */
-export const hasDamagedStructures = (ctx: SwarmCreepContext): boolean =>
-  ctx.damagedStructures > 0;
+export const hasDamagedStructures = (ctx: SwarmCreepContext): boolean => ctx.damagedStructures > 0;
 
 /** Checks if enemies are nearby */
-export const hasEnemies = (ctx: SwarmCreepContext): boolean =>
-  ctx.nearbyEnemies;
+export const hasEnemies = (ctx: SwarmCreepContext): boolean => ctx.nearbyEnemies;
 
 /** Checks if energy sources are available */
-export const hasEnergySources = (ctx: SwarmCreepContext): boolean =>
-  ctx.energyAvailable;
+export const hasEnergySources = (ctx: SwarmCreepContext): boolean => ctx.energyAvailable;
 
 // Structure conditions
 
 /** Checks if terminal exists in room */
-export const hasTerminal = (ctx: SwarmCreepContext): boolean =>
-  ctx.hasTerminal;
+export const hasTerminal = (ctx: SwarmCreepContext): boolean => ctx.hasTerminal;
 
 /** Checks if extractor exists in room */
-export const hasExtractor = (ctx: SwarmCreepContext): boolean =>
-  ctx.hasExtractor;
+export const hasExtractor = (ctx: SwarmCreepContext): boolean => ctx.hasExtractor;
 
 /** Checks if mineral is available */
-export const hasMinerals = (ctx: SwarmCreepContext): boolean =>
-  ctx.mineralAmount > 0;
+export const hasMinerals = (ctx: SwarmCreepContext): boolean => ctx.mineralAmount > 0;
 
 // Spawn/extension energy needs
 
@@ -85,8 +75,7 @@ export const spawnsNeedEnergy = (ctx: SwarmCreepContext): boolean => {
 export const towersNeedEnergy = (ctx: SwarmCreepContext): boolean => {
   const towers = ctx.room.find(FIND_MY_STRUCTURES, {
     filter: s =>
-      s.structureType === STRUCTURE_TOWER &&
-      (s as StructureTower).store.getFreeCapacity(RESOURCE_ENERGY) > 100
+      s.structureType === STRUCTURE_TOWER && (s as StructureTower).store.getFreeCapacity(RESOURCE_ENERGY) > 100
   });
   return towers.length > 0;
 };
@@ -101,8 +90,7 @@ export const terminalNeedsEnergy = (ctx: SwarmCreepContext): boolean => {
 export const containersHaveEnergy = (ctx: SwarmCreepContext): boolean => {
   const containers = ctx.room.find(FIND_STRUCTURES, {
     filter: s =>
-      s.structureType === STRUCTURE_CONTAINER &&
-      (s as StructureContainer).store.getUsedCapacity(RESOURCE_ENERGY) > 100
+      s.structureType === STRUCTURE_CONTAINER && (s as StructureContainer).store.getUsedCapacity(RESOURCE_ENERGY) > 100
   });
   return containers.length > 0;
 };
@@ -110,12 +98,13 @@ export const containersHaveEnergy = (ctx: SwarmCreepContext): boolean => {
 // Creep state conditions
 
 /** Checks if creep is damaged */
-export const isDamaged = (ctx: SwarmCreepContext): boolean =>
-  ctx.creep.hits < ctx.creep.hitsMax;
+export const isDamaged = (ctx: SwarmCreepContext): boolean => ctx.creep.hits < ctx.creep.hitsMax;
 
 /** Checks if creep is low health */
-export const isLowHealth = (threshold = 0.5) => (ctx: SwarmCreepContext): boolean =>
-  ctx.creep.hits / ctx.creep.hitsMax < threshold;
+export const isLowHealth =
+  (threshold = 0.5) =>
+  (ctx: SwarmCreepContext): boolean =>
+    ctx.creep.hits / ctx.creep.hitsMax < threshold;
 
 // Deposit and highway conditions
 
@@ -126,10 +115,12 @@ export const hasDeposits = (ctx: SwarmCreepContext): boolean => {
 };
 
 /** Checks if deposit cooldown is acceptable */
-export const depositCooldownOk = (threshold = 90) => (ctx: SwarmCreepContext): boolean => {
-  const deposit = ctx.room.find(FIND_DEPOSITS)[0];
-  return !!deposit && deposit.lastCooldown <= threshold;
-};
+export const depositCooldownOk =
+  (threshold = 90) =>
+  (ctx: SwarmCreepContext): boolean => {
+    const deposit = ctx.room.find(FIND_DEPOSITS)[0];
+    return !!deposit && deposit.lastCooldown <= threshold;
+  };
 
 // Power conditions
 
@@ -180,12 +171,13 @@ export const factoryNeedsEnergy = (ctx: SwarmCreepContext): boolean => {
 // Controller conditions
 
 /** Checks if controller needs upgrading (is owned by us) */
-export const controllerNeedsUpgrade = (ctx: SwarmCreepContext): boolean =>
-  !!ctx.room.controller?.my;
+export const controllerNeedsUpgrade = (ctx: SwarmCreepContext): boolean => !!ctx.room.controller?.my;
 
 /** Checks if controller is downgrading soon */
-export const controllerDowngradingSoon = (threshold = 3000) => (ctx: SwarmCreepContext): boolean =>
-  !!ctx.room.controller && (ctx.room.controller.ticksToDowngrade ?? 20000) < threshold;
+export const controllerDowngradingSoon =
+  (threshold = 3000) =>
+  (ctx: SwarmCreepContext): boolean =>
+    !!ctx.room.controller && (ctx.room.controller.ticksToDowngrade ?? 20000) < threshold;
 
 // Link conditions
 

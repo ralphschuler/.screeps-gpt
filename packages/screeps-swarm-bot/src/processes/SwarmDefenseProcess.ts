@@ -38,9 +38,9 @@ export class SwarmDefenseProcess {
     if (nukes.length === 0) return false;
     const impact = nukes[0];
     if (!impact) return false;
-    const rampart = room.lookForAt(LOOK_STRUCTURES, impact.pos).find(
-      s => s.structureType === STRUCTURE_RAMPART
-    ) as StructureRampart | undefined;
+    const rampart = room.lookForAt(LOOK_STRUCTURES, impact.pos).find(s => s.structureType === STRUCTURE_RAMPART) as
+      | StructureRampart
+      | undefined;
     if (!rampart) return false;
     for (const tower of towers) {
       tower.repair(rampart);

@@ -18,8 +18,8 @@ export function rebuildNukeCandidates(memory: SwarmMemory): void {
         enemyRcl: data.colonyLevel,
         hostileStructures: data.pheromones.nukeTarget,
         warPheromone: data.pheromones.war,
-        distance: 1,
-      }),
+        distance: 1
+      })
     }))
     .filter(entry => isNukeCandidate(entry.score));
 
