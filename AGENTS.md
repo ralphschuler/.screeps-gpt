@@ -125,7 +125,17 @@ All new behavior development MUST use the state machine pattern. Do not referenc
 
 ## Operational Rules
 
-### 1. Tooling
+### 1. Issue Resolution Policy
+
+**All issues must be fixed regardless of who introduced them:**
+
+- When fixing bugs or addressing review feedback, fix **all** related issues encountered, not just those you introduced
+- CI failures must be resolved even if they pre-existed your changes
+- Technical debt discovered during implementation should be addressed as part of the work
+- This ensures continuous codebase improvement and prevents accumulation of known issues
+- The only exception is the performance benchmark workflow, which may have expected failures
+
+### 2. Tooling
 
 - Use yarn for running scripts (`yarn <script>`). Package scripts are defined in `package.json`.
 - Format code with `yarn format:write` and verify with `yarn format:check`.

@@ -8,7 +8,8 @@ import {
   findMySpawns,
   findAllSources,
   findTowers,
-  findDroppedResources
+  findDroppedResources,
+  isContainer
 } from "@runtime/types/typeGuards";
 import { serviceRegistry } from "./ServiceLocator";
 
@@ -195,14 +196,14 @@ export function findSpawnAdjacentContainers(
     });
 
     for (const structure of nearbyStructures) {
-      const container = structure as StructureContainer;
+      if (!isContainer(structure)) continue;
       if (minEnergy !== undefined) {
-        const currentEnergy = container.store.getUsedCapacity(RESOURCE_ENERGY);
-        if (currentEnergy < minEnergy && container.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
-          containers.push(container);
+        const currentEnergy = structure.store.getUsedCapacity(RESOURCE_ENERGY);
+        if (currentEnergy < minEnergy && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+          containers.push(structure);
         }
-      } else if (container.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
-        containers.push(container);
+      } else if (structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+        containers.push(structure);
       }
     }
   }
@@ -275,8 +276,7 @@ export function findSourceAdjacentContainers(room: {
 
   for (const source of sources) {
     const nearbyContainers = source.pos.findInRange<FIND_STRUCTURES, StructureContainer>(FIND_STRUCTURES, 1, {
-      filter: (s: Structure) =>
-        s.structureType === STRUCTURE_CONTAINER && (s as StructureContainer).store.getFreeCapacity(RESOURCE_ENERGY) > 0
+      filter: (s: Structure) => isContainer(s) && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
     });
 
     for (const container of nearbyContainers) {

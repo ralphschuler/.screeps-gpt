@@ -30,13 +30,7 @@ import type { CreepLike, RoomLike, SpawnLike } from "./GameContext";
  * @returns true if the object has Creep-like structure
  */
 export function isCreep(obj: unknown): obj is Creep {
-  return (
-    obj !== null &&
-    typeof obj === "object" &&
-    "name" in obj &&
-    "memory" in obj &&
-    "room" in obj
-  );
+  return obj !== null && typeof obj === "object" && "name" in obj && "memory" in obj && "room" in obj;
 }
 
 /**
@@ -70,7 +64,7 @@ export function isFullCreep(creep: CreepLike): creep is Creep {
 export function asCreep(creep: CreepLike, context?: string): Creep {
   if (!isCreep(creep)) {
     const prefix = context ? `[${context}] ` : "";
-    throw new TypeError(`${prefix}Invalid Creep object: missing required Creep interface methods`);
+    throw new TypeError(`${prefix}Invalid Creep object: missing required properties (name, memory, room)`);
   }
   return creep;
 }
@@ -270,10 +264,7 @@ export function findMyCreeps(room: RoomLike): Creep[] {
  * @param filter - Optional filter function
  * @returns Array of dropped resources in the room
  */
-export function findDroppedResources(
-  room: RoomLike,
-  filter?: (resource: Resource) => boolean
-): Resource[] {
+export function findDroppedResources(room: RoomLike, filter?: (resource: Resource) => boolean): Resource[] {
   const opts = filter ? { filter: filter as (obj: unknown) => boolean } : undefined;
   return room.find(FIND_DROPPED_RESOURCES, opts) as Resource[];
 }
@@ -321,10 +312,7 @@ export function findContainers(
  * @param filter - Optional filter function
  * @returns Array of towers in the room
  */
-export function findTowers(
-  room: RoomLike,
-  filter?: (tower: StructureTower) => boolean
-): StructureTower[] {
+export function findTowers(room: RoomLike, filter?: (tower: StructureTower) => boolean): StructureTower[] {
   return findStructuresByType<StructureTower>(room, STRUCTURE_TOWER, filter);
 }
 
@@ -359,12 +347,7 @@ export function findEnergyReceivers(room: RoomLike): AnyStoreStructure[] {
  */
 export function isSpawnLike(obj: unknown): obj is SpawnLike {
   return (
-    obj !== null &&
-    typeof obj === "object" &&
-    "name" in obj &&
-    "spawnCreep" in obj &&
-    "store" in obj &&
-    "room" in obj
+    obj !== null && typeof obj === "object" && "name" in obj && "spawnCreep" in obj && "store" in obj && "room" in obj
   );
 }
 

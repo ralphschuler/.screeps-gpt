@@ -89,14 +89,16 @@ describe("Type Guards", () => {
       const invalidObj = { name: "test" } as unknown as CreepLike;
 
       expect(() => asCreep(invalidObj, "TestController")).toThrow(
-        "[TestController] Invalid Creep object"
+        "[TestController] Invalid Creep object: missing required properties (name, memory, room)"
       );
     });
 
     it("should not include context prefix when not provided", () => {
       const invalidObj = { name: "test" } as unknown as CreepLike;
 
-      expect(() => asCreep(invalidObj)).toThrow("Invalid Creep object");
+      expect(() => asCreep(invalidObj)).toThrow(
+        "Invalid Creep object: missing required properties (name, memory, room)"
+      );
     });
   });
 
@@ -131,8 +133,7 @@ describe("Type Guards", () => {
 
   describe("isStructure", () => {
     beforeEach(() => {
-      (globalThis as typeof globalThis & Record<string, unknown>).STRUCTURE_SPAWN =
-        "spawn" as StructureConstant;
+      (globalThis as typeof globalThis & Record<string, unknown>).STRUCTURE_SPAWN = "spawn" as StructureConstant;
     });
 
     it("should return true for objects with structure properties", () => {
@@ -161,12 +162,10 @@ describe("Type Guards", () => {
 
   describe("Structure type guards", () => {
     beforeEach(() => {
-      (globalThis as typeof globalThis & Record<string, unknown>).STRUCTURE_SPAWN =
-        "spawn" as StructureConstant;
+      (globalThis as typeof globalThis & Record<string, unknown>).STRUCTURE_SPAWN = "spawn" as StructureConstant;
       (globalThis as typeof globalThis & Record<string, unknown>).STRUCTURE_CONTAINER =
         "container" as StructureConstant;
-      (globalThis as typeof globalThis & Record<string, unknown>).STRUCTURE_TOWER =
-        "tower" as StructureConstant;
+      (globalThis as typeof globalThis & Record<string, unknown>).STRUCTURE_TOWER = "tower" as StructureConstant;
     });
 
     describe("isSpawn", () => {
