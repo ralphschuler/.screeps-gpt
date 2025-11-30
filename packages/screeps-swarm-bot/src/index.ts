@@ -21,6 +21,7 @@ export * from "./blueprints.js";
 export * from "./nukeScoringEngine.js";
 export * from "./pheromones.js";
 export * from "./roles/index.js";
+export * from "./behavior/index.js";
 export * from "./core/logger.js";
 export * from "./core/profiler.js";
 export * from "./core/scheduler.js";

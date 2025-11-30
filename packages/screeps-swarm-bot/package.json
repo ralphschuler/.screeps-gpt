@@ -36,7 +36,8 @@
   "dependencies": {
     "@ralphschuler/screeps-cache": "workspace:*",
     "@ralphschuler/screeps-kernel": "workspace:*",
-    "@ralphschuler/screeps-logger": "workspace:*"
+    "@ralphschuler/screeps-logger": "workspace:*",
+    "@ralphschuler/screeps-xtree": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^24.9.1",
