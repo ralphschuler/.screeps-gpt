@@ -157,12 +157,13 @@ export interface PowerCreepContext {
 
 /**
  * Power Creep action types
+ * Note: renewSelf only works with StructurePowerSpawn as power creeps can only renew there
  */
 export type PowerCreepAction =
   | { type: "usePower"; power: PowerConstant; target?: RoomObject }
   | { type: "moveTo"; target: RoomPosition | RoomObject }
   | { type: "moveToRoom"; roomName: string }
-  | { type: "renewSelf"; spawn: StructurePowerSpawn | StructurePowerBank }
+  | { type: "renewSelf"; spawn: StructurePowerSpawn }
   | { type: "enableRoom" }
   | { type: "idle" };
 

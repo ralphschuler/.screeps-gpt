@@ -110,6 +110,7 @@ export type SwarmAction =
   | { type: "harvestMineral"; target: Mineral }
   | { type: "harvestDeposit"; target: Deposit }
   | { type: "pickup"; target: Resource }
+  // Withdraw works with structures, tombstones, and ruins per Screeps API
   | { type: "withdraw"; target: AnyStoreStructure | Tombstone | Ruin; resourceType: ResourceConstant }
   | { type: "transfer"; target: AnyStoreStructure; resourceType: ResourceConstant }
   | { type: "build"; target: ConstructionSite }
