@@ -1,61 +1,11 @@
 {
-  "last_successful_ping": "2025-11-30T12:44:34.231Z",
+  "last_successful_ping": "2025-11-30T17:34:31.456Z",
   "last_failed_ping": null,
   "consecutive_failures": 0,
   "health_status": "operational",
   "last_known_tick": null,
   "last_bot_status": null,
   "detection_history": [
-    {
-      "timestamp": "2025-11-28T23:07:24.116Z",
-      "status": "success",
-      "aliveness": "active"
-    },
-    {
-      "timestamp": "2025-11-28T23:13:55.323Z",
-      "status": "success",
-      "aliveness": "active"
-    },
-    {
-      "timestamp": "2025-11-28T23:15:35.715Z",
-      "status": "success",
-      "aliveness": "active"
-    },
-    {
-      "timestamp": "2025-11-28T23:33:29.007Z",
-      "status": "success",
-      "aliveness": "active"
-    },
-    {
-      "timestamp": "2025-11-29T00:07:51.851Z",
-      "status": "success",
-      "aliveness": "active"
-    },
-    {
-      "timestamp": "2025-11-29T00:10:00.787Z",
-      "status": "success",
-      "aliveness": "active"
-    },
-    {
-      "timestamp": "2025-11-29T00:11:28.703Z",
-      "status": "success",
-      "aliveness": "active"
-    },
-    {
-      "timestamp": "2025-11-29T00:23:56.199Z",
-      "status": "success",
-      "aliveness": "active"
-    },
-    {
-      "timestamp": "2025-11-29T00:25:46.790Z",
-      "status": "success",
-      "aliveness": "active"
-    },
-    {
-      "timestamp": "2025-11-29T00:47:25.361Z",
-      "status": "success",
-      "aliveness": "active"
-    },
     {
       "timestamp": "2025-11-29T01:20:25.682Z",
       "status": "success",
@@ -503,6 +453,56 @@
     },
     {
       "timestamp": "2025-11-30T12:44:34.231Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-30T13:08:44.264Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-30T13:37:03.759Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-30T14:03:04.260Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-30T14:34:59.113Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-30T15:03:09.566Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-30T15:34:04.480Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-30T16:03:09.249Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-30T16:37:36.703Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-30T17:03:07.527Z",
+      "status": "success",
+      "aliveness": "active"
+    },
+    {
+      "timestamp": "2025-11-30T17:34:31.456Z",
       "status": "success",
       "aliveness": "active"
     }
