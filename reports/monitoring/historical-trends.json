@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2025-11-30T01:31:16.108Z",
+  "generatedAt": "2025-11-30T02:38:11.879Z",
   "snapshotsAnalyzed": 21,
   "periods": {
     "sevenDay": {
@@ -8,7 +8,7 @@
       "dataPointCount": 8,
       "dateRange": {
         "start": "2025-11-23T23:36:44.782Z",
-        "end": "2025-11-30T00:47:47.925Z"
+        "end": "2025-11-30T02:38:10.008Z"
       },
       "cpu": {
         "used": {
@@ -120,7 +120,7 @@
       "dataPointCount": 21,
       "dateRange": {
         "start": "2025-11-07T23:44:43.054Z",
-        "end": "2025-11-30T00:47:47.925Z"
+        "end": "2025-11-30T02:38:10.008Z"
       },
       "cpu": {
         "used": {
