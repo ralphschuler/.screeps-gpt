@@ -309,7 +309,7 @@ describe("Stationary Harvester Depositing (Issue #1564)", () => {
     // Execute second tick - should serialize depositing state
     controller.execute(mockCreep);
     expect(creepMemory.task).toBe("depositing");
-    const serializedState1 = creepMemory.stateMachine;
+    expect(creepMemory.stateMachine).toBeDefined();
 
     // Simulate tick boundary - create new controller instance (like in game loop)
     const controller2 = new StationaryHarvesterController();
