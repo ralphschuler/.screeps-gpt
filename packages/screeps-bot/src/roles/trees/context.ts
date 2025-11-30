@@ -21,10 +21,10 @@ export interface SwarmCreepContext {
   memory: SwarmCreepMemory;
 
   /** Room's swarm state (if available) */
-  swarmState?: SwarmState;
+  swarmState: SwarmState | undefined;
 
   /** Squad memory if creep is in a squad */
-  squadMemory?: SquadMemory;
+  squadMemory: SquadMemory | undefined;
 
   /** Whether energy sources are available */
   energyAvailable: boolean;
@@ -48,13 +48,13 @@ export interface SwarmCreepContext {
   isWorking: boolean;
 
   /** Assigned source (for harvesters) */
-  assignedSource?: Source | null;
+  assignedSource: Source | null | undefined;
 
   /** Assigned mineral (for mineral harvesters) */
-  assignedMineral?: Mineral | null;
+  assignedMineral: Mineral | null | undefined;
 
   /** Target room (for remote/military operations) */
-  targetRoom?: string;
+  targetRoom: string | undefined;
 
   /** Home room name */
   homeRoom: string;
@@ -78,10 +78,10 @@ export interface SwarmCreepContext {
   towers: StructureTower[];
 
   /** Storage structure */
-  storage?: StructureStorage;
+  storage: StructureStorage | undefined;
 
   /** Terminal structure */
-  terminal?: StructureTerminal;
+  terminal: StructureTerminal | undefined;
 
   /** Hostile creeps in room */
   hostiles: Creep[];
@@ -99,7 +99,7 @@ export interface SwarmCreepContext {
   labs: StructureLab[];
 
   /** Factory in room */
-  factory?: StructureFactory;
+  factory: StructureFactory | undefined;
 }
 
 /**
@@ -110,7 +110,7 @@ export type SwarmAction =
   | { type: "harvestMineral"; target: Mineral }
   | { type: "harvestDeposit"; target: Deposit }
   | { type: "pickup"; target: Resource }
-  | { type: "withdraw"; target: AnyStoreStructure; resourceType: ResourceConstant }
+  | { type: "withdraw"; target: AnyStoreStructure | Tombstone | Ruin; resourceType: ResourceConstant }
   | { type: "transfer"; target: AnyStoreStructure; resourceType: ResourceConstant }
   | { type: "build"; target: ConstructionSite }
   | { type: "repair"; target: Structure }

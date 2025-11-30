@@ -9,8 +9,11 @@ import { DecisionTreeBuilder, type DecisionNode } from "@ralphschuler/screeps-xt
 import type { SwarmCreepContext, SwarmAction } from "./context";
 import type { RoomIntel } from "../../memory/schemas";
 
-type UtilityTree = DecisionNode<SwarmCreepContext, SwarmAction>;
-const builder = new DecisionTreeBuilder<SwarmCreepContext, SwarmAction>();
+// Import types and builder for potential future use with static trees
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _UtilityTree = DecisionNode<SwarmCreepContext, SwarmAction>;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _builder = new DecisionTreeBuilder<SwarmCreepContext, SwarmAction>();
 
 // =============================================================================
 // Helper Functions

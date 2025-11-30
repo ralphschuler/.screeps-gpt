@@ -2018,6 +2018,7 @@ __metadata:
     "@ralphschuler/screeps-events": "workspace:*"
     "@ralphschuler/screeps-kernel": "workspace:*"
     "@ralphschuler/screeps-logger": "workspace:*"
+    "@ralphschuler/screeps-xtree": "workspace:*"
     "@types/node": "npm:^24.9.1"
     "@types/screeps": "npm:^3.3.8"
     typescript: "npm:^5.4.3"
@@ -2260,7 +2261,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@ralphschuler/screeps-xtree@workspace:packages/screeps-xtree":
+"@ralphschuler/screeps-xtree@workspace:*, @ralphschuler/screeps-xtree@workspace:packages/screeps-xtree":
   version: 0.0.0-use.local
   resolution: "@ralphschuler/screeps-xtree@workspace:packages/screeps-xtree"
   dependencies:

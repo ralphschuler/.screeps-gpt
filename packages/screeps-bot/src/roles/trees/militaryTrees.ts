@@ -9,8 +9,11 @@ import { DecisionTreeBuilder, type DecisionNode } from "@ralphschuler/screeps-xt
 import type { SwarmCreepContext, SwarmAction } from "./context";
 import type { SwarmCreepMemory, SquadMemory } from "../../memory/schemas";
 
-type MilitaryTree = DecisionNode<SwarmCreepContext, SwarmAction>;
-const builder = new DecisionTreeBuilder<SwarmCreepContext, SwarmAction>();
+// Import types and builder for potential future use with static trees
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _MilitaryTree = DecisionNode<SwarmCreepContext, SwarmAction>;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _builder = new DecisionTreeBuilder<SwarmCreepContext, SwarmAction>();
 
 // =============================================================================
 // Helper Functions
@@ -57,22 +60,6 @@ function findPriorityTarget(ctx: SwarmCreepContext): Creep | null {
 
   scored.sort((a, b) => b.score - a.score);
   return scored[0]?.hostile ?? null;
-}
-
-/**
- * Find weakest hostile for quick kills
- */
-function findWeakestHostile(ctx: SwarmCreepContext): Creep | null {
-  if (ctx.hostiles.length === 0) return null;
-  return ctx.hostiles.reduce((a, b) => (a.hits < b.hits ? a : b));
-}
-
-/**
- * Find most damaged ally for healing
- */
-function findMostDamagedAlly(ctx: SwarmCreepContext): Creep | null {
-  if (ctx.damagedAllies.length === 0) return null;
-  return ctx.damagedAllies.reduce((a, b) => (a.hits / a.hitsMax < b.hits / b.hitsMax ? a : b));
 }
 
 /**

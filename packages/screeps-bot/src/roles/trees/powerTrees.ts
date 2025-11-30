@@ -8,8 +8,11 @@
 import { DecisionTreeBuilder, type DecisionNode } from "@ralphschuler/screeps-xtree";
 import type { SwarmCreepContext, SwarmAction } from "./context";
 
-type PowerTree = DecisionNode<SwarmCreepContext, SwarmAction>;
-const builder = new DecisionTreeBuilder<SwarmCreepContext, SwarmAction>();
+// Import types and builder for potential future use with static trees
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _PowerTree = DecisionNode<SwarmCreepContext, SwarmAction>;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _builder = new DecisionTreeBuilder<SwarmCreepContext, SwarmAction>();
 
 // =============================================================================
 // PowerHarvester Tree - Harvest from power banks
@@ -139,13 +142,13 @@ export interface PowerCreepContext {
   room: Room;
   homeRoom: string;
   isInHomeRoom: boolean;
-  storage?: StructureStorage;
-  terminal?: StructureTerminal;
-  factory?: StructureFactory;
+  storage: StructureStorage | undefined;
+  terminal: StructureTerminal | undefined;
+  factory: StructureFactory | undefined;
   labs: StructureLab[];
   spawns: StructureSpawn[];
   extensions: StructureExtension[];
-  powerSpawn?: StructurePowerSpawn;
+  powerSpawn: StructurePowerSpawn | undefined;
   /** Available power creep abilities */
   powers: PowerConstant[];
   /** Current ops resource count */
@@ -156,10 +159,10 @@ export interface PowerCreepContext {
  * Power Creep action types
  */
 export type PowerCreepAction =
-  | { type: "usePower"; power: PowerConstant; target?: RoomObject | RoomPosition }
+  | { type: "usePower"; power: PowerConstant; target?: RoomObject }
   | { type: "moveTo"; target: RoomPosition | RoomObject }
   | { type: "moveToRoom"; roomName: string }
-  | { type: "renewSelf"; spawn: StructureSpawn | StructurePowerSpawn }
+  | { type: "renewSelf"; spawn: StructurePowerSpawn | StructurePowerBank }
   | { type: "enableRoom" }
   | { type: "idle" };
 
@@ -170,7 +173,9 @@ export function createPowerCreepContext(powerCreep: PowerCreep): PowerCreepConte
   if (!powerCreep.room) return null;
 
   const room = powerCreep.room;
-  const homeRoom = powerCreep.memory.homeRoom ?? room.name;
+  // PowerCreep memory uses custom structure, homeRoom may be stored
+  const memory = powerCreep.memory as unknown as { homeRoom?: string };
+  const homeRoom = memory.homeRoom ?? room.name;
 
   const labs = room.find(FIND_MY_STRUCTURES, {
     filter: s => s.structureType === STRUCTURE_LAB
@@ -192,7 +197,8 @@ export function createPowerCreepContext(powerCreep: PowerCreep): PowerCreepConte
 
   const powers: PowerConstant[] = [];
   for (const power of Object.keys(powerCreep.powers) as unknown as PowerConstant[]) {
-    if (powerCreep.powers[power].cooldown === 0) {
+    const powerData = powerCreep.powers[power];
+    if (powerData && powerData.cooldown === 0) {
       powers.push(power);
     }
   }
@@ -220,9 +226,9 @@ export function createPowerCreepContext(powerCreep: PowerCreep): PowerCreepConte
 export function evaluatePowerQueen(ctx: PowerCreepContext): PowerCreepAction {
   // Check if needs renewal (ticksToLive < 1000)
   if (ctx.powerCreep.ticksToLive !== undefined && ctx.powerCreep.ticksToLive < 1000) {
-    const renewTarget = ctx.powerSpawn ?? ctx.spawns[0];
-    if (renewTarget) {
-      return { type: "renewSelf", spawn: renewTarget };
+    // Power creeps can only renew at PowerSpawn or PowerBank
+    if (ctx.powerSpawn) {
+      return { type: "renewSelf", spawn: ctx.powerSpawn };
     }
   }
 
@@ -294,9 +300,9 @@ export function evaluatePowerQueen(ctx: PowerCreepContext): PowerCreepAction {
 export function evaluatePowerWarrior(ctx: PowerCreepContext): PowerCreepAction {
   // Check if needs renewal
   if (ctx.powerCreep.ticksToLive !== undefined && ctx.powerCreep.ticksToLive < 1000) {
-    const renewTarget = ctx.powerSpawn ?? ctx.spawns[0];
-    if (renewTarget) {
-      return { type: "renewSelf", spawn: renewTarget };
+    // Power creeps can only renew at PowerSpawn or PowerBank
+    if (ctx.powerSpawn) {
+      return { type: "renewSelf", spawn: ctx.powerSpawn };
     }
   }
 
