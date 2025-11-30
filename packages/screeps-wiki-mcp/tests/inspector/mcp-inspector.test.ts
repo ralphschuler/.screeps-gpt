@@ -18,6 +18,7 @@ import { ListToolsResultSchema, ListResourcesResultSchema } from "@modelcontextp
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { existsSync } from "node:fs";
+import { execSync } from "node:child_process";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const packageRoot = resolve(__dirname, "../..");
@@ -59,7 +60,18 @@ describe("MCP SDK Client Integration - screeps-wiki-mcp", () => {
   beforeAll(async () => {
     // Ensure the server is built
     if (!existsSync(serverPath)) {
-      throw new Error(`Server not built. Run 'npm run build' in ${packageRoot} first.`);
+      console.log(`Building server at ${packageRoot}...`);
+      try {
+        execSync("npm run build", {
+          cwd: packageRoot,
+          stdio: "inherit"
+        });
+        console.log("Server build completed successfully");
+      } catch (error) {
+        throw new Error(
+          `Failed to build server. Error: ${error instanceof Error ? error.message : String(error)}`
+        );
+      }
     }
   });
 
