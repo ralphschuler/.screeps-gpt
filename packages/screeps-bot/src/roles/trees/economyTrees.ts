@@ -135,8 +135,7 @@ export function evaluateHarvester(ctx: SwarmCreepContext): SwarmAction {
     // Full - try to transfer to nearby container or link
     const container = ctx.creep.pos.findInRange(FIND_STRUCTURES, 1, {
       filter: s =>
-        s.structureType === STRUCTURE_CONTAINER &&
-        (s as StructureContainer).store.getFreeCapacity(RESOURCE_ENERGY) > 0
+        s.structureType === STRUCTURE_CONTAINER && (s as StructureContainer).store.getFreeCapacity(RESOURCE_ENERGY) > 0
     })[0] as StructureContainer | undefined;
 
     if (container) {
@@ -144,9 +143,7 @@ export function evaluateHarvester(ctx: SwarmCreepContext): SwarmAction {
     }
 
     const link = ctx.creep.pos.findInRange(FIND_MY_STRUCTURES, 1, {
-      filter: s =>
-        s.structureType === STRUCTURE_LINK &&
-        (s as StructureLink).store.getFreeCapacity(RESOURCE_ENERGY) > 0
+      filter: s => s.structureType === STRUCTURE_LINK && (s as StructureLink).store.getFreeCapacity(RESOURCE_ENERGY) > 0
     })[0] as StructureLink | undefined;
 
     if (link) {
@@ -539,7 +536,10 @@ export function evaluateFactoryWorker(ctx: SwarmCreepContext): SwarmAction {
     if (!source) return { type: "idle" };
 
     // Priority: energy, then bars
-    if (ctx.factory.store.getUsedCapacity(RESOURCE_ENERGY) < 5000 && source.store.getUsedCapacity(RESOURCE_ENERGY) > 10000) {
+    if (
+      ctx.factory.store.getUsedCapacity(RESOURCE_ENERGY) < 5000 &&
+      source.store.getUsedCapacity(RESOURCE_ENERGY) > 10000
+    ) {
       return { type: "withdraw", target: source, resourceType: RESOURCE_ENERGY };
     }
 

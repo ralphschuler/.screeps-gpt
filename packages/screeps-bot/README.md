@@ -20,6 +20,7 @@ This bot implements emergent swarm behavior inspired by ant colonies. Instead of
 ### Pheromone System
 
 Pheromone types:
+
 - `expand` - Indicates opportunity for expansion
 - `harvest` - Energy availability signal
 - `build` - Construction needs
@@ -31,6 +32,7 @@ Pheromone types:
 - `nukeTarget` - Nuke targeting priority
 
 Pheromones:
+
 - Decay over time (0.9-0.99 factor per update)
 - Diffuse to neighboring rooms
 - Are emitted periodically and on events (hostile detection, structure destroyed, etc.)
@@ -38,6 +40,7 @@ Pheromones:
 ### Room Lifecycle
 
 **Evolution Stages** (based on RCL):
+
 - `seedColony` - RCL 1-2: Basic survival
 - `earlyExpansion` - RCL 3-4: Establishing economy
 - `economicMaturity` - RCL 5-6: Full economy
@@ -45,6 +48,7 @@ Pheromones:
 - `endGame` - RCL 8: Maximum potential
 
 **Postures** (based on threat and pheromones):
+
 - `eco` - Economic focus
 - `expand` - Expansion focus
 - `defensive` - Light defense
@@ -56,6 +60,7 @@ Pheromones:
 ### Role Families
 
 **Economy:**
+
 - `larvaWorker` - Unified starter role (harvest/carry/build/upgrade)
 - `harvester` - Stationary miner with container/link
 - `hauler` - Transport energy/resources
@@ -68,6 +73,7 @@ Pheromones:
 - `factoryWorker` - Factory operation
 
 **Military:**
+
 - `guard` - Melee/ranged defender
 - `healer` - Combat healer
 - `soldier` - Offensive melee/ranged
@@ -76,6 +82,7 @@ Pheromones:
 - `squadMember` - Coordinated squad combat
 
 **Utility:**
+
 - `scout` - Room exploration and intel
 - `claimer` - Room claiming/reserving
 - `engineer` - Repairs and rampart maintenance
@@ -83,6 +90,7 @@ Pheromones:
 - `terminalManager` - Market transfers
 
 **Power:**
+
 - `powerHarvester` - Power bank harvesting
 - `powerCarrier` - Power transport
 - `powerQueen` - Economy-focused PowerCreep
@@ -108,13 +116,13 @@ export const loop = () => {
 
 ## Configuration
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `enableProfiling` | `true` | Enable CPU profiling per room/subsystem |
-| `enableDebugLogging` | `false` | Enable verbose debug logging |
-| `pheromoneUpdateInterval` | `5` | Ticks between pheromone updates |
-| `strategicUpdateInterval` | `20` | Ticks between strategic layer updates |
-| `enableVisualizations` | `true` | Enable in-game visual debugging |
+| Option                    | Default | Description                             |
+| ------------------------- | ------- | --------------------------------------- |
+| `enableProfiling`         | `true`  | Enable CPU profiling per room/subsystem |
+| `enableDebugLogging`      | `false` | Enable verbose debug logging            |
+| `pheromoneUpdateInterval` | `5`     | Ticks between pheromone updates         |
+| `strategicUpdateInterval` | `20`    | Ticks between strategic layer updates   |
+| `enableVisualizations`    | `true`  | Enable in-game visual debugging         |
 
 ## API
 
@@ -256,6 +264,7 @@ const status = getMultiShardStatus();
 ## Multi-Shard Support
 
 The architecture supports multi-shard operation with:
+
 - Shard roles (core, frontier, resource, backup)
 - Inter-shard memory for coordination
 - Portal-based colonization

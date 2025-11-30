@@ -34,7 +34,7 @@ export const DEFAULT_PHEROMONE_CONFIG: PheromoneConfig = {
   updateInterval: 5,
   decayFactors: {
     expand: 0.95,
-    harvest: 0.90,
+    harvest: 0.9,
     build: 0.92,
     upgrade: 0.93,
     defense: 0.97,
@@ -410,7 +410,7 @@ export class PheromoneManager {
 
     // Cardinal directions - handle hemisphere boundaries correctly
     // In Screeps: W1 is adjacent to E0, and N1 is adjacent to S0
-    
+
     // North (y increases towards N, decreases towards S)
     if (wy === "N") {
       neighbors.push(`${wx}${x}N${y + 1}`);

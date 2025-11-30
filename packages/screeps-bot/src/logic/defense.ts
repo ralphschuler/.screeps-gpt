@@ -267,8 +267,7 @@ export function runTowerControl(room: Room, swarm: SwarmState): void {
     if (!inCombat && swarm.posture === "eco") {
       const damaged = tower.pos.findClosestByRange(FIND_STRUCTURES, {
         filter: s =>
-          (s.structureType === STRUCTURE_ROAD || s.structureType === STRUCTURE_CONTAINER) &&
-          s.hits < s.hitsMax * 0.5
+          (s.structureType === STRUCTURE_ROAD || s.structureType === STRUCTURE_CONTAINER) && s.hits < s.hitsMax * 0.5
       });
       if (damaged) {
         tower.repair(damaged);

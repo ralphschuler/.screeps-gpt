@@ -240,9 +240,7 @@ export function evaluateSiege(ctx: SwarmCreepContext): SwarmAction {
 
   // Priority 3: Dismantle walls/ramparts
   const wall = ctx.creep.pos.findClosestByRange(FIND_STRUCTURES, {
-    filter: s =>
-      (s.structureType === STRUCTURE_WALL || s.structureType === STRUCTURE_RAMPART) &&
-      s.hits < 100000
+    filter: s => (s.structureType === STRUCTURE_WALL || s.structureType === STRUCTURE_RAMPART) && s.hits < 100000
   });
   if (wall) {
     return { type: "dismantle", target: wall };

@@ -108,7 +108,31 @@ export const ROLE_DEFINITIONS: Record<string, RoleSpawnDef> = {
       createBody([CARRY, CARRY, MOVE, MOVE], 200),
       createBody([CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE], 400),
       createBody([CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE], 600),
-      createBody([CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE], 1000)
+      createBody(
+        [
+          CARRY,
+          CARRY,
+          CARRY,
+          CARRY,
+          CARRY,
+          CARRY,
+          CARRY,
+          CARRY,
+          CARRY,
+          CARRY,
+          MOVE,
+          MOVE,
+          MOVE,
+          MOVE,
+          MOVE,
+          MOVE,
+          MOVE,
+          MOVE,
+          MOVE,
+          MOVE
+        ],
+        1000
+      )
     ],
     priority: 90,
     maxPerRoom: 4,
@@ -216,7 +240,10 @@ export const ROLE_DEFINITIONS: Record<string, RoleSpawnDef> = {
     bodies: [
       createBody([ATTACK, ATTACK, MOVE, MOVE], 260),
       createBody([ATTACK, ATTACK, ATTACK, ATTACK, MOVE, MOVE, MOVE, MOVE], 520),
-      createBody([TOUGH, TOUGH, ATTACK, ATTACK, ATTACK, ATTACK, RANGED_ATTACK, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE], 850)
+      createBody(
+        [TOUGH, TOUGH, ATTACK, ATTACK, ATTACK, ATTACK, RANGED_ATTACK, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE],
+        850
+      )
     ],
     priority: 70,
     maxPerRoom: 4,
@@ -228,7 +255,31 @@ export const ROLE_DEFINITIONS: Record<string, RoleSpawnDef> = {
     bodies: [
       createBody([WORK, WORK, MOVE, MOVE], 300),
       createBody([TOUGH, TOUGH, WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE], 620),
-      createBody([TOUGH, TOUGH, TOUGH, TOUGH, WORK, WORK, WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE], 1040)
+      createBody(
+        [
+          TOUGH,
+          TOUGH,
+          TOUGH,
+          TOUGH,
+          WORK,
+          WORK,
+          WORK,
+          WORK,
+          WORK,
+          WORK,
+          MOVE,
+          MOVE,
+          MOVE,
+          MOVE,
+          MOVE,
+          MOVE,
+          MOVE,
+          MOVE,
+          MOVE,
+          MOVE
+        ],
+        1040
+      )
     ],
     priority: 50,
     maxPerRoom: 2,
@@ -259,10 +310,7 @@ export const ROLE_DEFINITIONS: Record<string, RoleSpawnDef> = {
   claimer: {
     role: "claimer",
     family: "utility",
-    bodies: [
-      createBody([CLAIM, MOVE], 650),
-      createBody([CLAIM, CLAIM, MOVE, MOVE], 1300)
-    ],
+    bodies: [createBody([CLAIM, MOVE], 650), createBody([CLAIM, CLAIM, MOVE, MOVE], 1300)],
     priority: 50,
     maxPerRoom: 1,
     remoteRole: true
@@ -642,11 +690,13 @@ export function findBestConstructionSite(room: Room): ConstructionSite | null {
     [STRUCTURE_ROAD]: 30
   };
 
-  return sites.sort((a, b) => {
-    const pa = priorities[a.structureType] ?? 50;
-    const pb = priorities[b.structureType] ?? 50;
-    return pb - pa;
-  })[0] ?? null;
+  return (
+    sites.sort((a, b) => {
+      const pa = priorities[a.structureType] ?? 50;
+      const pb = priorities[b.structureType] ?? 50;
+      return pb - pa;
+    })[0] ?? null
+  );
 }
 
 /**
@@ -654,9 +704,7 @@ export function findBestConstructionSite(room: Room): ConstructionSite | null {
  */
 export function findBestRepairTarget(room: Room): Structure | null {
   const structures = room.find(FIND_STRUCTURES, {
-    filter: s =>
-      s.hits < s.hitsMax &&
-      (s.structureType !== STRUCTURE_WALL && s.structureType !== STRUCTURE_RAMPART)
+    filter: s => s.hits < s.hitsMax && s.structureType !== STRUCTURE_WALL && s.structureType !== STRUCTURE_RAMPART
   });
 
   if (structures.length === 0) return null;

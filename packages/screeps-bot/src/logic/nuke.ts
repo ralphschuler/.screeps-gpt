@@ -72,7 +72,10 @@ export function getStructuresInBlastZone(room: Room, nukePos: RoomPosition, radi
 /**
  * Calculate rampart strengthening needed
  */
-export function calculateRampartStrengthening(room: Room, nukes: Nuke[]): Array<{ rampart: StructureRampart; needed: number }> {
+export function calculateRampartStrengthening(
+  room: Room,
+  nukes: Nuke[]
+): Array<{ rampart: StructureRampart; needed: number }> {
   const results: Array<{ rampart: StructureRampart; needed: number }> = [];
 
   // Nuke deals 10M damage to center, 5M to adjacent
@@ -81,8 +84,7 @@ export function calculateRampartStrengthening(room: Room, nukes: Nuke[]): Array<
 
   for (const nuke of nukes) {
     const ramparts = room.find(FIND_MY_STRUCTURES, {
-      filter: s =>
-        s.structureType === STRUCTURE_RAMPART && s.pos.getRangeTo(nuke.pos) <= 2
+      filter: s => s.structureType === STRUCTURE_RAMPART && s.pos.getRangeTo(nuke.pos) <= 2
     }) as StructureRampart[];
 
     for (const rampart of ramparts) {
@@ -102,7 +104,10 @@ export function calculateRampartStrengthening(room: Room, nukes: Nuke[]): Array<
 /**
  * Prioritize nuke defense actions
  */
-export function prioritizeNukeDefenseActions(room: Room, nukes: Nuke[]): Array<{ action: string; target: Structure | RoomPosition; priority: number }> {
+export function prioritizeNukeDefenseActions(
+  room: Room,
+  nukes: Nuke[]
+): Array<{ action: string; target: Structure | RoomPosition; priority: number }> {
   const actions: Array<{ action: string; target: Structure | RoomPosition; priority: number }> = [];
 
   for (const nuke of nukes) {

@@ -222,7 +222,7 @@ export const DEFAULT_CONFIG: BotConfig = {
     updateInterval: 5,
     decayFactors: {
       expand: 0.95,
-      harvest: 0.90,
+      harvest: 0.9,
       build: 0.92,
       upgrade: 0.93,
       defense: 0.97,

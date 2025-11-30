@@ -87,11 +87,7 @@ export function getOrCreateCluster(roomName: string): ClusterMemory {
 /**
  * Add room to cluster
  */
-export function addRoomToCluster(
-  clusterId: string,
-  roomName: string,
-  type: "member" | "remote" | "forward"
-): void {
+export function addRoomToCluster(clusterId: string, roomName: string, type: "member" | "remote" | "forward"): void {
   const cluster = getClusters()[clusterId];
   if (!cluster) return;
 

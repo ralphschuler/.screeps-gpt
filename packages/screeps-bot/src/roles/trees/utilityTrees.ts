@@ -253,8 +253,7 @@ export function evaluateEngineer(ctx: SwarmCreepContext): SwarmAction {
     // Priority 2: Roads and containers
     const infrastructure = ctx.creep.pos.findClosestByRange(FIND_STRUCTURES, {
       filter: s =>
-        (s.structureType === STRUCTURE_ROAD || s.structureType === STRUCTURE_CONTAINER) &&
-        s.hits < s.hitsMax * 0.75
+        (s.structureType === STRUCTURE_ROAD || s.structureType === STRUCTURE_CONTAINER) && s.hits < s.hitsMax * 0.75
     });
 
     if (infrastructure) {

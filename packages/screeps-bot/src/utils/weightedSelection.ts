@@ -143,9 +143,7 @@ export function combineWeights<T>(
 /**
  * Create weighted entries from a record
  */
-export function fromRecord<T extends string | number | symbol>(
-  record: Record<T, number>
-): WeightedEntry<T>[] {
+export function fromRecord<T extends string | number | symbol>(record: Record<T, number>): WeightedEntry<T>[] {
   return Object.entries(record).map(([key, weight]) => ({
     key: key as T,
     weight: weight as number
@@ -155,9 +153,7 @@ export function fromRecord<T extends string | number | symbol>(
 /**
  * Convert weighted entries to a record
  */
-export function toRecord<T extends string | number | symbol>(
-  entries: WeightedEntry<T>[]
-): Record<T, number> {
+export function toRecord<T extends string | number | symbol>(entries: WeightedEntry<T>[]): Record<T, number> {
   const result = {} as Record<T, number>;
   for (const entry of entries) {
     result[entry.key] = entry.weight;

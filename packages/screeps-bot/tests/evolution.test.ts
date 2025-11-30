@@ -2,10 +2,7 @@
  * Evolution and Posture System Tests
  */
 import { describe, it, expect, beforeEach } from "vitest";
-import {
-  PostureManager,
-  calculateDangerLevel
-} from "../src/logic/evolution";
+import { PostureManager, calculateDangerLevel } from "../src/logic/evolution";
 import { createDefaultSwarmState } from "../src/memory/schemas";
 
 describe("Evolution System", () => {

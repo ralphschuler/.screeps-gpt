@@ -271,7 +271,11 @@ export const scheduler = new Scheduler();
 /**
  * Create a high-frequency task (every tick)
  */
-export function createHighFrequencyTask(name: string, execute: () => void, priority: number = 50): Omit<ScheduledTask, "lastRun"> {
+export function createHighFrequencyTask(
+  name: string,
+  execute: () => void,
+  priority: number = 50
+): Omit<ScheduledTask, "lastRun"> {
   return {
     name,
     execute,
@@ -286,7 +290,11 @@ export function createHighFrequencyTask(name: string, execute: () => void, prior
 /**
  * Create a medium-frequency task (every 5-10 ticks)
  */
-export function createMediumFrequencyTask(name: string, execute: () => void, priority: number = 30): Omit<ScheduledTask, "lastRun"> {
+export function createMediumFrequencyTask(
+  name: string,
+  execute: () => void,
+  priority: number = 30
+): Omit<ScheduledTask, "lastRun"> {
   return {
     name,
     execute,
@@ -301,7 +309,11 @@ export function createMediumFrequencyTask(name: string, execute: () => void, pri
 /**
  * Create a low-frequency task (every 20-50 ticks)
  */
-export function createLowFrequencyTask(name: string, execute: () => void, priority: number = 10): Omit<ScheduledTask, "lastRun"> {
+export function createLowFrequencyTask(
+  name: string,
+  execute: () => void,
+  priority: number = 10
+): Omit<ScheduledTask, "lastRun"> {
   return {
     name,
     execute,

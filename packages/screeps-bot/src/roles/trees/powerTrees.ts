@@ -246,10 +246,7 @@ export function evaluatePowerQueen(ctx: PowerCreepContext): PowerCreepAction {
 
   // Priority 2: OPERATE_EXTENSION when low on energy
   if (availablePowers.includes(PWR_OPERATE_EXTENSION) && ctx.ops >= 2) {
-    const totalFreeCapacity = ctx.extensions.reduce(
-      (sum, ext) => sum + ext.store.getFreeCapacity(RESOURCE_ENERGY),
-      0
-    );
+    const totalFreeCapacity = ctx.extensions.reduce((sum, ext) => sum + ext.store.getFreeCapacity(RESOURCE_ENERGY), 0);
     if (totalFreeCapacity > 0 && ctx.storage && ctx.storage.store.getUsedCapacity(RESOURCE_ENERGY) > 10000) {
       return { type: "usePower", power: PWR_OPERATE_EXTENSION, target: ctx.storage };
     }
@@ -369,7 +366,9 @@ export function evaluatePowerWarrior(ctx: PowerCreepContext): PowerCreepAction {
 export function executePowerCreepAction(powerCreep: PowerCreep, action: PowerCreepAction): void {
   switch (action.type) {
     case "usePower": {
-      const result = action.target ? powerCreep.usePower(action.power, action.target) : powerCreep.usePower(action.power);
+      const result = action.target
+        ? powerCreep.usePower(action.power, action.target)
+        : powerCreep.usePower(action.power);
       if (result === ERR_NOT_IN_RANGE && action.target) {
         powerCreep.moveTo(action.target);
       }

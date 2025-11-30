@@ -479,8 +479,7 @@ export function checkEmergencyNeeds(room: Room): ResourceConstant | null {
   if (!terminal && !storage) return null;
 
   const energy =
-    (terminal?.store.getUsedCapacity(RESOURCE_ENERGY) ?? 0) +
-    (storage?.store.getUsedCapacity(RESOURCE_ENERGY) ?? 0);
+    (terminal?.store.getUsedCapacity(RESOURCE_ENERGY) ?? 0) + (storage?.store.getUsedCapacity(RESOURCE_ENERGY) ?? 0);
 
   // Emergency if energy critically low
   if (energy < config.safetyBuffer.energy * 0.5) {
@@ -523,9 +522,7 @@ export function getMarketSummary(): {
   const market = getMarketMemory();
 
   // Calculate recent profit (last 1000 ticks)
-  const recentProfit = market.recentTrades
-    .filter(t => Game.time - t.tick < 1000)
-    .reduce((sum, t) => sum + t.profit, 0);
+  const recentProfit = market.recentTrades.filter(t => Game.time - t.tick < 1000).reduce((sum, t) => sum + t.profit, 0);
 
   const recentTrades = market.recentTrades.filter(t => Game.time - t.tick < 1000).length;
 

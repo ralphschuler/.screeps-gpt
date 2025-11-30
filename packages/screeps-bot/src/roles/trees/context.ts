@@ -154,8 +154,7 @@ export function createSwarmContext(creep: Creep): SwarmCreepContext {
 
   const containers = room.find(FIND_STRUCTURES, {
     filter: s =>
-      s.structureType === STRUCTURE_CONTAINER &&
-      (s as StructureContainer).store.getUsedCapacity(RESOURCE_ENERGY) > 100
+      s.structureType === STRUCTURE_CONTAINER && (s as StructureContainer).store.getUsedCapacity(RESOURCE_ENERGY) > 100
   }) as StructureContainer[];
 
   const spawnStructures = room.find(FIND_MY_STRUCTURES, {
@@ -167,8 +166,7 @@ export function createSwarmContext(creep: Creep): SwarmCreepContext {
 
   const towers = room.find(FIND_MY_STRUCTURES, {
     filter: s =>
-      s.structureType === STRUCTURE_TOWER &&
-      (s as StructureTower).store.getFreeCapacity(RESOURCE_ENERGY) > 200
+      s.structureType === STRUCTURE_TOWER && (s as StructureTower).store.getFreeCapacity(RESOURCE_ENERGY) > 200
   }) as StructureTower[];
 
   const sites = room.find(FIND_MY_CONSTRUCTION_SITES);

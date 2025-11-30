@@ -9,7 +9,13 @@
  */
 
 import { createSwarmContext, executeAction } from "../trees/context";
-import { evaluatePowerRole as evaluatePowerTree, createPowerCreepContext, evaluatePowerQueen, evaluatePowerWarrior, executePowerCreepAction } from "../trees/powerTrees";
+import {
+  evaluatePowerRole as evaluatePowerTree,
+  createPowerCreepContext,
+  evaluatePowerQueen,
+  evaluatePowerWarrior,
+  executePowerCreepAction
+} from "../trees/powerTrees";
 import type { SwarmCreepMemory } from "../../memory/schemas";
 
 /**
@@ -41,7 +47,7 @@ export function runPowerRole(powerCreep: PowerCreep): void {
   if (!ctx) return;
 
   const memory = getPowerCreepMemory(powerCreep);
-  
+
   let action;
   switch (memory.role) {
     case "powerQueen":

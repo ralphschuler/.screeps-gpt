@@ -71,10 +71,10 @@ export const POSTURE_PROFILES: Record<RoomPosture, SpawnProfile> = {
   eco: { economy: 0.75, military: 0.05, utility: 0.15, power: 0.05 },
   expand: { economy: 0.55, military: 0.15, utility: 0.25, power: 0.05 },
   defensive: { economy: 0.45, military: 0.35, utility: 0.15, power: 0.05 },
-  war: { economy: 0.30, military: 0.50, utility: 0.10, power: 0.10 },
-  siege: { economy: 0.20, military: 0.60, utility: 0.10, power: 0.10 },
-  evacuate: { economy: 0.10, military: 0.10, utility: 0.80, power: 0.00 },
-  nukePrep: { economy: 0.40, military: 0.30, utility: 0.20, power: 0.10 }
+  war: { economy: 0.3, military: 0.5, utility: 0.1, power: 0.1 },
+  siege: { economy: 0.2, military: 0.6, utility: 0.1, power: 0.1 },
+  evacuate: { economy: 0.1, military: 0.1, utility: 0.8, power: 0.0 },
+  nukePrep: { economy: 0.4, military: 0.3, utility: 0.2, power: 0.1 }
 };
 
 /**
@@ -138,13 +138,7 @@ export class EvolutionManager {
   /**
    * Check if room meets threshold for evolution stage
    */
-  private meetsThreshold(
-    stage: EvolutionStage,
-    room: Room,
-    rcl: number,
-    totalRooms: number,
-    gcl: number
-  ): boolean {
+  private meetsThreshold(stage: EvolutionStage, room: Room, rcl: number, totalRooms: number, gcl: number): boolean {
     const threshold = EVOLUTION_STAGES[stage];
 
     if (rcl < threshold.rcl) return false;
@@ -311,7 +305,11 @@ export class PostureManager {
 /**
  * Calculate danger level from threat metrics
  */
-export function calculateDangerLevel(hostileCount: number, damagePerTick: number, enemyStructures: boolean): 0 | 1 | 2 | 3 {
+export function calculateDangerLevel(
+  hostileCount: number,
+  damagePerTick: number,
+  enemyStructures: boolean
+): 0 | 1 | 2 | 3 {
   // Critical threat
   if (hostileCount >= 10 || damagePerTick >= 2000) {
     return 3;

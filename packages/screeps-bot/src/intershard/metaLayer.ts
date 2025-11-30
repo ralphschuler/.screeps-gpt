@@ -96,10 +96,7 @@ export function getRemoteShardMemory(shardName: string): InterShardMemorySchema 
 /**
  * Calculate shard health from local state
  */
-export function calculateShardHealth(
-  ownedRooms: string[],
-  swarms: Map<string, SwarmState>
-): ShardState["health"] {
+export function calculateShardHealth(ownedRooms: string[], swarms: Map<string, SwarmState>): ShardState["health"] {
   let totalEconomy = 0;
   let totalWar = 0;
   let totalRCL = 0;
@@ -179,10 +176,7 @@ export function determineShardRole(health: ShardState["health"]): ShardRole {
 /**
  * Update local shard state
  */
-export function updateLocalShardState(
-  ownedRooms: string[],
-  swarms: Map<string, SwarmState>
-): ShardState {
+export function updateLocalShardState(ownedRooms: string[], swarms: Map<string, SwarmState>): ShardState {
   const memory = loadInterShardMemory();
   const shardName = Game.shard?.name ?? "shard0";
 
@@ -214,10 +208,7 @@ export function rankShardsByHealth(): Array<{ shard: string; health: number }> {
 
   for (const [shardName, state] of Object.entries(memory.shards)) {
     // Combined health score
-    const health =
-      state.health.economyIndex * 0.5 +
-      (100 - state.health.warIndex) * 0.2 +
-      state.health.avgRCL * 5;
+    const health = state.health.economyIndex * 0.5 + (100 - state.health.warIndex) * 0.2 + state.health.avgRCL * 5;
 
     rankings.push({ shard: shardName, health });
   }
@@ -291,12 +282,12 @@ export function detectPortals(room: Room): PortalInfo[] {
         threatRating: 0, // Would need scouting
         lastScouted: Game.time
       };
-      
+
       // Only add decayTick if defined
       if (portal.ticksToDecay !== undefined) {
         portalInfo.decayTick = portal.ticksToDecay;
       }
-      
+
       portals.push(portalInfo);
     }
   }

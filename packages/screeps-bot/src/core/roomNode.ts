@@ -181,9 +181,7 @@ export class RoomNode {
       if (!postureManager.isCombatPosture(swarm.posture)) {
         const damaged = tower.pos.findClosestByRange(FIND_STRUCTURES, {
           filter: s =>
-            s.hits < s.hitsMax * 0.8 &&
-            s.structureType !== STRUCTURE_WALL &&
-            s.structureType !== STRUCTURE_RAMPART
+            s.hits < s.hitsMax * 0.8 && s.structureType !== STRUCTURE_WALL && s.structureType !== STRUCTURE_RAMPART
         });
         if (damaged) {
           tower.repair(damaged);

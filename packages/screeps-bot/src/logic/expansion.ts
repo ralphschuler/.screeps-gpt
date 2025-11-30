@@ -300,14 +300,21 @@ export function canHarvestMinerals(room: Room): boolean {
 /**
  * Get mineral info for room
  */
-export function getMineralInfo(room: Room): { mineral: Mineral | null; extractor: StructureExtractor | null; amount: number; type: MineralConstant | null } {
+export function getMineralInfo(room: Room): {
+  mineral: Mineral | null;
+  extractor: StructureExtractor | null;
+  amount: number;
+  type: MineralConstant | null;
+} {
   const mineral = room.find(FIND_MINERALS)[0] ?? null;
 
   if (!mineral) {
     return { mineral: null, extractor: null, amount: 0, type: null };
   }
 
-  const extractor = mineral.pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_EXTRACTOR) as StructureExtractor | undefined;
+  const extractor = mineral.pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_EXTRACTOR) as
+    | StructureExtractor
+    | undefined;
 
   return {
     mineral,
@@ -320,12 +327,17 @@ export function getMineralInfo(room: Room): { mineral: Mineral | null; extractor
 /**
  * Reaction recipes (base reactions)
  */
-export const BASE_REACTIONS: Partial<Record<string, [MineralConstant | MineralCompoundConstant, MineralConstant | MineralCompoundConstant]>> = {
+export const BASE_REACTIONS: Partial<
+  Record<string, [MineralConstant | MineralCompoundConstant, MineralConstant | MineralCompoundConstant]>
+> = {
   [RESOURCE_HYDROXIDE]: [RESOURCE_HYDROGEN, RESOURCE_OXYGEN],
   [RESOURCE_ZYNTHIUM_KEANITE]: [RESOURCE_ZYNTHIUM, RESOURCE_KEANIUM],
   [RESOURCE_UTRIUM_LEMERGITE]: [RESOURCE_UTRIUM, RESOURCE_LEMERGIUM],
   // GHODIUM requires compound inputs, not base minerals
-  [RESOURCE_GHODIUM]: [RESOURCE_ZYNTHIUM_KEANITE as MineralCompoundConstant, RESOURCE_UTRIUM_LEMERGITE as MineralCompoundConstant]
+  [RESOURCE_GHODIUM]: [
+    RESOURCE_ZYNTHIUM_KEANITE as MineralCompoundConstant,
+    RESOURCE_UTRIUM_LEMERGITE as MineralCompoundConstant
+  ]
 };
 
 /**
@@ -348,23 +360,19 @@ export function getLabNetworkState(room: Room): {
   // Input labs should be close to storage for easy refilling
   // Output labs should be within range 2 of input labs for reactions
   const storage = room.storage ?? room.terminal;
-  
+
   let inputLabs: StructureLab[] = [];
   let outputLabs: StructureLab[] = [];
 
   if (storage) {
     // Sort labs by distance to storage - closest ones are inputs
-    const sortedByStorage = [...labs].sort((a, b) => 
-      a.pos.getRangeTo(storage) - b.pos.getRangeTo(storage)
-    );
-    
+    const sortedByStorage = [...labs].sort((a, b) => a.pos.getRangeTo(storage) - b.pos.getRangeTo(storage));
+
     // First 2 closest to storage are input labs
     inputLabs = sortedByStorage.slice(0, 2);
-    
+
     // Output labs must be within range 2 of BOTH input labs
-    outputLabs = sortedByStorage.slice(2).filter(lab => 
-      inputLabs.every(input => lab.pos.getRangeTo(input) <= 2)
-    );
+    outputLabs = sortedByStorage.slice(2).filter(lab => inputLabs.every(input => lab.pos.getRangeTo(input) <= 2));
   } else {
     // Fallback: first 2 labs are input, rest are output
     inputLabs = labs.slice(0, 2);

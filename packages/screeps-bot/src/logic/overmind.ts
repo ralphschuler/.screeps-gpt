@@ -51,10 +51,7 @@ export interface ExpansionDecision {
 /**
  * Make expansion decision
  */
-export function makeExpansionDecision(
-  ownedRooms: string[],
-  swarms: Map<string, SwarmState>
-): ExpansionDecision {
+export function makeExpansionDecision(ownedRooms: string[], swarms: Map<string, SwarmState>): ExpansionDecision {
   const overmind = getOvermind();
   const config = getConfig().expansion;
 
@@ -255,10 +252,7 @@ export interface WarDecision {
 /**
  * Make war decision
  */
-export function makeWarDecision(
-  ownedRooms: string[],
-  swarms: Map<string, SwarmState>
-): WarDecision {
+export function makeWarDecision(ownedRooms: string[], swarms: Map<string, SwarmState>): WarDecision {
   const overmind = getOvermind();
 
   // Check if we have enemies

@@ -188,7 +188,11 @@ export function getPowerCreeps(): PowerCreep[] {
 /**
  * Assign power creep to room
  */
-export function assignPowerCreepToRoom(powerCreep: PowerCreep, roomName: string, role: "powerQueen" | "powerWarrior"): void {
+export function assignPowerCreepToRoom(
+  powerCreep: PowerCreep,
+  roomName: string,
+  role: "powerQueen" | "powerWarrior"
+): void {
   const memory = powerCreep.memory as unknown as SwarmCreepMemory;
   memory.homeRoom = roomName;
   memory.role = role;
@@ -242,12 +246,7 @@ export function getPowerPriority(role: "powerQueen" | "powerWarrior"): PowerCons
 /**
  * Should use power ability
  */
-export function shouldUsePower(
-  powerCreep: PowerCreep,
-  power: PowerConstant,
-  room: Room,
-  swarm: SwarmState
-): boolean {
+export function shouldUsePower(powerCreep: PowerCreep, power: PowerConstant, room: Room, swarm: SwarmState): boolean {
   const ops = powerCreep.store.getUsedCapacity(RESOURCE_OPS);
 
   // Need ops for most abilities

@@ -6,7 +6,12 @@
 
 import { memoryManager } from "./memory/manager";
 import { pheromoneManager } from "./logic/pheromone";
-import { scheduler, createHighFrequencyTask, createMediumFrequencyTask, createLowFrequencyTask } from "./core/scheduler";
+import {
+  scheduler,
+  createHighFrequencyTask,
+  createMediumFrequencyTask,
+  createLowFrequencyTask
+} from "./core/scheduler";
 import { profiler } from "./core/profiler";
 import { logger } from "./core/logger";
 import { roomManager } from "./core/roomNode";
@@ -88,83 +93,173 @@ export class SwarmBot {
    */
   private registerTasks(): void {
     // High frequency: room loops
-    scheduler.registerTask(createHighFrequencyTask("roomLoops", () => {
-      roomManager.run();
-    }, 100));
+    scheduler.registerTask(
+      createHighFrequencyTask(
+        "roomLoops",
+        () => {
+          roomManager.run();
+        },
+        100
+      )
+    );
 
     // High frequency: creep behaviors
-    scheduler.registerTask(createHighFrequencyTask("creepBehaviors", () => {
-      this.runCreepBehaviors();
-    }, 90));
+    scheduler.registerTask(
+      createHighFrequencyTask(
+        "creepBehaviors",
+        () => {
+          this.runCreepBehaviors();
+        },
+        90
+      )
+    );
 
     // High frequency: spawn management
-    scheduler.registerTask(createHighFrequencyTask("spawnManagement", () => {
-      this.runSpawnManagement();
-    }, 85));
+    scheduler.registerTask(
+      createHighFrequencyTask(
+        "spawnManagement",
+        () => {
+          this.runSpawnManagement();
+        },
+        85
+      )
+    );
 
     // High frequency: defense
-    scheduler.registerTask(createHighFrequencyTask("defense", () => {
-      this.runDefense();
-    }, 95));
+    scheduler.registerTask(
+      createHighFrequencyTask(
+        "defense",
+        () => {
+          this.runDefense();
+        },
+        95
+      )
+    );
 
     // High frequency: power creeps
-    scheduler.registerTask(createHighFrequencyTask("powerCreeps", () => {
-      this.runPowerCreeps();
-    }, 80));
+    scheduler.registerTask(
+      createHighFrequencyTask(
+        "powerCreeps",
+        () => {
+          this.runPowerCreeps();
+        },
+        80
+      )
+    );
 
     // Medium frequency: pheromone diffusion
-    scheduler.registerTask(createMediumFrequencyTask("pheromoneDiffusion", () => {
-      this.runPheromoneDiffusion();
-    }, 50));
+    scheduler.registerTask(
+      createMediumFrequencyTask(
+        "pheromoneDiffusion",
+        () => {
+          this.runPheromoneDiffusion();
+        },
+        50
+      )
+    );
 
     // Medium frequency: cluster operations
-    scheduler.registerTask(createMediumFrequencyTask("clusterOperations", () => {
-      this.runClusterOperations();
-    }, 40));
+    scheduler.registerTask(
+      createMediumFrequencyTask(
+        "clusterOperations",
+        () => {
+          this.runClusterOperations();
+        },
+        40
+      )
+    );
 
     // Medium frequency: squad management
-    scheduler.registerTask(createMediumFrequencyTask("squadManagement", () => {
-      runSquadManager();
-    }, 45));
+    scheduler.registerTask(
+      createMediumFrequencyTask(
+        "squadManagement",
+        () => {
+          runSquadManager();
+        },
+        45
+      )
+    );
 
     // Low frequency: strategic decisions
-    scheduler.registerTask(createLowFrequencyTask("strategicDecisions", () => {
-      this.runStrategicDecisions();
-    }, 30));
+    scheduler.registerTask(
+      createLowFrequencyTask(
+        "strategicDecisions",
+        () => {
+          this.runStrategicDecisions();
+        },
+        30
+      )
+    );
 
     // Low frequency: expansion
-    scheduler.registerTask(createLowFrequencyTask("expansion", () => {
-      this.runExpansion();
-    }, 25));
+    scheduler.registerTask(
+      createLowFrequencyTask(
+        "expansion",
+        () => {
+          this.runExpansion();
+        },
+        25
+      )
+    );
 
     // Low frequency: nuke management
-    scheduler.registerTask(createLowFrequencyTask("nukeManagement", () => {
-      this.runNukeManagement();
-    }, 20));
+    scheduler.registerTask(
+      createLowFrequencyTask(
+        "nukeManagement",
+        () => {
+          this.runNukeManagement();
+        },
+        20
+      )
+    );
 
     // Low frequency: market
-    scheduler.registerTask(createLowFrequencyTask("market", () => {
-      this.runMarket();
-    }, 15));
+    scheduler.registerTask(
+      createLowFrequencyTask(
+        "market",
+        () => {
+          this.runMarket();
+        },
+        15
+      )
+    );
 
     // Low frequency: multi-shard
-    scheduler.registerTask(createLowFrequencyTask("multiShard", () => {
-      this.runMultiShard();
-    }, 10));
+    scheduler.registerTask(
+      createLowFrequencyTask(
+        "multiShard",
+        () => {
+          this.runMultiShard();
+        },
+        10
+      )
+    );
 
     // Low frequency: cleanup
-    scheduler.registerTask(createLowFrequencyTask("memoryCleanup", () => {
-      const cleaned = memoryManager.cleanDeadCreeps();
-      if (cleaned > 0) {
-        logger.debug(`Cleaned ${cleaned} dead creep memory entries`);
-      }
-    }, 5));
+    scheduler.registerTask(
+      createLowFrequencyTask(
+        "memoryCleanup",
+        () => {
+          const cleaned = memoryManager.cleanDeadCreeps();
+          if (cleaned > 0) {
+            logger.debug(`Cleaned ${cleaned} dead creep memory entries`);
+          }
+        },
+        5
+      )
+    );
 
     // Low frequency: visualizations
     if (this.config.enableVisualizations) {
-      scheduler.registerTask(createLowFrequencyTask("visualizations", () => {
-        this.runVisualizations();
-      }, 1));
+      scheduler.registerTask(
+        createLowFrequencyTask(
+          "visualizations",
+          () => {
+            this.runVisualizations();
+          },
+          1
+        )
+      );
     }
   }
 
