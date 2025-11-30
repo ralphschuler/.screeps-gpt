@@ -17,7 +17,7 @@
 
 import { describe, it, expect, vi } from "vitest";
 import { RoleControllerManager } from "@runtime/behavior/RoleControllerManager";
-import type { GameContext, SpawnLike, RoomLike } from "@runtime/types/GameContext";
+import type { GameContext, SpawnLike, RoomLike, CreepLike } from "@runtime/types/GameContext";
 
 describe("Spawn Starvation Recovery (Issue #806)", () => {
   const createStarvationGameContext = (
@@ -152,7 +152,22 @@ describe("Spawn Starvation Recovery (Issue #806)", () => {
       const controller = new RoleControllerManager({}, console);
 
       // Scenario: 4 harvesters exist (at minimum), low energy
-      const game = createStarvationGameContext(220, 300, true);
+      // Must create actual mock creeps since per-room counting is now used
+      const game = createStarvationGameContext(220, 300, false);
+      const mockRoom = game.rooms["W1N1"];
+
+      // Add 4 actual harvesters to the room
+      for (let i = 0; i < 4; i++) {
+        game.creeps[`harvester-999-${i}`] = {
+          name: `harvester-999-${i}`,
+          memory: { role: "harvester" },
+          store: { getFreeCapacity: () => 0, getUsedCapacity: () => 0 },
+          room: mockRoom,
+          upgradeController: vi.fn().mockReturnValue(OK),
+          moveTo: vi.fn().mockReturnValue(OK)
+        } as unknown as CreepLike;
+      }
+
       const memory = {
         creepCounter: 4,
         roles: { harvester: 4 }
