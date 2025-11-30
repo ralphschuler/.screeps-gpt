@@ -13,9 +13,12 @@ export interface PheromoneUpdateOptions {
 }
 
 export function decaySignals(signals: PheromoneSignals): PheromoneSignals {
-  return Object.fromEntries(
-    Object.entries(signals).map(([key, value]) => [key, Math.max(0, value * PHEROMONE_DECAY)])
-  ) as PheromoneSignals;
+  const entries = Object.entries(signals) as Array<[keyof PheromoneSignals, number]>;
+  const result: PheromoneSignals = { ...signals };
+  for (const [key, value] of entries) {
+    result[key] = Math.max(0, value * PHEROMONE_DECAY);
+  }
+  return result;
 }
 
 export function updateSignals(signals: PheromoneSignals, options: PheromoneUpdateOptions): void {

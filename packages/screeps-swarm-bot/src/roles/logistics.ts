@@ -5,14 +5,14 @@ export function pickEnergyTarget(room: Room): StructureSpawn | StructureExtensio
       (struct as StructureSpawn | StructureExtension).store.getFreeCapacity(RESOURCE_ENERGY) > 0
   }) as Array<StructureSpawn | StructureExtension>;
   if (priority.length > 0) {
-    return priority[0];
+    return priority[0] ?? null;
   }
 
   const towers = room.find(FIND_MY_STRUCTURES, {
     filter: struct => struct.structureType === STRUCTURE_TOWER &&
       (struct as StructureTower).store.getFreeCapacity(RESOURCE_ENERGY) > 100
   }) as StructureTower[];
-  if (towers.length > 0) return towers[0];
+  if (towers.length > 0) return towers[0] ?? null;
 
   return room.storage ?? null;
 }

@@ -4,7 +4,7 @@ import type { SwarmMemoryRoot } from "./types.js";
 import "./processes/index.js";
 
 const kernel = new Kernel({
-  logger: new Logger({ minLevel: "info" })
+  logger: new Logger({ minLevel: "info" }) as unknown as import("@ralphschuler/screeps-kernel").Logger
 });
 
 /**

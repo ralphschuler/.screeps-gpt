@@ -80,9 +80,9 @@ function moveToHarvest(creep: Creep): void {
 }
 
 function runHarvester(creep: Creep): void {
-  const memory = creep.memory as { targetRoom?: string; home?: string };
-  if (memory.targetRoom && creep.room.name !== memory.targetRoom) {
-    const exit = selectExitTowards(creep.room, memory.targetRoom);
+  const creepMemory = creep.memory as { targetRoom?: string; homeRoom?: string };
+  if (creepMemory.targetRoom && creep.room.name !== creepMemory.targetRoom) {
+    const exit = selectExitTowards(creep.room, creepMemory.targetRoom);
     if (exit) creep.moveTo(exit, { reusePath: 6 });
     return;
   }
@@ -176,8 +176,8 @@ function runLarvaWorker(creep: Creep): void {
 }
 
 function runForagerAnt(creep: Creep): void {
-  const memory = creep.memory as { targetRoom?: string; home?: string };
-  const targetRoom = memory.targetRoom ?? memory.home;
+  const creepMemory = creep.memory as { targetRoom?: string; homeRoom?: string };
+  const targetRoom = creepMemory.targetRoom ?? creepMemory.homeRoom;
   if (targetRoom && creep.room.name !== targetRoom) {
     const exit = selectExitTowards(creep.room, targetRoom);
     if (exit) creep.moveTo(exit, { reusePath: 10 });
@@ -215,13 +215,13 @@ function runBuilderAnt(creep: Creep): void {
 }
 
 function runQueenCarrier(creep: Creep): void {
-  const memory = creep.memory as { targetRoom?: string; home?: string };
-  const inTargetRoom = memory.targetRoom && creep.room.name === memory.targetRoom;
+  const creepMemory = creep.memory as { targetRoom?: string; homeRoom?: string };
+  const inTargetRoom = creepMemory.targetRoom && creep.room.name === creepMemory.targetRoom;
   const hasEnergy = creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
 
   if (!hasEnergy) {
-    if (memory.home && creep.room.name !== memory.home) {
-      const exit = selectExitTowards(creep.room, memory.home);
+    if (creepMemory.homeRoom && creep.room.name !== creepMemory.homeRoom) {
+      const exit = selectExitTowards(creep.room, creepMemory.homeRoom);
       if (exit) creep.moveTo(exit, { reusePath: 5 });
       return;
     }
@@ -239,8 +239,8 @@ function runQueenCarrier(creep: Creep): void {
     return;
   }
 
-  if (memory.targetRoom && !inTargetRoom) {
-    const exit = selectExitTowards(creep.room, memory.targetRoom);
+  if (creepMemory.targetRoom && !inTargetRoom) {
+    const exit = selectExitTowards(creep.room, creepMemory.targetRoom);
     if (exit) creep.moveTo(exit, { reusePath: 5 });
     return;
   }
@@ -249,8 +249,8 @@ function runQueenCarrier(creep: Creep): void {
 }
 
 function runMineralHarvester(creep: Creep): void {
-  const memory = creep.memory as { targetRoom?: string; home?: string };
-  const targetRoom = memory.targetRoom ?? memory.home;
+  const creepMemory = creep.memory as { targetRoom?: string; homeRoom?: string };
+  const targetRoom = creepMemory.targetRoom ?? creepMemory.homeRoom;
   if (targetRoom && creep.room.name !== targetRoom) {
     const exit = selectExitTowards(creep.room, targetRoom);
     if (exit) creep.moveTo(exit, { reusePath: 10 });
@@ -274,9 +274,9 @@ function runMineralHarvester(creep: Creep): void {
 }
 
 function runDepositHarvester(creep: Creep): void {
-  const memory = creep.memory as { targetRoom?: string; home?: string };
-  const home = memory.home ?? creep.room.name;
-  const targetRoom = memory.targetRoom ?? home;
+  const creepMemory = creep.memory as { targetRoom?: string; homeRoom?: string };
+  const homeRoom = creepMemory.homeRoom ?? creep.room.name;
+  const targetRoom = creepMemory.targetRoom ?? homeRoom;
   if (targetRoom && creep.room.name !== targetRoom) {
     const exit = selectExitTowards(creep.room, targetRoom);
     if (exit) creep.moveTo(exit, { reusePath: 6 });
@@ -355,9 +355,9 @@ function runEngineer(creep: Creep): void {
 }
 
 function runRemoteWorker(creep: Creep): void {
-  const memory = creep.memory as { targetRoom?: string; home?: string };
-  if (memory.targetRoom && creep.room.name !== memory.targetRoom) {
-    const exit = selectExitTowards(creep.room, memory.targetRoom);
+  const creepMemory = creep.memory as { targetRoom?: string; homeRoom?: string };
+  if (creepMemory.targetRoom && creep.room.name !== creepMemory.targetRoom) {
+    const exit = selectExitTowards(creep.room, creepMemory.targetRoom);
     if (exit) creep.moveTo(exit, { reusePath: 8 });
     return;
   }
@@ -392,7 +392,7 @@ function runScoutAnt(creep: Creep): void {
   const exits = creep.room.find(FIND_EXIT);
   if (exits.length === 0) return;
   const target = exits[Math.floor(Math.random() * exits.length)];
-  creep.moveTo(target, { reusePath: 10 });
+  if (target) creep.moveTo(target, { reusePath: 10 });
 }
 
 function runClaimAnt(creep: Creep): void {
@@ -460,7 +460,7 @@ function runSoldierAnt(creep: Creep): void {
     }
     return;
   }
-  const rally = Game.flags.Rally;
+  const rally = Game.flags["Rally"];
   if (rally) creep.moveTo(rally, { reusePath: 10 });
   else patrol(creep);
 }

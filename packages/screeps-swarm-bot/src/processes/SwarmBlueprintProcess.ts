@@ -30,7 +30,11 @@ export class SwarmBlueprintProcess {
       const key = `${placement.type}:${placement.x}:${placement.y}`;
       if (!existing.has(key)) {
         deficit += 1;
-        this.ensureConstructionSite(room, placement, controllerLevel);
+        // Only attempt to place buildable structures
+        if (placement.type !== STRUCTURE_CONTROLLER && placement.type !== STRUCTURE_KEEPER_LAIR && 
+            placement.type !== STRUCTURE_PORTAL && placement.type !== STRUCTURE_POWER_BANK) {
+          this.ensureConstructionSite(room, placement as { type: BuildableStructureConstant; x: number; y: number }, controllerLevel);
+        }
       }
     }
 
@@ -39,7 +43,7 @@ export class SwarmBlueprintProcess {
     }
   }
 
-  private ensureConstructionSite(room: Room, placement: { type: StructureConstant; x: number; y: number }, controllerLevel: number): void {
+  private ensureConstructionSite(room: Room, placement: { type: BuildableStructureConstant; x: number; y: number }, controllerLevel: number): void {
     const allowed = CONTROLLER_STRUCTURES[placement.type]?.[controllerLevel] ?? 0;
     if (allowed === 0) return;
 

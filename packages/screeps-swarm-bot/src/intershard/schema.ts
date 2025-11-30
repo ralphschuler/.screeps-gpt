@@ -6,6 +6,7 @@ export interface InterShardSnapshot {
       economyIndex: number;
       warIndex: number;
       cpuBucket: number;
+      lastUpdated: number;
       portals?: Array<{ room: string; target: string; danger: number }>;
     }
   >;

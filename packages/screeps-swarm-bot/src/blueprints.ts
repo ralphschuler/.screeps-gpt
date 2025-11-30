@@ -83,7 +83,6 @@ export const BLUEPRINTS: BlueprintDefinition[] = [
 ];
 
 export function selectBlueprint(controllerLevel: number): BlueprintDefinition {
-  return (
-    BLUEPRINTS.find(bp => controllerLevel >= bp.rclMin && controllerLevel <= bp.rclMax) ?? BLUEPRINTS[0]
-  );
+  const blueprint = BLUEPRINTS.find(bp => controllerLevel >= bp.rclMin && controllerLevel <= bp.rclMax);
+  return blueprint ?? BLUEPRINTS[0]!;
 }
