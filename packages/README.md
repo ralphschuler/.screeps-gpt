@@ -17,6 +17,7 @@ This directory contains the core packages for the Screeps GPT AI system. This gu
 | `screeps-profiler/` | CPU profiler                   | Medium   |
 | `screeps-logger/`   | Logging infrastructure         | Medium   |
 | `screeps-events/`   | Event bus and handlers         | Medium   |
+| `screeps-swarm-bot/`| Swarm-intelligence bot scaffold| Medium   |
 | `screeps-xstate/`   | State machine implementation   | Lower    |
 | `screeps-xtree/`    | Behavior tree library          | Lower    |
 | `screeps-tasks/`    | Task management system         | Lower    |
