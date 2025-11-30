@@ -2,7 +2,7 @@
  * Test setup - defines Screeps global constants
  */
 
-import { beforeEach } from "vitest";
+import { beforeEach, vi } from "vitest";
 
 beforeEach(() => {
   // Body part constants
@@ -24,6 +24,15 @@ beforeEach(() => {
   (globalThis as typeof globalThis & Record<string, unknown>).STRUCTURE_ROAD = "road" as StructureConstant;
   (globalThis as typeof globalThis & Record<string, unknown>).STRUCTURE_CONTROLLER = "controller" as StructureConstant;
   (globalThis as typeof globalThis & Record<string, unknown>).STRUCTURE_WALL = "constructedWall" as StructureConstant;
+  (globalThis as typeof globalThis & Record<string, unknown>).STRUCTURE_RAMPART = "rampart" as StructureConstant;
+  (globalThis as typeof globalThis & Record<string, unknown>).STRUCTURE_TERMINAL = "terminal" as StructureConstant;
+  (globalThis as typeof globalThis & Record<string, unknown>).STRUCTURE_LAB = "lab" as StructureConstant;
+  (globalThis as typeof globalThis & Record<string, unknown>).STRUCTURE_FACTORY = "factory" as StructureConstant;
+  (globalThis as typeof globalThis & Record<string, unknown>).STRUCTURE_NUKER = "nuker" as StructureConstant;
+  (globalThis as typeof globalThis & Record<string, unknown>).STRUCTURE_OBSERVER = "observer" as StructureConstant;
+  (globalThis as typeof globalThis & Record<string, unknown>).STRUCTURE_POWER_SPAWN = "powerSpawn" as StructureConstant;
+  (globalThis as typeof globalThis & Record<string, unknown>).STRUCTURE_EXTRACTOR = "extractor" as StructureConstant;
+  (globalThis as typeof globalThis & Record<string, unknown>).STRUCTURE_LINK = "link" as StructureConstant;
 
   // Resource constants
   (globalThis as typeof globalThis & Record<string, unknown>).RESOURCE_ENERGY = "energy" as ResourceConstant;
@@ -49,4 +58,26 @@ beforeEach(() => {
 
   // Misc constants
   (globalThis as typeof globalThis & Record<string, unknown>).MAX_CREEP_SIZE = 50;
+
+  // Mock Game object
+  (globalThis as typeof globalThis & Record<string, unknown>).Game = {
+    time: 1000,
+    rooms: {},
+    creeps: {},
+    spawns: {},
+    cpu: {
+      getUsed: vi.fn(() => 0.5),
+      limit: 20,
+      bucket: 5000
+    },
+    gcl: { level: 1, progress: 0, progressTotal: 1000 },
+    gpl: { level: 0, progress: 0, progressTotal: 1000 }
+  };
+
+  // Mock Memory object
+  (globalThis as typeof globalThis & Record<string, unknown>).Memory = {
+    rooms: {},
+    creeps: {}
+  };
 });
+
