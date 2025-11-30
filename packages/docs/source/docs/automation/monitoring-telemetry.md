@@ -124,7 +124,7 @@ Creates daily snapshots with complete game state:
     }
   },
   "rooms": {
-    "E54N39": {
+    "W1N6": {
       "rcl": 3,
       "energy": 450,
       "energyCapacity": 800,
@@ -178,6 +178,41 @@ SCREEPS_PORT       # Server port (optional)
 SCREEPS_PROTOCOL   # Protocol (default: https)
 ```
 
+## Controller Health Monitoring
+
+### Overview
+
+Controller health monitoring analyzes bot snapshots to detect controller downgrade risks. It generates alerts at three severity levels:
+
+- **Critical**: <12 hours until downgrade
+- **Warning**: 12-24 hours until downgrade
+- **Info**: 24-48 hours until downgrade
+
+**Script**: `packages/utilities/scripts/check-controller-health.ts`
+
+### Room Exclusions
+
+Certain rooms are excluded from controller downgrade monitoring to prevent false alerts:
+
+| Room    | Reason                                                    |
+| ------- | --------------------------------------------------------- |
+| E54N39  | Mock/test room used in `screeps-server-mockup` and tests  |
+
+**Configuration**: The exclusion list is defined in `check-controller-health.ts`:
+
+```typescript
+const MOCK_ROOM_NAME = "E54N39";
+```
+
+This prevents test snapshots from generating spurious production alerts when mock data is present in the monitoring artifacts.
+
+### Room Validation
+
+Only valid Screeps room names are processed. The regex pattern `^[EW]\d+[NS]\d+$` filters out:
+- Metadata entries (e.g., "count")
+- Invalid room names
+- Mock rooms (via explicit exclusion)
+
 ## Monitoring Workflow
 
 Workflow runs every 30 minutes via cron:
@@ -185,8 +220,9 @@ Workflow runs every 30 minutes via cron:
 1. **PTR Stats Collection** - Multi-source telemetry
 2. **Bot Snapshot** - Daily state snapshot
 3. **Health Validation** - Quality checks
-4. **Analytics** - Generate insights
-5. **Alerts** - Notify on issues
+4. **Controller Health** - Downgrade risk detection
+5. **Analytics** - Generate insights
+6. **Alerts** - Notify on issues
 
 ## File Locations
 
