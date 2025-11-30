@@ -106,6 +106,12 @@ export class HarvesterController extends BaseRoleController<HarvesterMemory> {
     } else if (currentState === "harvesting") {
       comm?.say(creep, "⛏️");
 
+      // Check if full FIRST, before any other actions (per hauler pattern)
+      // This ensures immediate state transition when full, preventing source blocking
+      if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+        machine.send({ type: "ENERGY_FULL" });
+      }
+
       // Note: We intentionally do NOT pick up dropped energy during harvesting state.
       // Picking up energy can prematurely fill the creep and trigger ENERGY_FULL transition
       // before the creep has had a chance to harvest from the source.
@@ -118,11 +124,6 @@ export class HarvesterController extends BaseRoleController<HarvesterMemory> {
           if (result === ERR_NOT_IN_RANGE) {
             // Use ignoreCreeps for better routing through narrow passages
             creep.moveTo(source, { range: 1, reusePath: 30, ignoreCreeps: true });
-          }
-
-          // Check if full
-          if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
-            machine.send({ type: "ENERGY_FULL" });
           }
         } else {
           machine.send({ type: "SOURCE_DEPLETED" });

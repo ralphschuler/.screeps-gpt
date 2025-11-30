@@ -148,15 +148,16 @@ export class StationaryHarvesterController extends BaseRoleController<Stationary
     if (currentState === "harvesting") {
       comm?.say(creep, "⛏️");
 
+      // Check if full FIRST, before any other actions (per hauler pattern)
+      // This ensures immediate state transition when full, preventing source blocking
+      if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+        machine.send({ type: "ENERGY_FULL" });
+      }
+
       // Move to source if not in range
       const harvestResult = creep.harvest(source);
       if (harvestResult === ERR_NOT_IN_RANGE) {
         creep.moveTo(source, { range: 1, reusePath: 50 });
-      }
-
-      // Check if full and should transition to depositing
-      if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
-        machine.send({ type: "ENERGY_FULL" });
       }
 
       // While harvesting, if we have any energy and container is adjacent, deposit opportunistically

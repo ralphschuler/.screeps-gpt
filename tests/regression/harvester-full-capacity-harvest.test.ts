@@ -235,6 +235,11 @@ describe("Harvester Full Capacity Harvest (Issue #1501, #1504)", () => {
     // Should have harvested multiple times
     expect(harvests).toBeGreaterThanOrEqual(10); // At least 10 harvests to fill 50 capacity @ 4/tick
 
+    // After becoming full, the transition to delivering happens at the START of the next tick
+    // (per the hauler pattern - check fullness first before any actions)
+    // Run one more tick to trigger the transition
+    controller.execute(mockCreep);
+
     // Should now be in delivering state
     expect(creepMemory.task).toBe("delivering");
 
