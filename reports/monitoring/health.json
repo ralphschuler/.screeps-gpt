@@ -1,16 +1,11 @@
 {
   "last_successful_ping": "2025-12-01T02:53:41.483Z",
-  "last_failed_ping": "2025-12-01T03:33:21.110Z",
-  "consecutive_failures": 1,
-  "health_status": "degraded",
+  "last_failed_ping": "2025-12-01T04:22:01.474Z",
+  "consecutive_failures": 2,
+  "health_status": "critical",
   "last_known_tick": null,
   "last_bot_status": "unknown",
   "detection_history": [
-    {
-      "timestamp": "2025-11-29T09:03:03.668Z",
-      "status": "success",
-      "aliveness": "active"
-    },
     {
       "timestamp": "2025-11-29T09:34:14.663Z",
       "status": "success",
@@ -503,6 +498,12 @@
     },
     {
       "timestamp": "2025-12-01T03:33:21.110Z",
+      "status": "failure",
+      "aliveness": "unknown",
+      "error": "Not Authorized"
+    },
+    {
+      "timestamp": "2025-12-01T04:22:01.474Z",
       "status": "failure",
       "aliveness": "unknown",
       "error": "Not Authorized"
