@@ -1,7 +1,7 @@
 {
   "status": "all_sources_unavailable",
   "failureType": "infrastructure_failure",
-  "timestamp": "2025-12-01T09:05:21.143Z",
+  "timestamp": "2025-12-01T09:40:48.699Z",
   "shard": "shard3",
   "error": "Both Stats API and Console telemetry sources failed",
   "attempted_sources": [
