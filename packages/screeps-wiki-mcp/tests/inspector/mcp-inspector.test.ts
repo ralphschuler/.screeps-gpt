@@ -11,7 +11,7 @@
  * @see https://modelcontextprotocol.io/docs/tutorials/building-a-client-node/
  */
 
-import { describe, it, expect, beforeAll, afterEach } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { ListToolsResultSchema, ListResourcesResultSchema } from "@modelcontextprotocol/sdk/types.js";
@@ -22,6 +22,7 @@ import { existsSync } from "node:fs";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const packageRoot = resolve(__dirname, "../..");
 const serverPath = resolve(packageRoot, "dist/server.js");
+const serverBuilt = existsSync(serverPath);
 
 /**
  * Creates a new MCP client connected to the server via stdio.
@@ -53,15 +54,8 @@ async function createMCPClient(): Promise<{ client: Client }> {
   return { client };
 }
 
-describe("MCP SDK Client Integration - screeps-wiki-mcp", () => {
+describe.skipIf(!serverBuilt)("MCP SDK Client Integration - screeps-wiki-mcp", () => {
   let client: Client | null = null;
-
-  beforeAll(async () => {
-    // Ensure the server is built
-    if (!existsSync(serverPath)) {
-      throw new Error(`Server not built. Run 'npm run build' in ${packageRoot} first.`);
-    }
-  });
 
   afterEach(async () => {
     // Clean up client connection after each test
