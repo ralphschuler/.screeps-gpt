@@ -84,44 +84,32 @@ All agents should reference these documents before making changes:
 
 Agents working on runtime code should understand:
 
-- `packages/bot/src/runtime/bootstrap/` - Kernel orchestration and system wiring
-- `packages/bot/src/runtime/behavior/` - Creep roles and spawn logic using state machines
-  - `stateMachines/` - State machine definitions for each role
-  - `controllers/` - Role controller implementations
-  - `RoleControllerManager.ts` - Orchestrates all role controllers (registered as kernel process)
-  - `StateMachineManager.ts` - Manages state machine lifecycle
-- `packages/bot/src/runtime/memory/` - Memory consistency helpers
-- `packages/bot/src/runtime/metrics/` - CPU tracking and performance accounting
-- `packages/bot/src/runtime/respawn/` - Automatic respawn detection
-- `packages/bot/src/runtime/evaluation/` - Health reports and improvement recommendations
-- `packages/bot/src/shared/` - Shared contracts and types
+- `packages/screeps-bot/src/` - Main bot implementation using ant colony swarm intelligence
+  - `SwarmBot.ts` - Main bot controller class
+  - `core/` - Logger, profiler, scheduler, and room management
+  - `memory/` - Memory schemas and management
+  - `logic/` - Pheromone system, evolution, defense, expansion, and strategic layers
+  - `roles/` - Creep role families (economy, military, utility, power)
+  - `layouts/` - Blueprint system for structure placement
+  - `intershard/` - Multi-shard coordination via InterShardMemory
 - `packages/utilities/scripts/` - Build, deploy, and automation scripts
 - `tests/` - Unit, e2e, regression, and mockup test suites (root level)
 - `reports/` - Persistent analysis artifacts (root level)
 
-**Behavior Architecture (State Machines):**
+**Bot Architecture (Swarm Intelligence):**
 
-The bot uses a **state machine architecture** for creep behaviors:
+The bot uses an **ant colony-inspired swarm intelligence architecture**:
 
-- Each role (harvester, upgrader, builder, etc.) is implemented as a dedicated state machine
-- State machines define explicit states (idle, harvesting, delivering, etc.) and valid transitions
-- Role controllers implement the `RoleController` interface and manage state machine execution
-- `RoleControllerManager` orchestrates all roles and integrates with the kernel as a process
-- `StateMachineManager` handles state machine initialization, persistence, and cleanup
+- **Pheromone Layer** - Room-level signals that decay over time and diffuse to neighboring rooms
+- **Room Layer** - Evolution stages (seedColony → endGame) and postures (eco, expand, defensive, war, siege)
+- **Cluster Layer** - Groups of rooms that coordinate resources and defense
+- **Strategic Layer** - Empire-wide decisions for expansion and war
+- **Agent Layer** - Individual creeps using simple heuristics for task selection
+- **Multi-Shard Layer** - Cross-shard coordination via InterShardMemory
 
 **Key Documentation:**
 
-- [ADR-004: State Machine Architecture](packages/docs/source/docs/strategy/decisions/adr-004-state-machine-behavior-architecture.md)
-- [Behavior State Machines](packages/docs/source/docs/runtime/architecture/behavior-state-machines.md)
-- [Behavior Migration Guide](packages/docs/source/docs/operations/behavior-migration-guide.md)
-
-**DEPRECATED PATTERNS:**
-
-- ❌ `BehaviorController` - Monolithic behavior controller (removed in Issue #1267)
-- ❌ `USE_MODULAR_CONTROLLERS` - Feature flag (removed in Issue #1267)
-- ❌ Switch-based role dispatch - Use state machines and role controllers instead
-
-All new behavior development MUST use the state machine pattern. Do not reference or reintroduce deprecated patterns.
+- [Screeps Bot README](packages/screeps-bot/README.md) - Full API documentation and architecture overview
 
 ## Operational Rules
 
@@ -147,7 +135,7 @@ All new behavior development MUST use the state machine pattern. Do not referenc
 ### 2. Coding Standards
 
 - TypeScript must compile with the strict settings defined in `tsconfig.json`. Avoid using `any` unless there is no alternative and document why.
-- Prefer small, testable modules. Share contracts through `packages/bot/src/shared/` rather than duplicating types.
+- Prefer small, testable modules. Share contracts through the screeps-bot memory schemas rather than duplicating types.
 - Add TSDoc blocks for exported classes and functions when behaviour is non-trivial.
 - Keep runtime code deterministic; guard use of `Math.random()` behind helper utilities if predictable output matters for tests.
 - Node.js 18.x–22.x is the supported runtime window (see `.nvmrc` for the default Node 20 toolchain).

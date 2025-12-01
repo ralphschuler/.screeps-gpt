@@ -2,11 +2,7 @@ import { mkdirSync, writeFileSync, existsSync, readFileSync } from "node:fs";
 import { resolve, relative } from "node:path";
 import process from "node:process";
 import { ScreepsAPI } from "screeps-api";
-import {
-  type ProfilerMemory,
-  type ProfilerSnapshot,
-  calculateProfilerSummary
-} from "../../bot/src/shared/profiler-types";
+import { type ProfilerMemory, type ProfilerSnapshot, calculateProfilerSummary } from "./types/profiler-types";
 
 interface ConsoleResponse {
   ok: number;

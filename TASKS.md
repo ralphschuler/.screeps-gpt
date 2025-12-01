@@ -46,16 +46,14 @@
 ### Phase 1: Foundation (HIGH Priority)
 
 - [x] Complete Phase 1 bootstrapping and RCL 1-2 foundation _(2025-11-06)_
-  - Project structure already established (packages/bot/src/runtime, packages/bot/src/shared, packages/bot/src/main.ts)
+  - Project structure migrated to packages/screeps-bot for swarm intelligence architecture
   - TypeScript strict mode enabled, formatting and linting configured
-  - Main game loop implemented with kernel orchestration
-  - Memory initialization and reset hooks implemented via MemoryManager
-  - Creep and spawn management implemented with harvester, upgrader, builder roles
-  - Construction planning implemented with BasePlanner for extensions and containers
-  - Pixel generation implemented with PixelGenerator (triggers when bucket full)
-  - Structured logging implemented with Logger (timestamps, log levels, context)
-  - Unit tests added for memory bootstrapping, pixel generation, and logging
-  - Regression test added for extension placement at RCL 1-2
+  - Main game loop implemented with SwarmBot controller
+  - Memory initialization via MemoryManager with pheromone-based coordination
+  - Creep roles implemented: economy (harvester, hauler, builder, upgrader), military, utility, power
+  - Construction planning implemented with blueprint system for structure placement
+  - Profiler, scheduler, and visualization systems
+  - Unit tests added for memory schemas, evolution, blueprints, and weighted selection
 - [ ] Implement enhanced spawn priority system with energy threshold checks
 - [x] Add container-based harvesting for improved efficiency _(2025-11-17)_
   - Stationary harvester role implemented with 5 WORK parts
@@ -70,12 +68,12 @@
 ### Phase 2: Core Framework (In Progress)
 
 - [x] Design and implement task queue system with priority levels _(2025-11-06)_
-  - Task interface defined in packages/bot/src/shared/contracts.ts
-  - TaskManager enhanced with improved generation and assignment
+  - Task scheduling via SwarmBot scheduler with priority-based execution
+  - High, medium, and low frequency tasks with configurable intervals
   - Regression test added for task assignment scenarios
   - Documentation updated in docs/automation/overview.md
 - [x] Implement spawn queue system with dynamic part generation _(2025-11-06)_
-  - SpawnManager class with priority-based spawn queue
+  - SpawnManager with roulette-driven role selection from spawn profiles
   - Dynamic body part generation based on available energy
   - Cold boot recovery logic for empty room scenarios
   - 17 regression tests covering all spawn scenarios

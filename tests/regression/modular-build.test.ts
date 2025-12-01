@@ -1,8 +1,8 @@
 /**
- * Regression test for modular deployment architecture
+ * Regression test for build system
  *
- * This test ensures that the modular build system works correctly and
- * maintains backward compatibility with the single-bundle approach.
+ * This test ensures that the build system works correctly and produces
+ * the expected output for deployment to Screeps.
  *
  * Related issue: ralphschuler/.screeps-gpt#158 - Implement modular deployment architecture
  */
@@ -44,7 +44,7 @@ async function releaseLock(): Promise<void> {
   }
 }
 
-describe.sequential("Modular Build System Regression", () => {
+describe.sequential("Build System Regression", () => {
   beforeAll(async () => {
     await acquireLock();
   });
@@ -52,8 +52,9 @@ describe.sequential("Modular Build System Regression", () => {
   afterAll(async () => {
     await releaseLock();
   });
-  it("should produce single bundle by default", async () => {
-    // Clear MODULAR_BUILD env var
+
+  it("should produce single bundle (main.js)", async () => {
+    // Clear MODULAR_BUILD env var to use default single bundle mode
     const originalEnv = process.env.MODULAR_BUILD;
     delete process.env.MODULAR_BUILD;
 
@@ -75,63 +76,22 @@ describe.sequential("Modular Build System Regression", () => {
     }
   });
 
-  it("should produce multiple modules when MODULAR_BUILD=true", async () => {
+  it("should generate sourcemap for main.js", async () => {
     const originalEnv = process.env.MODULAR_BUILD;
-    process.env.MODULAR_BUILD = "true";
+    delete process.env.MODULAR_BUILD;
 
     try {
       await buildProject(false);
 
       const distDir = resolve("dist");
       const files = await readdir(distDir);
-      const jsFiles = files.filter(f => f.endsWith(".js"));
 
-      // Should have multiple module files
-      expect(jsFiles.length).toBeGreaterThan(1);
-      expect(jsFiles).toContain("main.js");
-
-      // Should have runtime modules
-      expect(jsFiles).toContain("behavior.js");
-      expect(jsFiles).toContain("bootstrap.js");
-      expect(jsFiles).toContain("evaluation.js");
-      expect(jsFiles).toContain("memory.js");
-      expect(jsFiles).toContain("metrics.js");
-      expect(jsFiles).toContain("respawn.js");
+      // Should have main.js.map
+      expect(files).toContain("main.js.map");
     } finally {
       // Restore env
       if (originalEnv !== undefined) {
         process.env.MODULAR_BUILD = originalEnv;
-      } else {
-        delete process.env.MODULAR_BUILD;
-      }
-    }
-  });
-
-  it("should generate sourcemaps for all modules", async () => {
-    const originalEnv = process.env.MODULAR_BUILD;
-    process.env.MODULAR_BUILD = "true";
-
-    try {
-      await buildProject(false);
-
-      const distDir = resolve("dist");
-      const files = await readdir(distDir);
-      const jsFiles = files.filter(f => f.endsWith(".js"));
-      const mapFiles = files.filter(f => f.endsWith(".js.map"));
-
-      // Each .js file should have a corresponding .js.map
-      expect(mapFiles.length).toBe(jsFiles.length);
-
-      for (const jsFile of jsFiles) {
-        const mapFile = `${jsFile}.map`;
-        expect(mapFiles).toContain(mapFile);
-      }
-    } finally {
-      // Restore env
-      if (originalEnv !== undefined) {
-        process.env.MODULAR_BUILD = originalEnv;
-      } else {
-        delete process.env.MODULAR_BUILD;
       }
     }
   });

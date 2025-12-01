@@ -85,35 +85,4 @@ describe.sequential("ES2018 Target Compliance", () => {
     // Should contain the main loop export
     expect(content).toMatch(/loop/);
   });
-
-  it("modular build should also target es2018", async () => {
-    const originalEnv = process.env.MODULAR_BUILD;
-    process.env.MODULAR_BUILD = "true";
-
-    try {
-      await buildProject(false);
-
-      const mainJsPath = resolve("dist", "main.js");
-      const content = await readFile(mainJsPath, "utf8");
-
-      // Should not contain ES2021 features
-      expect(content).not.toMatch(/\?\?=/);
-      expect(content).not.toMatch(/\|\|=/);
-      expect(content).not.toMatch(/&&=/);
-
-      // Check a runtime module as well
-      const behaviorJsPath = resolve("dist", "behavior.js");
-      const behaviorContent = await readFile(behaviorJsPath, "utf8");
-
-      expect(behaviorContent).not.toMatch(/\?\?=/);
-      expect(behaviorContent).not.toMatch(/\|\|=/);
-      expect(behaviorContent).not.toMatch(/&&=/);
-    } finally {
-      if (originalEnv !== undefined) {
-        process.env.MODULAR_BUILD = originalEnv;
-      } else {
-        delete process.env.MODULAR_BUILD;
-      }
-    }
-  });
 });

@@ -69,23 +69,4 @@ describe.sequential("globalThis Runtime Compatibility (#1314)", () => {
     // All should be replaced with 'global' via esbuild define mapping
     expect(globalThisMatches).toBeNull();
   });
-
-  it("should contain global references for runtime globals", async () => {
-    // Verify that global is used instead of globalThis
-    // This is Screeps-compatible (ES5 global object)
-    const globalMatches = bundleContent.match(/\bglobal\b/g);
-
-    // Should have at least some global references (from our code and dependencies)
-    expect(globalMatches).not.toBeNull();
-    expect(globalMatches!.length).toBeGreaterThan(0);
-  });
-
-  it("should replace globalThis from dependencies (e.g., zod)", async () => {
-    // The original issue was at line 12250 in zod's global registry code
-    // Verify that zod's globalThis usage has been replaced with global
-    const zodRegistryPattern = /global\.__zod_globalRegistry/;
-
-    // Should contain the replaced pattern
-    expect(bundleContent).toMatch(zodRegistryPattern);
-  });
 });

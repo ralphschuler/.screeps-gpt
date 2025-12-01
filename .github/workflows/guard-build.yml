@@ -33,7 +33,7 @@ jobs:
           path: dist
           key: >-
             build-${{ runner.os }}-${{
-            hashFiles('packages/bot/src/**/*',
+            hashFiles('packages/screeps-bot/src/**/*',
             'packages/utilities/scripts/build.ts',
             'tsconfig.json', 'yarn.lock') }}
           restore-keys: |

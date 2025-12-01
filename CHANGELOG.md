@@ -5,6 +5,24 @@ All notable changes to this project are documented here. This changelog now main
 
 ## [Unreleased]
 
+### Changed
+
+- **Bot Package Consolidation**: Migrated deployment from `packages/bot` to `packages/screeps-bot` (#1xxx)
+  - Evaluated `packages/screeps-bot` and `packages/screeps-swarm-bot` for completeness and production readiness
+  - Selected `packages/screeps-bot` (ant colony swarm intelligence) as the new deployment package
+  - Deleted `packages/bot` (legacy deployment package with 25,018 lines)
+  - Deleted `packages/screeps-swarm-bot` (scaffold package with 4,490 lines)
+  - Added `packages/screeps-bot/src/main.ts` entry point for Screeps runtime compatibility
+  - Updated build system to compile from `packages/screeps-bot/src`
+  - Updated documentation: README.md, AGENTS.md, TASKS.md, copilot-instructions.md, packages/README.md
+
+### Removed
+
+- **Deprecated Packages**: Removed `packages/bot` and `packages/screeps-swarm-bot` in favor of consolidated `packages/screeps-bot`
+  - Removed 133 TypeScript files from packages/bot (~25,018 lines)
+  - Removed 48 TypeScript files from packages/screeps-swarm-bot (~4,490 lines)
+  - Kept packages/screeps-bot with 35 TypeScript files (~9,147 lines)
+
 ## [0.197.11] - 2025-11-30
 
 ### Added

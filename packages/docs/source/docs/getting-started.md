@@ -109,18 +109,20 @@ git commit --no-verify -m "WIP: incomplete feature"
 
 ## Runtime Architecture
 
-- `packages/bot/src/runtime/bootstrap/` – Kernel wiring that orchestrates memory maintenance, behavioural control, performance tracking, and evaluation.
-- `packages/bot/src/runtime/behavior/` – High-level creep role orchestration and spawn logic.
-- `packages/bot/src/runtime/memory/` – Helpers to keep `Memory` consistent between ticks.
-- `packages/bot/src/runtime/metrics/` – CPU usage and execution accounting.
-- `packages/bot/src/runtime/respawn/` – Automatic detection and handling of respawn scenarios when all spawns are lost.
-- `packages/bot/src/runtime/evaluation/` – Generates health reports and improvement recommendations from runtime and repository signals.
-- `packages/bot/src/shared/` – Shared contracts for metrics, evaluation results, and repository telemetry.
+The bot uses an **ant colony-inspired swarm intelligence architecture**:
+
+- `packages/screeps-bot/src/SwarmBot.ts` – Main bot controller class that coordinates all subsystems.
+- `packages/screeps-bot/src/core/` – Logger, profiler, scheduler, and room management.
+- `packages/screeps-bot/src/memory/` – Memory schemas and management with pheromone-based coordination.
+- `packages/screeps-bot/src/logic/` – Pheromone system, evolution stages, defense, expansion, and strategic layers.
+- `packages/screeps-bot/src/roles/` – Creep role families (economy, military, utility, power).
+- `packages/screeps-bot/src/layouts/` – Blueprint system for structure placement.
+- `packages/screeps-bot/src/intershard/` – Multi-shard coordination via InterShardMemory.
 - `packages/utilities/scripts/` – Node.js 18–22 compatible TypeScript automation scripts executed through Bun (build, deploy, version bump, repository evaluation).
 - `tests/` – Vitest suites split into unit, e2e, and regression directories (root level).
 - `reports/` – Persistent analysis artifacts (e.g., `system-evaluation.json`) (root level).
 
-The main loop lives in `packages/bot/src/main.ts` and delegates to a kernel that can be exercised in tests or tooling. The system automatically detects when all spawns are lost and flags critical respawn conditions in evaluation reports—see [`operations/respawn-handling.md`](operations/respawn-handling.md) for details.
+The main loop lives in `packages/screeps-bot/src/main.ts` and creates a SwarmBot instance that coordinates pheromone-based decision making. For detailed architecture documentation, see the [Screeps Bot README](../../screeps-bot/README.md).
 
 ## Required Secrets
 

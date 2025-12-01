@@ -5,7 +5,7 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - "packages/bot/src/runtime/**"
+      - "packages/screeps-bot/src/**"
       - "tests/performance/**"
       - ".github/workflows/performance-test.yml"
   workflow_dispatch:

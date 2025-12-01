@@ -116,29 +116,29 @@ jobs:
 
       - name: Build package
         run: |
-          if [ -d "packages/bot" ] && [ -f "packages/bot/tsconfig.json" ]; then
-            echo "Building bot..."
-            (cd "packages/bot" && npm run build) || \
-              echo "Warning: bot build failed"
+          if [ -d "packages/screeps-bot" ] && [ -f "packages/screeps-bot/tsconfig.json" ]; then
+            echo "Building screeps-bot..."
+            (cd "packages/screeps-bot" && npm run build) || \
+              echo "Warning: screeps-bot build failed"
           fi
 
       - name: Publish package
         run: |
-          if [ -d "packages/bot" ] && [ -f "packages/bot/package.json" ]; then
+          if [ -d "packages/screeps-bot" ] && [ -f "packages/screeps-bot/package.json" ]; then
             # Check if package is private
-            if grep -q '"private".*true' "packages/bot/package.json"; then
-              echo "Skipping private package: bot"
+            if grep -q '"private".*true' "packages/screeps-bot/package.json"; then
+              echo "Skipping private package: screeps-bot"
               continue
             fi
 
             # Check if package has build output
-            if [ ! -d "packages/bot/dist" ]; then
-              echo "Skipping bot: no dist/ folder"
+            if [ ! -d "packages/screeps-bot/dist" ]; then
+              echo "Skipping screeps-bot: no dist/ folder"
               continue
             fi
 
-            echo "Publishing bot..."
-            (cd "packages/bot" && npm publish) || \
+            echo "Publishing screeps-bot..."
+            (cd "packages/screeps-bot" && npm publish) || \
               echo "Warning: Failed to publish $${{ matrix.pkg }}"
           fi
         env:
