@@ -105,7 +105,7 @@ jobs:
         run: yarn install --immutable
 
       - name: Download replay data
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: replay-data-${{ github.run_id }}
           path: reports/replay-data/
@@ -165,7 +165,7 @@ jobs:
         run: yarn install --immutable
 
       - name: Download rendered videos
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: rendered-videos-${{ github.run_id }}
           path: reports/videos/
