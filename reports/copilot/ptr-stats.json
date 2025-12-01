@@ -1,86 +1,27 @@
 {
   "metadata": {
-    "collectedAt": "2025-12-01T02:53:29.900Z",
-    "source": "stats_api",
-    "success": true,
+    "collectedAt": "2025-12-01T03:33:01.747Z",
+    "source": "none",
+    "success": false,
+    "error": "1 shard(s) failed",
     "fallbackActivated": false,
     "shards": [
       "shard3"
     ],
     "totalRooms": 0
   },
-  "stats": {
-    "shard3": {
-      "latest": {
-        "time": 75148138,
-        "cpu": {
-          "used": 0.057870800053933635,
-          "limit": 20,
-          "bucket": 10000
-        },
-        "creeps": {
-          "count": 0
-        },
-        "rooms": {
-          "count": 1,
-          "E54N39": {
-            "energyAvailable": 0,
-            "energyCapacityAvailable": 0,
-            "controllerLevel": 2,
-            "controllerProgress": 38708,
-            "controllerProgressTotal": 45000
-          }
-        },
-        "memory": {
-          "used": 2537
-        },
-        "structures": {
-          "containers": 3,
-          "roads": 161
-        },
-        "spawns": 1,
-        "activeSpawns": 0
-      }
-    }
-  },
+  "stats": null,
   "shardStats": [
     {
       "shard": "shard3",
-      "source": "stats_api",
-      "success": true,
-      "stats": {
-        "latest": {
-          "time": 75148138,
-          "cpu": {
-            "used": 0.057870800053933635,
-            "limit": 20,
-            "bucket": 10000
-          },
-          "creeps": {
-            "count": 0
-          },
-          "rooms": {
-            "count": 1,
-            "E54N39": {
-              "energyAvailable": 0,
-              "energyCapacityAvailable": 0,
-              "controllerLevel": 2,
-              "controllerProgress": 38708,
-              "controllerProgressTotal": 45000
-            }
-          },
-          "memory": {
-            "used": 2537
-          },
-          "structures": {
-            "containers": 3,
-            "roads": 161
-          },
-          "spawns": 1,
-          "activeSpawns": 0
-        }
-      },
+      "source": "none",
+      "success": false,
+      "stats": null,
+      "error": "All telemetry sources failed",
       "rooms": []
     }
-  ]
+  ],
+  "raw": {
+    "reason": "No data available from any shard"
+  }
 }
