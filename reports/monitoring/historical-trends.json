@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2025-11-30T23:33:20.738Z",
-  "snapshotsAnalyzed": 21,
+  "generatedAt": "2025-12-01T00:09:49.220Z",
+  "snapshotsAnalyzed": 22,
   "periods": {
     "sevenDay": {
       "period": "7-day",
       "days": 7,
       "dataPointCount": 8,
       "dateRange": {
-        "start": "2025-11-23T23:36:44.782Z",
-        "end": "2025-11-30T23:03:18.365Z"
+        "start": "2025-11-24T23:56:15.607Z",
+        "end": "2025-12-01T00:09:47.207Z"
       },
       "cpu": {
         "used": {
@@ -117,10 +117,10 @@
     "thirtyDay": {
       "period": "30-day",
       "days": 30,
-      "dataPointCount": 21,
+      "dataPointCount": 22,
       "dateRange": {
         "start": "2025-11-07T23:44:43.054Z",
-        "end": "2025-11-30T23:03:18.365Z"
+        "end": "2025-12-01T00:09:47.207Z"
       },
       "cpu": {
         "used": {
@@ -143,12 +143,12 @@
       },
       "creeps": {
         "total": {
-          "current": 1,
-          "previous": 0,
-          "change": 1,
-          "changePercent": 0,
-          "trend": "stable",
-          "isRegression": false
+          "current": 0,
+          "previous": 5.5,
+          "change": -5.5,
+          "changePercent": -100,
+          "trend": "decreasing",
+          "isRegression": true
         }
       },
       "rooms": {
@@ -161,55 +161,55 @@
           "isRegression": false
         },
         "averageRcl": {
-          "current": 2.1818181818181817,
-          "previous": 3,
-          "change": -0.8181818181818183,
-          "changePercent": -27.272727272727277,
+          "current": 2,
+          "previous": 3.5,
+          "change": -1.5,
+          "changePercent": -42.857142857142854,
           "trend": "decreasing",
           "isRegression": true
         },
         "totalProgress": {
-          "current": 44351.181818181816,
-          "previous": 113532,
-          "change": -69180.81818181818,
-          "changePercent": -60.935082780025176,
+          "current": 38708,
+          "previous": 107157.5,
+          "change": -68449.5,
+          "changePercent": -63.87747007908919,
           "trend": "decreasing",
           "isRegression": true
         }
       },
       "energy": {
         "total": {
-          "current": 118.18181818181819,
-          "previous": 450,
-          "change": -331.8181818181818,
-          "changePercent": -73.73737373737373,
+          "current": 0,
+          "previous": 875,
+          "change": -875,
+          "changePercent": -100,
           "trend": "decreasing",
           "isRegression": true
         },
         "perRoom": {
-          "current": 118.18181818181819,
-          "previous": 450,
-          "change": -331.8181818181818,
-          "changePercent": -73.73737373737373,
+          "current": 0,
+          "previous": 875,
+          "change": -875,
+          "changePercent": -100,
           "trend": "decreasing",
           "isRegression": true
         }
       },
       "memory": {
         "used": {
-          "current": 2584.181818181818,
-          "previous": 2584.181818181818,
-          "change": 0,
-          "changePercent": 0,
-          "trend": "stable",
+          "current": 2537,
+          "previous": 3056,
+          "change": -519,
+          "changePercent": -16.982984293193716,
+          "trend": "decreasing",
           "isRegression": false
         },
         "usedPercent": {
-          "current": 0.12272727272727274,
-          "previous": 0.12272727272727274,
-          "change": 0,
-          "changePercent": 0,
-          "trend": "stable",
+          "current": 0.12000000000000002,
+          "previous": 0.15,
+          "change": -0.02999999999999997,
+          "changePercent": -19.999999999999982,
+          "trend": "decreasing",
           "isRegression": false
         }
       },
@@ -224,7 +224,8 @@
         }
       },
       "regressions": [
-        "Energy reserves decreased by 73.7%"
+        "Creep population decreased by 100.0%",
+        "Energy reserves decreased by 100.0%"
       ],
       "improvements": []
     }
@@ -248,9 +249,15 @@
       "metric": "cpu.bucket"
     },
     {
+      "type": "creep_population_drop",
+      "severity": "medium",
+      "message": "Creep population dropped by 100.0%",
+      "metric": "creeps.total"
+    },
+    {
       "type": "energy_regression",
       "severity": "medium",
-      "message": "Energy reserves decreased by 73.7%",
+      "message": "Energy reserves decreased by 100.0%",
       "metric": "energy.total"
     }
   ]
