@@ -2117,7 +2117,7 @@ __metadata:
     "@types/semver": "npm:^7.5.8"
     "@typescript-eslint/eslint-plugin": "npm:^8.48.0"
     "@typescript-eslint/parser": "npm:^8.48.0"
-    "@vitest/coverage-v8": "npm:^4.0.14"
+    "@vitest/coverage-v8": "npm:^4.0.15"
     esbuild: "npm:^0.25.11"
     eslint: "npm:^9.38.0"
     eslint-config-prettier: "npm:^10.1.8"
@@ -3203,12 +3203,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitest/coverage-v8@npm:^4.0.14":
-  version: 4.0.14
-  resolution: "@vitest/coverage-v8@npm:4.0.14"
+"@vitest/coverage-v8@npm:^4.0.15":
+  version: 4.0.15
+  resolution: "@vitest/coverage-v8@npm:4.0.15"
   dependencies:
     "@bcoe/v8-coverage": "npm:^1.0.2"
-    "@vitest/utils": "npm:4.0.14"
+    "@vitest/utils": "npm:4.0.15"
     ast-v8-to-istanbul: "npm:^0.3.8"
     istanbul-lib-coverage: "npm:^3.2.2"
     istanbul-lib-report: "npm:^3.0.1"
@@ -3219,12 +3219,12 @@ __metadata:
     std-env: "npm:^3.10.0"
     tinyrainbow: "npm:^3.0.3"
   peerDependencies:
-    "@vitest/browser": 4.0.14
-    vitest: 4.0.14
+    "@vitest/browser": 4.0.15
+    vitest: 4.0.15
   peerDependenciesMeta:
     "@vitest/browser":
       optional: true
-  checksum: 10c0/ae4f7c0b187167bb679c6eee9b6dc6d036e15b629506cb2a462675de7ebd7bcf43ed07c2ade9d9737c351cf9f8fcd614f42b028a26cd4e44fce56ec05a79d6ca
+  checksum: 10c0/8810cb35fc443bdd5da46ea90804d7657d17ceb20dc9f7e05c7f6212480039c6079ec4ff0c305a658044b7cbd8792a71c7ae6661258fc5f3022e04bea04186a0
   languageName: node
   linkType: hard
 
@@ -3270,6 +3270,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@vitest/pretty-format@npm:4.0.15":
+  version: 4.0.15
+  resolution: "@vitest/pretty-format@npm:4.0.15"
+  dependencies:
+    tinyrainbow: "npm:^3.0.3"
+  checksum: 10c0/d863f3818627b198f9c66515f8faa200e76a1c30c7f2b25ac805e253204ae51abbfa6b6211c58b2d75e1a273a2e6925e3a8fa480ebfa9c479d75a19815e1cbea
+  languageName: node
+  linkType: hard
+
 "@vitest/runner@npm:4.0.14":
   version: 4.0.14
   resolution: "@vitest/runner@npm:4.0.14"
@@ -3305,6 +3314,16 @@ __metadata:
     "@vitest/pretty-format": "npm:4.0.14"
     tinyrainbow: "npm:^3.0.3"
   checksum: 10c0/be5432b4445bdb1b41d1ad1bffe9e2a297b7d1d9addef3cbf3782d66da4e80ec8a14e2396638172572e5a6e3527f34bae7f1b98cee00cbe1175b099a28073ecd
+  languageName: node
+  linkType: hard
+
+"@vitest/utils@npm:4.0.15":
+  version: 4.0.15
+  resolution: "@vitest/utils@npm:4.0.15"
+  dependencies:
+    "@vitest/pretty-format": "npm:4.0.15"
+    tinyrainbow: "npm:^3.0.3"
+  checksum: 10c0/2ef661c2c2359ae956087f0b728b6a0f7555cd10524a7def27909f320f6b8ba00560ee1bd856bf68d4debc01020cea21b200203a5d2af36c44e94528c5587aee
   languageName: node
   linkType: hard
 
