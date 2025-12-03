@@ -27,6 +27,6 @@
     "@types/semver": "^7.5.8",
     "tsx": "^4.20.6",
     "typescript": "^5.4.3",
-    "vitest": "^4.0.14"
+    "vitest": "^4.0.15"
   }
 }
