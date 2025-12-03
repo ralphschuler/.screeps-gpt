@@ -30,7 +30,7 @@
     "docker:push": "docker tag screeps-docs-mcp:latest ghcr.io/ralphschuler/screeps-docs-mcp:latest && docker push ghcr.io/ralphschuler/screeps-docs-mcp:latest"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.23.0",
+    "@modelcontextprotocol/sdk": "^1.24.1",
     "cheerio": "^1.0.0",
     "node-fetch": "^3.3.2",
     "zod": "^4.1.13"
