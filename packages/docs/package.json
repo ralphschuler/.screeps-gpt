@@ -36,6 +36,6 @@
     "hexo-theme-landscape": "^1.0.0"
   },
   "devDependencies": {
-    "vitest": "^4.0.14"
+    "vitest": "^4.0.15"
   }
 }
