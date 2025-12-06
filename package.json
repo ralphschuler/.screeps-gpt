@@ -55,7 +55,7 @@
     "test:docs-e2e": "vitest run tests/e2e/docs-site.test.ts",
     "test:performance": "vitest run --dir tests/performance",
     "test:coverage": "vitest run --coverage",
-    "test:bot": "cd packages/bot && npm run test",
+    "test:bot": "cd packages/screeps-bot && npm run test",
     "test:utilities": "cd packages/utilities && npm run test",
     "test:logger": "cd packages/screeps-logger && npm run test",
     "test:metrics": "cd packages/screeps-metrics && npm run test",

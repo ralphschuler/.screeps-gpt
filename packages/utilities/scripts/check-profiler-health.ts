@@ -1,7 +1,7 @@
 import { readFile, access } from "node:fs/promises";
 import { resolve } from "node:path";
 import { constants } from "node:fs";
-import type { ProfilerSnapshot } from "../../bot/src/shared/profiler-types";
+import type { ProfilerSnapshot } from "./types/profiler-types";
 
 /**
  * Check profiler health status and report warnings/errors

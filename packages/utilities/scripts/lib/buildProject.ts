@@ -9,7 +9,7 @@ import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 
 const outDir = resolve("dist");
-const srcDir = resolve("packages/bot/src");
+const srcDir = resolve("packages/screeps-bot/src");
 
 /**
  * Validate and resolve PROFILER_ENABLED environment variable

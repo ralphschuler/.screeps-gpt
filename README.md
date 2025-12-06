@@ -78,7 +78,7 @@ The repository is organized as a monorepo with clear package boundaries:
 
 **Package Details:**
 
-- **`packages/bot/`** - Game runtime code, behaviors, memory management, and AI logic
+- **`packages/screeps-bot/`** - Ant colony-inspired swarm intelligence bot with pheromone-based coordination
 - **`packages/docs/`** - Documentation site built with Hexo (source, themes, config)
 - **`packages/utilities/`** - Build scripts, deployment tools, monitoring utilities
 - **`packages/screeps-profiler/`** - CPU profiling with decorator support and build-time optimization

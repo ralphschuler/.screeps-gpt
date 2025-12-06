@@ -24,10 +24,8 @@ const rootDir = dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   resolve: {
     alias: {
-      "@runtime": resolve(rootDir, "packages/bot/src/runtime"),
-      "@shared": resolve(rootDir, "packages/bot/src/shared"),
-      "@ai": resolve(rootDir, "packages/bot/src/ai"),
-      "@ralphschuler/screeps-profiler": resolve(rootDir, "packages/screeps-profiler/src")
+      "@ralphschuler/screeps-profiler": resolve(rootDir, "packages/screeps-profiler/src"),
+      "@ralphschuler/screeps-bot": resolve(rootDir, "packages/screeps-bot/src")
     }
   },
   define: {

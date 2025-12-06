@@ -4,27 +4,25 @@ This directory contains the core packages for the Screeps GPT AI system. This gu
 
 ## Package Overview
 
-| Package              | Purpose                         | Priority |
-| -------------------- | ------------------------------- | -------- |
-| `bot/`               | Core Screeps AI implementation  | High     |
-| `screeps-kernel/`    | Runtime kernel and scheduling   | High     |
-| `screeps-agent/`     | Autonomous development agent    | High     |
-| `screeps-mcp/`       | MCP server integration          | High     |
-| `utilities/`         | Build and deployment scripts    | High     |
-| `screeps-async/`     | Async task management           | Medium   |
-| `screeps-cache/`     | Caching utilities               | Medium   |
-| `screeps-metrics/`   | Performance metrics collection  | Medium   |
-| `screeps-profiler/`  | CPU profiler                    | Medium   |
-| `screeps-logger/`    | Logging infrastructure          | Medium   |
-| `screeps-events/`    | Event bus and handlers          | Medium   |
-| `screeps-swarm-bot/` | Swarm-intelligence bot scaffold | Medium   |
-| `screeps-xstate/`    | State machine implementation    | Lower    |
-| `screeps-xtree/`     | Behavior tree library           | Lower    |
-| `screeps-tasks/`     | Task management system          | Lower    |
-| `pserver/`           | Private server configuration    | Lower    |
-| `console/`           | Console commands                | Lower    |
-| `dashboard/`         | Dashboard UI                    | Lower    |
-| `docs/`              | Hexo documentation site         | Lower    |
+| Package             | Purpose                           | Priority |
+| ------------------- | --------------------------------- | -------- |
+| `screeps-bot/`      | Ant colony swarm intelligence bot | High     |
+| `screeps-kernel/`   | Runtime kernel and scheduling     | High     |
+| `screeps-agent/`    | Autonomous development agent      | High     |
+| `screeps-mcp/`      | MCP server integration            | High     |
+| `utilities/`        | Build and deployment scripts      | High     |
+| `screeps-async/`    | Async task management             | Medium   |
+| `screeps-cache/`    | Caching utilities                 | Medium   |
+| `screeps-metrics/`  | Performance metrics collection    | Medium   |
+| `screeps-profiler/` | CPU profiler                      | Medium   |
+| `screeps-logger/`   | Logging infrastructure            | Medium   |
+| `screeps-events/`   | Event bus and handlers            | Medium   |
+| `screeps-xstate/`   | State machine implementation      | Lower    |
+| `screeps-xtree/`    | Behavior tree library             | Lower    |
+| `screeps-tasks/`    | Task management system            | Lower    |
+| `pserver/`          | Private server configuration      | Lower    |
+| `dashboard/`        | Dashboard UI                      | Lower    |
+| `docs/`             | Hexo documentation site           | Lower    |
 
 ## TSDoc/JSDoc Standards
 

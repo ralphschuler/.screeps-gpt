@@ -67,19 +67,15 @@ This repository hosts an autonomous Screeps AI with comprehensive automation. Wh
 
 ## Repository Structure
 
-### Runtime Code (`packages/bot/src/`)
+### Runtime Code (`packages/screeps-bot/src/`)
 
-- `packages/bot/src/runtime/bootstrap/` - Kernel orchestration and system wiring
-- `packages/bot/src/runtime/behavior/` - Creep roles and spawn logic using state machines
-  - `stateMachines/` - State machine definitions for each role
-  - `controllers/` - Role controller implementations
-  - `RoleControllerManager.ts` - Orchestrates all role controllers
-  - `StateMachineManager.ts` - Manages state machine lifecycle
-- `packages/bot/src/runtime/memory/` - Memory consistency helpers
-- `packages/bot/src/runtime/metrics/` - CPU tracking and performance accounting
-- `packages/bot/src/runtime/respawn/` - Automatic respawn detection
-- `packages/bot/src/runtime/evaluation/` - Health reports and improvement recommendations
-- `packages/bot/src/shared/` - Shared contracts and types
+- `packages/screeps-bot/src/SwarmBot.ts` - Main bot controller class
+- `packages/screeps-bot/src/core/` - Logger, profiler, scheduler, and room management
+- `packages/screeps-bot/src/memory/` - Memory schemas and management
+- `packages/screeps-bot/src/logic/` - Pheromone system, evolution, defense, expansion, and strategic layers
+- `packages/screeps-bot/src/roles/` - Creep role families (economy, military, utility, power)
+- `packages/screeps-bot/src/layouts/` - Blueprint system for structure placement
+- `packages/screeps-bot/src/intershard/` - Multi-shard coordination via InterShardMemory
 
 ### Supporting Infrastructure
 
@@ -95,7 +91,7 @@ This repository hosts an autonomous Screeps AI with comprehensive automation. Wh
 
 - Strict mode enabled in `tsconfig.json` - avoid `any` unless absolutely necessary
 - Prefer small, testable modules
-- Share contracts through `packages/bot/src/shared/` rather than duplicating types
+- Share contracts through `packages/screeps-bot/src/memory/` schemas rather than duplicating types
 - Add TSDoc blocks for non-trivial exported classes and functions
 - Keep runtime code deterministic; guard `Math.random()` behind helper utilities
 
@@ -116,10 +112,9 @@ This repository hosts an autonomous Screeps AI with comprehensive automation. Wh
 
 **Prefer these internal modules:**
 
-- `packages/bot/src/shared/` - Use shared types and contracts instead of duplicating definitions
-- `packages/bot/src/runtime/metrics/` - Use existing CPU tracking utilities for performance monitoring
-- `packages/bot/src/runtime/memory/` - Use memory helpers for consistent Memory object access
-- `packages/bot/src/runtime/evaluation/` - Use evaluation types for health reports and recommendations
+- `packages/screeps-bot/src/memory/` - Use memory schemas and management for consistent Memory object access
+- `packages/screeps-bot/src/logic/` - Use pheromone, evolution, and strategic logic modules
+- `packages/screeps-bot/src/core/` - Use core modules for profiling, logging, and scheduling
 
 **External libraries:**
 
@@ -241,28 +236,29 @@ Repository labels are synchronized from `.github/labels.yml` using a standardize
 - Use `type/*` and `priority/*` labels for issue classification
 - Apply `state/pending` to new issues, update states as work progresses
 
-## Behavior Architecture
+## Bot Architecture
 
-The bot uses a **state machine architecture** for creep behaviors:
+The bot uses an **ant colony-inspired swarm intelligence architecture**:
 
-- Each role (harvester, upgrader, builder, etc.) is implemented as a dedicated state machine
-- State machines define explicit states and valid transitions
-- Role controllers implement the `RoleController` interface
-- `RoleControllerManager` orchestrates all roles and integrates with the kernel
-- `StateMachineManager` handles state machine lifecycle
+### Layers
+
+1. **Pheromone Layer** - Room-level signals that decay over time and diffuse to neighboring rooms
+2. **Room Layer** - Evolution stages and postures that determine behavior priorities
+3. **Cluster Layer** - Groups of rooms that coordinate resources and defense
+4. **Strategic Layer** - Empire-wide decisions for expansion and war
+5. **Agent Layer** - Individual creeps using simple heuristics for task selection
+6. **Multi-Shard Layer** - Cross-shard coordination via InterShardMemory
+
+### Role Families
+
+- **Economy** - larvaWorker, harvester, hauler, builder, upgrader, queenCarrier, etc.
+- **Military** - guard, healer, soldier, siegeUnit, harasser, squadMember
+- **Utility** - scout, claimer, engineer, remoteWorker, terminalManager
+- **Power** - powerHarvester, powerCarrier, powerQueen, powerWarrior
 
 **Important Documentation:**
 
-- [ADR-004: State Machine Architecture](../packages/docs/source/docs/strategy/decisions/adr-004-state-machine-behavior-architecture.md)
-- [Behavior State Machines](../packages/docs/source/docs/runtime/architecture/behavior-state-machines.md)
-- [Behavior Migration Guide](../packages/docs/source/docs/operations/behavior-migration-guide.md)
-
-**DEPRECATED PATTERNS:**
-
-- ❌ `BehaviorController` - Monolithic behavior controller (removed in Issue #1267)
-- ❌ Switch-based role dispatch - Use state machines instead
-
-All new behavior development MUST use the state machine pattern with role controllers.
+- [Screeps Bot README](packages/screeps-bot/README.md) - Full API documentation and architecture overview
 
 ## Using MCP Servers for Screeps Knowledge
 
